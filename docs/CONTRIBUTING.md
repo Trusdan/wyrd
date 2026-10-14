@@ -21,7 +21,7 @@ CI greps the pull request diff against a private deny-list. The list is the repo
 - Commits use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 - A behavior change arrives with a GUT test. Golden snapshots and scenario tests start when there is a compiler and a runtime to snapshot.
 
-Godot and GUT versions are pinned in `tools/pins.env`. An upgrade is its own pull request, and any locked RNG sequence is updated in that same pull request.
+Godot and GUT versions are pinned in `tools/pins.env`. An upgrade is its own pull request. `WyrdRng` sequences do not depend on the Godot version.
 
 ## Tests
 

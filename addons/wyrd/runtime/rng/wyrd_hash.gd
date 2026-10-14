@@ -12,14 +12,16 @@ extends RefCounted
 ## The result is the unsigned 64-bit FNV-1a value stored in a signed 64-bit int (the GDScript
 ## [int] is signed, and arithmetic wraps modulo 2^64, which is the FNV step).
 ##
-## Domain bytes keep the two kinds of input apart:
-## [code]0x01[/code] then the UTF-8 bytes of a [StringName], or [code]0x02[/code] then the int as
-## eight little-endian two's-complement bytes.
+## Domain bytes keep the kinds of input apart:
+## [code]0x01[/code] then the UTF-8 bytes of a [StringName], [code]0x02[/code] then an int as
+## eight little-endian two's-complement bytes, or [code]0x03[/code] then those same eight
+## bytes folded onto an existing hash by [method combine].
 
 const FNV_OFFSET: int = -3750763034362895579
 const FNV_PRIME: int = 1099511628211
 const _DOMAIN_STRING: int = 0x01
 const _DOMAIN_INT: int = 0x02
+const _DOMAIN_COMBINE: int = 0x03
 
 
 static func of_string_name(value: StringName) -> int:
@@ -33,6 +35,17 @@ static func of_string_name(value: StringName) -> int:
 static func of_int(value: int) -> int:
 	var hash := _mix(FNV_OFFSET, _DOMAIN_INT)
 	var bits := value
+	for _i in 8:
+		hash = _mix(hash, bits & 0xFF)
+		bits >>= 8
+	return hash
+
+
+## Folds [param b] onto [param a]. Mixes domain byte [code]0x03[/code], then the eight
+## little-endian two's-complement bytes of [param b], low byte first.
+static func combine(a: int, b: int) -> int:
+	var hash := _mix(a, _DOMAIN_COMBINE)
+	var bits := b
 	for _i in 8:
 		hash = _mix(hash, bits & 0xFF)
 		bits >>= 8
