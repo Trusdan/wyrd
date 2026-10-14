@@ -47,6 +47,11 @@ func _init() -> void:
 		push_error("condition bench checksums diverged")
 		quit(1)
 		return
+	var dirty: Dictionary = conditions["dirty"]
+	if not bool(dirty["checksum_match"]):
+		push_error("dirty-set bench disagreed with a full scan")
+		quit(1)
+		return
 	var payload := {
 		"workload": "placeholder_hash_and_rng",
 		"iterations": iterations,

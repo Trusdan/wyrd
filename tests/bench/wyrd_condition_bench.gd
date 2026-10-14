@@ -1,9 +1,11 @@
 extends RefCounted
 
+const _Dirty := preload("res://tests/bench/bench_dirty.gd")
+
 ## Fixed 10k-fact / 5k-condition timing case. Not a CI gate.
 ##
 ## Compile and fixture setup stay outside the timed loops. The warm pass is a
-## second full scan. A dirty set is not part of this slice.
+## second full scan. The dirty-set workload is a separate timer.
 
 
 func measure() -> Dictionary:
@@ -15,9 +17,11 @@ func measure() -> Dictionary:
 	var ex_cold := _pass_expr(fixture)
 	var ex_warm := _pass_expr(fixture)
 	var count := int(fixture["count"])
+	var dirty: Dictionary = _Dirty.new().measure(fixture)
 	return {
 		"checksum_match": rpn_cold["checksum"] == gd_cold["checksum"] and rpn_cold["checksum"] == ex_cold["checksum"],
 		"conditions": count,
+		"dirty": dirty,
 		"facts": int(fixture["facts"]),
 		"godot": Engine.get_version_info()["string"],
 		"os": OS.get_name(),
@@ -96,10 +100,18 @@ func _fixture() -> Dictionary:
 			push_error("expression did not parse")
 		exprs.append(expr)
 		rows.append(inputs)
+	var keys := PackedStringArray()
+	keys.resize(facts)
+	for i in facts:
+		keys[i] = "gullhaven.fact_%05d" % i
+	var evals := WyrdRpnEval.new()
+	evals.bind_facts(keys)
+	for item in compiled:
+		evals.prepare(item)
 	return {
 		"compiled": compiled,
 		"count": count,
-		"evals": WyrdRpnEval.new(),
+		"evals": evals,
 		"exprs": exprs,
 		"fact_map": fact_map,
 		"facts": facts,
@@ -115,11 +127,11 @@ func _fixture() -> Dictionary:
 func _pass_rpn(fixture: Dictionary) -> Dictionary:
 	var compiled: Array[WyrdCompiledCondition] = fixture["compiled"]
 	var eval := fixture["evals"] as WyrdRpnEval
-	var facts: Dictionary = fixture["fact_map"]
+	var values: PackedInt32Array = fixture["values"]
 	var started := Time.get_ticks_usec()
 	var checksum := 0
 	for item in compiled:
-		if eval.eval(item, facts) == true:
+		if eval.eval_bound(item, values) == true:
 			checksum += 1
 	return {"checksum": checksum, "usec": Time.get_ticks_usec() - started}
 
