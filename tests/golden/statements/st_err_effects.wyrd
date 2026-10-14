@@ -1,0 +1,23 @@
+language 1
+
+facts
+  player.coins : int stored
+  season : symbol stored
+  world.weather : symbol source: world.weather invalidate: per_query
+
+quest ferry_toll "The Ferry Toll"
+  stage pay
+    ~ set world.weather = calm
+    ~ set player.coins = true
+    ~ inc season by 1
+    ~ lock topic harbor
+    ~ set_disposition player ferry
+    ~ start quest other
+    ~ advance
+    ~ assign role tavern
+    ~ vacate role tavern
+    ~ adjust baseline ferry
+    ~ create document note
+    ~ record deed paid(target: ferry)
+    ~ record deed paid(actor: player, actor: ferry)
+    ~ frobnicate

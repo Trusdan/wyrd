@@ -1,0 +1,696 @@
+{
+  "diagnostics": [],
+  "quests": [],
+  "reads": [
+    "player.coins",
+    "season",
+    "npc.{id}.alive"
+  ],
+  "scenes": [
+    {
+      "id": "toll.gate",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "a1",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 11,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 11
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 11,
+              "line": 11
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 11,
+            "line": 11
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 8,
+                "end_col": 25,
+                "end_line": 12,
+                "line": 12
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "condition_text": "player.coins >= 2",
+            "id": "a2",
+            "kind": "spoken",
+            "prose": {
+              "col": 34,
+              "kids": [
+                {
+                  "col": 34,
+                  "kind": "text",
+                  "line": 12,
+                  "text": "You can cross."
+                }
+              ],
+              "kind": "prose",
+              "line": 12
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 49,
+              "end_line": 12,
+              "line": 12
+            },
+            "speaker": "ferry",
+            "tags": []
+          },
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 49,
+            "end_line": 12,
+            "line": 12
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "a3",
+            "kind": "spoken",
+            "prose": {
+              "col": 17,
+              "kids": [
+                {
+                  "col": 17,
+                  "kind": "text",
+                  "line": 13,
+                  "text": "Ask "
+                },
+                {
+                  "col": 21,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 22,
+                      "end_col": 35,
+                      "end_line": 13,
+                      "line": 13
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 13,
+                  "text": "variants"
+                },
+                {
+                  "col": 45,
+                  "kind": "text",
+                  "line": 13,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 13
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 47,
+              "end_line": 13,
+              "line": 13
+            },
+            "speaker": "ferry.master",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 47,
+            "end_line": 13,
+            "line": 13
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [
+              {
+                "args": [
+                  {
+                    "compiled": {
+                      "reads": [
+                        "player.coins"
+                      ],
+                      "source_span": {
+                        "col": 28,
+                        "end_col": 40,
+                        "end_line": 15,
+                        "line": 15
+                      },
+                      "specificity": 1,
+                      "uses_chance": false
+                    },
+                    "name": "amount",
+                    "text": "player.coins"
+                  }
+                ],
+                "branch": "",
+                "command": "take_coin",
+                "fact_key": "",
+                "kind": "do",
+                "on_fail": "broke",
+                "outcome": "",
+                "reads": [
+                  "player.coins"
+                ],
+                "span": {
+                  "col": 5,
+                  "end_col": 41,
+                  "end_line": 15,
+                  "line": 15
+                },
+                "target": null,
+                "target_text": "",
+                "topic": "",
+                "value": null,
+                "value_text": "",
+                "verb": ""
+              }
+            ],
+            "id": "c1",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 14,
+                  "text": "Cross"
+                }
+              ],
+              "kind": "prose",
+              "line": 14
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 21,
+              "end_line": 16,
+              "line": 14
+            },
+            "tags": [],
+            "target": "cross"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 16,
+            "line": 14
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 6,
+                "end_col": 23,
+                "end_line": 17,
+                "line": 17
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "condition_text": "player.coins >= 2",
+            "disabled_reason": "short on coins",
+            "disabled_when": "player.coins < 2",
+            "effects": [],
+            "id": "c2",
+            "label": {
+              "col": 26,
+              "kids": [
+                {
+                  "col": 26,
+                  "kind": "text",
+                  "line": 17,
+                  "text": "Pay the toll"
+                }
+              ],
+              "kind": "prose",
+              "line": 17
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 97,
+              "end_line": 17,
+              "line": 17
+            },
+            "tags": [],
+            "target": "paid"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 97,
+            "end_line": 17,
+            "line": 17
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": {
+              "reads": [],
+              "source_span": {
+                "col": 6,
+                "end_col": 15,
+                "end_line": 18,
+                "line": 18
+              },
+              "specificity": 1,
+              "uses_chance": true
+            },
+            "condition_text": "chance(1)",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "",
+            "label": null,
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 26,
+              "end_line": 18,
+              "line": 18
+            },
+            "tags": [],
+            "target": "gamble"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 26,
+            "end_line": 18,
+            "line": 18
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "cross",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 12,
+            "end_line": 19,
+            "line": 19
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "a4",
+            "kind": "spoken",
+            "prose": {
+              "col": 10,
+              "kids": [
+                {
+                  "col": 10,
+                  "compiled": {
+                    "reads": [
+                      "season"
+                    ],
+                    "source_span": {
+                      "col": 14,
+                      "end_col": 30,
+                      "end_line": 20,
+                      "line": 20
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "else": {
+                    "col": 52,
+                    "kids": [
+                      {
+                        "col": 52,
+                        "kind": "text",
+                        "line": 20,
+                        "text": "The tide is down."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 20
+                  },
+                  "kind": "if",
+                  "line": 20,
+                  "then": {
+                    "col": 31,
+                    "kids": [
+                      {
+                        "col": 31,
+                        "kind": "text",
+                        "line": 20,
+                        "text": "The tide is up."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 20
+                  }
+                }
+              ],
+              "kind": "prose",
+              "line": 20
+            },
+            "reads": [
+              "season"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 74,
+              "end_line": 20,
+              "line": 20
+            },
+            "speaker": "ferry",
+            "tags": []
+          },
+          "reads": [
+            "season"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 74,
+            "end_line": 20,
+            "line": 20
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "a5",
+            "kind": "spoken",
+            "prose": {
+              "col": 10,
+              "kids": [
+                {
+                  "col": 10,
+                  "kind": "text",
+                  "line": 21,
+                  "text": "Alive "
+                },
+                {
+                  "col": 16,
+                  "compiled": {
+                    "reads": [
+                      "npc.{id}.alive"
+                    ],
+                    "source_span": {
+                      "col": 17,
+                      "end_col": 48,
+                      "end_line": 21,
+                      "line": 21
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "value",
+                  "line": 21
+                },
+                {
+                  "col": 49,
+                  "kind": "text",
+                  "line": 21,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 21
+            },
+            "reads": [
+              "npc.{id}.alive"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 51,
+              "end_line": 21,
+              "line": 21
+            },
+            "speaker": "ferry",
+            "tags": []
+          },
+          "reads": [
+            "npc.{id}.alive"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 51,
+            "end_line": 21,
+            "line": 21
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "a6",
+            "kind": "spoken",
+            "prose": {
+              "col": 10,
+              "kids": [
+                {
+                  "col": 10,
+                  "kind": "text",
+                  "line": 22,
+                  "text": "The board says {two coins}}."
+                }
+              ],
+              "kind": "prose",
+              "line": 22
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 40,
+              "end_line": 22,
+              "line": 22
+            },
+            "speaker": "ferry",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 22,
+            "line": 22
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "paid",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 23,
+            "line": 23
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "gamble",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 13,
+            "end_line": 24,
+            "line": 24
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "broke",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 12,
+            "end_line": 25,
+            "line": 25
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 26,
+            "line": 26
+          },
+          "target": "end"
+        },
+        {
+          "divert_kind": "scene",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 23,
+            "end_line": 27,
+            "line": 27
+          },
+          "target": "toll.office"
+        },
+        {
+          "divert_kind": "label",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 28,
+            "line": 28
+          },
+          "target": "cross"
+        }
+      ],
+      "on_abort": [
+        {
+          "args": [],
+          "branch": "crossing",
+          "command": "",
+          "fact_key": "",
+          "kind": "outcome",
+          "on_fail": "",
+          "outcome": "failed",
+          "reads": [],
+          "span": {
+            "col": 5,
+            "end_col": 32,
+            "end_line": 10,
+            "line": 10
+          },
+          "target": null,
+          "target_text": "",
+          "topic": "",
+          "value": null,
+          "value_text": "",
+          "verb": ""
+        }
+      ],
+      "reads": [
+        "player.coins",
+        "season",
+        "npc.{id}.alive"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 11,
+        "end_line": 28,
+        "line": 8
+      }
+    }
+  ]
+}

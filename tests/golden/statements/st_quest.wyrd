@@ -1,0 +1,37 @@
+language 1
+
+facts
+  player.coins : int stored
+  world.season : symbol source: time.season invalidate: on_event(season_changed)
+
+quest ferry_toll "The Ferry Toll"
+  slot tavern = tavern_owner mode: live
+  slot ferry = ferry_master mode: locked_at(pay)
+  slot gate = keeper mode: cast(player.coins > 0)
+  on_empty: wait
+  requires: [pack.harbor, pack.roads]
+  start when player.coins > 0
+
+  stage gossip
+    scene toll.room with tavern, ferry
+    -> pay
+
+  stage pay
+    waits_until world.season == spring
+    journal: {holder(ferry).name} is at the dock. #line:j1
+    ~ outcome crossing = done
+    variant ferry.default:
+      journal: The usual watch. #line:j_default
+    variant ferry.successor:
+      redirect beat greet to tavern
+    variant ferry.empty:
+      -> gossip
+    variant ferry.hostile:
+      journal: The master turns away. #line:j_hostile
+    variant ferry.unwilling(player.coins < 1):
+      journal: Not for that price. #line:j_unwilling
+    variant ferry.barred(not has(player, pass)):
+      journal: The gate stays shut. #line:j_barred
+    variant ferry.locked_gone:
+      journal: Nobody holds the ferry. #line:j_gone
+    -> gossip when player.coins >= 2

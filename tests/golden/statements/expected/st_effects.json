@@ -1,0 +1,504 @@
+{
+  "diagnostics": [],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "",
+      "reads": [
+        "player.coins",
+        "npc.{id}.met",
+        "ferry.toll_coins"
+      ],
+      "requires": [],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "ferry",
+          "reads": [],
+          "role": "ferry_master",
+          "span": {
+            "col": 3,
+            "end_col": 39,
+            "end_line": 9,
+            "line": 9
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 76,
+        "end_line": 18,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 42,
+                "end_line": 11,
+                "line": 11
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 23,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 42,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "player.coins - 2",
+              "verb": ""
+            },
+            {
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "npc.{id}.met",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "npc.{id}.met"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 30,
+                "end_line": 12,
+                "line": 12
+              },
+              "target": {
+                "reads": [
+                  "npc.{id}.met"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 23,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "npc.{id}.met",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 30,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "true",
+              "verb": ""
+            },
+            {
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "ferry.toll_coins",
+              "kind": "inc",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "ferry.toll_coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 32,
+                "end_line": 13,
+                "line": 13
+              },
+              "target": {
+                "reads": [
+                  "ferry.toll_coins"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 27,
+                  "end_line": 13,
+                  "line": 13
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "ferry.toll_coins",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 31,
+                  "end_col": 32,
+                  "end_line": 13,
+                  "line": 13
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "1",
+              "verb": ""
+            },
+            {
+              "args": [
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 31,
+                      "end_col": 37,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "actor",
+                  "text": "player"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 47,
+                      "end_col": 52,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "target",
+                  "text": "ferry"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 61,
+                      "end_col": 70,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "place",
+                  "text": "gullhaven"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 78,
+                      "end_col": 84,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "tags",
+                  "text": "[toll]"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 97,
+                      "end_col": 98,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "magnitude",
+                  "text": "1"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 111,
+                      "end_col": 115,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "witnesses",
+                  "text": "auto"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 129,
+                      "end_col": 135,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "visibility",
+                  "text": "public"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 148,
+                      "end_col": 152,
+                      "end_line": 14,
+                      "line": 14
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "memorable",
+                  "text": "true"
+                }
+              ],
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "record_deed",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 153,
+                "end_line": 14,
+                "line": 14
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": "paid"
+            },
+            {
+              "args": [
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 32,
+                      "end_col": 38,
+                      "end_line": 15,
+                      "line": 15
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "actor",
+                  "text": "player"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 51,
+                      "end_col": 65,
+                      "end_line": 15,
+                      "line": 15
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "witnesses",
+                  "text": "[clerk, ferry]"
+                }
+              ],
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "record_deed",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 66,
+                "end_line": 15,
+                "line": 15
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": "waved"
+            },
+            {
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "unlock_topic",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 31,
+                "end_line": 16,
+                "line": 16
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "harbor_toll",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "args": [],
+              "branch": "crossing",
+              "command": "",
+              "fact_key": "",
+              "kind": "outcome",
+              "on_fail": "",
+              "outcome": "route_closed",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 38,
+                "end_line": 17,
+                "line": 17
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "args": [
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 25,
+                      "end_col": 31,
+                      "end_line": 18,
+                      "line": 18
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "",
+                  "text": "player"
+                },
+                {
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 40,
+                      "end_col": 56,
+                      "end_line": 18,
+                      "line": 18
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "name": "place",
+                  "text": "gullhaven.tavern"
+                }
+              ],
+              "branch": "",
+              "command": "assign_lodging",
+              "fact_key": "",
+              "kind": "do",
+              "on_fail": "nowhere",
+              "outcome": "",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 76,
+                "end_line": 18,
+                "line": 18
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            }
+          ],
+          "id": "pay",
+          "journals": [],
+          "reads": [
+            "player.coins",
+            "npc.{id}.met",
+            "ferry.toll_coins"
+          ],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 76,
+            "end_line": 18,
+            "line": 10
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [
+    "player.coins",
+    "npc.{id}.met",
+    "ferry.toll_coins"
+  ],
+  "scenes": []
+}

@@ -1,0 +1,144 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_SPEAKER_SHAPE",
+      "col": 3,
+      "line": 4,
+      "message": "invalid speaker \"\"keeper\"\"",
+      "path": "res://tests/golden/statements/st_err_scene.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHOICE_SYNTAX",
+      "col": 3,
+      "line": 5,
+      "message": "choice needs -> <target>",
+      "path": "res://tests/golden/statements/st_err_scene.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LABEL_DUPLICATE",
+      "col": 3,
+      "line": 9,
+      "message": "duplicate label \"stay\"",
+      "path": "res://tests/golden/statements/st_err_scene.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 10,
+      "message": "divert needs a label, end, or scene <id>",
+      "path": "res://tests/golden/statements/st_err_scene.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LABEL_UNKNOWN",
+      "col": 6,
+      "line": 7,
+      "message": "unknown label \"missing\"",
+      "path": "res://tests/golden/statements/st_err_scene.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [
+    {
+      "id": "toll.gate",
+      "items": [
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_stay",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 6,
+                  "text": "Stay"
+                }
+              ],
+              "kind": "prose",
+              "line": 6
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 19,
+              "end_line": 6,
+              "line": 6
+            },
+            "tags": [],
+            "target": "stay"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 19,
+            "end_line": 6,
+            "line": 6
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "label",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 13,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": "missing"
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "stay",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 8,
+            "line": 8
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "stay",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 9,
+            "line": 9
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 5,
+        "end_line": 10,
+        "line": 3
+      }
+    }
+  ]
+}

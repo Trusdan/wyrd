@@ -2,13 +2,20 @@
 
 ## Unreleased
 
+S1c slice compiler, part 3 of 4: statements and effects. Draft, not frozen (`docs/statements-draft.md`).
+
+- Quest, stage, slot, variant, scene, line, choice, and effect records, compiled from the block tree.
+- Slice effects: `set`, `inc`, `record deed`, `unlock topic`, `do`, and `outcome`. Stored facts only.
+- `#line:` required on spoken lines, journal entries, and choice labels.
+- `check` runs the single-file pipeline through statements. Linking, `tag-lines`, and `export-json` stay in PR 5. The S1b-perf pass is a separate change.
+
 S1b slice compiler, part 2 of 4: condition language. Draft, not frozen (`docs/conditions-draft.md`).
 
 - Expression lexer, parser, type checker, and flat instruction emit, including prose interpolation spans.
 - `WyrdFactSchema.lookup` and a signature registry (belief names registered and marked M5).
 - Specificity, fact reads (including short-circuit arms), and a test-only stack walker.
 - 10k-fact / 5k-condition benchmark recorded beside the placeholder runner. Not a CI gate.
-- Quest and scene statements still do not call the condition compiler. Linking, `tag-lines`, and `export-json` stay later.
+- S1b left quest and scene statements uncompiled. Linking, `tag-lines`, and `export-json` stayed for later.
 
 S1a slice compiler, part 1 of 4: lexer, block parser, diagnostics, and parse-level `check`.
 

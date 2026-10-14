@@ -10,6 +10,11 @@ extends RefCounted
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
 ## a single [code]{[/code] opens an interpolation raw span, and a stray [code]}[/code]
 ## is literal. [code]}}[/code] is not an escape.
+## Draft statement syntax, not a grammar v1 change: [code]on_empty[/code],
+## [code]on_abort[/code], and [code]requires[/code] stay code when they open with a
+## colon. A [code]when <cond>: <speaker>:[/code] line keeps the condition in code
+## and the spoken text in prose. The first depth-zero [code]: <speaker> :[/code]
+## ends that condition, so a ternary colon in it needs parentheses.
 
 const _RESERVED: PackedStringArray = [
 	"document",
@@ -20,6 +25,7 @@ const _RESERVED: PackedStringArray = [
 	"declare",
 	"retract",
 ]
+const _CODE_COLON: PackedStringArray = ["on_abort", "on_empty", "requires"]
 
 var _source: WyrdSource
 var _diagnostics: WyrdDiagnostics
@@ -89,8 +95,11 @@ func _lex_line(line: String, line_no: int) -> void:
 	var origin := index + 1
 	var facts_mode := _kinds[_kinds.size() - 1] == "facts"
 	var first_ident := ""
-	if not facts_mode and _speaker_colon(content) >= 0:
+	var code_colon := _CODE_COLON.has(_leading_ident(content))
+	if not facts_mode and not code_colon and _speaker_colon(content) >= 0:
 		first_ident = _lex_speaker_line(content, line_no, origin)
+	elif not facts_mode and _when_speaker_colon(content) >= 0:
+		first_ident = _lex_when_line(content, line_no, origin)
 	else:
 		first_ident = _lex_code_line(content, line_no, origin)
 	_pending_kind = first_ident
@@ -117,13 +126,23 @@ func _apply_indent(indent: int, line_no: int) -> void:
 			_error(WyrdDiagnostic.E_INDENT_WIDTH, "indentation does not match an open block", line_no, 1)
 
 
+func _leading_ident(content: String) -> String:
+	var index := 0
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index >= content.length() or not _is_ident_start(content[index]):
+		return ""
+	var end := _ident_end(content, index)
+	return content.substr(index, end - index)
+
+
 func _speaker_colon(content: String) -> int:
 	if content.is_empty() or not _is_ident_start(content[0]):
 		return -1
-	var index := 1
-	while index < content.length() and _is_ident_cont(content[index]):
-		index += 1
-	var cursor := index
+	var name_end := _dotted_end(content, 0)
+	if name_end < 0:
+		return -1
+	var cursor := name_end
 	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
 		cursor += 1
 	if cursor < content.length() and content[cursor] == ":":
@@ -133,16 +152,88 @@ func _speaker_colon(content: String) -> int:
 
 func _lex_speaker_line(content: String, line_no: int, origin: int) -> String:
 	var colon := _speaker_colon(content)
-	var name := content.substr(0, _ident_end(content, 0))
-	_emit_span(&"ident", name, line_no, origin, 0, name.length())
-	_check_reserved(name, line_no, origin)
+	var index := 0
+	var first := ""
+	while index < colon:
+		if content[index] == ".":
+			_emit_span(&"dot", ".", line_no, origin, index, index + 1)
+			index += 1
+			continue
+		if not _is_ident_start(content[index]):
+			break
+		var end := _ident_end(content, index)
+		var word := content.substr(index, end - index)
+		if first.is_empty():
+			first = word
+		_emit_span(&"ident", word, line_no, origin, index, end)
+		_check_reserved(word, line_no, origin + index)
+		index = end
 	_emit_span(&"colon", ":", line_no, origin, colon, colon + 1)
 	var cursor := colon + 1
 	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
 		cursor += 1
 	cursor = _read_prose(content, cursor, line_no, origin, false)
 	_finish_suffix(content, cursor, line_no, origin)
-	return name
+	return first
+
+
+func _lex_when_line(content: String, line_no: int, origin: int) -> String:
+	var speaker_colon := _when_speaker_colon(content)
+	var first := _lex_code_line(content.substr(0, speaker_colon + 1), line_no, origin)
+	var cursor := speaker_colon + 1
+	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+		cursor += 1
+	cursor = _read_prose(content, cursor, line_no, origin, false)
+	_finish_suffix(content, cursor, line_no, origin)
+	return first
+
+
+func _when_speaker_colon(content: String) -> int:
+	var index := 0
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index >= content.length() or not _is_ident_start(content[index]):
+		return -1
+	var end := _ident_end(content, index)
+	if content.substr(index, end - index) != "when":
+		return -1
+	index = end
+	var depth := 0
+	while index < content.length():
+		if content.substr(index, 2) == "//":
+			return -1
+		var ch := content[index]
+		if ch == "(" or ch == "[" or ch == "{":
+			depth += 1
+		elif ch == ")" or ch == "]" or ch == "}":
+			depth = maxi(depth - 1, 0)
+		elif ch == ":" and depth == 0:
+			var after := _dotted_end(content, index + 1)
+			if after >= 0:
+				var cursor := after
+				while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+					cursor += 1
+				if cursor < content.length() and content[cursor] == ":":
+					return cursor
+		index += 1
+	return -1
+
+
+func _dotted_end(content: String, start: int) -> int:
+	var index := start
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index >= content.length() or not _is_ident_start(content[index]):
+		return -1
+	while true:
+		index = _ident_end(content, index)
+		if index < content.length() and content[index] == ".":
+			if index + 1 < content.length() and _is_ident_start(content[index + 1]):
+				index += 1
+				continue
+			return -1
+		return index
+	return -1
 
 
 func _lex_code_line(content: String, line_no: int, origin: int) -> String:

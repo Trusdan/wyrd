@@ -1,0 +1,352 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_LINE_ID_MISSING",
+      "col": 5,
+      "line": 5,
+      "message": "missing #line: id; run tag-lines (S1d)",
+      "path": "res://tests/golden/statements/st_err_lines.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LINE_ID_MISSING",
+      "col": 3,
+      "line": 9,
+      "message": "missing #line: id; run tag-lines (S1d)",
+      "path": "res://tests/golden/statements/st_err_lines.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LINE_ID_DUPLICATE",
+      "col": 3,
+      "line": 10,
+      "message": "duplicate #line: id \"same\"",
+      "path": "res://tests/golden/statements/st_err_lines.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LINE_ID_MISSING",
+      "col": 3,
+      "line": 11,
+      "message": "missing #line: id; run tag-lines (S1d)",
+      "path": "res://tests/golden/statements/st_err_lines.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 27,
+        "end_line": 6,
+        "line": 3
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "pay",
+          "journals": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "kind": "text",
+                    "line": 5,
+                    "text": "Nobody wrote a line id."
+                  }
+                ],
+                "kind": "prose",
+                "line": 5
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 37,
+                "end_line": 5,
+                "line": 5
+              },
+              "speaker": "",
+              "tags": []
+            },
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "same",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "kind": "text",
+                    "line": 6,
+                    "text": "Tagged once."
+                  }
+                ],
+                "kind": "prose",
+                "line": 6
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 27,
+                "end_line": 6,
+                "line": 6
+              },
+              "speaker": "",
+              "tags": []
+            }
+          ],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 27,
+            "end_line": 6,
+            "line": 4
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [],
+  "scenes": [
+    {
+      "id": "toll.gate",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 9,
+                  "text": "Also missing."
+                }
+              ],
+              "kind": "prose",
+              "line": 9
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 26,
+              "end_line": 9,
+              "line": 9
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 26,
+            "end_line": 9,
+            "line": 9
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "same",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 10,
+                  "text": "Tagged again."
+                }
+              ],
+              "kind": "prose",
+              "line": 10
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 27,
+              "end_line": 10,
+              "line": 10
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 27,
+            "end_line": 10,
+            "line": 10
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 11,
+                  "text": "Go"
+                }
+              ],
+              "kind": "prose",
+              "line": 11
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 16,
+              "end_line": 11,
+              "line": 11
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 16,
+            "end_line": 11,
+            "line": 11
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "",
+            "label": null,
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 11,
+              "end_line": 12,
+              "line": 12
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 12,
+            "line": 12
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_stay",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 13,
+                  "text": "Stay"
+                }
+              ],
+              "kind": "prose",
+              "line": 13
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 18,
+              "end_line": 13,
+              "line": 13
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 18,
+            "end_line": 13,
+            "line": 13
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 18,
+        "end_line": 13,
+        "line": 8
+      }
+    }
+  ]
+}

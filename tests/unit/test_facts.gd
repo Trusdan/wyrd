@@ -165,12 +165,15 @@ func test_section_7_example_has_no_errors() -> void:
 	var diagnostics := WyrdDiagnostics.new()
 	var tree := WyrdParser.new().parse(source, diagnostics)
 	assert_eq(diagnostics.format(), "")
-	assert_eq(tree.children.size(), 3)
+	assert_eq(tree.children.size(), 4)
 	assert_eq(String(tree.children[0].kind), "facts")
 	assert_eq(tree.children[0].entries.size(), 4)
 	assert_eq(String(tree.children[1].kind), "quest")
 	assert_eq(tree.children[1].title, "The Ferry Toll")
 	assert_eq(String(tree.children[2].kind), "scene")
+	assert_eq(_head_text(tree.children[2]), "toll.offer_room")
+	assert_eq(String(tree.children[3].kind), "scene")
+	assert_eq(_head_text(tree.children[3]), "toll.depart")
 
 
 class _Parsed:
@@ -197,6 +200,13 @@ func _text(body: String) -> String:
 		else:
 			lines.append(line)
 	return "\n".join(lines) + "\n"
+
+
+func _head_text(node: WyrdNode) -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	for token in node.head:
+		parts.append(token.text)
+	return "".join(parts)
 
 
 func _schema(text: String) -> WyrdFactSchema:

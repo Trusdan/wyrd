@@ -9,8 +9,9 @@ facts
 
 quest ferry_toll "The Ferry Toll"
   slot tavern = tavern_owner mode: live
-  slot ferry  = ferry_master mode: live
-
+  slot ferry  = ferry_master mode: locked_at(pay_toll)
+  on_empty: wait
+  requires: [pack.harbor]
   start when deed_count(player, verb: arrived, place: gullhaven) > 0
 
   stage gossip
@@ -18,12 +19,33 @@ quest ferry_toll "The Ferry Toll"
     -> pay_toll
 
   stage pay_toll
-    journal "{holder(ferry).name} at the dock wants a toll before the crossing." #line:j_ft_01
+    waits_until player.coins >= 2
+    journal: {holder(ferry).name} at the dock wants a toll before the crossing. #line:j_ft_01
+    ~ inc ferry.toll_coins by 2
+    ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
+    variant ferry.empty:
+      journal: The dock is empty, so the crossing waits. #line:j_ft_empty
+      -> gossip
+    -> cross when player.coins >= 2
+
+  stage cross
+    ~ outcome crossing = done
+    scene toll.depart with ferry
 
 scene toll.offer_room
-  tavern: A room's two coins a night, and the stew is free. #line:a91f // room offer
-  * [Take the room] -> took
+  tavern: A room's two coins a night, and the stew is free. #line:a91f
+  * [Take the room] -> took #line:c_room
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
-  * {has_tag(player, local)} [I have a place in town] -> declined
+    ~ set player.coins = player.coins - 2
+  * {has_tag(player, local)} [I have a place in town] -> declined #line:c_local
+  - (took)
   tavern: The ferry's charging double since the storm, mind. #line:a920
+  - (declined)
+  - (no_room)
+  tavern: No room left tonight. #line:a922
   tavern: The board lists the price as {{two coins}}. #line:a921
+
+scene toll.depart
+  when player.coins >= 2: ferry: Two coins, and the boat will cross. #line:a_cross
+  narrator: The boat leaves the dock. #line:a_leave
+  -> end

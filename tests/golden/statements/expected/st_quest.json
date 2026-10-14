@@ -1,0 +1,679 @@
+{
+  "diagnostics": [],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "wait",
+      "reads": [
+        "player.coins",
+        "world.season"
+      ],
+      "requires": [
+        "pack.harbor",
+        "pack.roads"
+      ],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "tavern",
+          "reads": [],
+          "role": "tavern_owner",
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 8,
+            "line": 8
+          }
+        },
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "pay",
+          "mode": "locked_at",
+          "name": "ferry",
+          "reads": [],
+          "role": "ferry_master",
+          "span": {
+            "col": 3,
+            "end_col": 49,
+            "end_line": 9,
+            "line": 9
+          }
+        },
+        {
+          "cast": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 33,
+              "end_col": 49,
+              "end_line": 10,
+              "line": 10
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_text": "player.coins > 0",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "gate",
+          "reads": [
+            "player.coins"
+          ],
+          "role": "keeper",
+          "span": {
+            "col": 3,
+            "end_col": 50,
+            "end_line": 10,
+            "line": 10
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 37,
+        "end_line": 37,
+        "line": 7
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "gossip",
+          "journals": [],
+          "reads": [],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 39,
+              "end_line": 16,
+              "id": "toll.room",
+              "line": 16,
+              "with": [
+                {
+                  "col": 26,
+                  "line": 16,
+                  "name": "tavern"
+                },
+                {
+                  "col": 34,
+                  "line": 16,
+                  "name": "ferry"
+                }
+              ]
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 17,
+            "line": 15
+          },
+          "transitions": [
+            {
+              "col": 8,
+              "expr": "",
+              "line": 17,
+              "target": "pay",
+              "when": null
+            }
+          ],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        },
+        {
+          "effects": [
+            {
+              "args": [],
+              "branch": "crossing",
+              "command": "",
+              "fact_key": "",
+              "kind": "outcome",
+              "on_fail": "",
+              "outcome": "done",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 30,
+                "end_line": 22,
+                "line": 22
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            }
+          ],
+          "id": "pay",
+          "journals": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "j1",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "compiled": {
+                      "reads": [],
+                      "source_span": {
+                        "col": 15,
+                        "end_col": 33,
+                        "end_line": 21,
+                        "line": 21
+                      },
+                      "specificity": 1,
+                      "uses_chance": false
+                    },
+                    "kind": "value",
+                    "line": 21
+                  },
+                  {
+                    "col": 34,
+                    "kind": "text",
+                    "line": 21,
+                    "text": " is at the dock."
+                  }
+                ],
+                "kind": "prose",
+                "line": 21
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 51,
+                "end_line": 21,
+                "line": 21
+              },
+              "speaker": "",
+              "tags": []
+            }
+          ],
+          "reads": [
+            "world.season",
+            "player.coins"
+          ],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 37,
+            "end_line": 37,
+            "line": 19
+          },
+          "transitions": [
+            {
+              "col": 8,
+              "expr": "player.coins >= 2",
+              "line": 37,
+              "target": "gossip",
+              "when": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 20,
+                  "end_col": 37,
+                  "end_line": 37,
+                  "line": 37
+                },
+                "specificity": 1,
+                "uses_chance": false
+              }
+            }
+          ],
+          "variants": [
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [
+                  {
+                    "condition": null,
+                    "condition_text": "",
+                    "id": "j_default",
+                    "kind": "journal",
+                    "prose": {
+                      "col": 16,
+                      "kids": [
+                        {
+                          "col": 16,
+                          "kind": "text",
+                          "line": 24,
+                          "text": "The usual watch."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 24
+                    },
+                    "reads": [],
+                    "scene_id": "",
+                    "span": {
+                      "col": 7,
+                      "end_col": 33,
+                      "end_line": 24,
+                      "line": 24
+                    },
+                    "speaker": "",
+                    "tags": []
+                  }
+                ],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 33,
+                  "end_line": 24,
+                  "line": 23
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 33,
+                "end_line": 24,
+                "line": 23
+              },
+              "state": "default"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 36,
+                  "end_line": 26,
+                  "line": 25
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [
+                {
+                  "beat": "greet",
+                  "col": 7,
+                  "line": 26,
+                  "slot": "tavern"
+                }
+              ],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 36,
+                "end_line": 26,
+                "line": 25
+              },
+              "state": "successor"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 16,
+                  "end_line": 28,
+                  "line": 27
+                },
+                "transitions": [
+                  {
+                    "col": 10,
+                    "expr": "",
+                    "line": 28,
+                    "target": "gossip",
+                    "when": null
+                  }
+                ],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 16,
+                "end_line": 28,
+                "line": 27
+              },
+              "state": "empty"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [
+                  {
+                    "condition": null,
+                    "condition_text": "",
+                    "id": "j_hostile",
+                    "kind": "journal",
+                    "prose": {
+                      "col": 16,
+                      "kids": [
+                        {
+                          "col": 16,
+                          "kind": "text",
+                          "line": 30,
+                          "text": "The master turns away."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 30
+                    },
+                    "reads": [],
+                    "scene_id": "",
+                    "span": {
+                      "col": 7,
+                      "end_col": 39,
+                      "end_line": 30,
+                      "line": 30
+                    },
+                    "speaker": "",
+                    "tags": []
+                  }
+                ],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 39,
+                  "end_line": 30,
+                  "line": 29
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 39,
+                "end_line": 30,
+                "line": 29
+              },
+              "state": "hostile"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [
+                  {
+                    "condition": null,
+                    "condition_text": "",
+                    "id": "j_unwilling",
+                    "kind": "journal",
+                    "prose": {
+                      "col": 16,
+                      "kids": [
+                        {
+                          "col": 16,
+                          "kind": "text",
+                          "line": 32,
+                          "text": "Not for that price."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 32
+                    },
+                    "reads": [],
+                    "scene_id": "",
+                    "span": {
+                      "col": 7,
+                      "end_col": 36,
+                      "end_line": 32,
+                      "line": 32
+                    },
+                    "speaker": "",
+                    "tags": []
+                  }
+                ],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 36,
+                  "end_line": 32,
+                  "line": 31
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 29,
+                  "end_col": 45,
+                  "end_line": 31,
+                  "line": 31
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "condition_text": "player.coins < 1",
+              "reads": [
+                "player.coins"
+              ],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 36,
+                "end_line": 32,
+                "line": 31
+              },
+              "state": "unwilling"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [
+                  {
+                    "condition": null,
+                    "condition_text": "",
+                    "id": "j_barred",
+                    "kind": "journal",
+                    "prose": {
+                      "col": 16,
+                      "kids": [
+                        {
+                          "col": 16,
+                          "kind": "text",
+                          "line": 34,
+                          "text": "The gate stays shut."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 34
+                    },
+                    "reads": [],
+                    "scene_id": "",
+                    "span": {
+                      "col": 7,
+                      "end_col": 37,
+                      "end_line": 34,
+                      "line": 34
+                    },
+                    "speaker": "",
+                    "tags": []
+                  }
+                ],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 37,
+                  "end_line": 34,
+                  "line": 33
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": {
+                "reads": [],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 47,
+                  "end_line": 33,
+                  "line": 33
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "condition_text": "not has(player, pass)",
+              "reads": [],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 37,
+                "end_line": 34,
+                "line": 33
+              },
+              "state": "barred"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [
+                  {
+                    "condition": null,
+                    "condition_text": "",
+                    "id": "j_gone",
+                    "kind": "journal",
+                    "prose": {
+                      "col": 16,
+                      "kids": [
+                        {
+                          "col": 16,
+                          "kind": "text",
+                          "line": 36,
+                          "text": "Nobody holds the ferry."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 36
+                    },
+                    "reads": [],
+                    "scene_id": "",
+                    "span": {
+                      "col": 7,
+                      "end_col": 40,
+                      "end_line": 36,
+                      "line": 36
+                    },
+                    "speaker": "",
+                    "tags": []
+                  }
+                ],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 40,
+                  "end_line": 36,
+                  "line": 35
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "",
+                "waits_until": null
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "ferry",
+              "span": {
+                "col": 5,
+                "end_col": 40,
+                "end_line": 36,
+                "line": 35
+              },
+              "state": "locked_gone"
+            }
+          ],
+          "waits_text": "world.season == spring",
+          "waits_until": {
+            "reads": [
+              "world.season"
+            ],
+            "source_span": {
+              "col": 17,
+              "end_col": 39,
+              "end_line": 20,
+              "line": 20
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "player.coins > 0",
+      "start_when": {
+        "reads": [
+          "player.coins"
+        ],
+        "source_span": {
+          "col": 14,
+          "end_col": 30,
+          "end_line": 13,
+          "line": 13
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [
+    "player.coins",
+    "world.season"
+  ],
+  "scenes": []
+}

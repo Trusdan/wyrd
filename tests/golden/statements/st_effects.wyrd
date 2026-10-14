@@ -1,0 +1,18 @@
+language 1
+
+facts
+  player.coins : int stored
+  ferry.toll_coins : float stored
+  npc.{id}.met : bool stored
+
+quest ferry_toll "The Ferry Toll"
+  slot ferry = ferry_master mode: live
+  stage pay
+    ~ set player.coins = player.coins - 2
+    ~ set npc.{id}.met = true
+    ~ inc ferry.toll_coins by 1
+    ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
+    ~ record deed waved(actor: player, witnesses: [clerk, ferry])
+    ~ unlock topic harbor_toll
+    ~ outcome crossing = route_closed
+    ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> nowhere

@@ -7,6 +7,9 @@ extends RefCounted
 ## [constant CONTEXT_STORYLET] allows [code]chance[/code]. [constant CONTEXT_WAIT]
 ## rejects it, and rejects resolved facts invalidated [code]per_query[/code] or not at all.
 ## [param minutes_per_day] defaults to 1440 until a calendar resource exists.
+## [param expected] is used when [param require_bool] is false, so a value
+## expression can be checked against a fact or argument type. Existing callers
+## keep the bool default.
 
 const CONTEXT_STORYLET: StringName = &"storylet_or_choice"
 const CONTEXT_WAIT: StringName = &"wait_trigger_or_eligibility"
@@ -25,7 +28,8 @@ func compile(
 	context: StringName = CONTEXT_STORYLET,
 	minutes_per_day: int = MINUTES_PER_DAY,
 	signatures: WyrdSignatures = null,
-	require_bool: bool = true
+	require_bool: bool = true,
+	expected: StringName = &""
 ) -> WyrdCompiledCondition:
 	if signatures == null:
 		signatures = WyrdSignatures.new()
@@ -38,10 +42,10 @@ func compile(
 	checker.path = source_path
 	checker.context = context
 	checker.minutes_per_day = minutes_per_day
-	var expected := &""
+	var want := expected
 	if require_bool:
-		expected = WyrdSignatures.T_BOOL
-	checker.check(ast, expected)
+		want = WyrdSignatures.T_BOOL
+	checker.check(ast, want)
 	var compiled := WyrdEmitter.new().emit(ast)
 	compiled.reads = checker.reads
 	compiled.specificity = specificity(ast)

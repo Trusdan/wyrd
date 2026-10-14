@@ -5,7 +5,7 @@ func test_render_prints_version_and_command_list() -> void:
 	var text := WyrdCli.render()
 	assert_true(text.begins_with("wyrd 0.0.1\n"))
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
-	assert_true(text.contains("check: parse .wyrd files and print diagnostics"))
+	assert_true(text.contains("check: compile .wyrd files and print diagnostics"))
 	assert_true(text.contains("test: not implemented"))
 	assert_true(text.contains("tag-lines: not implemented"))
 	assert_true(text.contains("export-json: not implemented"))

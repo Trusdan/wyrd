@@ -6,7 +6,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## Text and exit status for the command-line entry.
 ##
 ## @experimental
-## [code]check[/code] lexes and parses [code].wyrd[/code] files and prints diagnostics.
+## [code]check[/code] lexes, parses, and compiles statements in [code].wyrd[/code] files.
 ## [code]test[/code], [code]tag-lines[/code], and [code]export-json[/code] are not implemented.
 ## Engine unit tests stay on GUT.
 
@@ -21,7 +21,7 @@ static func command_lines() -> PackedStringArray:
 	var lines := PackedStringArray()
 	for command in COMMANDS:
 		if command == "check":
-			lines.append("check: parse .wyrd files and print diagnostics")
+			lines.append("check: compile .wyrd files and print diagnostics")
 		else:
 			lines.append("%s: not implemented" % command)
 	return lines
@@ -59,7 +59,8 @@ static func _check(argument: String) -> Dictionary:
 		var source := WyrdSource.load_file(file_path)
 		if source == null:
 			return {"exit_code": 1, "output": "wyrd: could not read %s\n" % file_path}
-		WyrdParser.new().parse(source, diagnostics)
+		var tree := WyrdParser.new().parse(source, diagnostics)
+		WyrdStatements.new().compile(source, tree, diagnostics)
 	var exit_code := 0
 	if diagnostics.has_errors():
 		exit_code = 1
