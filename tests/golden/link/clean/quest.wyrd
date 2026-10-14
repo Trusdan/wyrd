@@ -1,0 +1,14 @@
+language 1
+
+facts
+  player.coins : int stored
+
+quest gate "Gate"
+  slot keeper = dock_keeper mode: live
+  stage arrive
+    waits_until player.coins >= 0
+    ~ set player.coins = 1
+    scene room with keeper
+    -> done
+  stage done
+    ~ outcome route = done

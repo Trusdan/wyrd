@@ -1,0 +1,6 @@
+language 1
+
+scene room
+  keeper: Hello. #line:aa01
+  clerk: The book is here. #line:aa02
+  -> end

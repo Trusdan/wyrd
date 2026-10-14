@@ -160,7 +160,7 @@ func test_doc_escape_is_stored() -> void:
 
 
 func test_section_7_example_has_no_errors() -> void:
-	var source := WyrdSource.load_file("res://example/content/gullhaven/ferry_toll.wyrd")
+	var source := WyrdSource.load_file("res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd")
 	assert_not_null(source)
 	var diagnostics := WyrdDiagnostics.new()
 	var tree := WyrdParser.new().parse(source, diagnostics)

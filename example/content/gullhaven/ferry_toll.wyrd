@@ -1,51 +1,32 @@
-// content/gullhaven/ferry_toll.wyrd
+// [EXAMPLE CONTENT] Gullhaven ferry toll quest. An invented fishing village, not a host game.
 language 1
 
-facts
-  player.coins      : int     stored
-  ferry.toll_coins  : int     stored
-  npc.{id}.alive    : bool    source: world.is_alive
-  world.season      : symbol  source: time.season  invalidate: on_event(season_changed)
-
 quest ferry_toll "The Ferry Toll"
-  slot tavern = tavern_owner mode: live
-  slot ferry  = ferry_master mode: locked_at(pay_toll)
+  slot tavern  = tavern_owner mode: live
+  slot ferry   = ferry_master mode: locked_at(pay_toll)
+  slot lookout = storm_watcher mode: cast(world.storm_heard)
   on_empty: wait
   requires: [pack.harbor]
   start when deed_count(player, verb: arrived, place: gullhaven) > 0
 
   stage gossip
-    scene toll.offer_room with tavern
+    scene toll.offer_room with tavern, lookout
     -> pay_toll
 
   stage pay_toll
-    waits_until player.coins >= 2
-    journal: {holder(ferry).name} at the dock wants a toll before the crossing. #line:j_ft_01
+    waits_until player.coins >= 2 and ferry.toll_coins >= 0
+    journal: {holder(ferry).name} at the dock wants {ferry.toll_coins} coins before the crossing. #line:j_ft_01
     ~ inc ferry.toll_coins by 2
+    ~ inc tavern.stew_bowls by 1
     ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
+    ~ unlock topic storm_rumour
+    ~ do post_notice(player) on_fail -> gossip
     variant ferry.empty:
       journal: The dock is empty, so the crossing waits. #line:j_ft_empty
       -> gossip
     -> cross when player.coins >= 2
 
   stage cross
+    ~ set world.storm_heard = true
     ~ outcome crossing = done
     scene toll.depart with ferry
-
-scene toll.offer_room
-  tavern: A room's two coins a night, and the stew is free. #line:a91f
-  * [Take the room] -> took #line:c_room
-    ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
-    ~ set player.coins = player.coins - 2
-  * {has_tag(player, local)} [I have a place in town] -> declined #line:c_local
-  - (took)
-  tavern: The ferry's charging double since the storm, mind. #line:a920
-  - (declined)
-  - (no_room)
-  tavern: No room left tonight. #line:a922
-  tavern: The board lists the price as {{two coins}}. #line:a921
-
-scene toll.depart
-  when player.coins >= 2: ferry: Two coins, and the boat will cross. #line:a_cross
-  narrator: The boat leaves the dock. #line:a_leave
-  -> end

@@ -1,0 +1,84 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STAGE_UNKNOWN",
+      "col": 5,
+      "line": 5,
+      "message": "unknown stage \"missing\"",
+      "path": "res://tests/golden/link/stage_on_fail/quest.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "4aeefc0183ecea34",
+        "path": "res://tests/golden/link/stage_on_fail/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "stage_on_fail",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/stage_on_fail/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [
+                  {
+                    "name": "",
+                    "text": "player"
+                  }
+                ],
+                "branch": "",
+                "command": "ping",
+                "fact_key": "",
+                "kind": "do",
+                "on_fail": "missing",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

@@ -28,6 +28,14 @@ func add(fact: WyrdFact, diagnostics: WyrdDiagnostics, source_path: String) -> v
 
 ## Concrete key first, then a [code]{id}[/code] pattern of the same length.
 ## A query segment written as [code]{id}[/code] matches only a pattern wildcard.
+## The first entry that overlaps [param fact], or null. Does not add a diagnostic.
+func conflict(fact: WyrdFact) -> WyrdFact:
+	for prior in entries:
+		if _conflicts(prior, fact):
+			return prior
+	return null
+
+
 func lookup(segments: PackedStringArray) -> WyrdFact:
 	if segments.is_empty():
 		return null

@@ -1,0 +1,777 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_COMMANDS_SKIPPED",
+      "col": 1,
+      "line": 1,
+      "message": "command schemas skipped; no wyrd_commands.json beside the manifest",
+      "path": "res://tests/golden/link/ferry_toll_single",
+      "severity": "info"
+    },
+    {
+      "code": "W_FACT_NEVER_READ",
+      "col": 3,
+      "line": 6,
+      "message": "stored fact \"ferry.toll_coins\" is set but never read",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_FACT_UNUSED",
+      "col": 3,
+      "line": 7,
+      "message": "fact \"npc.{id}.alive\" is never read or written",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_FACT_UNUSED",
+      "col": 3,
+      "line": 8,
+      "message": "fact \"world.season\" is never read or written",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_PACK_UNKNOWN",
+      "col": 3,
+      "line": 14,
+      "message": "pack \"harbor\" is not loaded; the quest stays unavailable until it is",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "ferry.toll_coins",
+        "line": 6,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      },
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "npc.{id}.alive",
+        "line": 7,
+        "origin": "resolved",
+        "pattern": true,
+        "resolver": "world.is_alive",
+        "source": "world.is_alive",
+        "type": "bool"
+      },
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 5,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      },
+      {
+        "doc": "",
+        "invalidate": "on_event",
+        "invalidate_arg": "season_changed",
+        "key": "world.season",
+        "line": 8,
+        "origin": "resolved",
+        "pattern": false,
+        "resolver": "time.season",
+        "source": "time.season",
+        "type": "symbol"
+      }
+    ],
+    "files": [
+      {
+        "hash": "5ba5d024e94d0d8c",
+        "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/j_ft_01",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/j_ft_empty",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a91f",
+        "kind": "spoken",
+        "scene": "toll.offer_room",
+        "speaker": "tavern",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/c_room",
+        "kind": "choice",
+        "scene": "toll.offer_room",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "local"
+            },
+            {
+              "t": "name",
+              "v": "has_tag"
+            }
+          ],
+          "reads": [],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/c_local",
+        "kind": "choice",
+        "scene": "toll.offer_room",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a920",
+        "kind": "spoken",
+        "scene": "toll.offer_room",
+        "speaker": "tavern",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a922",
+        "kind": "spoken",
+        "scene": "toll.offer_room",
+        "speaker": "tavern",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a921",
+        "kind": "spoken",
+        "scene": "toll.offer_room",
+        "speaker": "tavern",
+        "tags": []
+      },
+      {
+        "condition": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 2
+            }
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a_cross",
+        "kind": "spoken",
+        "scene": "toll.depart",
+        "speaker": "ferry",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll_single/a_leave",
+        "kind": "spoken",
+        "scene": "toll.depart",
+        "speaker": "narrator",
+        "tags": []
+      }
+    ],
+    "pack_id": "ferry_toll_single",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "wait",
+        "requires": [
+          "pack.harbor"
+        ],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "tavern",
+            "role": "tavern_owner"
+          },
+          {
+            "locked_stage": "pay_toll",
+            "mode": "locked_at",
+            "name": "ferry",
+            "role": "ferry_master"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [],
+            "id": "gossip",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "toll.offer_room",
+                "with": [
+                  "tavern"
+                ]
+              }
+            ],
+            "transitions": [
+              {
+                "target": "pay_toll",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "ferry.toll_coins",
+                "kind": "inc",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "ferry.toll_coins"
+                    }
+                  ],
+                  "reads": [
+                    "ferry.toll_coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 2
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              },
+              {
+                "args": [
+                  {
+                    "name": "actor",
+                    "text": "player"
+                  },
+                  {
+                    "name": "target",
+                    "text": "ferry"
+                  },
+                  {
+                    "name": "place",
+                    "text": "gullhaven"
+                  },
+                  {
+                    "name": "tags",
+                    "text": "[toll]"
+                  },
+                  {
+                    "name": "magnitude",
+                    "text": "1"
+                  },
+                  {
+                    "name": "witnesses",
+                    "text": "auto"
+                  },
+                  {
+                    "name": "visibility",
+                    "text": "public"
+                  },
+                  {
+                    "name": "memorable",
+                    "text": "true"
+                  }
+                ],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "record_deed",
+                "on_fail": "",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": "paid"
+              }
+            ],
+            "id": "pay_toll",
+            "journals": [
+              "j_ft_01"
+            ],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "cross",
+                "when": "player.coins >= 2"
+              }
+            ],
+            "variants": [
+              {
+                "body": {
+                  "effects": [],
+                  "id": "",
+                  "journals": [
+                    "j_ft_empty"
+                  ],
+                  "scenes": [],
+                  "transitions": [
+                    {
+                      "target": "gossip",
+                      "when": ""
+                    }
+                  ],
+                  "variants": [],
+                  "waits": ""
+                },
+                "slot": "ferry",
+                "state": "empty"
+              }
+            ],
+            "waits": "player.coins >= 2"
+          },
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "crossing",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "cross",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "toll.depart",
+                "with": [
+                  "ferry"
+                ]
+              }
+            ],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            4,
+            1,
+            2,
+            4,
+            4,
+            21,
+            3,
+            6,
+            1,
+            4,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "arrived"
+            },
+            {
+              "t": "name",
+              "v": "gullhaven"
+            },
+            {
+              "t": "name",
+              "v": "deed_count"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "reads": [],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "title": "The Ferry Toll"
+      }
+    ],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "toll.offer_room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a91f",
+            "speaker": "tavern",
+            "target": ""
+          },
+          {
+            "choice_id": "c_room",
+            "divert": "",
+            "effects": [
+              {
+                "args": [
+                  {
+                    "name": "",
+                    "text": "player"
+                  },
+                  {
+                    "name": "place",
+                    "text": "gullhaven.tavern"
+                  }
+                ],
+                "branch": "",
+                "command": "assign_lodging",
+                "fact_key": "",
+                "kind": "do",
+                "on_fail": "no_room",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    5,
+                    0,
+                    1,
+                    1,
+                    9
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    },
+                    {
+                      "t": "int",
+                      "v": 2
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "kind": "choice",
+            "label": "",
+            "target": "took"
+          },
+          {
+            "choice_id": "c_local",
+            "divert": "",
+            "effects": [],
+            "kind": "choice",
+            "label": "",
+            "target": "declined"
+          },
+          {
+            "divert": "",
+            "kind": "label",
+            "label": "took",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a920",
+            "speaker": "tavern",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "label",
+            "label": "declined",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "label",
+            "label": "no_room",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a922",
+            "speaker": "tavern",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a921",
+            "speaker": "tavern",
+            "target": ""
+          }
+        ],
+        "on_abort": []
+      },
+      {
+        "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+        "id": "toll.depart",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a_cross",
+            "speaker": "ferry",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "a_leave",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [
+        {
+          "col": 3,
+          "fact": "world.season",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "line": 8,
+          "name": "season_changed"
+        }
+      ],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "key": "ferry.toll_coins",
+          "line": 6,
+          "readers": [],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "ferry_toll.pay_toll",
+              "kind": "effect",
+              "line": 24
+            }
+          ]
+        },
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "key": "npc.{id}.alive",
+          "line": 7,
+          "readers": [],
+          "source": "world.is_alive",
+          "type": "bool",
+          "writers": []
+        },
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "key": "player.coins",
+          "line": 5,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "ferry_toll.pay_toll",
+              "kind": "stage",
+              "line": 21
+            },
+            {
+              "col": 8,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "ferry_toll.pay_toll",
+              "kind": "stage",
+              "line": 29
+            },
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "c_room",
+              "kind": "effect",
+              "line": 39
+            },
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "a_cross",
+              "kind": "line",
+              "line": 49
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+              "id": "c_room",
+              "kind": "effect",
+              "line": 39
+            }
+          ]
+        },
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "key": "world.season",
+          "line": 8,
+          "readers": [],
+          "source": "time.season",
+          "type": "symbol",
+          "writers": []
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+// [EXAMPLE CONTENT] Gullhaven harbor scenes. An invented fishing village, not a host game.
+language 1
+
+scene toll.offer_room
+  tavern: A room's two coins a night, and the stew is free. #line:a91f
+  lookout: The headland bell rang twice before the rain. #line:a_look
+  when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
+  when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
+  when npc.ferry_master.alive: lookout: The ferry master is on the dock. #line:a_alive
+  when world.season == storm: narrator: The season smells like rain. #line:a_season
+  dock.bell: The bell notes the tide. #line:a_bell
+  * [Take the room] -> took #line:c_room
+    ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
+    ~ set player.coins = player.coins - 2
+    ~ set harbor.room_taken = true
+  * {has_tag(player, local)} [I have a place in town] -> declined #line:c_local
+  - (took)
+  - (declined)
+  tavern: The ferry's charging double since the storm, mind. #line:a920
+  -> scene toll.depart
+  - (no_room)
+  tavern: No room left tonight. #line:a922
+  tavern: The board lists the price as {{two coins}}. #line:a921
+  -> end

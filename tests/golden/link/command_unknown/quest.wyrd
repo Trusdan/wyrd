@@ -1,0 +1,11 @@
+language 1
+
+facts
+  player.coins : int stored
+
+quest gate "Gate"
+  stage arrive
+    waits_until player.coins >= 0
+    ~ set player.coins = 1
+    ~ do missing_cmd(player)
+    ~ outcome route = done

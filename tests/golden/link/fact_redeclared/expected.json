@@ -1,0 +1,68 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_FACT_UNUSED",
+      "col": 3,
+      "line": 4,
+      "message": "fact \"player.coins\" is never read or written",
+      "path": "res://tests/golden/link/fact_redeclared/a.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_FACT_REDECLARED",
+      "col": 3,
+      "line": 4,
+      "message": "fact \"player.coins\" is also declared in res://tests/golden/link/fact_redeclared/a.wyrd:4:3",
+      "path": "res://tests/golden/link/fact_redeclared/b.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "95294899949a6137",
+        "path": "res://tests/golden/link/fact_redeclared/a.wyrd"
+      },
+      {
+        "hash": "95294899949a6137",
+        "path": "res://tests/golden/link/fact_redeclared/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "fact_redeclared",
+    "quests": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/fact_redeclared/a.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [],
+          "source": "stored",
+          "type": "int",
+          "writers": []
+        }
+      ]
+    }
+  }
+}

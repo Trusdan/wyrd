@@ -1,0 +1,104 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_QUEST_DUPLICATE",
+      "col": 1,
+      "line": 3,
+      "message": "duplicate quest \"gate\" also declared in res://tests/golden/link/quest_duplicate/a.wyrd:3:1",
+      "path": "res://tests/golden/link/quest_duplicate/b.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "67582ea531248670",
+        "path": "res://tests/golden/link/quest_duplicate/a.wyrd"
+      },
+      {
+        "hash": "dd7ccc11e1954a55",
+        "path": "res://tests/golden/link/quest_duplicate/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "quest_duplicate",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/quest_duplicate/a.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      },
+      {
+        "file": "res://tests/golden/link/quest_duplicate/b.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Other"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

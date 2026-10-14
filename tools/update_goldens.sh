@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerates tests/golden/expected/*.json, tests/golden/conditions/expected/*.json,
-# and tests/golden/statements/expected/*.json.
+# tests/golden/statements/expected/*.json, and tests/golden/link/*/expected.json.
 # Never called from CI. Review the diff before committing it.
 set -euo pipefail
 

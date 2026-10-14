@@ -6,8 +6,11 @@ extends RefCounted
 ## @experimental
 ## [member code] is a [StringName] such as [code]E_HEADER_MISSING[/code].
 ## Formatted lines look like [code]path:line:col: error[CODE]: message[/code].
+## [code]warning[/code] and [code]info[/code] use the same shape.
 
 const SEVERITY_ERROR: StringName = &"error"
+const SEVERITY_WARNING: StringName = &"warning"
+const SEVERITY_INFO: StringName = &"info"
 
 const E_HEADER_MISSING: StringName = &"E_HEADER_MISSING"
 const E_HEADER_INVALID: StringName = &"E_HEADER_INVALID"
@@ -52,6 +55,20 @@ const E_EFFECT_NOT_IN_SLICE: StringName = &"E_EFFECT_NOT_IN_SLICE"
 const E_NO_SET_DISPOSITION: StringName = &"E_NO_SET_DISPOSITION"
 const E_LINE_ID_MISSING: StringName = &"E_LINE_ID_MISSING"
 const E_LINE_ID_DUPLICATE: StringName = &"E_LINE_ID_DUPLICATE"
+const E_FACT_REDECLARED: StringName = &"E_FACT_REDECLARED"
+const E_QUEST_DUPLICATE: StringName = &"E_QUEST_DUPLICATE"
+const E_SCENE_DUPLICATE: StringName = &"E_SCENE_DUPLICATE"
+const E_SCENE_UNKNOWN: StringName = &"E_SCENE_UNKNOWN"
+const E_SPEAKER_UNBOUND: StringName = &"E_SPEAKER_UNBOUND"
+const E_COMMAND_UNKNOWN: StringName = &"E_COMMAND_UNKNOWN"
+const E_COMMANDS_FILE: StringName = &"E_COMMANDS_FILE"
+const W_SCENE_UNUSED: StringName = &"W_SCENE_UNUSED"
+const W_SLOT_UNUSED: StringName = &"W_SLOT_UNUSED"
+const W_PACK_UNKNOWN: StringName = &"W_PACK_UNKNOWN"
+const W_FACT_NEVER_READ: StringName = &"W_FACT_NEVER_READ"
+const W_FACT_NEVER_SET: StringName = &"W_FACT_NEVER_SET"
+const W_FACT_UNUSED: StringName = &"W_FACT_UNUSED"
+const I_COMMANDS_SKIPPED: StringName = &"I_COMMANDS_SKIPPED"
 
 var severity: StringName = SEVERITY_ERROR
 var code: StringName = &""

@@ -2,7 +2,7 @@
 
 Wyrd is a generic narrative and dialogue engine for Godot 4, written in typed GDScript. It is itself the dialogue manager. A host vendors `addons/wyrd` and implements the adapters.
 
-This repository is the S0 skeleton, the S1a compiler front end, the S1b condition language, and the S1c statement compiler (both drafts, not frozen). `check` compiles one file. There is no support guarantee before 1.0.
+This repository is the S0 skeleton through the S1d linker. Condition and statement drafts are not frozen. `check --manifest` compiles and links a pack. There is no support guarantee before 1.0.
 
 Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.0.1` (`addons/wyrd/VERSION`).
 
@@ -12,7 +12,7 @@ Install that Godot so `godot` is on your `PATH`, then run `tools/run_tests.sh`. 
 
 ```bash
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd
-godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check example/content
+godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
 godot --headless --path . -s res://tests/bench/bench.gd -- --iterations 1000 --out res://tests/bench/out/latest.json
 ```
 

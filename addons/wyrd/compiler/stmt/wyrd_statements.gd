@@ -229,6 +229,8 @@ func _requires(node: WyrdNode, quest: WyrdQuestDef) -> void:
 			_unknown_msg(node, "requires needs [pack.<id>, ...]")
 			return
 		quest.requires.append(pack)
+	quest.requires_line = node.start_line
+	quest.requires_col = node.start_col
 	_no_block(node)
 
 

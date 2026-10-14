@@ -1,0 +1,168 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_COMMAND_UNKNOWN",
+      "col": 5,
+      "line": 10,
+      "message": "unknown command \"missing_cmd\"",
+      "path": "res://tests/golden/link/command_unknown/quest.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "bae4c54d049dacfe",
+        "path": "res://tests/golden/link/command_unknown/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "command_unknown",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/command_unknown/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              },
+              {
+                "args": [
+                  {
+                    "name": "",
+                    "text": "player"
+                  }
+                ],
+                "branch": "",
+                "command": "missing_cmd",
+                "fact_key": "",
+                "kind": "do",
+                "on_fail": "",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "player.coins >= 0"
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/command_unknown/quest.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/command_unknown/quest.wyrd",
+              "id": "gate.arrive",
+              "kind": "stage",
+              "line": 7
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/command_unknown/quest.wyrd",
+              "id": "gate.arrive",
+              "kind": "effect",
+              "line": 9
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

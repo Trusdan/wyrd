@@ -1,0 +1,91 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_FACT_UNUSED",
+      "col": 3,
+      "line": 4,
+      "message": "fact \"player.coins\" is never read or written",
+      "path": "res://tests/golden/link/unused/quest.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "1147d900735ede5a",
+        "path": "res://tests/golden/link/unused/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "unused",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/unused/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/unused/quest.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [],
+          "source": "stored",
+          "type": "int",
+          "writers": []
+        }
+      ]
+    }
+  }
+}
