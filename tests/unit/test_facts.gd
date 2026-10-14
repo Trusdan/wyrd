@@ -78,7 +78,66 @@ func test_overlapping_patterns_are_duplicates() -> void:
 	  npc.{id}.alive : bool stored
 	  npc.{name}.alive : bool stored
 	"""))
-	assert_true(parsed.diagnostics.format().contains("fact keys \"npc.{id}.alive\" and \"npc.{name}.alive\" overlap"))
+	assert_eq(parsed.diagnostics.items.size(), 1)
+	assert_eq(parsed.diagnostics.items[0].code, WyrdDiagnostic.E_FACTS_DUPLICATE)
+	assert_eq(
+		parsed.diagnostics.format(),
+		"sample.wyrd:4:3: error[E_FACTS_DUPLICATE]: fact keys \"npc.{id}.alive\" and \"npc.{name}.alive\" overlap\n"
+	)
+
+
+func test_pattern_overlaps_a_concrete_key_in_both_orders() -> void:
+	var pattern_first := _parse(_text("""
+	language 1
+	facts
+	  npc.{id}.alive : bool stored
+	  npc.miller.alive : bool stored
+	"""))
+	assert_eq(pattern_first.diagnostics.items.size(), 1)
+	assert_eq(pattern_first.diagnostics.items[0].code, WyrdDiagnostic.E_FACTS_DUPLICATE)
+	assert_eq(
+		pattern_first.diagnostics.format(),
+		"sample.wyrd:4:3: error[E_FACTS_DUPLICATE]: fact keys \"npc.{id}.alive\" and \"npc.miller.alive\" overlap\n"
+	)
+	var concrete_first := _parse(_text("""
+	language 1
+	facts
+	  npc.miller.alive : bool stored
+	  npc.{id}.alive : bool stored
+	"""))
+	assert_eq(concrete_first.diagnostics.items.size(), 1)
+	assert_eq(concrete_first.diagnostics.items[0].code, WyrdDiagnostic.E_FACTS_DUPLICATE)
+	assert_eq(
+		concrete_first.diagnostics.format(),
+		"sample.wyrd:4:3: error[E_FACTS_DUPLICATE]: fact keys \"npc.miller.alive\" and \"npc.{id}.alive\" overlap\n"
+	)
+
+
+func test_stored_and_resolved_wildcards_overlap() -> void:
+	var parsed := _parse(_text("""
+	language 1
+	facts
+	  npc.{id}.alive : bool stored
+	  npc.{name}.alive : bool source: world.is_alive
+	"""))
+	assert_eq(parsed.diagnostics.items.size(), 1)
+	assert_eq(parsed.diagnostics.items[0].code, WyrdDiagnostic.E_FACTS_DUPLICATE)
+	assert_eq(
+		parsed.diagnostics.format(),
+		"sample.wyrd:4:3: error[E_FACTS_DUPLICATE]: fact keys \"npc.{id}.alive\" and \"npc.{name}.alive\" are both stored and resolved\n"
+	)
+
+
+func test_distinct_keys_do_not_overlap() -> void:
+	var schema := _schema(_text("""
+	language 1
+	facts
+	  npc.{id}.alive : bool stored
+	  npc.{id}.dead : bool stored
+	  npc.alive : bool stored
+	  npc.{id}.alive.today : bool stored
+	"""))
+	assert_eq(schema.entries.size(), 4)
 
 
 func test_unknown_type_is_facts_syntax() -> void:
