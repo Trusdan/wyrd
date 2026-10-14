@@ -7,7 +7,7 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
 	assert_true(text.contains("check: compile and link a content pack"))
 	assert_true(text.contains("test: not implemented"))
-	assert_true(text.contains("tag-lines: not implemented"))
+	assert_true(text.contains("tag-lines: write missing #line: ids"))
 	assert_true(text.contains("export-json: write the linked pack as JSON"))
 	assert_true(text.contains("facts: print the fact cross-reference"))
 	assert_eq(WyrdCli.COMMANDS.size(), 5)
@@ -20,10 +20,9 @@ func test_execute_without_args_matches_render() -> void:
 
 
 func test_unimplemented_commands_exit_zero() -> void:
-	for command in ["test", "tag-lines"]:
-		var result: Dictionary = WyrdCli.execute(PackedStringArray([command]))
-		assert_eq(int(result["exit_code"]), 0)
-		assert_eq(str(result["output"]), "%s: not implemented\n" % command)
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["test"]))
+	assert_eq(int(result["exit_code"]), 0)
+	assert_eq(str(result["output"]), "test: not implemented\n")
 
 
 func test_unknown_command_exits_one() -> void:
