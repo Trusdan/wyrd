@@ -1,0 +1,219 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_LINE_TAG_FORMAT",
+      "col": 17,
+      "line": 3,
+      "message": "line tag id must match [A-Za-z0-9_]+",
+      "path": "res://tests/golden/cases/s3_line_tag_format.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LINE_TAG_FORMAT",
+      "col": 17,
+      "line": 4,
+      "message": "line tag id must match [A-Za-z0-9_]+",
+      "path": "res://tests/golden/cases/s3_line_tag_format.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "dock"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "keeper"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 3,
+      "text": "Hello"
+    },
+    {
+      "col": 17,
+      "kind": "line_tag",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "keeper"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 4,
+      "text": "Hello"
+    },
+    {
+      "col": 17,
+      "kind": "line_tag",
+      "line": 4,
+      "text": "ab-c"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 5,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 17,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 3,
+                "text": "Hello"
+              }
+            ],
+            "keyword": "keeper",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 17,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 4,
+                "text": "Hello"
+              }
+            ],
+            "keyword": "keeper",
+            "kind": "line",
+            "line_tag": "ab-c",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          }
+        ],
+        "end_col": 17,
+        "end_line": 4,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "dock"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 5,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

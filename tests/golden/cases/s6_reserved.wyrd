@@ -1,0 +1,8 @@
+language 1
+quest document "A"
+quest publishes_by "B"
+quest tier "C"
+quest await_host "D"
+quest believe "E"
+quest declare "F"
+quest retract "G"

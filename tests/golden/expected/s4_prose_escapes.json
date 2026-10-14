@@ -1,0 +1,391 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "board"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 3,
+      "text": "The board lists the price as {two coins}}."
+    },
+    {
+      "col": 54,
+      "kind": "line_tag",
+      "line": 3,
+      "text": "p1"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 4,
+      "text": "A stray } stays."
+    },
+    {
+      "col": 27,
+      "kind": "line_tag",
+      "line": 4,
+      "text": "p2"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 5,
+      "text": "Braces }} stay."
+    },
+    {
+      "col": 26,
+      "kind": "line_tag",
+      "line": 5,
+      "text": "p3"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 6,
+      "text": "Path is C:\\folder."
+    },
+    {
+      "col": 29,
+      "kind": "line_tag",
+      "line": 6,
+      "text": "p4"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 7,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 7,
+      "text": "The toll is "
+    },
+    {
+      "col": 22,
+      "kind": "interp",
+      "line": 7,
+      "text": "ferry.toll_coins"
+    },
+    {
+      "col": 40,
+      "kind": "prose",
+      "line": 7,
+      "text": " coins."
+    },
+    {
+      "col": 48,
+      "kind": "line_tag",
+      "line": 7,
+      "text": "p5"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 8,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 54,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 3,
+                "text": "The board lists the price as {two coins}}."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p1",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 27,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 4,
+                "text": "A stray } stays."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p2",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 26,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 5,
+                "text": "Braces }} stay."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p3",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 29,
+            "end_line": 6,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 6,
+                "text": "Path is C:\\folder."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p4",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 48,
+            "end_line": 7,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 7,
+                "text": "The toll is "
+              },
+              {
+                "col": 22,
+                "kind": "interp",
+                "line": 7,
+                "text": "ferry.toll_coins"
+              },
+              {
+                "col": 40,
+                "kind": "prose",
+                "line": 7,
+                "text": " coins."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p5",
+            "start_col": 3,
+            "start_line": 7,
+            "title": ""
+          }
+        ],
+        "end_col": 48,
+        "end_line": 7,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "board"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 8,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

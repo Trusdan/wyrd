@@ -1,0 +1,190 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "ferry"
+    },
+    {
+      "col": 13,
+      "kind": "string",
+      "line": 2,
+      "text": "document"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 3,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 3,
+      "text": "dock"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "keeper"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 4,
+      "text": "Do not declare a winner."
+    },
+    {
+      "col": 36,
+      "kind": "line_tag",
+      "line": 4,
+      "text": "k1"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 5,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [],
+        "end_col": 23,
+        "end_line": 2,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "ferry"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": "document"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 36,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 4,
+                "text": "Do not declare a winner."
+              }
+            ],
+            "keyword": "keeper",
+            "kind": "line",
+            "line_tag": "k1",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          }
+        ],
+        "end_col": 36,
+        "end_line": 4,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 3,
+            "text": "dock"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 3,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 5,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

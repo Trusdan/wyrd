@@ -1,0 +1,32 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_HEADER_MISSING",
+      "col": 1,
+      "line": 1,
+      "message": "missing language header",
+      "path": "res://tests/golden/cases/s5_header_missing.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 2,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [],
+    "end_col": 1,
+    "end_line": 2,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

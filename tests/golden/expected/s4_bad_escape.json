@@ -1,0 +1,94 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_BAD_ESCAPE",
+      "col": 13,
+      "line": 2,
+      "message": "unknown string escape \"\\n\"",
+      "path": "res://tests/golden/cases/s4_bad_escape.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "dawn"
+    },
+    {
+      "col": 12,
+      "kind": "string",
+      "line": 2,
+      "text": "n"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 3,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [],
+        "end_col": 16,
+        "end_line": 2,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "dawn"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": "n"
+      }
+    ],
+    "end_col": 1,
+    "end_line": 3,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

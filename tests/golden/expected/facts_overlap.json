@@ -1,0 +1,426 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_FACTS_DUPLICATE",
+      "col": 3,
+      "line": 4,
+      "message": "fact keys \"npc.{id}.alive\" and \"npc.ferry.alive\" are both stored and resolved",
+      "path": "res://tests/golden/cases/facts_overlap.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "npc"
+    },
+    {
+      "col": 6,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 7,
+      "kind": "lbrace",
+      "line": 3,
+      "text": "{"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 3,
+      "text": "id"
+    },
+    {
+      "col": 10,
+      "kind": "rbrace",
+      "line": 3,
+      "text": "}"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 3,
+      "text": "alive"
+    },
+    {
+      "col": 18,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 3,
+      "text": "bool"
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 3,
+      "text": "source"
+    },
+    {
+      "col": 31,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 3,
+      "text": "world"
+    },
+    {
+      "col": 38,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 39,
+      "kind": "ident",
+      "line": 3,
+      "text": "is_alive"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "npc"
+    },
+    {
+      "col": 6,
+      "kind": "dot",
+      "line": 4,
+      "text": "."
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 4,
+      "text": "ferry"
+    },
+    {
+      "col": 12,
+      "kind": "dot",
+      "line": 4,
+      "text": "."
+    },
+    {
+      "col": 13,
+      "kind": "ident",
+      "line": 4,
+      "text": "alive"
+    },
+    {
+      "col": 19,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 21,
+      "kind": "ident",
+      "line": 4,
+      "text": "bool"
+    },
+    {
+      "col": 26,
+      "kind": "ident",
+      "line": 4,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 5,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 47,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 3,
+                "text": "npc"
+              },
+              {
+                "col": 6,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 7,
+                "kind": "lbrace",
+                "line": 3,
+                "text": "{"
+              },
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 3,
+                "text": "id"
+              },
+              {
+                "col": 10,
+                "kind": "rbrace",
+                "line": 3,
+                "text": "}"
+              },
+              {
+                "col": 11,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 12,
+                "kind": "ident",
+                "line": 3,
+                "text": "alive"
+              },
+              {
+                "col": 18,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 3,
+                "text": "bool"
+              },
+              {
+                "col": 25,
+                "kind": "ident",
+                "line": 3,
+                "text": "source"
+              },
+              {
+                "col": 31,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 33,
+                "kind": "ident",
+                "line": 3,
+                "text": "world"
+              },
+              {
+                "col": 38,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 39,
+                "kind": "ident",
+                "line": 3,
+                "text": "is_alive"
+              }
+            ],
+            "keyword": "npc.{id}.alive",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 32,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 4,
+                "text": "npc"
+              },
+              {
+                "col": 6,
+                "kind": "dot",
+                "line": 4,
+                "text": "."
+              },
+              {
+                "col": 7,
+                "kind": "ident",
+                "line": 4,
+                "text": "ferry"
+              },
+              {
+                "col": 12,
+                "kind": "dot",
+                "line": 4,
+                "text": "."
+              },
+              {
+                "col": 13,
+                "kind": "ident",
+                "line": 4,
+                "text": "alive"
+              },
+              {
+                "col": 19,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 21,
+                "kind": "ident",
+                "line": 4,
+                "text": "bool"
+              },
+              {
+                "col": 26,
+                "kind": "ident",
+                "line": 4,
+                "text": "stored"
+              }
+            ],
+            "keyword": "npc.ferry.alive",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          }
+        ],
+        "end_col": 32,
+        "end_line": 4,
+        "entries": [
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "npc.{id}.alive",
+            "line": 3,
+            "origin": "resolved",
+            "pattern": true,
+            "resolver": "world.is_alive",
+            "segments": [
+              "npc",
+              "{id}",
+              "alive"
+            ],
+            "type": "bool"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "npc.ferry.alive",
+            "line": 4,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "npc",
+              "ferry",
+              "alive"
+            ],
+            "type": "bool"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 5,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

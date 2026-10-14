@@ -32,6 +32,9 @@ jobs:
       - name: Import and test
         run: tools/run_tests.sh
 
+      - name: Check example content
+        run: godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check example/content
+
       - name: Benchmark (informational)
         if: always()
         continue-on-error: true

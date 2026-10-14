@@ -1,0 +1,4 @@
+language 1
+quest ferry "a // b" // this comment is outside the title
+scene dock
+  keeper: visible text // hidden tail

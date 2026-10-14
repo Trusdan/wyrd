@@ -2,7 +2,7 @@
 
 **Status: lexical and block rules frozen.** Approved by Corey, 2026-10-14.
 
-Sections 1–6 are the freeze. They cover files, indentation, comments, line tags, escapes, the `language` header, and reserved words. The quest, scene, and facts examples in section 7 are illustrations. Their statement grammar is not frozen and waits for the slice compiler. A multi-line prose syntax is future work and is not part of this freeze.
+Sections 1–6 are the freeze. They cover files, indentation, comments, line tags, escapes, the `language` header, and reserved words. The quest, scene, and facts examples in section 7 are illustrations. Their statement grammar is not frozen and waits for the slice compiler. A multi-line prose syntax is future work and is not part of this freeze. Golden cases for sections 1–6 are in `tests/golden/cases/`.
 
 Examples use only the invented village Gullhaven.
 
@@ -25,6 +25,7 @@ Examples use only the invented village Gullhaven.
 
 - A line tag has the form `#line:<id>`.
 - `<id>` is a stable identifier. Editing the words of the line does not change the id.
+- An id matches `[A-Za-z0-9_]+`. Clarification approved by Corey, 2026-10-14.
 - The tag is the last token on the line, except that a `//` comment may follow it.
 
 ```wyrd

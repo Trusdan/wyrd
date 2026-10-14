@@ -1,0 +1,50 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_HEADER_INVALID",
+      "col": 1,
+      "line": 1,
+      "message": "header must be exactly \"language 1\"",
+      "path": "res://tests/golden/cases/s5_header_quoted.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "string",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 2,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [],
+    "end_col": 1,
+    "end_line": 2,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

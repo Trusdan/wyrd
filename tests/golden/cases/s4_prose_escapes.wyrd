@@ -1,0 +1,7 @@
+language 1
+scene board
+  clerk: The board lists the price as {{two coins}}. #line:p1
+  clerk: A stray } stays. #line:p2
+  clerk: Braces }} stay. #line:p3
+  clerk: Path is C:\folder. #line:p4
+  clerk: The toll is {ferry.toll_coins} coins. #line:p5

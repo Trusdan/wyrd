@@ -1,0 +1,4 @@
+language 1
+facts
+  npc.{id}.alive : bool source: world.is_alive
+  npc.ferry.alive : bool stored
