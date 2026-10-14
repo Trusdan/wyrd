@@ -23,3 +23,11 @@ func test_repeat_calls_match() -> void:
 func test_domains_do_not_collapse() -> void:
 	assert_ne(WyrdHash.of_int(42), WyrdHash.of_string_name(&"42"))
 	assert_ne(WyrdHash.of_string_name(&"gullhaven"), WyrdHash.of_string_name(&"ferry_master"))
+
+
+func test_combine_locked_values() -> void:
+	assert_eq(WyrdHash.combine(0, 0), -5026298552858385863)
+	assert_eq(WyrdHash.combine(1, 2), -1666581824604252188)
+	assert_eq(WyrdHash.combine(WyrdHash.of_int(0), WyrdHash.of_int(42)), -8077627191156648152)
+	assert_eq(WyrdHash.combine(-1, 42), 633195289179834590)
+	assert_ne(WyrdHash.combine(1, 2), WyrdHash.combine(2, 1))

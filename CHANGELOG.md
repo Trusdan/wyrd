@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+PCG32 swap: `WyrdRng` is now an in-script PCG32 (XSH-RR 64/32) with streams, per-decision seeding and saveable state; sequences no longer depend on the Godot version. Seeded bench fixtures were regenerated.
+
+- New `tag-lines` ids follow this sequence. An id already written on a line is not rewritten.
+
 S1d slice compiler, part 4 of 4: linking and the pack CLI. Draft, not frozen (`docs/statements-draft.md`). S1 exit met.
 
 - `check` links a pack: merged facts, quests, scenes, speakers, commands, line ids, and the fact cross-reference.

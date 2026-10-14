@@ -81,6 +81,47 @@ A change stayed only when all three warm full scans beat the previous three, and
 
 The confirmation runs in the full-scan table are the stacked result after that last drop.
 
+## After the PCG32 swap, same machine
+
+`WyrdRng` is now in-script PCG32. The seeded fixture changed with it, so this section stands on its own. The tables above used checksum 700. These runs use checksum 725. All three readers agreed, and every dirty run matched a full scan.
+
+Same Linux VM (4 vCPU, `Intel(R) Xeon(R) Processor`), Godot 4.7.2-stable (official). Three runs.
+
+### Full scan
+
+Microseconds for one 5k batch. Warm is the second full scan.
+
+| Run | RPN cold | RPN warm | GDScript warm | Expression warm |
+|---|---:|---:|---:|---:|
+| 1 | 15642 | 12870 | 824 | 4439 |
+| 2 | 16148 | 14178 | 748 | 4528 |
+| 3 | 16044 | 13266 | 787 | 4717 |
+
+A warm RPN batch is about 13–14 ms (about 2.6–2.8 µs each). The hand-written ceiling stayed under 1 ms.
+
+### Dirty set
+
+The index is built once: about 20.5–21.3 ms, 17334 entries, 8267 keys. Changed facts still come from `WyrdRng` sub-seed `0x57595245` plus the changed-fact count. Mean affected counts are now 1.700, 17.297, and 170.328. Warm cells are the min–max of three runs, in microseconds.
+
+| Changed facts | Affected mean | RPN index | RPN eval | RPN tick | Ceiling eval | Ceiling tick |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 | 1.700 | 1.34–1.40 | 5.04–5.14 | 6.38–6.54 | 0.78–0.82 | 2.12–2.21 |
+| 10 | 17.297 | 8.20–8.55 | 48.9–49.7 | 57.2–58.2 | 5.60–5.79 | 13.9–14.1 |
+| 100 | 170.328 | 78–81 | 484–507 | 562–588 | 53.4–56.8 | 132–138 |
+
+Cold first ticks: 1 fact took 4–5 µs (that draw changed a fact no condition read), 10 facts took 67–86 µs (16 conditions), and 100 facts took 648–692 µs (188 conditions).
+
+### `randi_range` cost
+
+Same seed `0x57595244`, 200k calls of `randi_range(0, 9)`, three rounds, microseconds per call. Before is the Godot generator wrapper. After is PCG32.
+
+| | Round 1 | Round 2 | Round 3 |
+|---|---:|---:|---:|
+| Before | 0.114 | 0.113 | 0.114 |
+| After | 0.814 | 0.841 | 0.837 |
+
+The placeholder loop in `tests/bench/bench.gd` (a hash mixed with `randi`) moved from about 2.16–2.18 µs per iteration to about 2.65–2.70 µs. The hash is most of that loop.
+
 ### Reading the dirty-set cost
 
 No budget is set here. On this machine, after the pass, a tick that changes one fact costs about 7 µs to find and re-check the one or two conditions that read it. Ten facts cost about 60 µs. A hundred facts cost about 0.58 ms, against about 0.13 ms for the hand-written loop over the same conditions, and against about 14–16 ms to scan all 5k. The index lookup is the small part. The walk is still most of the tick. Whether 0.58 ms for a busy tick is acceptable is Corey's call.
