@@ -7,9 +7,10 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ##
 ## @experimental
 ## [code]check[/code] lexes, parses, compiles, and links a pack.
-## [code]export-json[/code] writes the debug pack document. [code]facts[/code]
-## prints the cross-reference. [code]test[/code] and [code]tag-lines[/code] stay
-## unimplemented until the follow-up. Engine unit tests stay on GUT.
+## [code]tag-lines[/code] writes missing line ids. [code]export-json[/code] writes
+## the debug pack document. [code]facts[/code] prints the cross-reference.
+## [code]test[/code] stays unimplemented until the runtime can run a scene.
+## Engine unit tests stay on GUT.
 
 const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts"]
 
@@ -22,7 +23,7 @@ static func command_lines() -> PackedStringArray:
 	return PackedStringArray([
 		"check: compile and link a content pack",
 		"test: not implemented",
-		"tag-lines: not implemented",
+		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
 		"facts: print the fact cross-reference",
 	])
@@ -39,10 +40,12 @@ static func execute(args: PackedStringArray) -> Dictionary:
 	if args.is_empty():
 		return {"exit_code": 0, "output": render()}
 	var command := args[0]
-	if command == "test" or command == "tag-lines":
-		return {"exit_code": 0, "output": "%s: not implemented\n" % command}
+	if command == "test":
+		return {"exit_code": 0, "output": "test: not implemented\n"}
 	if command == "check":
 		return _check(args)
+	if command == "tag-lines":
+		return _tag(args)
 	if command == "export-json":
 		return _export(args)
 	if command == "facts":
@@ -62,6 +65,17 @@ static func _check(args: PackedStringArray) -> Dictionary:
 	if diagnostics.has_errors() or (bool(parsed["strict"]) and diagnostics.has_warnings()):
 		exit_code = 1
 	return {"exit_code": exit_code, "output": diagnostics.format()}
+
+
+static func _tag(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var files: PackedStringArray = parsed["files"]
+	var pack_id := str(parsed["pack_id"])
+	if files.is_empty():
+		return {"exit_code": 1, "output": "wyrd: tag-lines needs one file or directory\n"}
+	return WyrdTagLines.tag_files(files, pack_id, bool(parsed["dry_run"]))
 
 
 static func _export(args: PackedStringArray) -> Dictionary:
@@ -138,6 +152,7 @@ static func _load(parsed: Dictionary) -> Dictionary:
 static func _options(args: PackedStringArray) -> Dictionary:
 	var command := args[0]
 	var strict := false
+	var dry_run := false
 	var as_json := false
 	var manifest := ""
 	var out := ""
@@ -147,6 +162,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		var arg := args[i]
 		if arg == "--strict":
 			strict = true
+		elif arg == "--dry-run":
+			dry_run = true
 		elif arg == "--json":
 			as_json = true
 		elif arg == "--manifest":
@@ -198,6 +215,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"as_json": as_json,
 		"command": command,
 		"commands_path": commands_path,
+		"dry_run": dry_run,
 		"error": "",
 		"files": files,
 		"language_version": language_version,
@@ -213,6 +231,7 @@ static func _fail(message: String) -> Dictionary:
 		"as_json": false,
 		"command": "",
 		"commands_path": "",
+		"dry_run": false,
 		"error": message,
 		"files": PackedStringArray(),
 		"language_version": 1,
