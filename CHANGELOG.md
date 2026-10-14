@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+S1b slice compiler, part 2 of 4: condition language. Draft, not frozen (`docs/conditions-draft.md`).
+
+- Expression lexer, parser, type checker, and flat instruction emit, including prose interpolation spans.
+- `WyrdFactSchema.lookup` and a signature registry (belief names registered and marked M5).
+- Specificity, fact reads (including short-circuit arms), and a test-only stack walker.
+- 10k-fact / 5k-condition benchmark recorded beside the placeholder runner. Not a CI gate.
+- Quest and scene statements still do not call the condition compiler. Linking, `tag-lines`, and `export-json` stay later.
+
 S1a slice compiler, part 1 of 4: lexer, block parser, diagnostics, and parse-level `check`.
 
 - Lexical and block rules from grammar v1 sections 1–6, with golden cases for each rule.

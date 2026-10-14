@@ -1,0 +1,29 @@
+// Operators, precedence, sets, ranges, and ternary. Gullhaven facts only.
+language 1
+
+facts
+  player.coins : int stored
+  hour : int stored
+  season : symbol stored
+
+// @when 2 + 3 * 4 == 14
+// @when (2 + 3) * 4 == 20
+// @when -3 + 5 == 2
+// @when 5 / 2 == 2
+// @when 5.0 / 2 == 2.5
+// @when not true == false
+// @when not true and false
+// @when true or false and false
+// @when true and true and false
+// @when (true and false) or true
+// @when not (true and false)
+// @when player.coins >= 5
+// @when player.coins != 4
+// @when player.coins < 9
+// @when player.coins <= 5
+// @when player.coins > 1
+// @when hour in 6..18
+// @when season in [spring, summer]
+// @when player.coins >= 5 ? true : false
+// @when false and player.coins > 0
+// @when true or player.coins > 0

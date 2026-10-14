@@ -1,0 +1,555 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            21,
+            3,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "float",
+              "v": 6.0
+            },
+            {
+              "t": "name",
+              "v": "corpse"
+            },
+            {
+              "t": "name",
+              "v": "nearby"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST 6.0",
+            "0004 PUSH_CONST \"corpse\"",
+            "0006 CALL \"nearby\" 3"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 42,
+            "end_line": 7,
+            "line": 7
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 18,
+              "kind": "name",
+              "line": 7,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 18,
+            "kind": "arg",
+            "line": 7,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 26,
+              "kind": "distance",
+              "line": 7,
+              "text": "6m",
+              "type": "distance",
+              "value": 6.0
+            },
+            "col": 26,
+            "kind": "arg",
+            "line": 7,
+            "type": "distance"
+          },
+          {
+            "a": {
+              "col": 35,
+              "kind": "name",
+              "line": 7,
+              "text": "corpse",
+              "type": "symbol"
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 7,
+            "text": "tag",
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 7,
+        "text": "nearby",
+        "type": "int"
+      },
+      "diagnostics": [],
+      "expr": "nearby(player, 6m, tag: corpse)",
+      "kind": "value",
+      "line": 7
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            4,
+            4,
+            4,
+            1,
+            1,
+            4,
+            21,
+            2,
+            6
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "int",
+              "v": 20160
+            },
+            {
+              "t": "name",
+              "v": "deed_score"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_NIL",
+            "0003 PUSH_NIL",
+            "0004 PUSH_NIL",
+            "0005 PUSH_CONST 20160",
+            "0007 PUSH_NIL",
+            "0008 CALL \"deed_score\" 6"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 42,
+            "end_line": 8,
+            "line": 8
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 8,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 8,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 38,
+              "kind": "duration",
+              "line": 8,
+              "text": "14d",
+              "type": "duration",
+              "value": 20160
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 8,
+            "text": "within",
+            "type": "duration"
+          }
+        ],
+        "kind": "call",
+        "line": 8,
+        "text": "deed_score",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "deed_score(player, within: 14d)",
+      "kind": "value",
+      "line": 8
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            4,
+            4,
+            4,
+            1,
+            1,
+            4,
+            21,
+            2,
+            6
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "int",
+              "v": 360
+            },
+            {
+              "t": "name",
+              "v": "deed_score"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_NIL",
+            "0003 PUSH_NIL",
+            "0004 PUSH_NIL",
+            "0005 PUSH_CONST 360",
+            "0007 PUSH_NIL",
+            "0008 CALL \"deed_score\" 6"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 41,
+            "end_line": 9,
+            "line": 9
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 9,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 9,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 38,
+              "kind": "duration",
+              "line": 9,
+              "text": "6h",
+              "type": "duration",
+              "value": 360
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 9,
+            "text": "within",
+            "type": "duration"
+          }
+        ],
+        "kind": "call",
+        "line": 9,
+        "text": "deed_score",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "deed_score(player, within: 6h)",
+      "kind": "value",
+      "line": 9
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            4,
+            4,
+            4,
+            1,
+            1,
+            4,
+            21,
+            2,
+            6
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "int",
+              "v": 30
+            },
+            {
+              "t": "name",
+              "v": "deed_score"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_NIL",
+            "0003 PUSH_NIL",
+            "0004 PUSH_NIL",
+            "0005 PUSH_CONST 30",
+            "0007 PUSH_NIL",
+            "0008 CALL \"deed_score\" 6"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 42,
+            "end_line": 10,
+            "line": 10
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 10,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 10,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 38,
+              "kind": "duration",
+              "line": 10,
+              "text": "30m",
+              "type": "duration",
+              "value": 30
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 10,
+            "text": "within",
+            "type": "duration"
+          }
+        ],
+        "kind": "call",
+        "line": 10,
+        "text": "deed_score",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "deed_score(player, within: 30m)",
+      "kind": "value",
+      "line": 10
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 12,
+            "end_line": 11,
+            "line": 11
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "unit",
+        "line": 11,
+        "text": "6m",
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_UNIT",
+          "col": 10,
+          "line": 11,
+          "message": "unit \"m\" needs a duration or distance parameter",
+          "path": "res://tests/golden/conditions/c_units.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "6m",
+      "kind": "when",
+      "line": 11
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0
+          ],
+          "consts": [
+            {
+              "t": "int",
+              "v": 360
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 360"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 12,
+            "end_line": 12,
+            "line": 12
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "duration",
+        "line": 12,
+        "text": "6h",
+        "type": "duration",
+        "value": 360
+      },
+      "diagnostics": [
+        {
+          "code": "E_NOT_BOOL",
+          "col": 10,
+          "line": 12,
+          "message": "condition is duration, expected bool",
+          "path": "res://tests/golden/conditions/c_units.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "6h",
+      "kind": "when",
+      "line": 12
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            4,
+            4,
+            4,
+            1,
+            1,
+            4,
+            21,
+            2,
+            6
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "int",
+              "v": 2000
+            },
+            {
+              "t": "name",
+              "v": "deed_score"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_NIL",
+            "0003 PUSH_NIL",
+            "0004 PUSH_NIL",
+            "0005 PUSH_CONST 2000",
+            "0007 PUSH_NIL",
+            "0008 CALL \"deed_score\" 6"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 41,
+            "end_line": 14,
+            "line": 14
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 14,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 14,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 38,
+              "kind": "duration",
+              "line": 14,
+              "text": "2d",
+              "type": "duration",
+              "value": 2000
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 14,
+            "text": "within",
+            "type": "duration"
+          }
+        ],
+        "kind": "call",
+        "line": 14,
+        "text": "deed_score",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "deed_score(player, within: 2d)",
+      "kind": "value",
+      "line": 14
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

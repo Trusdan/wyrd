@@ -8,6 +8,8 @@ extends RefCounted
 ## [code]E_FACTS_DUPLICATE[/code], including a concrete key under a [code]{id}[/code] pattern.
 
 var entries: Array[WyrdFact] = []
+var _exact: Dictionary = {}
+var _indexed: int = -1
 
 
 func add(fact: WyrdFact, diagnostics: WyrdDiagnostics, source_path: String) -> void:
@@ -22,6 +24,50 @@ func add(fact: WyrdFact, diagnostics: WyrdDiagnostics, source_path: String) -> v
 			)
 			break
 	entries.append(fact)
+
+
+## Concrete key first, then a [code]{id}[/code] pattern of the same length.
+## A query segment written as [code]{id}[/code] matches only a pattern wildcard.
+func lookup(segments: PackedStringArray) -> WyrdFact:
+	if segments.is_empty():
+		return null
+	_reindex()
+	var wildcard := false
+	for segment in segments:
+		if segment.begins_with("{"):
+			wildcard = true
+			break
+	if not wildcard:
+		var key := ".".join(segments)
+		if _exact.has(key):
+			return _exact[key] as WyrdFact
+	for fact in entries:
+		if _pattern_match(fact, segments):
+			return fact
+	return null
+
+
+func _reindex() -> void:
+	if _indexed == entries.size():
+		return
+	_exact.clear()
+	for fact in entries:
+		if not fact.is_pattern() and not fact.key.is_empty():
+			_exact[fact.key] = fact
+	_indexed = entries.size()
+
+
+func _pattern_match(fact: WyrdFact, segments: PackedStringArray) -> bool:
+	if not fact.is_pattern() or fact.segments.size() != segments.size():
+		return false
+	for i in segments.size():
+		var have := fact.segments[i]
+		var want := segments[i]
+		if have.begins_with("{"):
+			continue
+		if want.begins_with("{") or have != want:
+			return false
+	return true
 
 
 func _conflicts(prior: WyrdFact, fact: WyrdFact) -> bool:
