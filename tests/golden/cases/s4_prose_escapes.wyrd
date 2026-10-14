@@ -5,3 +5,4 @@ scene board
   clerk: Braces }} stay. #line:p3
   clerk: Path is C:\folder. #line:p4
   clerk: The toll is {ferry.toll_coins} coins. #line:p5
+  clerk: The board lists the price as {{two coins}. #line:p6

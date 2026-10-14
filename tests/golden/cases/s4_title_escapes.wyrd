@@ -1,3 +1,4 @@
 language 1
 quest dawn "The \"dawn\" crossing"
 quest path "a\\b"
+quest coins "Pay {two coins}"

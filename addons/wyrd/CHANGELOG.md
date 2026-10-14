@@ -9,6 +9,7 @@ S1a slice compiler, part 1 of 4: lexer, block parser, diagnostics, and parse-lev
 - CLI `check` prints `path:line:col: error[CODE]: message` and exits 1 when a file has errors.
 - Gullhaven example `example/content/gullhaven/ferry_toll.wyrd`.
 - Conditions, quest and scene statement semantics, linking, `tag-lines`, and `export-json` stay later.
+- Grammar v1 §4 example corrected so source `{{two coins}` displays as `{two coins}`. Quoted titles are never interpolated, and a trailing `//` comment may follow `language 1`. Example corrected and clarifications approved by Corey, 2026-10-14.
 
 ## 0.0.1 - 2026-10-14
 

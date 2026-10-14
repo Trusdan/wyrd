@@ -206,15 +206,45 @@
       "text": ""
     },
     {
-      "col": 1,
-      "kind": "dedent",
+      "col": 3,
+      "kind": "ident",
+      "line": 8,
+      "text": "clerk"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "prose",
+      "line": 8,
+      "text": "The board lists the price as {two coins}."
+    },
+    {
+      "col": 53,
+      "kind": "line_tag",
+      "line": 8,
+      "text": "p6"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
       "line": 8,
       "text": ""
     },
     {
       "col": 1,
+      "kind": "dedent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
       "kind": "eof",
-      "line": 8,
+      "line": 9,
       "text": ""
     }
   ],
@@ -358,10 +388,35 @@
             "start_col": 3,
             "start_line": 7,
             "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 53,
+            "end_line": 8,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "prose",
+                "line": 8,
+                "text": "The board lists the price as {two coins}."
+              }
+            ],
+            "keyword": "clerk",
+            "kind": "line",
+            "line_tag": "p6",
+            "start_col": 3,
+            "start_line": 8,
+            "title": ""
           }
         ],
-        "end_col": 48,
-        "end_line": 7,
+        "end_col": 53,
+        "end_line": 8,
         "head": [
           {
             "col": 7,
@@ -379,7 +434,7 @@
       }
     ],
     "end_col": 1,
-    "end_line": 8,
+    "end_line": 9,
     "head": [],
     "keyword": "",
     "kind": "file",

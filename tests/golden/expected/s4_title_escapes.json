@@ -69,8 +69,32 @@
     },
     {
       "col": 1,
-      "kind": "eof",
+      "kind": "ident",
       "line": 4,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 4,
+      "text": "coins"
+    },
+    {
+      "col": 13,
+      "kind": "string",
+      "line": 4,
+      "text": "Pay {two coins}"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 5,
       "text": ""
     }
   ],
@@ -113,10 +137,29 @@
         "start_col": 1,
         "start_line": 3,
         "title": "a\\b"
+      },
+      {
+        "children": [],
+        "end_col": 30,
+        "end_line": 4,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 4,
+            "text": "coins"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 4,
+        "title": "Pay {two coins}"
       }
     ],
     "end_col": 1,
-    "end_line": 4,
+    "end_line": 5,
     "head": [],
     "keyword": "",
     "kind": "file",

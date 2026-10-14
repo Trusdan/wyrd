@@ -19,11 +19,14 @@ func test_crlf_is_one_newline() -> void:
 
 
 func test_prose_double_brace_follows_the_escape_rules() -> void:
-	# Grammar v1 §4 says {{ is a literal { and a stray } is literal, so }} is not an escape.
-	# The display sentence in that section shows one closing brace; the rules yield two.
-	var tokens := _tokens("language 1\nscene dock\n  clerk: The board lists the price as {{two coins}}. #line:b1\n")
-	assert_eq(_text(tokens, &"prose"), "The board lists the price as {two coins}}.")
-	assert_eq(_text(tokens, &"line_tag"), "b1")
+	# Grammar v1 §4: {{ is a literal { and a stray } is literal, so }} is not an escape.
+	var doubled := _tokens("language 1\nscene dock\n  clerk: The board lists the price as {{two coins}}. #line:b1\n")
+	assert_eq(_text(doubled, &"prose"), "The board lists the price as {two coins}}.")
+	assert_eq(_text(doubled, &"line_tag"), "b1")
+	# Corrected display example: source {{two coins} displays as {two coins}.
+	var corrected := _tokens("language 1\nscene dock\n  clerk: The board lists the price as {{two coins}. #line:b2\n")
+	assert_eq(_text(corrected, &"prose"), "The board lists the price as {two coins}.")
+	assert_eq(_text(corrected, &"line_tag"), "b2")
 
 
 func test_interpolation_is_a_raw_span() -> void:

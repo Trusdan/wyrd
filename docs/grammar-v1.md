@@ -42,7 +42,7 @@ In prose (spoken lines and other unquoted text):
 - `}}` is not an escape.
 - There are no backslash escapes in prose.
 
-`The board lists the price as {{two coins}}.` displays as `The board lists the price as {two coins}.`
+`The board lists the price as {{two coins}.` displays as `The board lists the price as {two coins}.` Example corrected, approved by Corey, 2026-10-14.
 
 Inside a double-quoted title:
 
@@ -53,6 +53,8 @@ Inside a double-quoted title:
 
 `"The \"dawn\" crossing"` is the title `The "dawn" crossing`.
 
+Quoted titles are never interpolated. Only unquoted prose is. Non-breaking clarification, approved by Corey, 2026-10-14.
+
 ## 5. Header
 
 ```wyrd
@@ -60,6 +62,8 @@ language 1
 ```
 
 `1` is that integer token. The header is required. A missing header, a quoted form, another number, or any other spelling is an error. There is no default.
+
+A trailing `//` comment is allowed after `language 1`. Non-breaking clarification, approved by Corey, 2026-10-14.
 
 ## 6. Reserved words
 
