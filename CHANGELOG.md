@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+S2a runtime core and fact store. The Gullhaven manifest loads into a runtime, facts and conditions evaluate against the fake host, and a dirty re-check matches a full scan. Deeds, quests, scenes, and saves are later slices.
+
 PCG32 swap: `WyrdRng` is now an in-script PCG32 (XSH-RR 64/32) with streams, per-decision seeding and saveable state; sequences no longer depend on the Godot version. Seeded bench fixtures were regenerated.
 
 - New `tag-lines` ids follow this sequence. An id already written on a line is not rewritten.

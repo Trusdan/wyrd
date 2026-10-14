@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+S2a runtime core and fact store. Draft. Deeds, quests, scenes, and saves are later slices.
+
+- `load_content` compiles a manifest's `.wyrd` sources into a runtime `WyrdContent` and refuses the load on any error.
+- Fact store: stored types, `world` and `known/<agent>`, resolver cache (`on_event`, `poll`, `per_query`), `fact_changed` for subscribed prefixes.
+- `tick` advances game minutes, refreshes due polls, and re-checks dirty conditions up to `scheduler_work_per_tick`.
+- A concrete key under a `{id}` pattern still loads that key. `reads` stays the pattern.
+
 PCG32 swap: `WyrdRng` is now an in-script PCG32 (XSH-RR 64/32) with streams, per-decision seeding and saveable state; sequences no longer depend on the Godot version. Seeded bench fixtures were regenerated.
 
 - New `tag-lines` ids follow this sequence. An id already written on a line is not rewritten.
