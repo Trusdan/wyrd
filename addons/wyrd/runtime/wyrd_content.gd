@@ -22,6 +22,7 @@ var conditions: Array[WyrdCompiledCondition] = []
 var records: PackedStringArray = PackedStringArray()
 var sites: PackedStringArray = PackedStringArray()
 var deps: WyrdDepIndex
+var _by_cond: Dictionary = {}
 
 
 static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
@@ -117,9 +118,19 @@ func _item(scene_id: String, item: WyrdSceneItem) -> void:
 		_add(choice.condition, record, "choice")
 
 
+func index_of(cond: WyrdCompiledCondition) -> int:
+	if cond == null:
+		return -1
+	var key := cond.get_instance_id()
+	if not _by_cond.has(key):
+		return -1
+	return int(_by_cond[key])
+
+
 func _add(cond: WyrdCompiledCondition, record: String, site: String) -> void:
 	if cond == null:
 		return
+	_by_cond[cond.get_instance_id()] = conditions.size()
 	conditions.append(cond)
 	records.append(record)
 	sites.append(site)

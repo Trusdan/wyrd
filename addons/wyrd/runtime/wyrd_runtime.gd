@@ -6,8 +6,8 @@ extends RefCounted
 ## @experimental
 ## S2a loads a manifest by compiling its [code].wyrd[/code] sources, then keeps
 ## a fact store, a condition table, and a fixed-work tick queue. S2b adds the
-## deed log, relationship axes, and role slots. Quests, scenes, and saves are
-## later slices. Callables stay in the registries.
+## deed log, relationship axes, and role slots. S2c runs slice effects, quests,
+## and scenes. Saves are a later slice. Callables stay in the registries.
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
 const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "slot_state"]
@@ -18,6 +18,9 @@ var events: WyrdEvents
 var roles: WyrdRoles
 var deeds: WyrdDeedLog
 var social: WyrdSocial
+var effects: WyrdEffects
+var quests: WyrdQuestRunner
+var dialogue: WyrdSceneRunner
 
 var _config: WyrdConfig
 var _content: WyrdContent
@@ -68,6 +71,15 @@ func _init() -> void:
 	roles.role_holder_changed.connect(_on_role)
 	roles.role_vacant.connect(_on_role_vacant)
 	social.on_changed = Callable(self, &"_on_social")
+	effects = WyrdEffects.new()
+	effects.bind(self)
+	quests = WyrdQuestRunner.new()
+	quests.bind(self)
+	dialogue = WyrdSceneRunner.new()
+	dialogue.bind(self)
+	effects.outcome_changed.connect(quests.note_outcome)
+	dialogue.scene_ended.connect(quests.on_scene_ended)
+	roles.role_holder_changed.connect(dialogue.note_role)
 
 
 func get_version() -> String:
@@ -148,6 +160,7 @@ func start_new_game(seed_value: int) -> void:
 	social.clear_state()
 	roles.clear()
 	_arm_queue()
+	_reset_play()
 
 
 func game_seed() -> int:
@@ -168,6 +181,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_flags = PackedByteArray()
 	_always = PackedInt32Array()
 	_queue.clear()
+	_reset_play()
 	facts.bind_schema(null)
 	deeds.clear()
 	social.clear_state()
@@ -206,6 +220,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	facts.bind_schema(_content.schema)
 	roles.bind_content(_content)
 	_arm_queue()
+	_reset_play()
 	return report
 
 
@@ -225,6 +240,10 @@ func tick(game_minutes: int) -> void:
 		_queue.mark(_always)
 	var budget := _config.scheduler_work_per_tick if _config != null else 0
 	_queue.tick(budget, _recheck)
+	if quests != null:
+		quests.on_tick()
+	if dialogue != null:
+		dialogue.on_tick()
 
 
 func condition_count() -> int:
@@ -239,6 +258,35 @@ func condition_flags() -> PackedByteArray:
 
 func eval_condition(index: int) -> bool:
 	return _eval_at(index)
+
+
+func eval_value(cond: WyrdCompiledCondition) -> Variant:
+	if cond == null:
+		return null
+	var index := -1
+	if _content != null:
+		index = _content.index_of(cond)
+	if index >= 0:
+		_ctx.record_id = _content.records[index]
+		_ctx.site = _content.sites[index]
+	else:
+		_ctx.record_id = ""
+		_ctx.site = ""
+	return _rpn.eval(cond, {}, _ctx.funcs())
+
+
+func eval_bool(cond: WyrdCompiledCondition) -> bool:
+	return eval_value(cond) == true
+
+
+func condition_dirty(index: int) -> bool:
+	if index < 0:
+		return false
+	return _queue.is_dirty(index)
+
+
+func can_save() -> bool:
+	return dialogue == null or dialogue.can_save()
 
 
 func last_rechecks() -> int:
@@ -259,6 +307,15 @@ func note(row: Dictionary) -> void:
 
 func trace_log() -> Array[Dictionary]:
 	return _trace.duplicate()
+
+
+func _reset_play() -> void:
+	if effects != null:
+		effects.clear()
+	if dialogue != null:
+		dialogue.force_close()
+	if quests != null:
+		quests.reset()
 
 
 func _recheck(index: int) -> void:

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+S2c quest runner, scene runner, and the six slice effects. Saves, replay, and the playtest scene are S2d.
+
+- `set`, `inc`, `record deed`, `unlock topic`, `do` / `on_fail`, and `outcome` run at play time. Provenance stores scene, choice, and game minutes.
+- Quest statuses include unavailable when `requires` names another pack. `start when` and `waits_until` advance only after a dirty re-check. A stage offers a scene; the host opens it. An aborted scene stays pending.
+- A quest completes when every declared outcome is resolved and the current body has no transition. A `failed` outcome fails the quest.
+- Journal text and its date freeze at the write. The default date is `day N, HH:MM` from game minutes. A host may register another formatter.
+- Dialogue text is always on screen. `line_audio` may be null. Audio does not hide a line or advance it. `advance()` is the only way on. `can_save()` is false while a scene is open.
+- `await_host` is a proposal in `docs/grammar-v1.md` section 9. It is not parsed. The runtime API is `request_host_step` / `complete_host_step`.
+
 S2a runtime core and fact store. The Gullhaven manifest loads into a runtime, facts and conditions evaluate against the fake host, and a dirty re-check matches a full scan. Deeds, quests, scenes, and saves are later slices.
 
 PCG32 swap: `WyrdRng` is now an in-script PCG32 (XSH-RR 64/32) with streams, per-decision seeding and saveable state; sequences no longer depend on the Godot version. Seeded bench fixtures were regenerated.

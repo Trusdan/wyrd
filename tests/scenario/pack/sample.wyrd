@@ -1,0 +1,69 @@
+// Unit fixture for quest and scene runners. Not a host game.
+language 1
+
+facts
+  meter.n : int stored  doc: "A counter."
+  meter.flag : bool stored  doc: "A flag."
+  meter.arm : bool stored  doc: "Arms the plain quest."
+
+quest sample "Sample"
+  slot clerk = clerk_role mode: live
+  on_empty: wait
+  requires: [pack.sample]
+  start when meter.n >= 1
+
+  stage talk
+    scene talk with clerk
+    -> finish when meter.n >= 3
+
+  stage finish
+    ~ outcome gate = done
+
+quest blocked "Blocked"
+  requires: [pack.missing]
+  stage only
+    ~ set meter.n = 1
+
+quest endings "Endings"
+  start when meter.flag
+  stage bad
+    ~ outcome gate = failed
+
+quest plain "Plain"
+  start when meter.arm
+  stage only
+    journal: Arm {meter.n}. #line:j_arm
+    ~ outcome gate = done
+
+scene talk
+  on_abort:
+    ~ inc meter.n by 1
+  narrator: Hello. #line:h1
+  when meter.n > 5: narrator: Big. #line:h2
+  narrator: You have {meter.n}. #line:h3
+  * [Go] -> next #line:c_go
+    ~ inc meter.n by 1
+  * [Wait] disabled_when {meter.n >= 1} "too soon" -> stop #line:c_wait
+  * {meter.n > 9} [Hidden] -> stop #line:c_hide
+  - (next)
+  narrator: Onward. #line:h4
+  -> scene talk.inner
+  -> end
+  - (stop)
+  narrator: Stopped. #line:h5
+  -> end
+
+scene talk.inner
+  narrator: Inner. #line:i1
+  * [Fail the ping] -> in_end #line:c_fail
+    ~ do sample_ping(player) on_fail -> in_fail
+  - (in_end)
+  narrator: Pinged. #line:i2
+  -> end
+  - (in_fail)
+  narrator: Ping failed. #line:i3
+  -> end
+
+scene talk.only
+  narrator: {if meter.n > 0}yes{else}no{end} #line:t_if
+  -> end

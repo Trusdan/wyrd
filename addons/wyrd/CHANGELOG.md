@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+S2c quest runner, scene runner, and the six slice effects. Draft. Saves, replay, and the playtest scene are S2d.
+
+- The six slice effects run at play time, including `do` failure divert and outcome signals.
+- Quest stages, waits, variants, outcomes, and a frozen journal. Default date `day N, HH:MM`.
+- Scene playback keeps text on screen with or without `line_audio`. `can_save()` is false while a scene is open.
+- Host-modal step is a runtime API. `await_host` is proposed in `docs/grammar-v1.md` and is not parsed.
+
 S2b deeds, disposition, and roles. Draft. Quests, scenes, and saves are later slices.
 
 - Deed log stores packed rows, decays by the hour bucket, and keeps memorable rows. No compaction.

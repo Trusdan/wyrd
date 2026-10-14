@@ -41,6 +41,10 @@ func dirty_count() -> int:
 	return _dirty.size()
 
 
+func is_dirty(index: int) -> bool:
+	return _dirty.has(index)
+
+
 ## [param eval_one] receives a condition index and returns nothing.
 func tick(budget: int, eval_one: Callable) -> int:
 	var keys: Array = _dirty.keys()
