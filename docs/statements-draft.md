@@ -84,7 +84,7 @@ Line conditions and choice conditions use `storylet_or_choice`. The first depth-
 
 ## `#line:`
 
-Every spoken line, journal entry, and choice label needs a `#line:` id. A missing id is `E_LINE_ID_MISSING`. A duplicate id in one file is `E_LINE_ID_DUPLICATE`. The same id in two files of one pack is also `E_LINE_ID_DUPLICATE`, and the message names both files. The `tag-lines` command that writes a missing id is the follow-up. It will not change an id that is already there.
+Every spoken line, journal entry, and choice label needs a `#line:` id. A missing id is `E_LINE_ID_MISSING`. A duplicate id in one file is `E_LINE_ID_DUPLICATE`. The same id in two files of one pack is also `E_LINE_ID_DUPLICATE`, and the message names both files. `tag-lines` writes a missing id and never changes one that is already there.
 
 Each line record keeps its id, speaker, tags, and scene. This slice has no tag syntax, so `tags` is empty. Journal entries leave `scene_id` empty.
 
@@ -124,7 +124,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 
 `requires: [pack.<id>]` warns with `W_PACK_UNKNOWN` when the id is not this pack. Topics from `unlock topic` are collected and are not errors. `on_event(...)` names are recorded as plain symbols. There is no event schema here.
 
-`export-json` writes a debug document (`wyrd_export` 1) with a per-file content hash. It is not the runtime load format. `facts` prints the cross-reference. `tag-lines` is the follow-up and is the only command that will edit source.
+`export-json` writes a debug document (`wyrd_export` 1) with a per-file content hash. It is not the runtime load format. `facts` prints the cross-reference. `tag-lines` is the only command that edits source.
 
 | Code | When |
 |---|---|
