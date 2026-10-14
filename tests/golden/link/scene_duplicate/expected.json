@@ -1,0 +1,113 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_SCENE_UNUSED",
+      "col": 1,
+      "line": 3,
+      "message": "scene \"room\" is not run by a quest",
+      "path": "res://tests/golden/link/scene_duplicate/a.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_SCENE_DUPLICATE",
+      "col": 1,
+      "line": 3,
+      "message": "duplicate scene \"room\" also declared in res://tests/golden/link/scene_duplicate/a.wyrd:3:1",
+      "path": "res://tests/golden/link/scene_duplicate/b.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_SCENE_UNUSED",
+      "col": 1,
+      "line": 3,
+      "message": "scene \"room\" is not run by a quest",
+      "path": "res://tests/golden/link/scene_duplicate/b.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "265514e6a0755d2b",
+        "path": "res://tests/golden/link/scene_duplicate/a.wyrd"
+      },
+      {
+        "hash": "a45c08757bd03ddc",
+        "path": "res://tests/golden/link/scene_duplicate/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/scene_duplicate/a.wyrd",
+        "id": "scene_duplicate/aa01",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/scene_duplicate/b.wyrd",
+        "id": "scene_duplicate/aa02",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "narrator",
+        "tags": []
+      }
+    ],
+    "pack_id": "scene_duplicate",
+    "quests": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/scene_duplicate/a.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa01",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      },
+      {
+        "file": "res://tests/golden/link/scene_duplicate/b.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa02",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

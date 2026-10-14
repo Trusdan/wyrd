@@ -1,0 +1,6 @@
+language 1
+
+quest gate "Gate"
+  stage arrive
+    ~ do ping(player)
+    ~ outcome route = done

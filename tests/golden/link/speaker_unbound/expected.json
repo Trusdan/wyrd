@@ -1,0 +1,139 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_SPEAKER_UNBOUND",
+      "col": 3,
+      "line": 5,
+      "message": "slot speaker \"clerk\" is not passed to scene \"room\"",
+      "path": "res://tests/golden/link/speaker_unbound/scene.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "db89f20c301dc76f",
+        "path": "res://tests/golden/link/speaker_unbound/quest.wyrd"
+      },
+      {
+        "hash": "dfb96d4f6440a86c",
+        "path": "res://tests/golden/link/speaker_unbound/scene.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/speaker_unbound/scene.wyrd",
+        "id": "speaker_unbound/aa01",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "keeper",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/speaker_unbound/scene.wyrd",
+        "id": "speaker_unbound/aa02",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "clerk",
+        "tags": []
+      }
+    ],
+    "pack_id": "speaker_unbound",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/speaker_unbound/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "keeper",
+            "role": "dock_keeper"
+          },
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "clerk",
+            "role": "dock_clerk"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "room",
+                "with": [
+                  "keeper"
+                ]
+              }
+            ],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/speaker_unbound/scene.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa01",
+            "speaker": "keeper",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa02",
+            "speaker": "clerk",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

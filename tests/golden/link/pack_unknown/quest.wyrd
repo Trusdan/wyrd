@@ -1,0 +1,6 @@
+language 1
+
+quest gate "Gate"
+  requires: [pack.other]
+  stage arrive
+    ~ outcome route = done

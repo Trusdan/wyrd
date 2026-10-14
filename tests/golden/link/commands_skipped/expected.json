@@ -1,0 +1,84 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_COMMANDS_SKIPPED",
+      "col": 1,
+      "line": 1,
+      "message": "command schemas skipped; no wyrd_commands.json beside the manifest",
+      "path": "res://tests/golden/link/commands_skipped",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "6a08eccb11ab40fb",
+        "path": "res://tests/golden/link/commands_skipped/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "commands_skipped",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/commands_skipped/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [
+                  {
+                    "name": "",
+                    "text": "player"
+                  }
+                ],
+                "branch": "",
+                "command": "ping",
+                "fact_key": "",
+                "kind": "do",
+                "on_fail": "",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

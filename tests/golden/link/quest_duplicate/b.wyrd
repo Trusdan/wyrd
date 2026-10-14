@@ -1,0 +1,5 @@
+language 1
+
+quest gate "Other"
+  stage arrive
+    ~ outcome route = done

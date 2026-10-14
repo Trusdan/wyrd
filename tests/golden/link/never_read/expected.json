@@ -1,0 +1,142 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_FACT_NEVER_READ",
+      "col": 3,
+      "line": 4,
+      "message": "stored fact \"player.coins\" is set but never read",
+      "path": "res://tests/golden/link/never_read/quest.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "a65878764d8f7e1f",
+        "path": "res://tests/golden/link/never_read/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "never_read",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/never_read/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              },
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/never_read/quest.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/never_read/quest.wyrd",
+              "id": "gate.arrive",
+              "kind": "effect",
+              "line": 8
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_SCENE_UNUSED",
+      "col": 1,
+      "line": 3,
+      "message": "scene \"room\" is not run by a quest",
+      "path": "res://tests/golden/link/scene_unused/scene.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "980b87a074833a66",
+        "path": "res://tests/golden/link/scene_unused/scene.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/scene_unused/scene.wyrd",
+        "id": "scene_unused/aa01",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "keeper",
+        "tags": []
+      }
+    ],
+    "pack_id": "scene_unused",
+    "quests": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/scene_unused/scene.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa01",
+            "speaker": "keeper",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

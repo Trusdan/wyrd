@@ -35,6 +35,18 @@ jobs:
       - name: Check example content
         run: godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check example/content
 
+      - name: Check Gullhaven manifest
+        run: godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
+
+      - name: Export JSON is stable
+        run: |
+          set -euo pipefail
+          godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- \
+            export-json --manifest example/content/gullhaven/harbor.wyrdmanifest.tres -o /tmp/wyrd-export-a.json
+          godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- \
+            export-json --manifest example/content/gullhaven/harbor.wyrdmanifest.tres -o /tmp/wyrd-export-b.json
+          diff -q /tmp/wyrd-export-a.json /tmp/wyrd-export-b.json
+
       - name: Benchmark (informational)
         if: always()
         continue-on-error: true

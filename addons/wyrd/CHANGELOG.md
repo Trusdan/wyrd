@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+S1d slice compiler, part 4 of 4: linking and the pack CLI. Draft, not frozen (`docs/statements-draft.md`). `tag-lines` is the follow-up, so the S1 exit completes there.
+
+- `check` links a pack: merged facts, quests, scenes, speakers, commands, line ids, and the fact cross-reference.
+- `WyrdContentManifest` plus optional `wyrd_commands.json`. A directory with no manifest is one pack named after the folder.
+- `export-json` and `facts`. `export-json` is a debug document, not the runtime load format. `test` and `tag-lines` stay unimplemented.
+- Gullhaven is a four-file slice. `check --manifest` on `harbor.wyrdmanifest.tres` is clean.
+
 S1b-perf: dependency index, dirty-set benchmark, and the condition-evaluator speed pass. Draft, not a CI gate (`docs/spikes/s0-condition-speed.md`).
 
 - `WyrdDepIndex` maps exact keys and `{id}` patterns to condition indexes. A pattern depends on the whole key. The index is rebuilt from `reads` and is never saved.

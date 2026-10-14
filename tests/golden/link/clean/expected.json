@@ -1,0 +1,206 @@
+{
+  "diagnostics": [],
+  "export": {
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "64923ccca3ef75fa",
+        "path": "res://tests/golden/link/clean/quest.wyrd"
+      },
+      {
+        "hash": "fb9b30f2d9e9e650",
+        "path": "res://tests/golden/link/clean/scene.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/clean/scene.wyrd",
+        "id": "clean/aa01",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "keeper",
+        "tags": []
+      }
+    ],
+    "pack_id": "clean",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/clean/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "keeper",
+            "role": "dock_keeper"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "room",
+                "with": [
+                  "keeper"
+                ]
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": "player.coins >= 0"
+          },
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/clean/scene.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa01",
+            "speaker": "keeper",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/clean/quest.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/clean/quest.wyrd",
+              "id": "gate.arrive",
+              "kind": "stage",
+              "line": 8
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/clean/quest.wyrd",
+              "id": "gate.arrive",
+              "kind": "effect",
+              "line": 10
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

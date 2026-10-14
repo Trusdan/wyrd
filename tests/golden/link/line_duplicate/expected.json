@@ -1,0 +1,99 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_LINE_ID_DUPLICATE",
+      "col": 5,
+      "line": 5,
+      "message": "duplicate #line: id \"aa01\" in res://tests/golden/link/line_duplicate/a.wyrd:5:5 and res://tests/golden/link/line_duplicate/b.wyrd:5:5",
+      "path": "res://tests/golden/link/line_duplicate/b.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "bd6c22531b7795cd",
+        "path": "res://tests/golden/link/line_duplicate/a.wyrd"
+      },
+      {
+        "hash": "29c72a2e749f0507",
+        "path": "res://tests/golden/link/line_duplicate/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/line_duplicate/a.wyrd",
+        "id": "line_duplicate/aa01",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/line_duplicate/b.wyrd",
+        "id": "line_duplicate/aa01",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      }
+    ],
+    "pack_id": "line_duplicate",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/line_duplicate/a.wyrd",
+        "id": "alpha",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [
+              "aa01"
+            ],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Alpha"
+      },
+      {
+        "file": "res://tests/golden/link/line_duplicate/b.wyrd",
+        "id": "beta",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [
+              "aa01"
+            ],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Beta"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

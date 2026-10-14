@@ -1,0 +1,355 @@
+class_name WyrdExport
+extends RefCounted
+
+## Debug JSON for a linked pack. Not the runtime load format.
+##
+## @experimental
+## Keys are sorted. A second export of the same pack is byte-identical.
+## Line ids are exported as [code]<pack>/<id>[/code].
+
+const VERSION := 1
+
+
+static func hash_text(text: String) -> String:
+	return _hex64(WyrdHash.of_string_name(StringName(text)))
+
+
+static func to_data(pack: WyrdLinkedPack) -> Dictionary:
+	if pack == null:
+		return {}
+	var files: Array = []
+	for unit in pack.units:
+		files.append({"hash": str(unit["hash"]), "path": str(unit["path"])})
+	var xref := {}
+	if pack.xref != null:
+		xref = pack.xref.to_data()
+	return {
+		"facts": _facts(pack),
+		"files": files,
+		"language_version": pack.language_version,
+		"lines": _lines(pack),
+		"pack_id": pack.pack_id,
+		"quests": _quests(pack),
+		"scenes": _scenes(pack),
+		"wyrd_export": VERSION,
+		"xref": xref,
+	}
+
+
+static func to_json(data: Dictionary) -> String:
+	return _encode(data, 0) + "\n"
+
+
+static func xref_json(pack: WyrdLinkedPack) -> String:
+	var xref := {}
+	if pack != null and pack.xref != null:
+		xref = pack.xref.to_data()
+	return to_json(xref)
+
+
+static func _facts(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack.schema == null:
+		return rows
+	for fact in pack.schema.entries:
+		rows.append({
+			"doc": fact.doc,
+			"invalidate": String(fact.invalidate),
+			"invalidate_arg": fact.invalidate_arg,
+			"key": fact.key,
+			"line": fact.line,
+			"origin": String(fact.origin),
+			"pattern": fact.is_pattern(),
+			"resolver": fact.resolver,
+			"source": fact.resolver if fact.origin == &"resolved" else "stored",
+			"type": String(fact.type_name),
+		})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
+	return rows
+
+
+static func _quests(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			var slots: Array = []
+			for slot in quest.slots:
+				slots.append({
+					"locked_stage": slot.locked_stage,
+					"mode": String(slot.mode),
+					"name": slot.name,
+					"role": slot.role,
+				})
+			var stages: Array = []
+			for stage in quest.stages:
+				stages.append(_stage(stage))
+			rows.append({
+				"file": str(unit["path"]),
+				"id": quest.id,
+				"on_empty": quest.on_empty,
+				"requires": _strings(quest.requires),
+				"slots": slots,
+				"stages": stages,
+				"start": _cond(quest.start_when),
+				"title": quest.title,
+			})
+	return rows
+
+
+static func _stage(stage: WyrdStageDef) -> Dictionary:
+	var scenes: Array = []
+	for ref in stage.scenes:
+		var with_names: Array = []
+		for entry in ref["with"]:
+			with_names.append(str(entry["name"]))
+		scenes.append({"id": str(ref["id"]), "with": with_names})
+	var transitions: Array = []
+	for row in stage.transitions:
+		transitions.append({"target": str(row["target"]), "when": str(row["expr"])})
+	var journals: Array = []
+	for journal in stage.journals:
+		journals.append(journal.line_id)
+	var variants: Array = []
+	for variant in stage.variants:
+		variants.append({
+			"body": _stage(variant.body) if variant.body != null else {},
+			"slot": variant.slot,
+			"state": String(variant.state),
+		})
+	return {
+		"effects": _effects(stage.effects),
+		"id": stage.id,
+		"journals": journals,
+		"scenes": scenes,
+		"transitions": transitions,
+		"variants": variants,
+		"waits": stage.waits_text,
+	}
+
+
+static func _scenes(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		for scene in file.scenes:
+			var items: Array = []
+			for item in scene.items:
+				items.append(_item(item))
+			rows.append({
+				"file": str(unit["path"]),
+				"id": scene.id,
+				"items": items,
+				"on_abort": _effects(scene.on_abort),
+			})
+	return rows
+
+
+static func _item(item: WyrdSceneItem) -> Dictionary:
+	var data := {
+		"divert": String(item.divert_kind),
+		"kind": String(item.kind),
+		"label": item.label,
+		"target": item.target,
+	}
+	if item.line_def != null:
+		data["line_id"] = item.line_def.line_id
+		data["speaker"] = item.line_def.speaker
+	if item.choice != null:
+		data["choice_id"] = item.choice.line_id
+		data["effects"] = _effects(item.choice.effects)
+		data["target"] = item.choice.target
+	return data
+
+
+static func _lines(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	for unit in pack.units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_line_stage(rows, stage, path, pack.pack_id)
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.line_def != null:
+					rows.append(_line_row(item.line_def.line_id, "spoken", path, pack.pack_id, scene.id, item.line_def.speaker, item.line_def.condition, item.line_def.tags))
+				if item.choice != null and not item.choice.line_id.is_empty():
+					rows.append(_line_row(item.choice.line_id, "choice", path, pack.pack_id, scene.id, "", item.choice.condition, item.choice.tags))
+	return rows
+
+
+static func _line_stage(rows: Array, stage: WyrdStageDef, path: String, pack_id: String) -> void:
+	for journal in stage.journals:
+		rows.append(_line_row(journal.line_id, "journal", path, pack_id, "", "", journal.condition, journal.tags))
+	for variant in stage.variants:
+		if variant.body != null:
+			_line_stage(rows, variant.body, path, pack_id)
+
+
+static func _line_row(
+	local_id: String,
+	kind: String,
+	path: String,
+	pack_id: String,
+	scene_id: String,
+	speaker: String,
+	condition: WyrdCompiledCondition,
+	tags: PackedStringArray
+) -> Dictionary:
+	return {
+		"condition": _cond(condition),
+		"file": path,
+		"id": "%s/%s" % [pack_id, local_id],
+		"kind": kind,
+		"scene": scene_id,
+		"speaker": speaker,
+		"tags": _strings(tags),
+	}
+
+
+static func _effects(effects: Array) -> Array:
+	var rows: Array = []
+	for effect in effects:
+		var args: Array = []
+		for arg in effect.args:
+			args.append({"name": str(arg["name"]), "text": str(arg["text"])})
+		rows.append({
+			"args": args,
+			"branch": effect.branch,
+			"command": effect.command,
+			"fact_key": effect.fact_key,
+			"kind": String(effect.kind),
+			"on_fail": effect.on_fail,
+			"outcome": effect.outcome,
+			"target": _cond(effect.target),
+			"topic": effect.topic,
+			"value": _cond(effect.value),
+			"verb": effect.verb,
+		})
+	return rows
+
+
+static func _cond(cond: WyrdCompiledCondition) -> Variant:
+	if cond == null:
+		return null
+	var code: Array = []
+	for op in cond.code:
+		code.append(int(op))
+	var consts: Array = []
+	for item in cond.consts:
+		consts.append(_const(item))
+	var reads: Array = []
+	for read in cond.reads:
+		reads.append(String(read))
+	return {
+		"code": code,
+		"consts": consts,
+		"reads": reads,
+		"specificity": cond.specificity,
+		"uses_chance": cond.uses_chance,
+	}
+
+
+static func _const(item: Variant) -> Dictionary:
+	if item is bool:
+		return {"t": "bool", "v": item}
+	if item is int:
+		return {"t": "int", "v": item}
+	if item is float:
+		return {"t": "float", "v": item}
+	return {"t": "name", "v": String(item)}
+
+
+static func _strings(values: PackedStringArray) -> Array:
+	var rows: Array = []
+	for item in values:
+		rows.append(item)
+	return rows
+
+
+static func _hex64(value: int) -> String:
+	var digits := "0123456789abcdef"
+	var out := ""
+	var bits := value
+	for _i in 16:
+		out = digits[bits & 0xF] + out
+		bits >>= 4
+	return out
+
+
+static func _encode(value: Variant, indent: int) -> String:
+	if value == null:
+		return "null"
+	if value is bool:
+		return "true" if value else "false"
+	if value is int and not value is float:
+		return str(value)
+	if value is float:
+		return _float(value)
+	if value is String:
+		return _string(value)
+	if value is Array:
+		return _array(value, indent)
+	if value is Dictionary:
+		return _dict(value, indent)
+	return _string(str(value))
+
+
+static func _float(value: float) -> String:
+	if is_nan(value) or is_inf(value):
+		return "null"
+	return str(value)
+
+
+static func _dict(dict: Dictionary, indent: int) -> String:
+	var keys: PackedStringArray = PackedStringArray()
+	for key in dict.keys():
+		keys.append(str(key))
+	keys.sort()
+	if keys.is_empty():
+		return "{}"
+	var pad := "  ".repeat(indent + 1)
+	var lines: PackedStringArray = PackedStringArray()
+	for i in keys.size():
+		var key := keys[i]
+		var line := "%s%s: %s" % [pad, _string(key), _encode(dict[key], indent + 1)]
+		if i < keys.size() - 1:
+			line += ","
+		lines.append(line)
+	return "{\n" + "\n".join(lines) + "\n" + "  ".repeat(indent) + "}"
+
+
+static func _array(items: Array, indent: int) -> String:
+	if items.is_empty():
+		return "[]"
+	var pad := "  ".repeat(indent + 1)
+	var lines: PackedStringArray = PackedStringArray()
+	for i in items.size():
+		var line := "%s%s" % [pad, _encode(items[i], indent + 1)]
+		if i < items.size() - 1:
+			line += ","
+		lines.append(line)
+	return "[\n" + "\n".join(lines) + "\n" + "  ".repeat(indent) + "]"
+
+
+static func _string(value: String) -> String:
+	var out := "\""
+	for i in value.length():
+		var ch := value[i]
+		var code := value.unicode_at(i)
+		if ch == "\\":
+			out += "\\\\"
+		elif ch == "\"":
+			out += "\\\""
+		elif ch == "\n":
+			out += "\\n"
+		elif ch == "\r":
+			out += "\\r"
+		elif ch == "\t":
+			out += "\\t"
+		elif code < 32:
+			out += "\\u%04x" % code
+		else:
+			out += ch
+	return out + "\""

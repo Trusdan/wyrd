@@ -1,0 +1,7 @@
+// [EXAMPLE CONTENT] Gullhaven dock scenes. An invented fishing village, not a host game.
+language 1
+
+scene toll.depart
+  when player.coins >= 2: ferry: Two coins, and the boat will cross. #line:a_cross
+  narrator: The boat leaves the dock. #line:a_leave
+  -> end

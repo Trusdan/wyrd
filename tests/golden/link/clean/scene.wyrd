@@ -1,0 +1,5 @@
+language 1
+
+scene room
+  keeper: The gate is open. #line:aa01
+  -> end

@@ -1,0 +1,5 @@
+language 1
+
+scene room
+  keeper: Hello. #line:aa01
+  -> end

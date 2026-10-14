@@ -7,7 +7,7 @@ extends WyrdStmtSpan
 ## [member kind] is [code]set[/code], [code]inc[/code], [code]record_deed[/code],
 ## [code]unlock_topic[/code], [code]do[/code], or [code]outcome[/code].
 ## [member args] holds named deed or command arguments.
-## Command arguments are not checked against [code]WyrdCommandSchema[/code] until PR 5.
+## Command names are checked against [code]WyrdCommandSchema[/code] when the linker has one.
 
 var kind: StringName = &""
 var fact_key: String = ""

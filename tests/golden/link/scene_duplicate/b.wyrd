@@ -1,0 +1,5 @@
+language 1
+
+scene room
+  narrator: Two. #line:aa02
+  -> end

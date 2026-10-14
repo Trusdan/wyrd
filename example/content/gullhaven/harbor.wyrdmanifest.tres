@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WyrdContentManifest" format=3]
+
+[ext_resource type="Script" path="res://addons/wyrd/compiler/wyrd_content_manifest.gd" id="1_mi2bd"]
+
+[resource]
+script = ExtResource("1_mi2bd")
+pack_id = &"harbor"
+files = PackedStringArray("res://example/content/gullhaven/facts.wyrd", "res://example/content/gullhaven/ferry_toll.wyrd", "res://example/content/gullhaven/harbor_scenes.wyrd", "res://example/content/gullhaven/dock_scenes.wyrd")

@@ -1,0 +1,68 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_PACK_UNKNOWN",
+      "col": 3,
+      "line": 4,
+      "message": "pack \"other\" is not loaded; the quest stays unavailable until it is",
+      "path": "res://tests/golden/link/pack_unknown/quest.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "a0c6ee0fc59647af",
+        "path": "res://tests/golden/link/pack_unknown/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "pack_unknown",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/pack_unknown/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [
+          "pack.other"
+        ],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

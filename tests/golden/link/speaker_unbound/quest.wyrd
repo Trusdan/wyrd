@@ -1,0 +1,8 @@
+language 1
+
+quest gate "Gate"
+  slot keeper = dock_keeper mode: live
+  slot clerk = dock_clerk mode: live
+  stage arrive
+    scene room with keeper
+    ~ outcome route = done

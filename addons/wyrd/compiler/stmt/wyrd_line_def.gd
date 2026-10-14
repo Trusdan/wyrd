@@ -6,7 +6,7 @@ extends WyrdStmtSpan
 ## @experimental
 ## [member kind] is [code]spoken[/code] or [code]journal[/code].
 ## [member tags] is reserved for the later voiced lint. This slice stores none.
-## [member scene_id] is empty on a journal entry. Slot binding is a PR 5 link check.
+## [member scene_id] is empty on a journal entry. The linker binds slot speakers.
 
 var line_id: String = ""
 var speaker: String = ""

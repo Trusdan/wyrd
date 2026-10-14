@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+S1d slice compiler, part 4 of 4: linking and the pack CLI. Draft, not frozen (`docs/statements-draft.md`). `tag-lines` is the follow-up, so the S1 exit completes there.
+
+- `check` links a pack: merged facts, quests, scenes, speakers, commands, line ids, and the fact cross-reference.
+- `WyrdContentManifest` plus optional `wyrd_commands.json`. A directory with no manifest is one pack named after the folder.
+- `export-json` and `facts`. `export-json` is a debug document, not the runtime load format. `test` and `tag-lines` stay unimplemented.
+- Gullhaven is a four-file slice. `check --manifest` on `harbor.wyrdmanifest.tres` is clean.
+
+S1b-perf: dependency index, dirty-set benchmark, and the condition-evaluator speed pass. Draft, not a CI gate (`docs/spikes/s0-condition-speed.md`).
+
+- `WyrdDepIndex` maps exact keys and `{id}` patterns to condition indexes. A pattern depends on the whole key. The index is rebuilt from `reads` and is never saved.
+- The seeded 10k-fact / 5k-condition bench times dirty-set ticks at 1, 10, and 100 changed facts. Incremental results must match a full scan. Timings stay informational.
+- `WyrdRpnEval` lives in `runtime/conditions`. `tests/support/wyrd_rpn_eval.gd` is a thin shim. Saved opcodes are unchanged.
+- The measured speed pass kept fact-slot loads, frequency-ordered dispatch, and load-time superinstructions. A fixed stack, hoisting consts, and an inlined jump pop were slower or not reliable, and were dropped. Numbers are in the spike doc.
+
 S1c slice compiler, part 3 of 4: statements and effects. Draft, not frozen (`docs/statements-draft.md`).
 
 - Quest, stage, slot, variant, scene, line, choice, and effect records, compiled from the block tree.
