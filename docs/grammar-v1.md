@@ -1,38 +1,56 @@
-# Wyrd grammar v1 (draft)
+# Wyrd grammar v1
 
-**Status: draft for approval. This pull request does not freeze the grammar.**
+**Status: lexical and block rules frozen.** Approved by Corey, 2026-10-14.
 
-The lexical rules below are the default proposal: indentation-scoped blocks, `//` comments, `#line:` tags at the end of a line, `{{` as the escape for `{`, and a `language 1` header. Statement grammar (conditions, effects, quests, scenes) is illustrated so the shape is reviewable. It is not a parser spec.
+Sections 1–6 are the freeze. They cover files, indentation, comments, line tags, escapes, the `language` header, and reserved words. The quest, scene, and facts examples in section 7 are illustrations. Their statement grammar is not frozen and waits for the slice compiler. A multi-line prose syntax is future work and is not part of this freeze.
 
 Examples use only the invented village Gullhaven.
 
-## 1. File
+## 1. File and blocks
 
 - Source is UTF-8.
-- The first non-blank, non-comment line is the header `language 1`.
+- The first non-blank, non-comment line is the header `language 1` (section 5).
+- Blocks are indentation-only. There is no `end` keyword. A block ends when the next line's indent decreases.
+- Indentation is two spaces per level. A tab is an error.
+- A nested line is indented exactly one level (two spaces) deeper than the line that opened its block.
 - Blank lines are ignored. A blank line does not close a block.
-- Indentation uses spaces, two per level. A tab is an error under this proposal.
-- A nested line is indented exactly one level deeper than the line that opened its block.
 
 ## 2. Comments
 
-- `//` starts a comment that runs to the end of the line.
-- Comments are not recognized inside a quoted string.
-- `#` does not start a comment. A leading `#` is how line tags are spelled, and a comment marker would be ambiguous next to them.
+- `//` starts a comment that runs to the end of the line. There is no block comment.
+- `//` is not recognized inside a quoted string.
+- `#` is never a comment. A leading `#` is how line tags are spelled.
 
 ## 3. Line tags
 
-- A line tag has the form `#line:<id>` and is the last token on the line.
+- A line tag has the form `#line:<id>`.
 - `<id>` is a stable identifier. Editing the words of the line does not change the id.
-- This draft allows a `//` comment after the tag (`#line:a91f // note`). That is an open choice below.
+- The tag is the last token on the line, except that a `//` comment may follow it.
 
-## 4. Braces
+```wyrd
+tavern: The stew is free tonight. #line:a91f // spoken by whoever holds the tavern slot
+```
 
-- `{{` in text is a literal `{`.
-- A single `{` starts an interpolation. The expression language inside it is not defined in this draft.
-- `}` closes an interpolation. A `}` that does not close one is literal text, so `}}` is not an escape.
+## 4. Escapes
+
+In prose (spoken lines and other unquoted text):
+
+- `{{` is the only escape, and it is a literal `{`.
+- A single `{` starts an interpolation. The expression language inside it is not part of this freeze.
+- `}` closes an interpolation. A `}` that does not close one is literal text.
+- `}}` is not an escape.
+- There are no backslash escapes in prose.
 
 `The board lists the price as {{two coins}}.` displays as `The board lists the price as {two coins}.`
+
+Inside a double-quoted title:
+
+- Titles use double quotes. This freeze has no single-quoted strings.
+- `\"` is a literal quote.
+- `\\` is a literal backslash.
+- No other backslash escape is defined.
+
+`"The \"dawn\" crossing"` is the title `The "dawn" crossing`.
 
 ## 5. Header
 
@@ -40,22 +58,25 @@ Examples use only the invented village Gullhaven.
 language 1
 ```
 
-`1` is an integer. This draft does not define a quoted form, a minor version, or a default when the header is missing. The proposal is that a missing or unknown header is an error.
+`1` is that integer token. The header is required. A missing header, a quoted form, another number, or any other spelling is an error. There is no default.
 
 ## 6. Reserved words
 
-These words are reserved. They are not legal identifiers in this draft, and this draft does not define their syntax:
+These words are reserved. They are not legal identifiers. This freeze does not define their syntax:
 
 - `document`
 - `publishes_by`
 - `tier`
 - `await_host`
+- `believe`
+- `declare`
+- `retract`
 
-They name later features (readable documents, published issues, pressure tiers, and a host-modal step). Writers should not use them as quest ids, fact keys, or role names.
+`document`, `publishes_by`, `tier`, and `await_host` name later features (readable documents, published issues, pressure tiers, and a host-modal step). `believe`, `declare`, and `retract` are reserved for belief layers. Writers should not use any of these as quest ids, fact keys, or role names.
 
 ## 7. Illustrated blocks
 
-Indentation scopes each block. The examples follow the shape already used for Gullhaven in the design notes: a `facts` schema, a `quest` with stages, and a `scene` with choices. Words such as `when`, `slot`, and `journal` are part of that illustration. Their full grammar waits for the slice compiler.
+These examples show a `facts` block, a `quest`, and a `scene` with choices, in the shape used for Gullhaven. Words such as `when`, `slot`, and `journal` are part of the illustration. They are not frozen. One spoken line is one source line (section 8).
 
 ### Facts
 
@@ -91,7 +112,7 @@ quest ferry_toll "The Ferry Toll"
 
 ```wyrd
 scene toll.offer_room
-  tavern: A room's two coins a night, and the stew is free. #line:a91f
+  tavern: A room's two coins a night, and the stew is free. #line:a91f // room offer
   * [Take the room] -> took
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
   * {has_tag(player, local)} [I have a place in town] -> declined
@@ -99,17 +120,17 @@ scene toll.offer_room
   tavern: The board lists the price as {{two coins}}. #line:a921
 ```
 
-## 8. Open choices
+## 8. Approved decisions
 
-These need a decision before the grammar can be called frozen. The proposal in sections 1–5 is the default, not a lock.
+Approved by Corey, 2026-10-14. Items 1–4 and 6–9 are the frozen lexical and block rules (sections 1–6). Item 5 is the current prose rule, with a later syntax explicitly left open. Item 10 keeps the examples unfrozen.
 
-1. **Indentation versus an explicit `end`.** The proposal is indentation only. Confirm that a block ends when the indent decreases, and that `end` is not a keyword.
-2. **Indent width and tabs.** The proposal is two spaces, and a tab is an error. Four spaces, or tabs only, are the alternatives.
-3. **Comments.** The proposal is `//` line comments only, with no block comment. Confirm that `#` is never a comment.
-4. **Comment after a tag.** The proposal allows `//` after `#line:<id>`. The alternative is that the tag must be the final characters on the line.
-5. **Multi-line prose.** Not decided. This draft requires one source line per spoken line. A continuation marker, or a quoted block, is still open. This is the item the default proposal does not settle.
-6. **Brace escape.** The proposal is that `{{` is the only escape, and that a stray `}` is literal. Confirm there is no `}}` escape and no backslash escape in prose.
-7. **Quoted strings.** Titles use double quotes in the examples (`"The Ferry Toll"`). Escaping a quote inside a title is open. This draft has no single-quoted strings.
-8. **Header.** The proposal is that `language 1` is required and that anything else is an error. An optional header that defaults to 1 is the alternative.
-9. **Reserved list.** Confirm that `document`, `publishes_by`, `tier`, and `await_host` are the complete reserved list for this draft.
-10. **What this draft freezes, once approved.** The proposal is to freeze only the rules in sections 1–6. The quest, scene, and facts illustrations stay examples until the slice compiler specifies them.
+1. **Indentation.** Blocks are indentation-only. A block ends when the indent decreases. There is no `end` keyword.
+2. **Indent width.** Two spaces per level. A tab is an error.
+3. **Comments.** `//` line comments only. `#` is never a comment.
+4. **Comment after a tag.** A `//` comment may follow a `#line:` tag.
+5. **Spoken lines.** One source line per spoken line for now. A multi-line or wrap syntax may be added later. That syntax is future work and is not part of this freeze.
+6. **Prose escapes.** `{{` is the only escape for `{`. A stray `}` is literal. There is no `}}` escape and no backslash escape in prose.
+7. **Titles.** Inside double-quoted titles, `\"` escapes a quote and `\\` escapes a backslash.
+8. **Header.** `language 1` is required. Anything else is an error.
+9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. No syntax for them is defined here.
+10. **Examples.** The quest, scene, and facts examples remain illustrations until the slice compiler.
