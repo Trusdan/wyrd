@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WyrdContentManifest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/wyrd/compiler/wyrd_content_manifest.gd" id="1_manifest"]
+
+[resource]
+script = ExtResource("1_manifest")
+pack_id = &"sample"
+files = PackedStringArray("res://tests/scenario/pack/sample.wyrd")

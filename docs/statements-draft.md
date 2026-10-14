@@ -148,6 +148,10 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 
 Resolved facts are never "never set". `record deed` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.
 
+## Host-modal step
+
+`await_host` is proposed in `docs/grammar-v1.md` section 9 and is **not approved**. It is not parsed. The word stays reserved. The runtime exposes the step through `request_host_step`, `complete_host_step`, and `host_step_requested`.
+
 ## Not in this draft
 
 Casting proper, `locked_gone`, and resolving `redirect beat` are M4. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Host world-event schemas are later host-adapter work. `test` stays unimplemented.

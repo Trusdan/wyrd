@@ -17,9 +17,25 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 - `deeds` — `record(...)`. Decay, `deed_count`, and `deed_score` read the log.
 - `social` — baselines, kinds, `axis`, `disposition`, and an optional formula.
 - `roles` — `assign`, `vacate`, `define`, `tell`, `begin_quest`, `enter_stage`, `holder`, and `slot_state`.
+- `quests` — status, stage, outcome, journal, `abandon`, `request_host_step`, `complete_host_step`, `register_date_formatter`. Signals: `quest_state_changed`, `stage_changed`, `journal_entry_added`, `content_unavailable`, `host_step_requested`.
+- `dialogue` — `open_scene`, `advance`, `choose`, `abort`, `register_line_audio`, `can_save`. Signals: `line_ready`, `choices_ready`, `scene_ended`.
 
-`believed/` and `held/` perspectives exist as empty maps and refuse writes (M5).
+`can_save()` is false while a scene is open. `start_new_game` does not write a save.
 
-Dialogue text is always shown, whether or not a line is voiced. This slice does not run scenes. Audio, when it arrives, must not hide text or advance a line.
+`believed/` and `held/` perspectives exist as empty maps and refuse writes (M5). `knows`, `believes`, and `held` stay false.
 
-Quests, scene playback, and saves are later slices. Belief perspectives stay empty (M5).
+## Text
+
+Dialogue text is always shown, whether or not a line is voiced. `line_audio` may return null. Audio never hides a line and never advances it. `advance()` is the only way on.
+
+## Quests
+
+`requires` naming a pack other than the loaded pack sets `unavailable` and emits `content_unavailable` when content loads and again on `start_new_game`. `start when` and `waits_until` move only after the tick queue has re-checked them. A stage that names a scene offers it. The host calls `open_scene`. Transitions wait until that scene ends normally. An aborted scene stays offered.
+
+The quest completes when every declared outcome is set and the current body has no transition left. Any outcome value `failed` fails the quest.
+
+Journal text is interpolated once and stored with the game time. The default date is `day N, HH:MM` (day 1 at minute 0, 1440 minutes per day). `register_date_formatter` replaces that for later writes. A stored date does not change.
+
+`await_host` is not parsed. See `docs/grammar-v1.md` section 9. The host step is `request_host_step` / `complete_host_step`.
+
+Saves are a later slice.

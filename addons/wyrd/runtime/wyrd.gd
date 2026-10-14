@@ -7,14 +7,17 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## @experimental
 ## The editor plugin does not register this script as an autoload.
 ## When it does, the autoload name is Wyrd, so this script has no class_name.
-## [member facts], [member events], [member deeds], [member social], and
-## [member roles] are the runtime's sub-objects.
+## [member facts], [member events], [member deeds], [member social],
+## [member roles], [member quests], and [member dialogue] are the runtime's
+## sub-objects. [member dialogue] is the scene runner.
 
 var facts: WyrdFactStore
 var events: WyrdEvents
 var deeds: WyrdDeedLog
 var social: WyrdSocial
 var roles: WyrdRoles
+var quests: WyrdQuestRunner
+var dialogue: WyrdSceneRunner
 
 var _runtime: WyrdRuntime
 
@@ -26,6 +29,8 @@ func _init() -> void:
 	deeds = _runtime.deeds
 	social = _runtime.social
 	roles = _runtime.roles
+	quests = _runtime.quests
+	dialogue = _runtime.dialogue
 
 
 func get_version() -> String:
@@ -58,6 +63,10 @@ func tick(game_minutes: int) -> void:
 
 func now_minutes() -> int:
 	return _runtime.now_minutes()
+
+
+func can_save() -> bool:
+	return _runtime.can_save()
 
 
 func content() -> WyrdContent:

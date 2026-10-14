@@ -139,3 +139,17 @@ Approved by Corey, 2026-10-14. Items 1–4 and 6–9 are the frozen lexical and 
 8. **Header.** `language 1` is required. Anything else is an error.
 9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. No syntax for them is defined here.
 10. **Examples.** The quest, scene, and facts examples remain illustrations until the slice compiler.
+
+## 9. Proposal: `await_host` (pending approval)
+
+**Status: proposal. Not approved. Not parsed. Sections 1–6 stay frozen.** `await_host` remains a reserved word (section 6) and is not a legal identifier.
+
+A host-modal step would be one statement inside a stage:
+
+```wyrd
+await_host <screen_id> returns { <field>, <field> }
+```
+
+`<screen_id>` is an identifier. `<field>` names are identifiers. The braces are the returns list, not prose interpolation. Nothing else is proposed: no condition, no block, no nested effects.
+
+The S2c runtime does not read this statement. A test or host calls `request_host_step`, waits on `host_step_requested`, and finishes with `complete_host_step`. Parsing `await_host` waits for the owner's approval.

@@ -2,6 +2,8 @@
 language 1
 
 scene toll.offer_room
+  on_abort:
+    ~ record deed left(actor: player, place: gullhaven, tags: [cut], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
   tavern: A room's two coins a night, and the stew is free. #line:a91f
   lookout: The headland bell rang twice before the rain. #line:a_look
   when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
@@ -18,6 +20,7 @@ scene toll.offer_room
   - (declined)
   tavern: The ferry's charging double since the storm, mind. #line:a920
   -> scene toll.depart
+  -> end
   - (no_room)
   tavern: No room left tonight. #line:a922
   tavern: The board lists the price as {{two coins}}. #line:a921
