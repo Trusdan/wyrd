@@ -6,4 +6,4 @@
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check <file-or-dir>
 ```
 
-`check` lexes and parses every `.wyrd` file and prints diagnostics. It exits 0 when there are no errors and 1 when there are. `test`, `tag-lines`, and `export-json` print `not implemented`.
+`check` compiles every `.wyrd` file (lex, parse, facts, conditions, statements) and prints diagnostics. It exits 0 when there are no errors and 1 when there are. `test`, `tag-lines`, and `export-json` print `not implemented`.

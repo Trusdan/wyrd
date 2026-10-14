@@ -1,0 +1,10 @@
+language 1
+
+scene toll.gate
+  "keeper": Hello there. #line:a1
+  * [Go]
+  * [Stay] -> stay #line:c_stay
+  -> missing
+  - (stay)
+  - (stay)
+  ->

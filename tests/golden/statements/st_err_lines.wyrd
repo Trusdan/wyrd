@@ -1,0 +1,13 @@
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  stage pay
+    journal: Nobody wrote a line id.
+    journal: Tagged once. #line:same
+
+scene toll.gate
+  narrator: Also missing.
+  narrator: Tagged again. #line:same
+  * [Go] -> end
+  * -> end
+  * [Stay] -> end #line:c_stay

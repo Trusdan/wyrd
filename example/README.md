@@ -2,4 +2,4 @@
 
 Generic example village for Wyrd.
 
-Gullhaven is a fishing village invented for Wyrd. Its people and places are not from any host game. `content/gullhaven/ferry_toll.wyrd` is the grammar v1 section 7 illustration: a facts block, a quest, and a scene. Statement semantics inside the quest and scene are not checked yet. `check` only requires the lexical and block rules, and a well-formed facts block.
+Gullhaven is a fishing village invented for Wyrd. Its people and places are not from any host game. `content/gullhaven/ferry_toll.wyrd` is a small quest and two scenes that `check` compiles with no errors. Journal text is unquoted prose, so `{...}` interpolates. Quest titles stay quoted.

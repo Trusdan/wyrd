@@ -1,0 +1,21 @@
+language 1
+
+facts
+  player.coins : int stored
+
+quest ferry_toll "The Ferry Toll"
+  slot tavern = tavern_owner mode: live
+  slot tavern = tavern_owner mode: live
+  slot ferry = ferry_master mode: locked_at(missing)
+  on_hostile: wait
+  frobnicate
+  stage pay
+    variant missing.empty:
+      journal: Quiet dock. #line:j1
+    variant tavern.asleep:
+      journal: Asleep. #line:j2
+    variant tavern.empty(player.coins > 0):
+      journal: Extra. #line:j3
+    -> gone
+  stage pay
+    -> pay

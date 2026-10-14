@@ -1,0 +1,28 @@
+language 1
+
+facts
+  player.coins : int stored
+  season : symbol stored
+  npc.{id}.alive : bool source: world.is_alive invalidate: on_event(npc_died)
+
+scene toll.gate
+  on_abort:
+    ~ outcome crossing = failed
+  narrator: The gate is shut. #line:a1
+  when player.coins >= 2: ferry: You can cross. #line:a2
+  ferry.master: Ask {holder(ferry)|variants}. #line:a3
+  * [Cross] -> cross #line:c1
+    ~ do take_coin(amount: player.coins)
+    on_fail -> broke
+  * {player.coins >= 2} [Pay the toll] disabled_when {player.coins < 2} "short on coins" -> paid #line:c2
+  * {chance(1)} -> gamble
+  - (cross)
+  ferry: {if season == spring}The tide is up.{else}The tide is down.{end} #line:a4
+  ferry: Alive {fact(npc, holder(ferry), alive)}. #line:a5
+  ferry: The board says {{two coins}}. #line:a6
+  - (paid)
+  - (gamble)
+  - (broke)
+  -> end
+  -> scene toll.office
+  -> cross

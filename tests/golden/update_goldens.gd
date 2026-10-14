@@ -6,5 +6,6 @@ extends SceneTree
 func _init() -> void:
 	var count := WyrdGolden.write_expected()
 	var conditions := WyrdConditionGolden.write_expected()
-	print("Updated %d golden files and %d condition files." % [count, conditions])
+	var statements := WyrdStmtGolden.write_expected()
+	print("Updated %d golden files, %d condition files, and %d statement files." % [count, conditions, statements])
 	quit(0)
