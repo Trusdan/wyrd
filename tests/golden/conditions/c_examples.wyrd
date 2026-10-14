@@ -1,0 +1,25 @@
+// Section 2.2 examples, rewritten with Gullhaven ids.
+language 1
+
+facts
+  player.coins : int stored
+  season : symbol stored
+  hour : int stored
+  secret.missing_toll : bool stored
+  npc.{id}.alive : bool source: world.is_alive invalidate: on_event(npc_died)
+  world.hour : int source: time.hour invalidate: poll(15)
+  world.season : symbol source: time.season invalidate: on_event(season_changed)
+
+// @context storylet_or_choice
+// @when player.coins >= 5 and has(player, harbor_pass)
+// @when filled(ferry) and disposition(holder(ferry), player) >= 40
+// @when deed_score(player, verb: theft, against: faction.harbor, within: 14d) > 0
+// @when nearby(player, 6m, tag: corpse) > 0
+// @when known(player, secret.missing_toll)
+// @when season == spring and hour in 6..18
+// @when chance(0.25) and player.coins >= 5
+// @when npc.{holder(ferry)}.alive
+// @when fact(npc, holder(ferry), alive)
+// @when holder(ferry).name == dock_clerk
+// @context wait_trigger_or_eligibility
+// @when world.hour > 0 and world.season == spring

@@ -1,0 +1,14 @@
+// Durations, distances, and the default 1440-minute day.
+language 1
+
+facts
+  player.coins : int stored
+
+// @value nearby(player, 6m, tag: corpse)
+// @value deed_score(player, within: 14d)
+// @value deed_score(player, within: 6h)
+// @value deed_score(player, within: 30m)
+// @when 6m
+// @when 6h
+// @day 1000
+// @value deed_score(player, within: 2d)

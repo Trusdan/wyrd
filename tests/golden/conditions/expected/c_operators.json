@@ -1,0 +1,1684 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "int",
+            "line": 9,
+            "text": "2",
+            "type": "int",
+            "value": 2
+          },
+          "b": {
+            "a": {
+              "col": 14,
+              "kind": "int",
+              "line": 9,
+              "text": "3",
+              "type": "int",
+              "value": 3
+            },
+            "b": {
+              "col": 18,
+              "kind": "int",
+              "line": 9,
+              "text": "4",
+              "type": "int",
+              "value": 4
+            },
+            "col": 14,
+            "kind": "binary",
+            "line": 9,
+            "text": "*",
+            "type": "int"
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 9,
+          "text": "+",
+          "type": "int"
+        },
+        "b": {
+          "col": 23,
+          "kind": "int",
+          "line": 9,
+          "text": "14",
+          "type": "int",
+          "value": 14
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            10,
+            8,
+            1,
+            3,
+            12
+          ],
+          "consts": [
+            {
+              "t": "int",
+              "v": 2
+            },
+            {
+              "t": "int",
+              "v": 3
+            },
+            {
+              "t": "int",
+              "v": 4
+            },
+            {
+              "t": "int",
+              "v": 14
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 2",
+            "0002 PUSH_CONST 3",
+            "0004 PUSH_CONST 4",
+            "0006 MUL",
+            "0007 ADD",
+            "0008 PUSH_CONST 14",
+            "0010 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 25,
+            "end_line": 9,
+            "line": 9
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 9,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "2 + 3 * 4 == 14",
+      "kind": "when",
+      "line": 9
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "a": {
+              "col": 11,
+              "kind": "int",
+              "line": 10,
+              "text": "2",
+              "type": "int",
+              "value": 2
+            },
+            "b": {
+              "col": 15,
+              "kind": "int",
+              "line": 10,
+              "text": "3",
+              "type": "int",
+              "value": 3
+            },
+            "col": 11,
+            "kind": "binary",
+            "line": 10,
+            "text": "+",
+            "type": "int"
+          },
+          "b": {
+            "col": 20,
+            "kind": "int",
+            "line": 10,
+            "text": "4",
+            "type": "int",
+            "value": 4
+          },
+          "col": 11,
+          "kind": "binary",
+          "line": 10,
+          "text": "*",
+          "type": "int"
+        },
+        "b": {
+          "col": 25,
+          "kind": "int",
+          "line": 10,
+          "text": "20",
+          "type": "int",
+          "value": 20
+        },
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            8,
+            1,
+            2,
+            10,
+            1,
+            3,
+            12
+          ],
+          "consts": [
+            {
+              "t": "int",
+              "v": 2
+            },
+            {
+              "t": "int",
+              "v": 3
+            },
+            {
+              "t": "int",
+              "v": 4
+            },
+            {
+              "t": "int",
+              "v": 20
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 2",
+            "0002 PUSH_CONST 3",
+            "0004 ADD",
+            "0005 PUSH_CONST 4",
+            "0007 MUL",
+            "0008 PUSH_CONST 20",
+            "0010 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 27,
+            "end_line": 10,
+            "line": 10
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 10,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "(2 + 3) * 4 == 20",
+      "kind": "when",
+      "line": 10
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "a": {
+              "col": 11,
+              "kind": "int",
+              "line": 11,
+              "text": "3",
+              "type": "int",
+              "value": 3
+            },
+            "col": 10,
+            "kind": "unary",
+            "line": 11,
+            "text": "-",
+            "type": "int"
+          },
+          "b": {
+            "col": 15,
+            "kind": "int",
+            "line": 11,
+            "text": "5",
+            "type": "int",
+            "value": 5
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 11,
+          "text": "+",
+          "type": "int"
+        },
+        "b": {
+          "col": 20,
+          "kind": "int",
+          "line": 11,
+          "text": "2",
+          "type": "int",
+          "value": 2
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            7,
+            1,
+            1,
+            8,
+            1,
+            2,
+            12
+          ],
+          "consts": [
+            {
+              "t": "int",
+              "v": 3
+            },
+            {
+              "t": "int",
+              "v": 5
+            },
+            {
+              "t": "int",
+              "v": 2
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 3",
+            "0002 NEG",
+            "0003 PUSH_CONST 5",
+            "0005 ADD",
+            "0006 PUSH_CONST 2",
+            "0008 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 21,
+            "end_line": 11,
+            "line": 11
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 11,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "-3 + 5 == 2",
+      "kind": "when",
+      "line": 11
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "int",
+            "line": 12,
+            "text": "5",
+            "type": "int",
+            "value": 5
+          },
+          "b": {
+            "col": 14,
+            "kind": "int",
+            "line": 12,
+            "text": "2",
+            "type": "int",
+            "value": 2
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 12,
+          "text": "/",
+          "type": "int"
+        },
+        "b": {
+          "col": 19,
+          "kind": "int",
+          "line": 12,
+          "text": "2",
+          "type": "int",
+          "value": 2
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            11,
+            1,
+            1,
+            12
+          ],
+          "consts": [
+            {
+              "t": "int",
+              "v": 5
+            },
+            {
+              "t": "int",
+              "v": 2
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 5",
+            "0002 PUSH_CONST 2",
+            "0004 DIV",
+            "0005 PUSH_CONST 2",
+            "0007 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 20,
+            "end_line": 12,
+            "line": 12
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 12,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "5 / 2 == 2",
+      "kind": "when",
+      "line": 12
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "float",
+            "line": 13,
+            "text": "5.0",
+            "type": "float",
+            "value": 5.0
+          },
+          "b": {
+            "col": 16,
+            "kind": "int",
+            "line": 13,
+            "text": "2",
+            "type": "int",
+            "value": 2
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 13,
+          "text": "/",
+          "type": "float"
+        },
+        "b": {
+          "col": 21,
+          "kind": "float",
+          "line": 13,
+          "text": "2.5",
+          "type": "float",
+          "value": 2.5
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            11,
+            1,
+            2,
+            12
+          ],
+          "consts": [
+            {
+              "t": "float",
+              "v": 5.0
+            },
+            {
+              "t": "int",
+              "v": 2
+            },
+            {
+              "t": "float",
+              "v": 2.5
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 5.0",
+            "0002 PUSH_CONST 2",
+            "0004 DIV",
+            "0005 PUSH_CONST 2.5",
+            "0007 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 24,
+            "end_line": 13,
+            "line": 13
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 13,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "5.0 / 2 == 2.5",
+      "kind": "when",
+      "line": 13
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 14,
+            "kind": "bool",
+            "line": 14,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "b": {
+            "col": 22,
+            "kind": "bool",
+            "line": 14,
+            "text": "false",
+            "type": "bool",
+            "value": false
+          },
+          "col": 14,
+          "kind": "binary",
+          "line": 14,
+          "text": "==",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            3,
+            12,
+            18
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 PUSH_FALSE",
+            "0002 EQ",
+            "0003 NOT"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 14,
+            "line": 14
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "unary",
+        "line": 14,
+        "text": "not",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "not true == false",
+      "kind": "when",
+      "line": 14
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 14,
+            "kind": "bool",
+            "line": 15,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "col": 10,
+          "kind": "unary",
+          "line": 15,
+          "text": "not",
+          "type": "bool"
+        },
+        "b": {
+          "col": 23,
+          "kind": "bool",
+          "line": 15,
+          "text": "false",
+          "type": "bool",
+          "value": false
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            18,
+            23,
+            7,
+            3,
+            22,
+            8,
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 NOT",
+            "0002 JUMP_IF_FALSE 7",
+            "0004 PUSH_FALSE",
+            "0005 JUMP 8",
+            "0007 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 28,
+            "end_line": 15,
+            "line": 15
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 15,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "not true and false",
+      "kind": "when",
+      "line": 15
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "bool",
+          "line": 16,
+          "text": "true",
+          "type": "bool",
+          "value": true
+        },
+        "b": {
+          "a": {
+            "col": 18,
+            "kind": "bool",
+            "line": 16,
+            "text": "false",
+            "type": "bool",
+            "value": false
+          },
+          "b": {
+            "col": 28,
+            "kind": "bool",
+            "line": 16,
+            "text": "false",
+            "type": "bool",
+            "value": false
+          },
+          "col": 18,
+          "kind": "binary",
+          "line": 16,
+          "text": "and",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            24,
+            12,
+            3,
+            23,
+            9,
+            3,
+            22,
+            10,
+            3,
+            22,
+            13,
+            2
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 JUMP_IF_TRUE 12",
+            "0003 PUSH_FALSE",
+            "0004 JUMP_IF_FALSE 9",
+            "0006 PUSH_FALSE",
+            "0007 JUMP 10",
+            "0009 PUSH_FALSE",
+            "0010 JUMP 13",
+            "0012 PUSH_TRUE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 33,
+            "end_line": 16,
+            "line": 16
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 16,
+        "text": "or",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "true or false and false",
+      "kind": "when",
+      "line": 16
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "bool",
+            "line": 17,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "b": {
+            "col": 19,
+            "kind": "bool",
+            "line": 17,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 17,
+          "text": "and",
+          "type": "bool"
+        },
+        "b": {
+          "col": 28,
+          "kind": "bool",
+          "line": 17,
+          "text": "false",
+          "type": "bool",
+          "value": false
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            23,
+            6,
+            2,
+            22,
+            7,
+            3,
+            23,
+            12,
+            3,
+            22,
+            13,
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 JUMP_IF_FALSE 6",
+            "0003 PUSH_TRUE",
+            "0004 JUMP 7",
+            "0006 PUSH_FALSE",
+            "0007 JUMP_IF_FALSE 12",
+            "0009 PUSH_FALSE",
+            "0010 JUMP 13",
+            "0012 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 33,
+            "end_line": 17,
+            "line": 17
+          },
+          "specificity": 3,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 17,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "true and true and false",
+      "kind": "when",
+      "line": 17
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 11,
+            "kind": "bool",
+            "line": 18,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "b": {
+            "col": 20,
+            "kind": "bool",
+            "line": 18,
+            "text": "false",
+            "type": "bool",
+            "value": false
+          },
+          "col": 11,
+          "kind": "binary",
+          "line": 18,
+          "text": "and",
+          "type": "bool"
+        },
+        "b": {
+          "col": 30,
+          "kind": "bool",
+          "line": 18,
+          "text": "true",
+          "type": "bool",
+          "value": true
+        },
+        "col": 11,
+        "compiled": {
+          "code": [
+            2,
+            23,
+            6,
+            3,
+            22,
+            7,
+            3,
+            24,
+            12,
+            2,
+            22,
+            13,
+            2
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 JUMP_IF_FALSE 6",
+            "0003 PUSH_FALSE",
+            "0004 JUMP 7",
+            "0006 PUSH_FALSE",
+            "0007 JUMP_IF_TRUE 12",
+            "0009 PUSH_TRUE",
+            "0010 JUMP 13",
+            "0012 PUSH_TRUE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 34,
+            "end_line": 18,
+            "line": 18
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 18,
+        "text": "or",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "(true and false) or true",
+      "kind": "when",
+      "line": 18
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 15,
+            "kind": "bool",
+            "line": 19,
+            "text": "true",
+            "type": "bool",
+            "value": true
+          },
+          "b": {
+            "col": 24,
+            "kind": "bool",
+            "line": 19,
+            "text": "false",
+            "type": "bool",
+            "value": false
+          },
+          "col": 15,
+          "kind": "binary",
+          "line": 19,
+          "text": "and",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            23,
+            6,
+            3,
+            22,
+            7,
+            3,
+            18
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 JUMP_IF_FALSE 6",
+            "0003 PUSH_FALSE",
+            "0004 JUMP 7",
+            "0006 PUSH_FALSE",
+            "0007 NOT"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 30,
+            "end_line": 19,
+            "line": 19
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "unary",
+        "line": 19,
+        "text": "not",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "not (true and false)",
+      "kind": "when",
+      "line": 19
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 20,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 26,
+          "kind": "int",
+          "line": 20,
+          "text": "5",
+          "type": "int",
+          "value": 5
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 5
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 5",
+            "0004 GE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 20,
+            "line": 20
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 20,
+        "text": ">=",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins >= 5",
+      "kind": "when",
+      "line": 20
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 21,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 26,
+          "kind": "int",
+          "line": 21,
+          "text": "4",
+          "type": "int",
+          "value": 4
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            13
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 4
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 4",
+            "0004 NE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 21,
+            "line": 21
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 21,
+        "text": "!=",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins != 4",
+      "kind": "when",
+      "line": 21
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 22,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 25,
+          "kind": "int",
+          "line": 22,
+          "text": "9",
+          "type": "int",
+          "value": 9
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            14
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 9
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 9",
+            "0004 LT"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 26,
+            "end_line": 22,
+            "line": 22
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 22,
+        "text": "<",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins < 9",
+      "kind": "when",
+      "line": 22
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 23,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 26,
+          "kind": "int",
+          "line": 23,
+          "text": "5",
+          "type": "int",
+          "value": 5
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            15
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 5
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 5",
+            "0004 LE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 23,
+            "line": 23
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 23,
+        "text": "<=",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins <= 5",
+      "kind": "when",
+      "line": 23
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 24,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 25,
+          "kind": "int",
+          "line": 24,
+          "text": "1",
+          "type": "int",
+          "value": 1
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 1
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 1",
+            "0004 GT"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 26,
+            "end_line": 24,
+            "line": 24
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 24,
+        "text": ">",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins > 1",
+      "kind": "when",
+      "line": 24
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 25,
+          "text": "hour",
+          "type": "int"
+        },
+        "b": {
+          "a": {
+            "col": 18,
+            "kind": "int",
+            "line": 25,
+            "text": "6",
+            "type": "int",
+            "value": 6
+          },
+          "b": {
+            "col": 21,
+            "kind": "int",
+            "line": 25,
+            "text": "18",
+            "type": "int",
+            "value": 18
+          },
+          "col": 18,
+          "kind": "range",
+          "line": 25,
+          "type": "range"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            1,
+            2,
+            20
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "hour"
+            },
+            {
+              "t": "int",
+              "v": 6
+            },
+            {
+              "t": "int",
+              "v": 18
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"hour\"",
+            "0002 PUSH_CONST 6",
+            "0004 PUSH_CONST 18",
+            "0006 IN_RANGE"
+          ],
+          "reads": [
+            "hour"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 23,
+            "end_line": 25,
+            "line": 25
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 25,
+        "text": "in",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "hour in 6..18",
+      "kind": "when",
+      "line": 25
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 26,
+          "text": "season",
+          "type": "symbol"
+        },
+        "b": {
+          "col": 20,
+          "kids": [
+            {
+              "col": 21,
+              "kind": "name",
+              "line": 26,
+              "text": "spring",
+              "type": "symbol"
+            },
+            {
+              "col": 29,
+              "kind": "name",
+              "line": 26,
+              "text": "summer",
+              "type": "symbol"
+            }
+          ],
+          "kind": "set",
+          "line": 26,
+          "text": "[",
+          "type": "set"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            1,
+            2,
+            19,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "season"
+            },
+            {
+              "t": "name",
+              "v": "spring"
+            },
+            {
+              "t": "name",
+              "v": "summer"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"season\"",
+            "0002 PUSH_CONST \"spring\"",
+            "0004 PUSH_CONST \"summer\"",
+            "0006 IN_SET 2"
+          ],
+          "reads": [
+            "season"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 36,
+            "end_line": 26,
+            "line": 26
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 26,
+        "text": "in",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "season in [spring, summer]",
+      "kind": "when",
+      "line": 26
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "fact",
+            "line": 27,
+            "text": "player.coins",
+            "type": "int"
+          },
+          "b": {
+            "col": 26,
+            "kind": "int",
+            "line": 27,
+            "text": "5",
+            "type": "int",
+            "value": 5
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 27,
+          "text": ">=",
+          "type": "bool"
+        },
+        "b": {
+          "col": 30,
+          "kind": "bool",
+          "line": 27,
+          "text": "true",
+          "type": "bool",
+          "value": true
+        },
+        "c": {
+          "col": 37,
+          "kind": "bool",
+          "line": 27,
+          "text": "false",
+          "type": "bool",
+          "value": false
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17,
+            23,
+            10,
+            2,
+            22,
+            11,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 5
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 5",
+            "0004 GE",
+            "0005 JUMP_IF_FALSE 10",
+            "0007 PUSH_TRUE",
+            "0008 JUMP 11",
+            "0010 PUSH_FALSE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 42,
+            "end_line": 27,
+            "line": 27
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "ternary",
+        "line": 27,
+        "text": "?",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins >= 5 ? true : false",
+      "kind": "when",
+      "line": 27
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "bool",
+          "line": 28,
+          "text": "false",
+          "type": "bool",
+          "value": false
+        },
+        "b": {
+          "a": {
+            "col": 20,
+            "kind": "fact",
+            "line": 28,
+            "text": "player.coins",
+            "type": "int"
+          },
+          "b": {
+            "col": 35,
+            "kind": "int",
+            "line": 28,
+            "text": "0",
+            "type": "int",
+            "value": 0
+          },
+          "col": 20,
+          "kind": "binary",
+          "line": 28,
+          "text": ">",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            3,
+            23,
+            10,
+            5,
+            0,
+            1,
+            1,
+            16,
+            22,
+            11,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 PUSH_FALSE",
+            "0001 JUMP_IF_FALSE 10",
+            "0003 LOAD_FACT \"player.coins\"",
+            "0005 PUSH_CONST 0",
+            "0007 GT",
+            "0008 JUMP 11",
+            "0010 PUSH_FALSE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 36,
+            "end_line": 28,
+            "line": 28
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 28,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "false and player.coins > 0",
+      "kind": "when",
+      "line": 28
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "bool",
+          "line": 29,
+          "text": "true",
+          "type": "bool",
+          "value": true
+        },
+        "b": {
+          "a": {
+            "col": 18,
+            "kind": "fact",
+            "line": 29,
+            "text": "player.coins",
+            "type": "int"
+          },
+          "b": {
+            "col": 33,
+            "kind": "int",
+            "line": 29,
+            "text": "0",
+            "type": "int",
+            "value": 0
+          },
+          "col": 18,
+          "kind": "binary",
+          "line": 29,
+          "text": ">",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            2,
+            24,
+            10,
+            5,
+            0,
+            1,
+            1,
+            16,
+            22,
+            11,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 PUSH_TRUE",
+            "0001 JUMP_IF_TRUE 10",
+            "0003 LOAD_FACT \"player.coins\"",
+            "0005 PUSH_CONST 0",
+            "0007 GT",
+            "0008 JUMP 11",
+            "0010 PUSH_TRUE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 34,
+            "end_line": 29,
+            "line": 29
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 29,
+        "text": "or",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "true or player.coins > 0",
+      "kind": "when",
+      "line": 29
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

@@ -1,0 +1,1009 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 17,
+            "end_line": 9,
+            "line": 9
+          },
+          "specificity": 0,
+          "uses_chance": false
+        },
+        "kind": "error",
+        "line": 9,
+        "text": "\"",
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_SYNTAX",
+          "col": 10,
+          "line": 9,
+          "message": "string literals are not allowed in conditions",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "\"coins\"",
+      "kind": "when",
+      "line": 9
+    },
+    {
+      "ast": {
+        "col": 9,
+        "compiled": {
+          "code": [
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 9,
+            "end_col": 9,
+            "end_line": 10,
+            "line": 10
+          },
+          "specificity": 0,
+          "uses_chance": false
+        },
+        "kind": "error",
+        "line": 10,
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_SYNTAX",
+          "col": 9,
+          "line": 10,
+          "message": "expected expression",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "",
+      "kind": "when",
+      "line": 10
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 11,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "b": {
+          "col": 26,
+          "kind": "int",
+          "line": 11,
+          "text": "1",
+          "type": "int",
+          "value": 1
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 1
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 1",
+            "0004 GE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 11,
+            "line": 11
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 11,
+        "text": ">=",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_UNEXPECTED",
+          "col": 28,
+          "line": 11,
+          "message": "unexpected token \")\"",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "player.coins >= 1 )",
+      "kind": "when",
+      "line": 11
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "harbor_pass"
+            },
+            {
+              "t": "name",
+              "v": "has"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"harbor_pass\"",
+            "0004 CALL \"has\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 47,
+            "end_line": 12,
+            "line": 12
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 27,
+              "kind": "name",
+              "line": 12,
+              "text": "harbor_pass",
+              "type": "symbol"
+            },
+            "col": 14,
+            "kind": "arg",
+            "line": 12,
+            "text": "item_or_tag",
+            "type": "symbol"
+          },
+          {
+            "a": {
+              "col": 40,
+              "kind": "name",
+              "line": 12,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 40,
+            "kind": "arg",
+            "line": 12,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 12,
+        "text": "has",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_ARG_ORDER",
+          "col": 40,
+          "line": 12,
+          "message": "positional argument follows a named argument",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "has(item_or_tag: harbor_pass, player)",
+      "kind": "when",
+      "line": 12
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "harbor_pass"
+            },
+            {
+              "t": "name",
+              "v": "has"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"harbor_pass\"",
+            "0004 CALL \"has\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 46,
+            "end_line": 13,
+            "line": 13
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 14,
+              "kind": "name",
+              "line": 13,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 14,
+            "kind": "arg",
+            "line": 13,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 13,
+              "text": "harbor_pass",
+              "type": "symbol"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 13,
+            "type": "symbol"
+          },
+          {
+            "a": {
+              "col": 41,
+              "kind": "bool",
+              "line": 13,
+              "text": "true",
+              "type": "bool",
+              "value": true
+            },
+            "col": 35,
+            "kind": "arg",
+            "line": 13,
+            "text": "nope",
+            "type": ""
+          }
+        ],
+        "kind": "call",
+        "line": 13,
+        "text": "has",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_ARG_NAME",
+          "col": 35,
+          "line": 13,
+          "message": "function \"has\" has no argument \"nope\"",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "has(player, harbor_pass, nope: true)",
+      "kind": "when",
+      "line": 13
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "int",
+              "v": 1
+            },
+            {
+              "t": "name",
+              "v": "has"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST 1",
+            "0004 CALL \"has\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 24,
+            "end_line": 14,
+            "line": 14
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 14,
+              "kind": "name",
+              "line": 14,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 14,
+            "kind": "arg",
+            "line": 14,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 22,
+              "kind": "int",
+              "line": 14,
+              "text": "1",
+              "type": "int",
+              "value": 1
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 14,
+            "type": "int"
+          }
+        ],
+        "kind": "call",
+        "line": 14,
+        "text": "has",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_ARG_TYPE",
+          "col": 22,
+          "line": 14,
+          "message": "function \"has\" argument \"item_or_tag\" expects symbol, got int",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "has(player, 1)",
+      "kind": "when",
+      "line": 14
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            4,
+            21,
+            1,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "has"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_NIL",
+            "0003 CALL \"has\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 21,
+            "end_line": 15,
+            "line": 15
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 14,
+              "kind": "name",
+              "line": 15,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 14,
+            "kind": "arg",
+            "line": 15,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 15,
+        "text": "has",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_ARG_TYPE",
+          "col": 10,
+          "line": 15,
+          "message": "function \"has\" missing argument \"item_or_tag\"",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "has(player)",
+      "kind": "when",
+      "line": 15
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "frob"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 CALL \"frob\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 22,
+            "end_line": 16,
+            "line": 16
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 15,
+              "kind": "name",
+              "line": 16,
+              "text": "player",
+              "type": "symbol"
+            },
+            "col": 15,
+            "kind": "arg",
+            "line": 16,
+            "type": ""
+          }
+        ],
+        "kind": "call",
+        "line": 16,
+        "text": "frob",
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_UNKNOWN_FUNCTION",
+          "col": 10,
+          "line": 16,
+          "message": "unknown function \"frob\"",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "frob(player)",
+      "kind": "when",
+      "line": 16
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 14,
+          "kind": "fact",
+          "line": 17,
+          "text": "player.coins",
+          "type": "int"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            18
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 NOT"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 26,
+            "end_line": 17,
+            "line": 17
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "unary",
+        "line": 17,
+        "text": "not",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_OP_TYPE",
+          "col": 10,
+          "line": 17,
+          "message": "operator \"not\" does not accept int",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "not player.coins",
+      "kind": "when",
+      "line": 17
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\""
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 22,
+            "end_line": 18,
+            "line": 18
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "fact",
+        "line": 18,
+        "text": "player.coins",
+        "type": "int"
+      },
+      "diagnostics": [
+        {
+          "code": "E_NOT_BOOL",
+          "col": 10,
+          "line": 18,
+          "message": "condition is int, expected bool",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "player.coins",
+      "kind": "when",
+      "line": 18
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            3
+          ],
+          "consts": [],
+          "ops": [
+            "0000 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 12,
+            "end_line": 19,
+            "line": 19
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "unit",
+        "line": 19,
+        "text": "6m",
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_EXPR_UNIT",
+          "col": 10,
+          "line": 19,
+          "message": "unit \"m\" needs a duration or distance parameter",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "6m",
+      "kind": "when",
+      "line": 19
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 20,
+          "text": "foo.bar",
+          "type": "error"
+        },
+        "b": {
+          "col": 20,
+          "kind": "int",
+          "line": 20,
+          "text": "0",
+          "type": "int",
+          "value": 0
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "foo.bar"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"foo.bar\"",
+            "0002 PUSH_CONST 0",
+            "0004 GT"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 21,
+            "end_line": 20,
+            "line": 20
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 20,
+        "text": ">",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_UNKNOWN_FACT",
+          "col": 10,
+          "line": 20,
+          "message": "unknown fact \"foo.bar\"",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "foo.bar > 0",
+      "kind": "when",
+      "line": 20
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "float",
+              "v": 0.5
+            },
+            {
+              "t": "name",
+              "v": "chance"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 0.5",
+            "0002 CALL \"chance\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 21,
+            "end_line": 22,
+            "line": 22
+          },
+          "specificity": 1,
+          "uses_chance": true
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 17,
+              "kind": "float",
+              "line": 22,
+              "text": "0.5",
+              "type": "float",
+              "value": 0.5
+            },
+            "col": 17,
+            "kind": "arg",
+            "line": 22,
+            "type": "float"
+          }
+        ],
+        "kind": "call",
+        "line": 22,
+        "text": "chance",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_CHANCE_CONTEXT",
+          "col": 10,
+          "line": 22,
+          "message": "chance is not allowed in a wait, trigger, or eligibility condition",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "chance(0.5)",
+      "kind": "when",
+      "line": 22
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 23,
+          "text": "world.weather",
+          "type": "symbol"
+        },
+        "b": {
+          "col": 27,
+          "kind": "name",
+          "line": 23,
+          "text": "calm",
+          "type": "symbol"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            12
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "world.weather"
+            },
+            {
+              "t": "name",
+              "v": "calm"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"world.weather\"",
+            "0002 PUSH_CONST \"calm\"",
+            "0004 EQ"
+          ],
+          "reads": [
+            "world.weather"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 31,
+            "end_line": 23,
+            "line": 23
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 23,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_RESOLVER_INVALIDATION",
+          "col": 10,
+          "line": 23,
+          "message": "resolved fact \"world.weather\" needs on_event or poll invalidation",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "world.weather == calm",
+      "kind": "when",
+      "line": 23
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kind": "fact",
+          "line": 24,
+          "text": "world.tide",
+          "type": "int"
+        },
+        "b": {
+          "col": 23,
+          "kind": "int",
+          "line": 24,
+          "text": "0",
+          "type": "int",
+          "value": 0
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "world.tide"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"world.tide\"",
+            "0002 PUSH_CONST 0",
+            "0004 GT"
+          ],
+          "reads": [
+            "world.tide"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 24,
+            "end_line": 24,
+            "line": 24
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 24,
+        "text": ">",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_RESOLVER_INVALIDATION",
+          "col": 10,
+          "line": 24,
+          "message": "resolved fact \"world.tide\" needs on_event or poll invalidation",
+          "path": "res://tests/golden/conditions/c_errors.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "world.tide > 0",
+      "kind": "when",
+      "line": 24
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

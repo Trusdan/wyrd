@@ -1,0 +1,24 @@
+language 1
+
+facts
+  player.coins : int stored
+  world.weather : symbol source: world.weather invalidate: per_query
+  world.tide : int source: world.tide
+  world.hour : int source: time.hour invalidate: poll(15)
+
+// @when "coins"
+// @when
+// @when player.coins >= 1 )
+// @when has(item_or_tag: harbor_pass, player)
+// @when has(player, harbor_pass, nope: true)
+// @when has(player, 1)
+// @when has(player)
+// @when frob(player)
+// @when not player.coins
+// @when player.coins
+// @when 6m
+// @when foo.bar > 0
+// @context wait_trigger_or_eligibility
+// @when chance(0.5)
+// @when world.weather == calm
+// @when world.tide > 0

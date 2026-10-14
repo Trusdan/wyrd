@@ -3,9 +3,10 @@ extends SceneTree
 const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 const _Hash := preload("res://addons/wyrd/runtime/rng/wyrd_hash.gd")
 const _Rng := preload("res://addons/wyrd/runtime/rng/wyrd_rng.gd")
+const _Conditions := preload("res://tests/bench/wyrd_condition_bench.gd")
 
-## Times N iterations of a placeholder hash-and-rng workload and writes JSON.
-## Not a CI gate. The 10k-fact / 5k-condition baseline waits until those systems exist.
+## Times a placeholder hash-and-rng workload and a fixed 10k-fact / 5k-condition case.
+## Not a CI gate. Condition numbers are recorded only.
 
 func _init() -> void:
 	var iterations := 10000
@@ -41,11 +42,17 @@ func _init() -> void:
 		checksum = _Hash.of_string_name(key) ^ _Hash.of_int(rng.randi())
 	var elapsed := Time.get_ticks_usec() - started
 	var version_info := Engine.get_version_info()
+	var conditions: Dictionary = _Conditions.new().measure()
+	if not bool(conditions["checksum_match"]):
+		push_error("condition bench checksums diverged")
+		quit(1)
+		return
 	var payload := {
 		"workload": "placeholder_hash_and_rng",
 		"iterations": iterations,
 		"elapsed_usec": elapsed,
 		"checksum": checksum,
+		"conditions": conditions,
 		"wyrd": _Runtime.read_version(),
 		"godot": version_info["string"],
 	}

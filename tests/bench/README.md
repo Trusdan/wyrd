@@ -1,7 +1,7 @@
 # Benchmark harness
 
-`bench.gd` times N iterations of a placeholder workload: hash a fixed set of Gullhaven ids and mix in rolls from `WyrdRng`. It writes JSON (`elapsed_usec`, iteration count, a checksum, and the Wyrd and Godot versions).
+`bench.gd` writes JSON for two informational workloads. CI does not fail on the timing.
 
-The run is informational. CI does not fail on the timing.
+The placeholder workload hashes a fixed set of Gullhaven ids and mixes in rolls from `WyrdRng` (`elapsed_usec`, iteration count, a checksum, and the Wyrd and Godot versions).
 
-The design's baseline (10k facts, 5k conditions) is deferred. Those systems are not in S0, and the spikes in `docs/spikes/` describe how that measurement will be taken.
+The condition workload is fixed: 10k stored facts and 5k conditions from `WyrdRng` seed `0x57595244`. It times a compiled instruction walk, a hand-written GDScript ceiling, and Godot `Expression` as a reference. Compile time is `setup_usec` and is not part of the batch times. The warm pass is a second full scan. Numbers and how to read them are in `docs/spikes/s0-condition-speed.md`.

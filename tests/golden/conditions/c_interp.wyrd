@@ -1,0 +1,18 @@
+language 1
+
+facts
+  player.coins : int stored
+  season : symbol stored
+  hour : int stored
+  npc.{id}.alive : bool source: world.is_alive invalidate: on_event(npc_died)
+
+scene toll.gate
+  clerk: The toll is {player.coins}.
+  clerk: {if player.coins >= 5}You may cross.{else}Not enough.{end}
+  clerk: {if season == spring}{if hour in 6..18}Day crossing.{else}Night crossing.{end}{else}Closed.{end}
+  clerk: Ask {holder(ferry)|variants} for the rate.
+  clerk: Alive: {fact(npc, holder(ferry), alive)}.
+  clerk: {if player.coins >= 5}paid
+  clerk: {else} now
+  clerk: {end}
+  clerk: {npc.{holder(ferry)}.alive}

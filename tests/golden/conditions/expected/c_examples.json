@@ -1,0 +1,1347 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "fact",
+            "line": 14,
+            "text": "player.coins",
+            "type": "int"
+          },
+          "b": {
+            "col": 26,
+            "kind": "int",
+            "line": 14,
+            "text": "5",
+            "type": "int",
+            "value": 5
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 14,
+          "text": ">=",
+          "type": "bool"
+        },
+        "b": {
+          "col": 32,
+          "kids": [
+            {
+              "a": {
+                "col": 36,
+                "kind": "name",
+                "line": 14,
+                "text": "player",
+                "type": "entity"
+              },
+              "col": 36,
+              "kind": "arg",
+              "line": 14,
+              "type": "entity"
+            },
+            {
+              "a": {
+                "col": 44,
+                "kind": "name",
+                "line": 14,
+                "text": "harbor_pass",
+                "type": "symbol"
+              },
+              "col": 44,
+              "kind": "arg",
+              "line": 14,
+              "type": "symbol"
+            }
+          ],
+          "kind": "call",
+          "line": 14,
+          "text": "has",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17,
+            23,
+            16,
+            1,
+            2,
+            1,
+            3,
+            21,
+            4,
+            2,
+            22,
+            17,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 5
+            },
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "harbor_pass"
+            },
+            {
+              "t": "name",
+              "v": "has"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"player.coins\"",
+            "0002 PUSH_CONST 5",
+            "0004 GE",
+            "0005 JUMP_IF_FALSE 16",
+            "0007 PUSH_CONST \"player\"",
+            "0009 PUSH_CONST \"harbor_pass\"",
+            "0011 CALL \"has\" 2",
+            "0014 JUMP 17",
+            "0016 PUSH_FALSE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 56,
+            "end_line": 14,
+            "line": 14
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 14,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "player.coins >= 5 and has(player, harbor_pass)",
+      "kind": "when",
+      "line": 14
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kids": [
+            {
+              "a": {
+                "col": 17,
+                "kind": "name",
+                "line": 15,
+                "text": "ferry",
+                "type": "symbol"
+              },
+              "col": 17,
+              "kind": "arg",
+              "line": 15,
+              "type": "symbol"
+            }
+          ],
+          "kind": "call",
+          "line": 15,
+          "text": "filled",
+          "type": "bool"
+        },
+        "b": {
+          "a": {
+            "col": 28,
+            "kids": [
+              {
+                "a": {
+                  "col": 40,
+                  "kids": [
+                    {
+                      "a": {
+                        "col": 47,
+                        "kind": "name",
+                        "line": 15,
+                        "text": "ferry",
+                        "type": "symbol"
+                      },
+                      "col": 47,
+                      "kind": "arg",
+                      "line": 15,
+                      "type": "symbol"
+                    }
+                  ],
+                  "kind": "call",
+                  "line": 15,
+                  "text": "holder",
+                  "type": "entity"
+                },
+                "col": 40,
+                "kind": "arg",
+                "line": 15,
+                "type": "entity"
+              },
+              {
+                "a": {
+                  "col": 55,
+                  "kind": "name",
+                  "line": 15,
+                  "text": "player",
+                  "type": "entity"
+                },
+                "col": 55,
+                "kind": "arg",
+                "line": 15,
+                "type": "entity"
+              }
+            ],
+            "kind": "call",
+            "line": 15,
+            "text": "disposition",
+            "type": "int"
+          },
+          "b": {
+            "col": 66,
+            "kind": "int",
+            "line": 15,
+            "text": "40",
+            "type": "int",
+            "value": 40
+          },
+          "col": 28,
+          "kind": "binary",
+          "line": 15,
+          "text": ">=",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1,
+            23,
+            22,
+            1,
+            0,
+            21,
+            2,
+            1,
+            1,
+            3,
+            21,
+            4,
+            2,
+            1,
+            5,
+            17,
+            22,
+            23,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "name",
+              "v": "filled"
+            },
+            {
+              "t": "name",
+              "v": "holder"
+            },
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "disposition"
+            },
+            {
+              "t": "int",
+              "v": 40
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry\"",
+            "0002 CALL \"filled\" 1",
+            "0005 JUMP_IF_FALSE 22",
+            "0007 PUSH_CONST \"ferry\"",
+            "0009 CALL \"holder\" 1",
+            "0012 PUSH_CONST \"player\"",
+            "0014 CALL \"disposition\" 2",
+            "0017 PUSH_CONST 40",
+            "0019 GE",
+            "0020 JUMP 23",
+            "0022 PUSH_FALSE"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 68,
+            "end_line": 15,
+            "line": 15
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 15,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "filled(ferry) and disposition(holder(ferry), player) >= 40",
+      "kind": "when",
+      "line": 15
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kids": [
+            {
+              "a": {
+                "col": 21,
+                "kind": "name",
+                "line": 16,
+                "text": "player",
+                "type": "entity"
+              },
+              "col": 21,
+              "kind": "arg",
+              "line": 16,
+              "type": "entity"
+            },
+            {
+              "a": {
+                "col": 35,
+                "kind": "name",
+                "line": 16,
+                "text": "theft",
+                "type": "symbol"
+              },
+              "col": 29,
+              "kind": "arg",
+              "line": 16,
+              "text": "verb",
+              "type": "symbol"
+            },
+            {
+              "a": {
+                "col": 51,
+                "kind": "name",
+                "line": 16,
+                "text": "faction.harbor",
+                "type": "entity"
+              },
+              "col": 42,
+              "kind": "arg",
+              "line": 16,
+              "text": "against",
+              "type": "entity"
+            },
+            {
+              "a": {
+                "col": 75,
+                "kind": "duration",
+                "line": 16,
+                "text": "14d",
+                "type": "duration",
+                "value": 20160
+              },
+              "col": 67,
+              "kind": "arg",
+              "line": 16,
+              "text": "within",
+              "type": "duration"
+            }
+          ],
+          "kind": "call",
+          "line": 16,
+          "text": "deed_score",
+          "type": "float"
+        },
+        "b": {
+          "col": 82,
+          "kind": "int",
+          "line": 16,
+          "text": "0",
+          "type": "int",
+          "value": 0
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            4,
+            1,
+            3,
+            4,
+            21,
+            4,
+            6,
+            1,
+            5,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "theft"
+            },
+            {
+              "t": "name",
+              "v": "faction.harbor"
+            },
+            {
+              "t": "int",
+              "v": 20160
+            },
+            {
+              "t": "name",
+              "v": "deed_score"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"theft\"",
+            "0004 PUSH_CONST \"faction.harbor\"",
+            "0006 PUSH_NIL",
+            "0007 PUSH_CONST 20160",
+            "0009 PUSH_NIL",
+            "0010 CALL \"deed_score\" 6",
+            "0013 PUSH_CONST 0",
+            "0015 GT"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 83,
+            "end_line": 16,
+            "line": 16
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 16,
+        "text": ">",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "deed_score(player, verb: theft, against: faction.harbor, within: 14d) > 0",
+      "kind": "when",
+      "line": 16
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kids": [
+            {
+              "a": {
+                "col": 17,
+                "kind": "name",
+                "line": 17,
+                "text": "player",
+                "type": "entity"
+              },
+              "col": 17,
+              "kind": "arg",
+              "line": 17,
+              "type": "entity"
+            },
+            {
+              "a": {
+                "col": 25,
+                "kind": "distance",
+                "line": 17,
+                "text": "6m",
+                "type": "distance",
+                "value": 6.0
+              },
+              "col": 25,
+              "kind": "arg",
+              "line": 17,
+              "type": "distance"
+            },
+            {
+              "a": {
+                "col": 34,
+                "kind": "name",
+                "line": 17,
+                "text": "corpse",
+                "type": "symbol"
+              },
+              "col": 29,
+              "kind": "arg",
+              "line": 17,
+              "text": "tag",
+              "type": "symbol"
+            }
+          ],
+          "kind": "call",
+          "line": 17,
+          "text": "nearby",
+          "type": "int"
+        },
+        "b": {
+          "col": 44,
+          "kind": "int",
+          "line": 17,
+          "text": "0",
+          "type": "int",
+          "value": 0
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            21,
+            3,
+            3,
+            1,
+            4,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "float",
+              "v": 6.0
+            },
+            {
+              "t": "name",
+              "v": "corpse"
+            },
+            {
+              "t": "name",
+              "v": "nearby"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST 6.0",
+            "0004 PUSH_CONST \"corpse\"",
+            "0006 CALL \"nearby\" 3",
+            "0009 PUSH_CONST 0",
+            "0011 GT"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 45,
+            "end_line": 17,
+            "line": 17
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 17,
+        "text": ">",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "nearby(player, 6m, tag: corpse) > 0",
+      "kind": "when",
+      "line": 17
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "secret.missing_toll"
+            },
+            {
+              "t": "name",
+              "v": "known"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 LOAD_FACT \"secret.missing_toll\"",
+            "0004 CALL \"known\" 2"
+          ],
+          "reads": [
+            "secret.missing_toll"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 44,
+            "end_line": 18,
+            "line": 18
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 18,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 18,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 24,
+              "kind": "fact",
+              "line": 18,
+              "text": "secret.missing_toll",
+              "type": "symbol"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 18,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 18,
+        "text": "known",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "known(player, secret.missing_toll)",
+      "kind": "when",
+      "line": 18
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "fact",
+            "line": 19,
+            "text": "season",
+            "type": "symbol"
+          },
+          "b": {
+            "col": 20,
+            "kind": "name",
+            "line": 19,
+            "text": "spring",
+            "type": "symbol"
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 19,
+          "text": "==",
+          "type": "bool"
+        },
+        "b": {
+          "a": {
+            "col": 31,
+            "kind": "fact",
+            "line": 19,
+            "text": "hour",
+            "type": "int"
+          },
+          "b": {
+            "a": {
+              "col": 39,
+              "kind": "int",
+              "line": 19,
+              "text": "6",
+              "type": "int",
+              "value": 6
+            },
+            "b": {
+              "col": 42,
+              "kind": "int",
+              "line": 19,
+              "text": "18",
+              "type": "int",
+              "value": 18
+            },
+            "col": 39,
+            "kind": "range",
+            "line": 19,
+            "type": "range"
+          },
+          "col": 31,
+          "kind": "binary",
+          "line": 19,
+          "text": "in",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            12,
+            23,
+            16,
+            5,
+            2,
+            1,
+            3,
+            1,
+            4,
+            20,
+            22,
+            17,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "season"
+            },
+            {
+              "t": "name",
+              "v": "spring"
+            },
+            {
+              "t": "name",
+              "v": "hour"
+            },
+            {
+              "t": "int",
+              "v": 6
+            },
+            {
+              "t": "int",
+              "v": 18
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"season\"",
+            "0002 PUSH_CONST \"spring\"",
+            "0004 EQ",
+            "0005 JUMP_IF_FALSE 16",
+            "0007 LOAD_FACT \"hour\"",
+            "0009 PUSH_CONST 6",
+            "0011 PUSH_CONST 18",
+            "0013 IN_RANGE",
+            "0014 JUMP 17",
+            "0016 PUSH_FALSE"
+          ],
+          "reads": [
+            "season",
+            "hour"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 44,
+            "end_line": 19,
+            "line": 19
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 19,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "season == spring and hour in 6..18",
+      "kind": "when",
+      "line": 19
+    },
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kids": [
+            {
+              "a": {
+                "col": 17,
+                "kind": "float",
+                "line": 20,
+                "text": "0.25",
+                "type": "float",
+                "value": 0.25
+              },
+              "col": 17,
+              "kind": "arg",
+              "line": 20,
+              "type": "float"
+            }
+          ],
+          "kind": "call",
+          "line": 20,
+          "text": "chance",
+          "type": "bool"
+        },
+        "b": {
+          "a": {
+            "col": 27,
+            "kind": "fact",
+            "line": 20,
+            "text": "player.coins",
+            "type": "int"
+          },
+          "b": {
+            "col": 43,
+            "kind": "int",
+            "line": 20,
+            "text": "5",
+            "type": "int",
+            "value": 5
+          },
+          "col": 27,
+          "kind": "binary",
+          "line": 20,
+          "text": ">=",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1,
+            23,
+            14,
+            5,
+            2,
+            1,
+            3,
+            17,
+            22,
+            15,
+            3
+          ],
+          "consts": [
+            {
+              "t": "float",
+              "v": 0.25
+            },
+            {
+              "t": "name",
+              "v": "chance"
+            },
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 5
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST 0.25",
+            "0002 CALL \"chance\" 1",
+            "0005 JUMP_IF_FALSE 14",
+            "0007 LOAD_FACT \"player.coins\"",
+            "0009 PUSH_CONST 5",
+            "0011 GE",
+            "0012 JUMP 15",
+            "0014 PUSH_FALSE"
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 44,
+            "end_line": 20,
+            "line": 20
+          },
+          "specificity": 2,
+          "uses_chance": true
+        },
+        "kind": "binary",
+        "line": 20,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "chance(0.25) and player.coins >= 5",
+      "kind": "when",
+      "line": 20
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            1,
+            1,
+            3,
+            6,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "npc"
+            },
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "name",
+              "v": "holder"
+            },
+            {
+              "t": "name",
+              "v": "alive"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"npc\"",
+            "0002 PUSH_CONST \"ferry\"",
+            "0004 CALL \"holder\" 1",
+            "0007 PUSH_CONST \"alive\"",
+            "0009 LOAD_KEY 3"
+          ],
+          "reads": [
+            "npc.{id}.alive"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 35,
+            "end_line": 21,
+            "line": 21
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "col": 10,
+            "kind": "name",
+            "line": 21,
+            "text": "npc",
+            "type": "symbol"
+          },
+          {
+            "col": 15,
+            "kids": [
+              {
+                "a": {
+                  "col": 22,
+                  "kind": "name",
+                  "line": 21,
+                  "text": "ferry",
+                  "type": "symbol"
+                },
+                "col": 22,
+                "kind": "arg",
+                "line": 21,
+                "type": "symbol"
+              }
+            ],
+            "kind": "call",
+            "line": 21,
+            "text": "holder",
+            "type": "entity"
+          },
+          {
+            "col": 30,
+            "kind": "name",
+            "line": 21,
+            "text": "alive",
+            "type": "symbol"
+          }
+        ],
+        "kind": "fact",
+        "line": 21,
+        "text": "npc.{id}.alive",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "npc.{holder(ferry)}.alive",
+      "kind": "when",
+      "line": 21
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            1,
+            1,
+            3,
+            6,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "npc"
+            },
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "name",
+              "v": "holder"
+            },
+            {
+              "t": "name",
+              "v": "alive"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"npc\"",
+            "0002 PUSH_CONST \"ferry\"",
+            "0004 CALL \"holder\" 1",
+            "0007 PUSH_CONST \"alive\"",
+            "0009 LOAD_KEY 3"
+          ],
+          "reads": [
+            "npc.{id}.alive"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 41,
+            "end_line": 22,
+            "line": 22
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "col": 15,
+            "kind": "name",
+            "line": 22,
+            "text": "npc",
+            "type": "symbol"
+          },
+          {
+            "col": 20,
+            "kids": [
+              {
+                "a": {
+                  "col": 27,
+                  "kind": "name",
+                  "line": 22,
+                  "text": "ferry",
+                  "type": "symbol"
+                },
+                "col": 27,
+                "kind": "arg",
+                "line": 22,
+                "type": "symbol"
+              }
+            ],
+            "kind": "call",
+            "line": 22,
+            "text": "holder",
+            "type": "entity"
+          },
+          {
+            "col": 35,
+            "kind": "name",
+            "line": 22,
+            "text": "alive",
+            "type": "symbol"
+          }
+        ],
+        "kind": "fact",
+        "line": 22,
+        "text": "npc.{id}.alive",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "fact(npc, holder(ferry), alive)",
+      "kind": "when",
+      "line": 22
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kids": [
+              {
+                "a": {
+                  "col": 17,
+                  "kind": "name",
+                  "line": 23,
+                  "text": "ferry",
+                  "type": "symbol"
+                },
+                "col": 17,
+                "kind": "arg",
+                "line": 23,
+                "type": "symbol"
+              }
+            ],
+            "kind": "call",
+            "line": 23,
+            "text": "holder",
+            "type": "entity"
+          },
+          "col": 10,
+          "kind": "field",
+          "line": 23,
+          "text": "name",
+          "type": "symbol"
+        },
+        "b": {
+          "col": 32,
+          "kind": "name",
+          "line": 23,
+          "text": "dock_clerk",
+          "type": "symbol"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1,
+            21,
+            2,
+            1,
+            1,
+            3,
+            12
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "name",
+              "v": "holder"
+            },
+            {
+              "t": "name",
+              "v": "display_name"
+            },
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry\"",
+            "0002 CALL \"holder\" 1",
+            "0005 CALL \"display_name\" 1",
+            "0008 PUSH_CONST \"dock_clerk\"",
+            "0010 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 42,
+            "end_line": 23,
+            "line": 23
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 23,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "holder(ferry).name == dock_clerk",
+      "kind": "when",
+      "line": 23
+    },
+    {
+      "ast": {
+        "a": {
+          "a": {
+            "col": 10,
+            "kind": "fact",
+            "line": 25,
+            "text": "world.hour",
+            "type": "int"
+          },
+          "b": {
+            "col": 23,
+            "kind": "int",
+            "line": 25,
+            "text": "0",
+            "type": "int",
+            "value": 0
+          },
+          "col": 10,
+          "kind": "binary",
+          "line": 25,
+          "text": ">",
+          "type": "bool"
+        },
+        "b": {
+          "a": {
+            "col": 29,
+            "kind": "fact",
+            "line": 25,
+            "text": "world.season",
+            "type": "symbol"
+          },
+          "b": {
+            "col": 45,
+            "kind": "name",
+            "line": 25,
+            "text": "spring",
+            "type": "symbol"
+          },
+          "col": 29,
+          "kind": "binary",
+          "line": 25,
+          "text": "==",
+          "type": "bool"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            16,
+            23,
+            14,
+            5,
+            2,
+            1,
+            3,
+            12,
+            22,
+            15,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "world.hour"
+            },
+            {
+              "t": "int",
+              "v": 0
+            },
+            {
+              "t": "name",
+              "v": "world.season"
+            },
+            {
+              "t": "name",
+              "v": "spring"
+            }
+          ],
+          "ops": [
+            "0000 LOAD_FACT \"world.hour\"",
+            "0002 PUSH_CONST 0",
+            "0004 GT",
+            "0005 JUMP_IF_FALSE 14",
+            "0007 LOAD_FACT \"world.season\"",
+            "0009 PUSH_CONST \"spring\"",
+            "0011 EQ",
+            "0012 JUMP 15",
+            "0014 PUSH_FALSE"
+          ],
+          "reads": [
+            "world.hour",
+            "world.season"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 51,
+            "end_line": 25,
+            "line": 25
+          },
+          "specificity": 2,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 25,
+        "text": "and",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "world.hour > 0 and world.season == spring",
+      "kind": "when",
+      "line": 25
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}
