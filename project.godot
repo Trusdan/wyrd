@@ -1,0 +1,18 @@
+; Engine configuration file.
+; Godot 4.7.x. The pinned patch lives in tools/pins.env.
+
+config_version=5
+
+[application]
+
+config/name="Wyrd"
+config/description="Generic narrative and dialogue engine."
+config/features=PackedStringArray("4.7")
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/wyrd/plugin.cfg")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"

@@ -1,0 +1,4 @@
+.godot/
+*.translation
+tests/bench/out/
+.DS_Store
