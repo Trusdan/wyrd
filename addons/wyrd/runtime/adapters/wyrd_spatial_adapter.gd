@@ -36,3 +36,8 @@ func can_perceive(observer: StringName, target: StringName) -> bool:
 func can_reach(agent: StringName, place: StringName) -> bool:
 	push_error("not implemented: WyrdSpatialAdapter.can_reach(%s, %s)" % [agent, place])
 	return false
+
+
+## Entities that perceived a deed at [param place]. Empty when the host has no list.
+func witnesses_of(_actor: StringName, _target: StringName, _place: StringName) -> PackedStringArray:
+	return PackedStringArray()

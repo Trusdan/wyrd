@@ -9,7 +9,7 @@ Pipeline for one file:
 3. **Facts check.** Each `facts` entry becomes a `WyrdFact` on a `WyrdFactSchema`: type, stored or resolved, optional invalidation, and an optional trailing `doc` string. `lookup` finds a concrete key first, then a `{id}` pattern.
 4. **Conditions.** `WyrdCondition` lexes, parses, type-checks, and emits one expression to a `WyrdCompiledCondition` (a flat instruction array, constants, reads, and specificity). The draft language is `docs/conditions-draft.md`. It is not frozen. `WyrdInterp` compiles the raw `{...}` spans the block lexer already kept.
 5. **Statements.** `WyrdStatements` walks the quest and scene tree into plain records (`WyrdQuestDef`, `WyrdSceneDef`, `WyrdEffectDef`, and the rest under `stmt/`). Prose goes through `WyrdInterp`. The draft is `docs/statements-draft.md`. It is not frozen.
-6. **Link.** `WyrdPack` merges fact schemas, then `WyrdLinker` checks cross-file quests, scenes, speakers, commands, and line ids. `WyrdFactXref` builds the fact cross-reference. A directory with no manifest is one pack named after the folder. `WyrdContentManifest` lists the files of a real pack.
+6. **Link.** `WyrdPack` merges fact schemas, then `WyrdLinker` checks cross-file quests, scenes, speakers, commands, and line ids. A slot with no `variant <slot>.empty` and no quest `on_empty` warns `W_EMPTY_UNCOVERED`. `WyrdFactXref` builds the fact cross-reference. A directory with no manifest is one pack named after the folder. `WyrdContentManifest` lists the files of a real pack.
 
 `WyrdSource` maps a code-point offset to a line and column. `WyrdDiagnostics` formats lines as `path:line:col: error[CODE]: message`, and the same shape for `warning` and `info`.
 

@@ -1,0 +1,17 @@
+language 1
+
+quest covered "Covered"
+  slot keeper = dock_keeper mode: live
+  on_empty: wait
+  stage arrive
+    -> done
+  stage done
+
+quest open "Open"
+  slot clerk = dock_clerk mode: live
+  slot scribe = town_scribe mode: live
+  stage arrive
+    variant clerk.empty:
+      -> done
+    -> done
+  stage done

@@ -18,6 +18,8 @@ var _plans: Dictionary = {}
 ## Optional one-argument fact reader. Used when [param facts] has no entry.
 ## Not saved. The default path is unchanged when this is unset.
 var fact_reader: Callable = Callable()
+## Key of the latest [code]LOAD_FACT[/code] in the current [method eval].
+var last_fact_key: String = ""
 
 
 ## Map fact keys to slots. Derived plans are dropped and rebuilt. Not saved.
@@ -91,6 +93,7 @@ func prepare(compiled: WyrdCompiledCondition) -> void:
 
 func eval(compiled: WyrdCompiledCondition, facts: Dictionary, funcs: Dictionary = {}) -> Variant:
 	_stack.clear()
+	last_fact_key = ""
 	return _walk(compiled.code, compiled.consts, facts, PackedInt32Array(), false, funcs)
 
 
@@ -224,6 +227,7 @@ func _width(op: int) -> int:
 
 func _load(facts: Dictionary, key: Variant) -> Variant:
 	var text := String(key)
+	last_fact_key = text
 	if facts.has(text):
 		return facts[text]
 	if facts.has(key):

@@ -14,10 +14,12 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 
 - `facts` — `set(key, value)` and `get(key)` for the world perspective, `set_in` / `get_in` when the perspective is `known/<agent>`, `invalidate(prefix)`, `subscribe(prefix)`, signal `fact_changed(key, old_value, new_value)`. Godot's `Object.set` and `Object.get` already own those names, so the store implements them with `_set` and `_get`. A perspective argument cannot be added, and `set` cannot return a bool.
 - `events` — `emit(name, payload)`. The payload is kept for a later host-event schema. `emit` drops `on_event` resolver caches.
-- `roles` — `assign(role, entity)` and `holder(slot_or_role)` until the role runner exists.
+- `deeds` — `record(...)`. Decay, `deed_count`, and `deed_score` read the log.
+- `social` — baselines, kinds, `axis`, `disposition`, and an optional formula.
+- `roles` — `assign`, `vacate`, `define`, `tell`, `begin_quest`, `enter_stage`, `holder`, and `slot_state`.
 
 `believed/` and `held/` perspectives exist as empty maps and refuse writes (M5).
 
 Dialogue text is always shown, whether or not a line is voiced. This slice does not run scenes. Audio, when it arrives, must not hide text or advance a line.
 
-Deeds, quests, scene playback, and saves are later slices. The folders are still placeholders.
+Quests, scene playback, and saves are later slices. Belief perspectives stay empty (M5).

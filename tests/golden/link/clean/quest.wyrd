@@ -5,6 +5,7 @@ facts
 
 quest gate "Gate"
   slot keeper = dock_keeper mode: live
+  on_empty: wait
   stage arrive
     waits_until player.coins >= 0
     ~ set player.coins = 1
