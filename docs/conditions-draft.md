@@ -58,7 +58,7 @@ Specificity is the number of top-level `and` clauses. An `or` group or a `not` g
 
 ## Instructions
 
-`WyrdCompiledCondition` holds `code` (`PackedInt32Array`), `consts` (ints, floats, bools, StringNames), `reads`, `specificity`, `uses_chance`, and `source_span`. There are no lambdas and no callables. The test stack walker is `tests/support/wyrd_rpn_eval.gd`. It is not the runtime evaluator. A missing fact makes a comparison false.
+`WyrdCompiledCondition` holds `code` (`PackedInt32Array`), `consts` (ints, floats, bools, StringNames), `reads`, `specificity`, `uses_chance`, and `source_span`. There are no lambdas and no callables. The stack walker is `addons/wyrd/runtime/conditions/wyrd_rpn_eval.gd`. `tests/support/wyrd_rpn_eval.gd` is a thin shim over that class. A missing fact makes a comparison false.
 
 | Opcode | Operand | Effect |
 |---|---|---|
