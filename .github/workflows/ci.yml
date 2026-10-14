@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Godot
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source tools/pins.env
+          mkdir -p "$HOME/.local/bin" /tmp/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q -o /tmp/godot.zip -d /tmp/godot-bin
+          install -m 0755 "/tmp/godot-bin/Godot_v${GODOT_TAG}_linux.x86_64" "$HOME/.local/bin/godot"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          godot --version
+
+      - name: Import and test
+        run: tools/run_tests.sh
+
+      - name: Benchmark (informational)
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          godot --headless --path . -s res://tests/bench/bench.gd -- \
+            --iterations 2000 --out res://tests/bench/out/ci.json
+          cat tests/bench/out/ci.json
+
+      - name: Content hygiene
+        if: always()
+        env:
+          WYRD_HYGIENE_DENYLIST: ${{ secrets.WYRD_HYGIENE_DENYLIST }}
+        run: tools/content_hygiene.sh "origin/${{ github.base_ref || 'main' }}"
