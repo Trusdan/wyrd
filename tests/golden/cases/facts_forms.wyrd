@@ -1,0 +1,8 @@
+language 1
+facts
+  player.coins : int stored doc: "How many coins are carried."
+  tide.height : float stored
+  npc.{id}.alive : bool source: world.is_alive
+  world.season : symbol source: time.season invalidate: on_event(season_changed)
+  world.hour : int source: time.hour invalidate: poll(15)
+  world.weather : symbol source: world.weather invalidate: per_query

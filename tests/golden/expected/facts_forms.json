@@ -1,0 +1,1180 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "player"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 3,
+      "text": "coins"
+    },
+    {
+      "col": 16,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 3,
+      "text": "int"
+    },
+    {
+      "col": 22,
+      "kind": "ident",
+      "line": 3,
+      "text": "stored"
+    },
+    {
+      "col": 29,
+      "kind": "ident",
+      "line": 3,
+      "text": "doc"
+    },
+    {
+      "col": 32,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 34,
+      "kind": "string",
+      "line": 3,
+      "text": "How many coins are carried."
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "tide"
+    },
+    {
+      "col": 7,
+      "kind": "dot",
+      "line": 4,
+      "text": "."
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 4,
+      "text": "height"
+    },
+    {
+      "col": 15,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 17,
+      "kind": "ident",
+      "line": 4,
+      "text": "float"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 4,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "npc"
+    },
+    {
+      "col": 6,
+      "kind": "dot",
+      "line": 5,
+      "text": "."
+    },
+    {
+      "col": 7,
+      "kind": "lbrace",
+      "line": 5,
+      "text": "{"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 5,
+      "text": "id"
+    },
+    {
+      "col": 10,
+      "kind": "rbrace",
+      "line": 5,
+      "text": "}"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 5,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 5,
+      "text": "alive"
+    },
+    {
+      "col": 18,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 5,
+      "text": "bool"
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 5,
+      "text": "source"
+    },
+    {
+      "col": 31,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 5,
+      "text": "world"
+    },
+    {
+      "col": 38,
+      "kind": "dot",
+      "line": 5,
+      "text": "."
+    },
+    {
+      "col": 39,
+      "kind": "ident",
+      "line": 5,
+      "text": "is_alive"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "world"
+    },
+    {
+      "col": 8,
+      "kind": "dot",
+      "line": 6,
+      "text": "."
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 6,
+      "text": "season"
+    },
+    {
+      "col": 16,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 6,
+      "text": "symbol"
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 6,
+      "text": "source"
+    },
+    {
+      "col": 31,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 6,
+      "text": "time"
+    },
+    {
+      "col": 37,
+      "kind": "dot",
+      "line": 6,
+      "text": "."
+    },
+    {
+      "col": 38,
+      "kind": "ident",
+      "line": 6,
+      "text": "season"
+    },
+    {
+      "col": 45,
+      "kind": "ident",
+      "line": 6,
+      "text": "invalidate"
+    },
+    {
+      "col": 55,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 57,
+      "kind": "ident",
+      "line": 6,
+      "text": "on_event"
+    },
+    {
+      "col": 65,
+      "kind": "lparen",
+      "line": 6,
+      "text": "("
+    },
+    {
+      "col": 66,
+      "kind": "ident",
+      "line": 6,
+      "text": "season_changed"
+    },
+    {
+      "col": 80,
+      "kind": "rparen",
+      "line": 6,
+      "text": ")"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 7,
+      "text": "world"
+    },
+    {
+      "col": 8,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 7,
+      "text": "hour"
+    },
+    {
+      "col": 14,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 7,
+      "text": "int"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 7,
+      "text": "source"
+    },
+    {
+      "col": 26,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 28,
+      "kind": "ident",
+      "line": 7,
+      "text": "time"
+    },
+    {
+      "col": 32,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 7,
+      "text": "hour"
+    },
+    {
+      "col": 38,
+      "kind": "ident",
+      "line": 7,
+      "text": "invalidate"
+    },
+    {
+      "col": 48,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 50,
+      "kind": "ident",
+      "line": 7,
+      "text": "poll"
+    },
+    {
+      "col": 54,
+      "kind": "lparen",
+      "line": 7,
+      "text": "("
+    },
+    {
+      "col": 55,
+      "kind": "int",
+      "line": 7,
+      "text": "15"
+    },
+    {
+      "col": 57,
+      "kind": "rparen",
+      "line": 7,
+      "text": ")"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 8,
+      "text": "world"
+    },
+    {
+      "col": 8,
+      "kind": "dot",
+      "line": 8,
+      "text": "."
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 8,
+      "text": "weather"
+    },
+    {
+      "col": 17,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 19,
+      "kind": "ident",
+      "line": 8,
+      "text": "symbol"
+    },
+    {
+      "col": 26,
+      "kind": "ident",
+      "line": 8,
+      "text": "source"
+    },
+    {
+      "col": 32,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 34,
+      "kind": "ident",
+      "line": 8,
+      "text": "world"
+    },
+    {
+      "col": 39,
+      "kind": "dot",
+      "line": 8,
+      "text": "."
+    },
+    {
+      "col": 40,
+      "kind": "ident",
+      "line": 8,
+      "text": "weather"
+    },
+    {
+      "col": 48,
+      "kind": "ident",
+      "line": 8,
+      "text": "invalidate"
+    },
+    {
+      "col": 58,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 60,
+      "kind": "ident",
+      "line": 8,
+      "text": "per_query"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 9,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 63,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 3,
+                "text": "player"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 3,
+                "text": "coins"
+              },
+              {
+                "col": 16,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 18,
+                "kind": "ident",
+                "line": 3,
+                "text": "int"
+              },
+              {
+                "col": 22,
+                "kind": "ident",
+                "line": 3,
+                "text": "stored"
+              },
+              {
+                "col": 29,
+                "kind": "ident",
+                "line": 3,
+                "text": "doc"
+              },
+              {
+                "col": 32,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 34,
+                "kind": "string",
+                "line": 3,
+                "text": "How many coins are carried."
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": "How many coins are carried."
+          },
+          {
+            "children": [],
+            "end_col": 29,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 4,
+                "text": "tide"
+              },
+              {
+                "col": 7,
+                "kind": "dot",
+                "line": 4,
+                "text": "."
+              },
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 4,
+                "text": "height"
+              },
+              {
+                "col": 15,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 17,
+                "kind": "ident",
+                "line": 4,
+                "text": "float"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 4,
+                "text": "stored"
+              }
+            ],
+            "keyword": "tide.height",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 47,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 5,
+                "text": "npc"
+              },
+              {
+                "col": 6,
+                "kind": "dot",
+                "line": 5,
+                "text": "."
+              },
+              {
+                "col": 7,
+                "kind": "lbrace",
+                "line": 5,
+                "text": "{"
+              },
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 5,
+                "text": "id"
+              },
+              {
+                "col": 10,
+                "kind": "rbrace",
+                "line": 5,
+                "text": "}"
+              },
+              {
+                "col": 11,
+                "kind": "dot",
+                "line": 5,
+                "text": "."
+              },
+              {
+                "col": 12,
+                "kind": "ident",
+                "line": 5,
+                "text": "alive"
+              },
+              {
+                "col": 18,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 5,
+                "text": "bool"
+              },
+              {
+                "col": 25,
+                "kind": "ident",
+                "line": 5,
+                "text": "source"
+              },
+              {
+                "col": 31,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 33,
+                "kind": "ident",
+                "line": 5,
+                "text": "world"
+              },
+              {
+                "col": 38,
+                "kind": "dot",
+                "line": 5,
+                "text": "."
+              },
+              {
+                "col": 39,
+                "kind": "ident",
+                "line": 5,
+                "text": "is_alive"
+              }
+            ],
+            "keyword": "npc.{id}.alive",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 81,
+            "end_line": 6,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 6,
+                "text": "world"
+              },
+              {
+                "col": 8,
+                "kind": "dot",
+                "line": 6,
+                "text": "."
+              },
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 6,
+                "text": "season"
+              },
+              {
+                "col": 16,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 18,
+                "kind": "ident",
+                "line": 6,
+                "text": "symbol"
+              },
+              {
+                "col": 25,
+                "kind": "ident",
+                "line": 6,
+                "text": "source"
+              },
+              {
+                "col": 31,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 33,
+                "kind": "ident",
+                "line": 6,
+                "text": "time"
+              },
+              {
+                "col": 37,
+                "kind": "dot",
+                "line": 6,
+                "text": "."
+              },
+              {
+                "col": 38,
+                "kind": "ident",
+                "line": 6,
+                "text": "season"
+              },
+              {
+                "col": 45,
+                "kind": "ident",
+                "line": 6,
+                "text": "invalidate"
+              },
+              {
+                "col": 55,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 57,
+                "kind": "ident",
+                "line": 6,
+                "text": "on_event"
+              },
+              {
+                "col": 65,
+                "kind": "lparen",
+                "line": 6,
+                "text": "("
+              },
+              {
+                "col": 66,
+                "kind": "ident",
+                "line": 6,
+                "text": "season_changed"
+              },
+              {
+                "col": 80,
+                "kind": "rparen",
+                "line": 6,
+                "text": ")"
+              }
+            ],
+            "keyword": "world.season",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 58,
+            "end_line": 7,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 7,
+                "text": "world"
+              },
+              {
+                "col": 8,
+                "kind": "dot",
+                "line": 7,
+                "text": "."
+              },
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 7,
+                "text": "hour"
+              },
+              {
+                "col": 14,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 16,
+                "kind": "ident",
+                "line": 7,
+                "text": "int"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 7,
+                "text": "source"
+              },
+              {
+                "col": 26,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 28,
+                "kind": "ident",
+                "line": 7,
+                "text": "time"
+              },
+              {
+                "col": 32,
+                "kind": "dot",
+                "line": 7,
+                "text": "."
+              },
+              {
+                "col": 33,
+                "kind": "ident",
+                "line": 7,
+                "text": "hour"
+              },
+              {
+                "col": 38,
+                "kind": "ident",
+                "line": 7,
+                "text": "invalidate"
+              },
+              {
+                "col": 48,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 50,
+                "kind": "ident",
+                "line": 7,
+                "text": "poll"
+              },
+              {
+                "col": 54,
+                "kind": "lparen",
+                "line": 7,
+                "text": "("
+              },
+              {
+                "col": 55,
+                "kind": "int",
+                "line": 7,
+                "text": "15"
+              },
+              {
+                "col": 57,
+                "kind": "rparen",
+                "line": 7,
+                "text": ")"
+              }
+            ],
+            "keyword": "world.hour",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 7,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 69,
+            "end_line": 8,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 8,
+                "text": "world"
+              },
+              {
+                "col": 8,
+                "kind": "dot",
+                "line": 8,
+                "text": "."
+              },
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 8,
+                "text": "weather"
+              },
+              {
+                "col": 17,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 19,
+                "kind": "ident",
+                "line": 8,
+                "text": "symbol"
+              },
+              {
+                "col": 26,
+                "kind": "ident",
+                "line": 8,
+                "text": "source"
+              },
+              {
+                "col": 32,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 34,
+                "kind": "ident",
+                "line": 8,
+                "text": "world"
+              },
+              {
+                "col": 39,
+                "kind": "dot",
+                "line": 8,
+                "text": "."
+              },
+              {
+                "col": 40,
+                "kind": "ident",
+                "line": 8,
+                "text": "weather"
+              },
+              {
+                "col": 48,
+                "kind": "ident",
+                "line": 8,
+                "text": "invalidate"
+              },
+              {
+                "col": 58,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 60,
+                "kind": "ident",
+                "line": 8,
+                "text": "per_query"
+              }
+            ],
+            "keyword": "world.weather",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 8,
+            "title": ""
+          }
+        ],
+        "end_col": 69,
+        "end_line": 8,
+        "entries": [
+          {
+            "col": 3,
+            "doc": "How many coins are carried.",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "player.coins",
+            "line": 3,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "player",
+              "coins"
+            ],
+            "type": "int"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "tide.height",
+            "line": 4,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "tide",
+              "height"
+            ],
+            "type": "float"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "npc.{id}.alive",
+            "line": 5,
+            "origin": "resolved",
+            "pattern": true,
+            "resolver": "world.is_alive",
+            "segments": [
+              "npc",
+              "{id}",
+              "alive"
+            ],
+            "type": "bool"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "on_event",
+            "invalidate_arg": "season_changed",
+            "key": "world.season",
+            "line": 6,
+            "origin": "resolved",
+            "pattern": false,
+            "resolver": "time.season",
+            "segments": [
+              "world",
+              "season"
+            ],
+            "type": "symbol"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "poll",
+            "invalidate_arg": "15",
+            "key": "world.hour",
+            "line": 7,
+            "origin": "resolved",
+            "pattern": false,
+            "resolver": "time.hour",
+            "segments": [
+              "world",
+              "hour"
+            ],
+            "type": "int"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "per_query",
+            "invalidate_arg": "",
+            "key": "world.weather",
+            "line": 8,
+            "origin": "resolved",
+            "pattern": false,
+            "resolver": "world.weather",
+            "segments": [
+              "world",
+              "weather"
+            ],
+            "type": "symbol"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 9,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

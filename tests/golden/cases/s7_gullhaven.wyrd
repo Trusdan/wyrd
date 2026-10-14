@@ -1,0 +1,29 @@
+// content/gullhaven/ferry_toll.wyrd
+language 1
+
+facts
+  player.coins      : int     stored
+  ferry.toll_coins  : int     stored
+  npc.{id}.alive    : bool    source: world.is_alive
+  world.season      : symbol  source: time.season  invalidate: on_event(season_changed)
+
+quest ferry_toll "The Ferry Toll"
+  slot tavern = tavern_owner mode: live
+  slot ferry  = ferry_master mode: live
+
+  start when deed_count(player, verb: arrived, place: gullhaven) > 0
+
+  stage gossip
+    scene toll.offer_room with tavern
+    -> pay_toll
+
+  stage pay_toll
+    journal "{holder(ferry).name} at the dock wants a toll before the crossing." #line:j_ft_01
+
+scene toll.offer_room
+  tavern: A room's two coins a night, and the stew is free. #line:a91f // room offer
+  * [Take the room] -> took
+    ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
+  * {has_tag(player, local)} [I have a place in town] -> declined
+  tavern: The ferry's charging double since the storm, mind. #line:a920
+  tavern: The board lists the price as {{two coins}}. #line:a921

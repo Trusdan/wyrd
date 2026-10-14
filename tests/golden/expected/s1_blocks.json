@@ -1,0 +1,246 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 3,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 3,
+      "text": "ferry"
+    },
+    {
+      "col": 13,
+      "kind": "string",
+      "line": 3,
+      "text": "The Ferry Toll"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 6,
+      "text": "gossip"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 8,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 8,
+      "text": "pay"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 9,
+      "text": "scene"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 9,
+      "text": "room"
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 9,
+      "text": "with"
+    },
+    {
+      "col": 21,
+      "kind": "ident",
+      "line": 9,
+      "text": "tavern"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 10,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 15,
+            "end_line": 6,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 6,
+                "text": "gossip"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 27,
+                "end_line": 9,
+                "head": [
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 9,
+                    "text": "room"
+                  },
+                  {
+                    "col": 16,
+                    "kind": "ident",
+                    "line": 9,
+                    "text": "with"
+                  },
+                  {
+                    "col": 21,
+                    "kind": "ident",
+                    "line": 9,
+                    "text": "tavern"
+                  }
+                ],
+                "keyword": "scene",
+                "kind": "scene",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 9,
+                "title": ""
+              }
+            ],
+            "end_col": 27,
+            "end_line": 9,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 8,
+                "text": "pay"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 8,
+            "title": ""
+          }
+        ],
+        "end_col": 27,
+        "end_line": 9,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 3,
+            "text": "ferry"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 3,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "end_col": 1,
+    "end_line": 10,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

@@ -1,0 +1,3 @@
+language 1
+facts
+   player.coins : int stored

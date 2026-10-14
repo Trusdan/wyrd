@@ -1,0 +1,197 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_INDENT_JUMP",
+      "col": 1,
+      "line": 3,
+      "message": "indentation jumped more than one level",
+      "path": "res://tests/golden/cases/s1_indent_jump.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 3,
+      "text": "player"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 3,
+      "text": "coins"
+    },
+    {
+      "col": 18,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 3,
+      "text": "int"
+    },
+    {
+      "col": 24,
+      "kind": "ident",
+      "line": 3,
+      "text": "stored"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 4,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 30,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 5,
+                "kind": "ident",
+                "line": 3,
+                "text": "player"
+              },
+              {
+                "col": 11,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 12,
+                "kind": "ident",
+                "line": 3,
+                "text": "coins"
+              },
+              {
+                "col": 18,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 3,
+                "text": "int"
+              },
+              {
+                "col": 24,
+                "kind": "ident",
+                "line": 3,
+                "text": "stored"
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 5,
+            "start_line": 3,
+            "title": ""
+          }
+        ],
+        "end_col": 30,
+        "end_line": 3,
+        "entries": [
+          {
+            "col": 5,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "player.coins",
+            "line": 3,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "player",
+              "coins"
+            ],
+            "type": "int"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 4,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

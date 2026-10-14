@@ -1,0 +1,2150 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 2,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 4,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "player"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 5,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 5,
+      "text": "coins"
+    },
+    {
+      "col": 21,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 5,
+      "text": "int"
+    },
+    {
+      "col": 31,
+      "kind": "ident",
+      "line": 5,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "ferry"
+    },
+    {
+      "col": 8,
+      "kind": "dot",
+      "line": 6,
+      "text": "."
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 6,
+      "text": "toll_coins"
+    },
+    {
+      "col": 21,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 6,
+      "text": "int"
+    },
+    {
+      "col": 31,
+      "kind": "ident",
+      "line": 6,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 7,
+      "text": "npc"
+    },
+    {
+      "col": 6,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 7,
+      "kind": "lbrace",
+      "line": 7,
+      "text": "{"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 7,
+      "text": "id"
+    },
+    {
+      "col": 10,
+      "kind": "rbrace",
+      "line": 7,
+      "text": "}"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 7,
+      "text": "alive"
+    },
+    {
+      "col": 21,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 7,
+      "text": "bool"
+    },
+    {
+      "col": 31,
+      "kind": "ident",
+      "line": 7,
+      "text": "source"
+    },
+    {
+      "col": 37,
+      "kind": "colon",
+      "line": 7,
+      "text": ":"
+    },
+    {
+      "col": 39,
+      "kind": "ident",
+      "line": 7,
+      "text": "world"
+    },
+    {
+      "col": 44,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 45,
+      "kind": "ident",
+      "line": 7,
+      "text": "is_alive"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 8,
+      "text": "world"
+    },
+    {
+      "col": 8,
+      "kind": "dot",
+      "line": 8,
+      "text": "."
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 8,
+      "text": "season"
+    },
+    {
+      "col": 21,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 8,
+      "text": "symbol"
+    },
+    {
+      "col": 31,
+      "kind": "ident",
+      "line": 8,
+      "text": "source"
+    },
+    {
+      "col": 37,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 39,
+      "kind": "ident",
+      "line": 8,
+      "text": "time"
+    },
+    {
+      "col": 43,
+      "kind": "dot",
+      "line": 8,
+      "text": "."
+    },
+    {
+      "col": 44,
+      "kind": "ident",
+      "line": 8,
+      "text": "season"
+    },
+    {
+      "col": 52,
+      "kind": "ident",
+      "line": 8,
+      "text": "invalidate"
+    },
+    {
+      "col": 62,
+      "kind": "colon",
+      "line": 8,
+      "text": ":"
+    },
+    {
+      "col": 64,
+      "kind": "ident",
+      "line": 8,
+      "text": "on_event"
+    },
+    {
+      "col": 72,
+      "kind": "lparen",
+      "line": 8,
+      "text": "("
+    },
+    {
+      "col": 73,
+      "kind": "ident",
+      "line": 8,
+      "text": "season_changed"
+    },
+    {
+      "col": 87,
+      "kind": "rparen",
+      "line": 8,
+      "text": ")"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 10,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 10,
+      "text": "ferry_toll"
+    },
+    {
+      "col": 18,
+      "kind": "string",
+      "line": 10,
+      "text": "The Ferry Toll"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 11,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 11,
+      "text": "slot"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 11,
+      "text": "tavern"
+    },
+    {
+      "col": 15,
+      "kind": "eq",
+      "line": 11,
+      "text": "="
+    },
+    {
+      "col": 17,
+      "kind": "ident",
+      "line": 11,
+      "text": "tavern_owner"
+    },
+    {
+      "col": 30,
+      "kind": "ident",
+      "line": 11,
+      "text": "mode"
+    },
+    {
+      "col": 34,
+      "kind": "colon",
+      "line": 11,
+      "text": ":"
+    },
+    {
+      "col": 36,
+      "kind": "ident",
+      "line": 11,
+      "text": "live"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 11,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 12,
+      "text": "slot"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 12,
+      "text": "ferry"
+    },
+    {
+      "col": 15,
+      "kind": "eq",
+      "line": 12,
+      "text": "="
+    },
+    {
+      "col": 17,
+      "kind": "ident",
+      "line": 12,
+      "text": "ferry_master"
+    },
+    {
+      "col": 30,
+      "kind": "ident",
+      "line": 12,
+      "text": "mode"
+    },
+    {
+      "col": 34,
+      "kind": "colon",
+      "line": 12,
+      "text": ":"
+    },
+    {
+      "col": 36,
+      "kind": "ident",
+      "line": 12,
+      "text": "live"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 12,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 14,
+      "text": "start"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 14,
+      "text": "when"
+    },
+    {
+      "col": 14,
+      "kind": "ident",
+      "line": 14,
+      "text": "deed_count"
+    },
+    {
+      "col": 24,
+      "kind": "lparen",
+      "line": 14,
+      "text": "("
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 14,
+      "text": "player"
+    },
+    {
+      "col": 31,
+      "kind": "comma",
+      "line": 14,
+      "text": ","
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 14,
+      "text": "verb"
+    },
+    {
+      "col": 37,
+      "kind": "colon",
+      "line": 14,
+      "text": ":"
+    },
+    {
+      "col": 39,
+      "kind": "ident",
+      "line": 14,
+      "text": "arrived"
+    },
+    {
+      "col": 46,
+      "kind": "comma",
+      "line": 14,
+      "text": ","
+    },
+    {
+      "col": 48,
+      "kind": "ident",
+      "line": 14,
+      "text": "place"
+    },
+    {
+      "col": 53,
+      "kind": "colon",
+      "line": 14,
+      "text": ":"
+    },
+    {
+      "col": 55,
+      "kind": "ident",
+      "line": 14,
+      "text": "gullhaven"
+    },
+    {
+      "col": 64,
+      "kind": "rparen",
+      "line": 14,
+      "text": ")"
+    },
+    {
+      "col": 66,
+      "kind": "gt",
+      "line": 14,
+      "text": ">"
+    },
+    {
+      "col": 68,
+      "kind": "int",
+      "line": 14,
+      "text": "0"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 14,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 16,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 16,
+      "text": "gossip"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 16,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 17,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 17,
+      "text": "scene"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 17,
+      "text": "toll"
+    },
+    {
+      "col": 15,
+      "kind": "dot",
+      "line": 17,
+      "text": "."
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 17,
+      "text": "offer_room"
+    },
+    {
+      "col": 27,
+      "kind": "ident",
+      "line": 17,
+      "text": "with"
+    },
+    {
+      "col": 32,
+      "kind": "ident",
+      "line": 17,
+      "text": "tavern"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 17,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "arrow",
+      "line": 18,
+      "text": "->"
+    },
+    {
+      "col": 8,
+      "kind": "ident",
+      "line": 18,
+      "text": "pay_toll"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 18,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 20,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 20,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 20,
+      "text": "pay_toll"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 20,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 21,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 21,
+      "text": "journal"
+    },
+    {
+      "col": 13,
+      "kind": "string",
+      "line": 21,
+      "text": "{holder(ferry).name} at the dock wants a toll before the crossing."
+    },
+    {
+      "col": 82,
+      "kind": "line_tag",
+      "line": 21,
+      "text": "j_ft_01"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 21,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 23,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 23,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 23,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 23,
+      "text": "toll"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 23,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 23,
+      "text": "offer_room"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 23,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 24,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 24,
+      "text": "tavern"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 24,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 24,
+      "text": "A room's two coins a night, and the stew is free."
+    },
+    {
+      "col": 61,
+      "kind": "line_tag",
+      "line": 24,
+      "text": "a91f"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 24,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "star",
+      "line": 25,
+      "text": "*"
+    },
+    {
+      "col": 5,
+      "kind": "lbracket",
+      "line": 25,
+      "text": "["
+    },
+    {
+      "col": 6,
+      "kind": "prose",
+      "line": 25,
+      "text": "Take the room"
+    },
+    {
+      "col": 19,
+      "kind": "rbracket",
+      "line": 25,
+      "text": "]"
+    },
+    {
+      "col": 21,
+      "kind": "arrow",
+      "line": 25,
+      "text": "->"
+    },
+    {
+      "col": 24,
+      "kind": "ident",
+      "line": 25,
+      "text": "took"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 25,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 26,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "tilde",
+      "line": 26,
+      "text": "~"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 26,
+      "text": "do"
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 26,
+      "text": "assign_lodging"
+    },
+    {
+      "col": 24,
+      "kind": "lparen",
+      "line": 26,
+      "text": "("
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 26,
+      "text": "player"
+    },
+    {
+      "col": 31,
+      "kind": "comma",
+      "line": 26,
+      "text": ","
+    },
+    {
+      "col": 33,
+      "kind": "ident",
+      "line": 26,
+      "text": "place"
+    },
+    {
+      "col": 38,
+      "kind": "colon",
+      "line": 26,
+      "text": ":"
+    },
+    {
+      "col": 40,
+      "kind": "ident",
+      "line": 26,
+      "text": "gullhaven"
+    },
+    {
+      "col": 49,
+      "kind": "dot",
+      "line": 26,
+      "text": "."
+    },
+    {
+      "col": 50,
+      "kind": "ident",
+      "line": 26,
+      "text": "tavern"
+    },
+    {
+      "col": 56,
+      "kind": "rparen",
+      "line": 26,
+      "text": ")"
+    },
+    {
+      "col": 58,
+      "kind": "ident",
+      "line": 26,
+      "text": "on_fail"
+    },
+    {
+      "col": 66,
+      "kind": "arrow",
+      "line": 26,
+      "text": "->"
+    },
+    {
+      "col": 69,
+      "kind": "ident",
+      "line": 26,
+      "text": "no_room"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 26,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 27,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "star",
+      "line": 27,
+      "text": "*"
+    },
+    {
+      "col": 5,
+      "kind": "lbrace",
+      "line": 27,
+      "text": "{"
+    },
+    {
+      "col": 6,
+      "kind": "ident",
+      "line": 27,
+      "text": "has_tag"
+    },
+    {
+      "col": 13,
+      "kind": "lparen",
+      "line": 27,
+      "text": "("
+    },
+    {
+      "col": 14,
+      "kind": "ident",
+      "line": 27,
+      "text": "player"
+    },
+    {
+      "col": 20,
+      "kind": "comma",
+      "line": 27,
+      "text": ","
+    },
+    {
+      "col": 22,
+      "kind": "ident",
+      "line": 27,
+      "text": "local"
+    },
+    {
+      "col": 27,
+      "kind": "rparen",
+      "line": 27,
+      "text": ")"
+    },
+    {
+      "col": 28,
+      "kind": "rbrace",
+      "line": 27,
+      "text": "}"
+    },
+    {
+      "col": 30,
+      "kind": "lbracket",
+      "line": 27,
+      "text": "["
+    },
+    {
+      "col": 31,
+      "kind": "prose",
+      "line": 27,
+      "text": "I have a place in town"
+    },
+    {
+      "col": 53,
+      "kind": "rbracket",
+      "line": 27,
+      "text": "]"
+    },
+    {
+      "col": 55,
+      "kind": "arrow",
+      "line": 27,
+      "text": "->"
+    },
+    {
+      "col": 58,
+      "kind": "ident",
+      "line": 27,
+      "text": "declined"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 27,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 28,
+      "text": "tavern"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 28,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 28,
+      "text": "The ferry's charging double since the storm, mind."
+    },
+    {
+      "col": 62,
+      "kind": "line_tag",
+      "line": 28,
+      "text": "a920"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 28,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 29,
+      "text": "tavern"
+    },
+    {
+      "col": 9,
+      "kind": "colon",
+      "line": 29,
+      "text": ":"
+    },
+    {
+      "col": 11,
+      "kind": "prose",
+      "line": 29,
+      "text": "The board lists the price as {two coins}}."
+    },
+    {
+      "col": 55,
+      "kind": "line_tag",
+      "line": 29,
+      "text": "a921"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 29,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 30,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 30,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 37,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 5,
+                "text": "player"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 5,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 5,
+                "text": "coins"
+              },
+              {
+                "col": 21,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 5,
+                "text": "int"
+              },
+              {
+                "col": 31,
+                "kind": "ident",
+                "line": 5,
+                "text": "stored"
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 37,
+            "end_line": 6,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 6,
+                "text": "ferry"
+              },
+              {
+                "col": 8,
+                "kind": "dot",
+                "line": 6,
+                "text": "."
+              },
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 6,
+                "text": "toll_coins"
+              },
+              {
+                "col": 21,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 6,
+                "text": "int"
+              },
+              {
+                "col": 31,
+                "kind": "ident",
+                "line": 6,
+                "text": "stored"
+              }
+            ],
+            "keyword": "ferry.toll_coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 53,
+            "end_line": 7,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 7,
+                "text": "npc"
+              },
+              {
+                "col": 6,
+                "kind": "dot",
+                "line": 7,
+                "text": "."
+              },
+              {
+                "col": 7,
+                "kind": "lbrace",
+                "line": 7,
+                "text": "{"
+              },
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 7,
+                "text": "id"
+              },
+              {
+                "col": 10,
+                "kind": "rbrace",
+                "line": 7,
+                "text": "}"
+              },
+              {
+                "col": 11,
+                "kind": "dot",
+                "line": 7,
+                "text": "."
+              },
+              {
+                "col": 12,
+                "kind": "ident",
+                "line": 7,
+                "text": "alive"
+              },
+              {
+                "col": 21,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 7,
+                "text": "bool"
+              },
+              {
+                "col": 31,
+                "kind": "ident",
+                "line": 7,
+                "text": "source"
+              },
+              {
+                "col": 37,
+                "kind": "colon",
+                "line": 7,
+                "text": ":"
+              },
+              {
+                "col": 39,
+                "kind": "ident",
+                "line": 7,
+                "text": "world"
+              },
+              {
+                "col": 44,
+                "kind": "dot",
+                "line": 7,
+                "text": "."
+              },
+              {
+                "col": 45,
+                "kind": "ident",
+                "line": 7,
+                "text": "is_alive"
+              }
+            ],
+            "keyword": "npc.{id}.alive",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 7,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 88,
+            "end_line": 8,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 8,
+                "text": "world"
+              },
+              {
+                "col": 8,
+                "kind": "dot",
+                "line": 8,
+                "text": "."
+              },
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 8,
+                "text": "season"
+              },
+              {
+                "col": 21,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 8,
+                "text": "symbol"
+              },
+              {
+                "col": 31,
+                "kind": "ident",
+                "line": 8,
+                "text": "source"
+              },
+              {
+                "col": 37,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 39,
+                "kind": "ident",
+                "line": 8,
+                "text": "time"
+              },
+              {
+                "col": 43,
+                "kind": "dot",
+                "line": 8,
+                "text": "."
+              },
+              {
+                "col": 44,
+                "kind": "ident",
+                "line": 8,
+                "text": "season"
+              },
+              {
+                "col": 52,
+                "kind": "ident",
+                "line": 8,
+                "text": "invalidate"
+              },
+              {
+                "col": 62,
+                "kind": "colon",
+                "line": 8,
+                "text": ":"
+              },
+              {
+                "col": 64,
+                "kind": "ident",
+                "line": 8,
+                "text": "on_event"
+              },
+              {
+                "col": 72,
+                "kind": "lparen",
+                "line": 8,
+                "text": "("
+              },
+              {
+                "col": 73,
+                "kind": "ident",
+                "line": 8,
+                "text": "season_changed"
+              },
+              {
+                "col": 87,
+                "kind": "rparen",
+                "line": 8,
+                "text": ")"
+              }
+            ],
+            "keyword": "world.season",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 8,
+            "title": ""
+          }
+        ],
+        "end_col": 88,
+        "end_line": 8,
+        "entries": [
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "player.coins",
+            "line": 5,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "player",
+              "coins"
+            ],
+            "type": "int"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "ferry.toll_coins",
+            "line": 6,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "ferry",
+              "toll_coins"
+            ],
+            "type": "int"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "npc.{id}.alive",
+            "line": 7,
+            "origin": "resolved",
+            "pattern": true,
+            "resolver": "world.is_alive",
+            "segments": [
+              "npc",
+              "{id}",
+              "alive"
+            ],
+            "type": "bool"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "on_event",
+            "invalidate_arg": "season_changed",
+            "key": "world.season",
+            "line": 8,
+            "origin": "resolved",
+            "pattern": false,
+            "resolver": "time.season",
+            "segments": [
+              "world",
+              "season"
+            ],
+            "type": "symbol"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 4,
+        "title": ""
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 40,
+            "end_line": 11,
+            "head": [
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 11,
+                "text": "tavern"
+              },
+              {
+                "col": 15,
+                "kind": "eq",
+                "line": 11,
+                "text": "="
+              },
+              {
+                "col": 17,
+                "kind": "ident",
+                "line": 11,
+                "text": "tavern_owner"
+              },
+              {
+                "col": 30,
+                "kind": "ident",
+                "line": 11,
+                "text": "mode"
+              },
+              {
+                "col": 34,
+                "kind": "colon",
+                "line": 11,
+                "text": ":"
+              },
+              {
+                "col": 36,
+                "kind": "ident",
+                "line": 11,
+                "text": "live"
+              }
+            ],
+            "keyword": "slot",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 11,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 40,
+            "end_line": 12,
+            "head": [
+              {
+                "col": 8,
+                "kind": "ident",
+                "line": 12,
+                "text": "ferry"
+              },
+              {
+                "col": 15,
+                "kind": "eq",
+                "line": 12,
+                "text": "="
+              },
+              {
+                "col": 17,
+                "kind": "ident",
+                "line": 12,
+                "text": "ferry_master"
+              },
+              {
+                "col": 30,
+                "kind": "ident",
+                "line": 12,
+                "text": "mode"
+              },
+              {
+                "col": 34,
+                "kind": "colon",
+                "line": 12,
+                "text": ":"
+              },
+              {
+                "col": 36,
+                "kind": "ident",
+                "line": 12,
+                "text": "live"
+              }
+            ],
+            "keyword": "slot",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 12,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 69,
+            "end_line": 14,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 14,
+                "text": "when"
+              },
+              {
+                "col": 14,
+                "kind": "ident",
+                "line": 14,
+                "text": "deed_count"
+              },
+              {
+                "col": 24,
+                "kind": "lparen",
+                "line": 14,
+                "text": "("
+              },
+              {
+                "col": 25,
+                "kind": "ident",
+                "line": 14,
+                "text": "player"
+              },
+              {
+                "col": 31,
+                "kind": "comma",
+                "line": 14,
+                "text": ","
+              },
+              {
+                "col": 33,
+                "kind": "ident",
+                "line": 14,
+                "text": "verb"
+              },
+              {
+                "col": 37,
+                "kind": "colon",
+                "line": 14,
+                "text": ":"
+              },
+              {
+                "col": 39,
+                "kind": "ident",
+                "line": 14,
+                "text": "arrived"
+              },
+              {
+                "col": 46,
+                "kind": "comma",
+                "line": 14,
+                "text": ","
+              },
+              {
+                "col": 48,
+                "kind": "ident",
+                "line": 14,
+                "text": "place"
+              },
+              {
+                "col": 53,
+                "kind": "colon",
+                "line": 14,
+                "text": ":"
+              },
+              {
+                "col": 55,
+                "kind": "ident",
+                "line": 14,
+                "text": "gullhaven"
+              },
+              {
+                "col": 64,
+                "kind": "rparen",
+                "line": 14,
+                "text": ")"
+              },
+              {
+                "col": 66,
+                "kind": "gt",
+                "line": 14,
+                "text": ">"
+              },
+              {
+                "col": 68,
+                "kind": "int",
+                "line": 14,
+                "text": "0"
+              }
+            ],
+            "keyword": "start",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 14,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 38,
+                "end_line": 17,
+                "head": [
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 17,
+                    "text": "toll"
+                  },
+                  {
+                    "col": 15,
+                    "kind": "dot",
+                    "line": 17,
+                    "text": "."
+                  },
+                  {
+                    "col": 16,
+                    "kind": "ident",
+                    "line": 17,
+                    "text": "offer_room"
+                  },
+                  {
+                    "col": 27,
+                    "kind": "ident",
+                    "line": 17,
+                    "text": "with"
+                  },
+                  {
+                    "col": 32,
+                    "kind": "ident",
+                    "line": 17,
+                    "text": "tavern"
+                  }
+                ],
+                "keyword": "scene",
+                "kind": "scene",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 17,
+                "title": ""
+              },
+              {
+                "children": [],
+                "end_col": 16,
+                "end_line": 18,
+                "head": [
+                  {
+                    "col": 8,
+                    "kind": "ident",
+                    "line": 18,
+                    "text": "pay_toll"
+                  }
+                ],
+                "keyword": "->",
+                "kind": "line",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 18,
+                "title": ""
+              }
+            ],
+            "end_col": 16,
+            "end_line": 18,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 16,
+                "text": "gossip"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 16,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 81,
+                "end_line": 21,
+                "head": [],
+                "keyword": "journal",
+                "kind": "line",
+                "line_tag": "j_ft_01",
+                "start_col": 5,
+                "start_line": 21,
+                "title": "{holder(ferry).name} at the dock wants a toll before the crossing."
+              }
+            ],
+            "end_col": 81,
+            "end_line": 21,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 20,
+                "text": "pay_toll"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 20,
+            "title": ""
+          }
+        ],
+        "end_col": 81,
+        "end_line": 21,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 10,
+            "text": "ferry_toll"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 10,
+        "title": "The Ferry Toll"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 61,
+            "end_line": 24,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 24,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 24,
+                "text": "A room's two coins a night, and the stew is free."
+              }
+            ],
+            "keyword": "tavern",
+            "kind": "line",
+            "line_tag": "a91f",
+            "start_col": 3,
+            "start_line": 24,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 76,
+                "end_line": 26,
+                "head": [
+                  {
+                    "col": 7,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "do"
+                  },
+                  {
+                    "col": 10,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "assign_lodging"
+                  },
+                  {
+                    "col": 24,
+                    "kind": "lparen",
+                    "line": 26,
+                    "text": "("
+                  },
+                  {
+                    "col": 25,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "player"
+                  },
+                  {
+                    "col": 31,
+                    "kind": "comma",
+                    "line": 26,
+                    "text": ","
+                  },
+                  {
+                    "col": 33,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "place"
+                  },
+                  {
+                    "col": 38,
+                    "kind": "colon",
+                    "line": 26,
+                    "text": ":"
+                  },
+                  {
+                    "col": 40,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "gullhaven"
+                  },
+                  {
+                    "col": 49,
+                    "kind": "dot",
+                    "line": 26,
+                    "text": "."
+                  },
+                  {
+                    "col": 50,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "tavern"
+                  },
+                  {
+                    "col": 56,
+                    "kind": "rparen",
+                    "line": 26,
+                    "text": ")"
+                  },
+                  {
+                    "col": 58,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "on_fail"
+                  },
+                  {
+                    "col": 66,
+                    "kind": "arrow",
+                    "line": 26,
+                    "text": "->"
+                  },
+                  {
+                    "col": 69,
+                    "kind": "ident",
+                    "line": 26,
+                    "text": "no_room"
+                  }
+                ],
+                "keyword": "~",
+                "kind": "line",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 26,
+                "title": ""
+              }
+            ],
+            "end_col": 76,
+            "end_line": 26,
+            "head": [
+              {
+                "col": 5,
+                "kind": "lbracket",
+                "line": 25,
+                "text": "["
+              },
+              {
+                "col": 6,
+                "kind": "prose",
+                "line": 25,
+                "text": "Take the room"
+              },
+              {
+                "col": 19,
+                "kind": "rbracket",
+                "line": 25,
+                "text": "]"
+              },
+              {
+                "col": 21,
+                "kind": "arrow",
+                "line": 25,
+                "text": "->"
+              },
+              {
+                "col": 24,
+                "kind": "ident",
+                "line": 25,
+                "text": "took"
+              }
+            ],
+            "keyword": "*",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 25,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 66,
+            "end_line": 27,
+            "head": [
+              {
+                "col": 5,
+                "kind": "lbrace",
+                "line": 27,
+                "text": "{"
+              },
+              {
+                "col": 6,
+                "kind": "ident",
+                "line": 27,
+                "text": "has_tag"
+              },
+              {
+                "col": 13,
+                "kind": "lparen",
+                "line": 27,
+                "text": "("
+              },
+              {
+                "col": 14,
+                "kind": "ident",
+                "line": 27,
+                "text": "player"
+              },
+              {
+                "col": 20,
+                "kind": "comma",
+                "line": 27,
+                "text": ","
+              },
+              {
+                "col": 22,
+                "kind": "ident",
+                "line": 27,
+                "text": "local"
+              },
+              {
+                "col": 27,
+                "kind": "rparen",
+                "line": 27,
+                "text": ")"
+              },
+              {
+                "col": 28,
+                "kind": "rbrace",
+                "line": 27,
+                "text": "}"
+              },
+              {
+                "col": 30,
+                "kind": "lbracket",
+                "line": 27,
+                "text": "["
+              },
+              {
+                "col": 31,
+                "kind": "prose",
+                "line": 27,
+                "text": "I have a place in town"
+              },
+              {
+                "col": 53,
+                "kind": "rbracket",
+                "line": 27,
+                "text": "]"
+              },
+              {
+                "col": 55,
+                "kind": "arrow",
+                "line": 27,
+                "text": "->"
+              },
+              {
+                "col": 58,
+                "kind": "ident",
+                "line": 27,
+                "text": "declined"
+              }
+            ],
+            "keyword": "*",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 27,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 62,
+            "end_line": 28,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 28,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 28,
+                "text": "The ferry's charging double since the storm, mind."
+              }
+            ],
+            "keyword": "tavern",
+            "kind": "line",
+            "line_tag": "a920",
+            "start_col": 3,
+            "start_line": 28,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 55,
+            "end_line": 29,
+            "head": [
+              {
+                "col": 9,
+                "kind": "colon",
+                "line": 29,
+                "text": ":"
+              },
+              {
+                "col": 11,
+                "kind": "prose",
+                "line": 29,
+                "text": "The board lists the price as {two coins}}."
+              }
+            ],
+            "keyword": "tavern",
+            "kind": "line",
+            "line_tag": "a921",
+            "start_col": 3,
+            "start_line": 29,
+            "title": ""
+          }
+        ],
+        "end_col": 55,
+        "end_line": 29,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 23,
+            "text": "toll"
+          },
+          {
+            "col": 11,
+            "kind": "dot",
+            "line": 23,
+            "text": "."
+          },
+          {
+            "col": 12,
+            "kind": "ident",
+            "line": 23,
+            "text": "offer_room"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 23,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 30,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

@@ -2,8 +2,12 @@ extends SceneTree
 
 const _Cli := preload("res://addons/wyrd/cli/wyrd_cli_app.gd")
 
-## Command-line entry. Prints the version and marks each sub-command not implemented.
+## Command-line entry. With no arguments, prints the version and command list.
+## [code]check[/code] lexes and parses [code].wyrd[/code] files.
 
 func _init() -> void:
-	print(_Cli.render().strip_edges())
-	quit(0)
+	var result: Dictionary = _Cli.execute(OS.get_cmdline_user_args())
+	var output := str(result["output"])
+	if not output.is_empty():
+		print(output.strip_edges())
+	quit(int(result["exit_code"]))

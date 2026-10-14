@@ -1,0 +1,304 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_FACTS_DUPLICATE",
+      "col": 3,
+      "line": 4,
+      "message": "duplicate fact key \"player.coins\"",
+      "path": "res://tests/golden/cases/facts_duplicate.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "player"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 3,
+      "text": "coins"
+    },
+    {
+      "col": 16,
+      "kind": "colon",
+      "line": 3,
+      "text": ":"
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 3,
+      "text": "int"
+    },
+    {
+      "col": 22,
+      "kind": "ident",
+      "line": 3,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "player"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 4,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 4,
+      "text": "coins"
+    },
+    {
+      "col": 16,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 4,
+      "text": "bool"
+    },
+    {
+      "col": 23,
+      "kind": "ident",
+      "line": 4,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 5,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 28,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 3,
+                "text": "player"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 3,
+                "text": "coins"
+              },
+              {
+                "col": 16,
+                "kind": "colon",
+                "line": 3,
+                "text": ":"
+              },
+              {
+                "col": 18,
+                "kind": "ident",
+                "line": 3,
+                "text": "int"
+              },
+              {
+                "col": 22,
+                "kind": "ident",
+                "line": 3,
+                "text": "stored"
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 29,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 4,
+                "text": "player"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 4,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 4,
+                "text": "coins"
+              },
+              {
+                "col": 16,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 18,
+                "kind": "ident",
+                "line": 4,
+                "text": "bool"
+              },
+              {
+                "col": 23,
+                "kind": "ident",
+                "line": 4,
+                "text": "stored"
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          }
+        ],
+        "end_col": 29,
+        "end_line": 4,
+        "entries": [
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "player.coins",
+            "line": 3,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "player",
+              "coins"
+            ],
+            "type": "int"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "player.coins",
+            "line": 4,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "player",
+              "coins"
+            ],
+            "type": "bool"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 5,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

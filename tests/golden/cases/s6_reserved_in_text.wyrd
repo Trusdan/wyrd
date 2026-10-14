@@ -1,0 +1,4 @@
+language 1
+quest ferry "document"
+scene dock
+  keeper: Do not declare a winner. #line:k1

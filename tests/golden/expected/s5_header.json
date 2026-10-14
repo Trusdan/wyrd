@@ -1,0 +1,67 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 3,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 3,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 5,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 6,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [],
+        "end_col": 6,
+        "end_line": 5,
+        "entries": [],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 5,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 6,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

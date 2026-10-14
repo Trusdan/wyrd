@@ -1,0 +1,138 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_UNEXPECTED_TOKEN",
+      "col": 3,
+      "line": 3,
+      "message": "unexpected token \"#\"",
+      "path": "res://tests/golden/cases/s2_hash_code.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "dock"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "error",
+      "line": 3,
+      "text": "#"
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 3,
+      "text": "nope"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 4,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 9,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 5,
+                "kind": "ident",
+                "line": 3,
+                "text": "nope"
+              }
+            ],
+            "keyword": "#",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          }
+        ],
+        "end_col": 9,
+        "end_line": 3,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "dock"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 4,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

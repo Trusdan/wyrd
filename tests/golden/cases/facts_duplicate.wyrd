@@ -1,0 +1,4 @@
+language 1
+facts
+  player.coins : int stored
+  player.coins : bool stored

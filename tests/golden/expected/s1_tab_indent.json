@@ -1,0 +1,76 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_TAB_INDENT",
+      "col": 1,
+      "line": 2,
+      "message": "tab indentation is not allowed",
+      "path": "res://tests/golden/cases/s1_tab_indent.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 2,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 2,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 3,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [],
+        "end_col": 7,
+        "end_line": 2,
+        "entries": [],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 2,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 3,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

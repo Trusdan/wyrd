@@ -1,0 +1,400 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 2,
+      "message": "reserved word \"document\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 3,
+      "message": "reserved word \"publishes_by\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 4,
+      "message": "reserved word \"tier\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 5,
+      "message": "reserved word \"await_host\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 6,
+      "message": "reserved word \"believe\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 7,
+      "message": "reserved word \"declare\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 8,
+      "message": "reserved word \"retract\"",
+      "path": "res://tests/golden/cases/s6_reserved.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 2,
+      "text": "document"
+    },
+    {
+      "col": 16,
+      "kind": "string",
+      "line": 2,
+      "text": "A"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 3,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 3,
+      "text": "publishes_by"
+    },
+    {
+      "col": 20,
+      "kind": "string",
+      "line": 3,
+      "text": "B"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 4,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 4,
+      "text": "tier"
+    },
+    {
+      "col": 12,
+      "kind": "string",
+      "line": 4,
+      "text": "C"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 5,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 5,
+      "text": "await_host"
+    },
+    {
+      "col": 18,
+      "kind": "string",
+      "line": 5,
+      "text": "D"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 6,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 6,
+      "text": "believe"
+    },
+    {
+      "col": 15,
+      "kind": "string",
+      "line": 6,
+      "text": "E"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 7,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 7,
+      "text": "declare"
+    },
+    {
+      "col": 15,
+      "kind": "string",
+      "line": 7,
+      "text": "F"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 8,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 8,
+      "text": "retract"
+    },
+    {
+      "col": 15,
+      "kind": "string",
+      "line": 8,
+      "text": "G"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 9,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [],
+        "end_col": 19,
+        "end_line": 2,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 2,
+            "text": "document"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": "A"
+      },
+      {
+        "children": [],
+        "end_col": 23,
+        "end_line": 3,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 3,
+            "text": "publishes_by"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 3,
+        "title": "B"
+      },
+      {
+        "children": [],
+        "end_col": 15,
+        "end_line": 4,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 4,
+            "text": "tier"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 4,
+        "title": "C"
+      },
+      {
+        "children": [],
+        "end_col": 21,
+        "end_line": 5,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 5,
+            "text": "await_host"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 5,
+        "title": "D"
+      },
+      {
+        "children": [],
+        "end_col": 18,
+        "end_line": 6,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 6,
+            "text": "believe"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 6,
+        "title": "E"
+      },
+      {
+        "children": [],
+        "end_col": 18,
+        "end_line": 7,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 7,
+            "text": "declare"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 7,
+        "title": "F"
+      },
+      {
+        "children": [],
+        "end_col": 18,
+        "end_line": 8,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 8,
+            "text": "retract"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 8,
+        "title": "G"
+      }
+    ],
+    "end_col": 1,
+    "end_line": 9,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

@@ -1,0 +1,9 @@
+language 1
+
+quest ferry "The Ferry Toll"
+  // a comment-only line does not close the quest
+
+  stage gossip
+
+  stage pay
+    scene room with tavern

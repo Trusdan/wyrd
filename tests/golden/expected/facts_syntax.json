@@ -1,0 +1,306 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_FACTS_SYNTAX",
+      "col": 16,
+      "line": 3,
+      "message": "expected \":\" after the fact key",
+      "path": "res://tests/golden/cases/facts_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_FACTS_SYNTAX",
+      "col": 13,
+      "line": 4,
+      "message": "unknown fact type \"string\"",
+      "path": "res://tests/golden/cases/facts_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_FACTS_SYNTAX",
+      "col": 13,
+      "line": 5,
+      "message": "expected \"stored\" or \"source\"",
+      "path": "res://tests/golden/cases/facts_syntax.wyrd",
+      "severity": "error"
+    }
+  ],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 1,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 1,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 1,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 3,
+      "text": "player"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 3,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 3,
+      "text": "coins"
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 3,
+      "text": "int"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 3,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 3,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 4,
+      "text": "mystery"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 4,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "ident",
+      "line": 4,
+      "text": "string"
+    },
+    {
+      "col": 20,
+      "kind": "ident",
+      "line": 4,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "tide"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 5,
+      "text": "int"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 6,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 26,
+            "end_line": 3,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 3,
+                "text": "player"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 3,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 3,
+                "text": "coins"
+              },
+              {
+                "col": 16,
+                "kind": "ident",
+                "line": 3,
+                "text": "int"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 3,
+                "text": "stored"
+              }
+            ],
+            "keyword": "player.coins",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 3,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 26,
+            "end_line": 4,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 4,
+                "text": "mystery"
+              },
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 4,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "ident",
+                "line": 4,
+                "text": "string"
+              },
+              {
+                "col": 20,
+                "kind": "ident",
+                "line": 4,
+                "text": "stored"
+              }
+            ],
+            "keyword": "mystery",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 4,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 13,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 5,
+                "text": "tide"
+              },
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 5,
+                "text": "int"
+              }
+            ],
+            "keyword": "tide",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          }
+        ],
+        "end_col": 13,
+        "end_line": 5,
+        "entries": [],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 2,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 6,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

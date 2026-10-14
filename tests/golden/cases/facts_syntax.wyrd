@@ -1,0 +1,5 @@
+language 1
+facts
+  player.coins int stored
+  mystery : string stored
+  tide : int
