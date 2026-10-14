@@ -1,6 +1,22 @@
 {
   "diagnostics": [
     {
+      "code": "W_EMPTY_UNCOVERED",
+      "col": 3,
+      "line": 4,
+      "message": "slot \"keeper\" can become empty and has no empty variant or on_empty",
+      "path": "res://tests/golden/link/slot_unused/quest.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_EMPTY_UNCOVERED",
+      "col": 3,
+      "line": 5,
+      "message": "slot \"clerk\" can become empty and has no empty variant or on_empty",
+      "path": "res://tests/golden/link/slot_unused/quest.wyrd",
+      "severity": "warning"
+    },
+    {
       "code": "W_SLOT_UNUSED",
       "col": 29,
       "line": 7,

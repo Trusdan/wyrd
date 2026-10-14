@@ -155,6 +155,37 @@ func _quests(units: Array, pack: WyrdLinkedPack) -> void:
 				)
 			for stage in quest.stages:
 				_quest_stage(quest, stage, stages, path, pack)
+			_warn_empty(quest, path)
+
+
+func _warn_empty(quest: WyrdQuestDef, path: String) -> void:
+	if not quest.on_empty.is_empty():
+		return
+	var covered := {}
+	for stage in quest.stages:
+		_mark_empty(stage, covered)
+	for slot in quest.slots:
+		if slot.name.is_empty() or covered.has(slot.name):
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.W_EMPTY_UNCOVERED,
+			"slot \"%s\" can become empty and has no empty variant or on_empty" % slot.name,
+			path,
+			slot.line,
+			slot.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _mark_empty(stage: WyrdStageDef, covered: Dictionary) -> void:
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant == null:
+			continue
+		if variant.state == &"empty":
+			covered[variant.slot] = true
+		if variant.body != null:
+			_mark_empty(variant.body, covered)
 
 
 func _quest_stage(quest: WyrdQuestDef, stage: WyrdStageDef, stages: Dictionary, path: String, pack: WyrdLinkedPack) -> void:

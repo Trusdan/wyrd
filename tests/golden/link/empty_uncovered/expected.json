@@ -1,0 +1,139 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_EMPTY_UNCOVERED",
+      "col": 3,
+      "line": 12,
+      "message": "slot \"scribe\" can become empty and has no empty variant or on_empty",
+      "path": "res://tests/golden/link/empty_uncovered/quest.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "facts": [],
+    "files": [
+      {
+        "hash": "d178434cd3598d52",
+        "path": "res://tests/golden/link/empty_uncovered/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "empty_uncovered",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/empty_uncovered/quest.wyrd",
+        "id": "covered",
+        "on_empty": "wait",
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "keeper",
+            "role": "dock_keeper"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Covered"
+      },
+      {
+        "file": "res://tests/golden/link/empty_uncovered/quest.wyrd",
+        "id": "open",
+        "on_empty": "",
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "clerk",
+            "role": "dock_clerk"
+          },
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "scribe",
+            "role": "town_scribe"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [
+              {
+                "body": {
+                  "effects": [],
+                  "id": "",
+                  "journals": [],
+                  "scenes": [],
+                  "transitions": [
+                    {
+                      "target": "done",
+                      "when": ""
+                    }
+                  ],
+                  "variants": [],
+                  "waits": ""
+                },
+                "slot": "clerk",
+                "state": "empty"
+              }
+            ],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Open"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

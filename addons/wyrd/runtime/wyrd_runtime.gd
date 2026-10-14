@@ -5,14 +5,19 @@ extends RefCounted
 ##
 ## @experimental
 ## S2a loads a manifest by compiling its [code].wyrd[/code] sources, then keeps
-## a fact store, a condition table, and a fixed-work tick queue. Deeds, quests,
-## scenes, and saves are later slices. Callables stay in the registries.
+## a fact store, a condition table, and a fixed-work tick queue. S2b adds the
+## deed log, relationship axes, and role slots. Quests, scenes, and saves are
+## later slices. Callables stay in the registries.
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
+const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "slot_state"]
+const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "slot_state", "disposition"]
 
 var facts: WyrdFactStore
 var events: WyrdEvents
 var roles: WyrdRoles
+var deeds: WyrdDeedLog
+var social: WyrdSocial
 
 var _config: WyrdConfig
 var _content: WyrdContent
@@ -33,6 +38,8 @@ func _init() -> void:
 	facts = WyrdFactStore.new()
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
+	deeds = WyrdDeedLog.new()
+	social = WyrdSocial.new()
 	_config = WyrdConfig.new()
 	_queue = WyrdTickQueue.new()
 	_ctx = WyrdConditionCtx.new()
@@ -45,6 +52,22 @@ func _init() -> void:
 	facts.resolver_of = Callable(self, &"_resolver")
 	events.on_emit = Callable(self, &"_on_emit")
 	_rpn.fact_reader = Callable(facts, &"get_in")
+	deeds.clock = Callable(self, &"now_minutes")
+	deeds.config_of = Callable(self, &"config")
+	deeds.spatial_of = Callable(self, &"_spatial")
+	social.deeds = deeds
+	social.config_of = Callable(self, &"config")
+	roles.social = social
+	roles.deeds = deeds
+	roles.facts = facts
+	roles.clock = Callable(self, &"now_minutes")
+	roles.config_of = Callable(self, &"config")
+	roles.content_of = Callable(self, &"content")
+	roles.world_of = Callable(self, &"_world")
+	deeds.deed_recorded.connect(_on_deed)
+	roles.role_holder_changed.connect(_on_role)
+	roles.role_vacant.connect(_on_role_vacant)
+	social.on_changed = Callable(self, &"_on_social")
 
 
 func get_version() -> String:
@@ -121,6 +144,8 @@ func start_new_game(seed_value: int) -> void:
 	_minutes = 0
 	_trace.clear()
 	facts.clear_values()
+	deeds.clear()
+	social.clear_state()
 	roles.clear()
 	_arm_queue()
 
@@ -144,6 +169,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_always = PackedInt32Array()
 	_queue.clear()
 	facts.bind_schema(null)
+	deeds.clear()
+	social.clear_state()
 	roles.bind_content(null)
 	roles.clear()
 	if manifest == null:
@@ -192,6 +219,8 @@ func tick(game_minutes: int) -> void:
 		return
 	_minutes += game_minutes
 	facts.refresh_poll(now_minutes())
+	if game_minutes > 0:
+		_mark_calls(_DEED_CALLS)
 	if not _always.is_empty():
 		_queue.mark(_always)
 	var budget := _config.scheduler_work_per_tick if _config != null else 0
@@ -282,6 +311,56 @@ func _mark_keys(keys: PackedStringArray) -> void:
 
 func _on_emit(event_name: StringName, _payload: Dictionary) -> void:
 	facts.invalidate_event(event_name)
+
+
+func loaded_fact_key() -> String:
+	return _rpn.last_fact_key
+
+
+func _on_deed(_deed: Dictionary) -> void:
+	_mark_calls(_DEED_CALLS)
+
+
+func _on_role(_role: StringName, _old_holder: StringName, _new_holder: StringName) -> void:
+	_mark_calls(_ROLE_CALLS)
+
+
+func _on_role_vacant(_role: StringName) -> void:
+	_mark_calls(_ROLE_CALLS)
+
+
+func _on_social() -> void:
+	_mark_calls(_DEED_CALLS)
+
+
+func _mark_calls(names: PackedStringArray) -> void:
+	if _content == null or names.is_empty():
+		return
+	var hits := PackedInt32Array()
+	for i in _content.conditions.size():
+		var cond := _content.conditions[i]
+		if cond == null:
+			continue
+		for item in cond.consts:
+			if item is StringName and names.has(String(item)):
+				hits.append(i)
+				break
+	if not hits.is_empty():
+		_queue.mark(hits)
+
+
+func _spatial() -> WyrdSpatialAdapter:
+	var found := adapter(WyrdSpatialAdapter)
+	if found is WyrdSpatialAdapter:
+		return found as WyrdSpatialAdapter
+	return null
+
+
+func _world() -> WyrdWorldAdapter:
+	var found := adapter(WyrdWorldAdapter)
+	if found is WyrdWorldAdapter:
+		return found as WyrdWorldAdapter
+	return null
 
 
 func _resolver(head: String) -> Object:

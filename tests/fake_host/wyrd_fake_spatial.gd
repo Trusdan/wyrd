@@ -8,6 +8,7 @@ var _distances: Dictionary = {}
 var _perceive: Dictionary = {}
 var _reach: Dictionary = {}
 var _nearby: Dictionary = {}
+var _witnesses: Dictionary = {}
 
 
 func set_place(entity: StringName, place: StringName) -> void:
@@ -34,6 +35,16 @@ func set_nearby(
 	ids: PackedStringArray
 ) -> void:
 	_nearby[_nearby_key(center, radius_m, tag)] = ids
+
+
+func set_witnesses(place: StringName, ids: PackedStringArray) -> void:
+	_witnesses[place] = ids.duplicate()
+
+
+func witnesses_of(_actor: StringName, _target: StringName, place: StringName) -> PackedStringArray:
+	if not _witnesses.has(place):
+		return PackedStringArray()
+	return (_witnesses[place] as PackedStringArray).duplicate()
 
 
 func nearby(center: StringName, radius_m: float, filter: WyrdEntityFilter) -> PackedStringArray:

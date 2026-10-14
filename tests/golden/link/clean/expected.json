@@ -17,7 +17,7 @@
     ],
     "files": [
       {
-        "hash": "64923ccca3ef75fa",
+        "hash": "905f667bba4fda42",
         "path": "res://tests/golden/link/clean/quest.wyrd"
       },
       {
@@ -42,7 +42,7 @@
       {
         "file": "res://tests/golden/link/clean/quest.wyrd",
         "id": "gate",
-        "on_empty": "",
+        "on_empty": "wait",
         "requires": [],
         "slots": [
           {
@@ -185,7 +185,7 @@
               "file": "res://tests/golden/link/clean/quest.wyrd",
               "id": "gate.arrive",
               "kind": "stage",
-              "line": 8
+              "line": 9
             }
           ],
           "source": "stored",
@@ -196,7 +196,7 @@
               "file": "res://tests/golden/link/clean/quest.wyrd",
               "id": "gate.arrive",
               "kind": "effect",
-              "line": 10
+              "line": 11
             }
           ]
         }

@@ -8,4 +8,4 @@ A stored write of the wrong type is refused, logged with `push_error`, and recor
 
 Resolvers come from `source:` (`world.is_alive`, `time.season`). `per_query` is never cached. `on_event(name)` drops on `events.emit` or `invalidate(prefix)`. `poll(minutes)` drops when that many game minutes have passed. An empty invalidate clause stays cached until `invalidate`.
 
-`fact_changed` fires only for prefixes passed to `subscribe`.
+`fact_changed` fires only for prefixes passed to `subscribe`. A `known/` write marks dependents of that key. `remember` writes a `known/` value that is not in the schema; secret role reveals use it.

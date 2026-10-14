@@ -139,6 +139,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `E_STAGE_UNKNOWN` | A stage `on_fail` names a stage this quest does not declare |
 | `W_SCENE_UNUSED` | No quest stage runs the scene |
 | `W_SLOT_UNUSED` | A passed slot is not a speaker in the scene |
+| `W_EMPTY_UNCOVERED` | A slot has neither `variant <slot>.empty` nor quest `on_empty` |
 | `W_PACK_UNKNOWN` | `requires` names a pack that is not loaded |
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
@@ -149,4 +150,4 @@ Resolved facts are never "never set". `record deed` is not a fact write. A passe
 
 ## Not in this draft
 
-Casting, succession, and resolving `redirect beat` are M4. Storylets, topics as entities, barks, and `priority:` are M6. Host world-event schemas are later host-adapter work. Nothing here runs at runtime. `test` stays unimplemented.
+Casting proper, `locked_gone`, and resolving `redirect beat` are M4. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Host world-event schemas are later host-adapter work. `test` stays unimplemented.

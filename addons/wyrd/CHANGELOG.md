@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+S2b deeds, disposition, and roles. Draft. Quests, scenes, and saves are later slices.
+
+- Deed log stores packed rows, decays by the hour bucket, and keeps memorable rows. No compaction.
+- `deed_count` and `deed_score` replace the zero stub. Sums round to 6 decimal places.
+- Relationship baselines plus a verb-to-axis table. Default disposition is `disposition_default + affinity / 2`. Hostile is that disposition toward `player` below `hostile_threshold` (default 20).
+- `live` follows the role. `locked_at` freezes when the stage is entered. `cast` binds once at quest start and logs that casting is M4.
+- Succession is `relation(kind|kind)` or `none`. Secret holders are written to `known/<agent>` only through `tell`.
+- Linker warning `W_EMPTY_UNCOVERED` when a slot has no empty variant and no `on_empty`.
+
 S2a runtime core and fact store. Draft. Deeds, quests, scenes, and saves are later slices.
 
 - `load_content` compiles a manifest's `.wyrd` sources into a runtime `WyrdContent` and refuses the load on any error.

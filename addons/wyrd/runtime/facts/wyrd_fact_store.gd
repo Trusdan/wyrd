@@ -103,8 +103,28 @@ func set_in(key: StringName, new_value: Variant, perspective: StringName = &"wor
 	if had and old_value == stored:
 		return true
 	bag[text] = stored
-	if kind == "world":
-		_notify(PackedStringArray([text]))
+	_notify(PackedStringArray([text]))
+	_emit(text, old_value, stored, had)
+	return true
+
+
+## Writes a [code]known/[/code] value that is not a schema fact. Role reveals use this.
+func remember(key: StringName, value: Variant, perspective: StringName) -> bool:
+	var text := String(key)
+	if _kind(perspective) != "known":
+		_refuse("perspective", text, "remember only writes known/")
+		return false
+	if text.is_empty():
+		_refuse("key", text, "not a concrete fact key")
+		return false
+	var stored: Variant = StringName(str(value)) if value is String or value is StringName else value
+	var bag := _known_bag(perspective, true)
+	var had := bag.has(text)
+	var old_value: Variant = bag[text] if had else null
+	if had and old_value == stored:
+		return true
+	bag[text] = stored
+	_notify(PackedStringArray([text]))
 	_emit(text, old_value, stored, had)
 	return true
 
