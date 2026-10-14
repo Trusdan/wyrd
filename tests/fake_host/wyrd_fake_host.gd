@@ -3,8 +3,7 @@ extends RefCounted
 
 ## The five scripted adapters, registered by their base-script path.
 ##
-## This is the harness milestone tests will talk to. S0 has no runtime registrar yet,
-## so the map lives here.
+## [method register_into] copies that map onto a [WyrdRuntime].
 
 var world: WyrdFakeWorld
 var inventory: WyrdFakeInventory
@@ -29,6 +28,15 @@ func _init() -> void:
 
 func adapter_count() -> int:
 	return _by_base_path.size()
+
+
+func register_into(runtime: WyrdRuntime) -> void:
+	for path in _by_base_path.keys():
+		var base := load(str(path)) as Script
+		if base == null:
+			push_error("Fake host could not load adapter base %s." % path)
+			continue
+		runtime.register_adapter(base, _by_base_path[path] as RefCounted)
 
 
 func adapter_for(base: Script) -> RefCounted:

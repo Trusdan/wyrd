@@ -15,6 +15,9 @@ const _SI_CMP_JUMP := 101
 var _stack: Array = []
 var _slots: Dictionary = {}
 var _plans: Dictionary = {}
+## Optional one-argument fact reader. Used when [param facts] has no entry.
+## Not saved. The default path is unchanged when this is unset.
+var fact_reader: Callable = Callable()
 
 
 ## Map fact keys to slots. Derived plans are dropped and rebuilt. Not saved.
@@ -225,6 +228,8 @@ func _load(facts: Dictionary, key: Variant) -> Variant:
 		return facts[text]
 	if facts.has(key):
 		return facts[key]
+	if fact_reader.is_valid():
+		return fact_reader.call(text)
 	return null
 
 

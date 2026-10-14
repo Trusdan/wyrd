@@ -391,7 +391,9 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 	_note(fact, node)
 	node.kind = &"fact"
 	node.text = fact.key
-	if dynamic:
+	# Reads stay on the pattern key. A concrete key under that pattern still has
+	# to load its own segments, or the id is lost and the resolver cannot run.
+	if dynamic or fact.is_pattern():
 		node.kids = rebuilt
 	else:
 		node.kids.clear()
