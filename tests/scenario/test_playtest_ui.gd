@@ -117,6 +117,26 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	await wait_process_frames(1)
 
 
+func test_unset_season_shows_absent() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	var calm := _fact_lines(ui)
+	assert_true(calm.has("world world.season = absent"), "\n".join(calm))
+	_set_toggle(ui, "storm", true)
+	var storm := _fact_lines(ui)
+	assert_true(storm.has("world world.season = storm"), "\n".join(storm))
+	await wait_process_frames(1)
+
+
+func _fact_lines(ui: Node) -> PackedStringArray:
+	var facts := ui.find_child("FactList", true, false) as ItemList
+	assert_not_null(facts)
+	var lines := PackedStringArray()
+	for i in facts.item_count:
+		lines.append(facts.get_item_text(i))
+	return lines
+
+
 func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var bram := _spawn()
 	_press(bram, "New game")

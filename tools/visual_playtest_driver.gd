@@ -352,12 +352,23 @@ func _list_has(scenario_id: String, step: String, haystack: String, source: Dict
 
 
 func _text_problem(blob: String) -> String:
-	var marker := blob.find("{?")
-	if marker >= 0:
-		return "missing value \"%s\"" % _snippet(blob, marker)
-	var empty := blob.find("{}")
-	if empty >= 0:
-		return "empty interpolation \"%s\"" % _snippet(blob, empty)
+	var marker := _marker_problem(blob)
+	if marker != "":
+		return marker
+	for node in _play.find_children("*", "Label", true, false):
+		var label := node as Label
+		if label == null or not label.is_visible_in_tree():
+			continue
+		var label_problem := _marker_problem(label.text)
+		if label_problem != "":
+			return label_problem
+	for node in _play.find_children("*", "Button", true, false):
+		var button := node as Button
+		if button == null or not button.is_visible_in_tree():
+			continue
+		var button_problem := _marker_problem(button.text)
+		if button_problem != "":
+			return button_problem
 	var cont := _button_with_text("Continue")
 	var labels := _dialogue_labels()
 	if cont != null and not cont.disabled and labels.size() >= 2 and labels[1].text.strip_edges().is_empty():
@@ -368,9 +379,55 @@ func _text_problem(blob: String) -> String:
 	var index := 0
 	while index < journal.item_count:
 		var row := journal.get_item_text(index).strip_edges()
+		var journal_problem := _marker_problem(row)
+		if journal_problem != "":
+			return journal_problem
 		if _date_only.search(row) != null:
 			return "journal entry has no text: %s" % row
 		index += 1
+	var facts := _play.find_child("FactList", true, false) as ItemList
+	if facts == null:
+		return "fact list is missing"
+	var fact_index := 0
+	while fact_index < facts.item_count:
+		var fact_row := facts.get_item_text(fact_index)
+		var fact_problem := _panel_row_problem(fact_row)
+		if fact_problem != "":
+			return fact_problem
+		fact_index += 1
+	return ""
+
+
+func _marker_problem(text: String) -> String:
+	var marker := text.find("{?")
+	if marker >= 0:
+		return "missing value \"%s\"" % _snippet(text, marker)
+	var empty := text.find("{}")
+	if empty >= 0:
+		return "empty interpolation \"%s\"" % _snippet(text, empty)
+	return ""
+
+
+func _panel_row_problem(row: String) -> String:
+	var marker := _marker_problem(row)
+	if marker != "":
+		return marker
+	var split_at := row.rfind(" = ")
+	if split_at >= 0:
+		var value := row.substr(split_at + 3).strip_edges()
+		if value.is_empty():
+			return "blank panel value \"%s\"" % row.strip_edges()
+		return ""
+	if row.begins_with("quest ") or row.begins_with("stage ") or row.begins_with("status "):
+		var rest := row.substr(row.find(" ") + 1).strip_edges()
+		if rest.is_empty():
+			return "blank panel value \"%s\"" % row.strip_edges()
+		return ""
+	if row.begins_with("slot "):
+		var parts := row.split(" — ")
+		for part in parts:
+			if part.strip_edges().is_empty():
+				return "blank panel value \"%s\"" % row.strip_edges()
 	return ""
 
 
