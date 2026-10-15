@@ -1,0 +1,197 @@
+extends GutTest
+
+const _UI := preload("res://example/playtest/gullhaven_playtest.gd")
+
+const _PANELS: PackedStringArray = [
+	"StatusLine",
+	"Controls",
+	"Toggles",
+	"Columns",
+	"Dialogue",
+	"Side",
+	"JournalScroll",
+	"FactScroll",
+	"Continue",
+]
+
+
+func test_choice_and_continue_signals_do_not_error() -> void:
+	var routes: Array[Dictionary] = [
+		{"id": "room", "choice": "Take the room", "flags": {}},
+		{"id": "local-room", "choice": "Take the room", "flags": {"local": true}},
+		{"id": "local-place", "choice": "I have a place in town", "flags": {"local": true}},
+		{"id": "lodging-off", "choice": "Take the room", "flags": {"lodging": false}},
+		{"id": "notice-off", "choice": "Take the room", "flags": {"notice": false}},
+		{"id": "ferry-dead", "choice": "Take the room", "flags": {"ferry_alive": false}},
+		{"id": "apprentice", "choice": "Take the room", "flags": {"apprentice": true, "ferry_alive": false}},
+		{"id": "storm", "choice": "Take the room", "flags": {"storm": true}},
+		{"id": "short", "choice": "Take the room", "flags": {"short": true}},
+	]
+	for route in routes:
+		var ui := _spawn()
+		var flags: Dictionary = route["flags"]
+		for key in flags.keys():
+			_set_toggle(ui, String(key), bool(flags[key]))
+		var new_game := _button_with_text(ui, "New game")
+		assert_not_null(new_game, String(route["id"]))
+		new_game.pressed.emit()
+		_drive_until_choice(ui, String(route["choice"]), String(route["id"]))
+		assert_engine_error_count(0, String(route["id"]))
+		await wait_process_frames(1)
+
+
+func test_toolbar_and_toggles_do_not_error() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	for _i in 3:
+		var cont := _button_with_text(ui, "Continue")
+		if cont != null and not cont.disabled:
+			cont.pressed.emit()
+	_press(ui, "Abort scene")
+	_press(ui, "Save")
+	_press(ui, "Advance time")
+	_press(ui, "Load")
+	_press(ui, "Reset")
+	_press(ui, "New game")
+	for key in ["ferry_alive", "local", "lodging", "notice", "storm", "apprentice", "short", "voice"]:
+		var box := ui.find_child("Toggle_%s" % key, true, false) as CheckButton
+		assert_not_null(box, key)
+		var was := box.button_pressed
+		box.toggled.emit(not was)
+		box.toggled.emit(was)
+	assert_engine_error_count(0, "toolbar")
+	await wait_process_frames(1)
+
+
+func test_panels_fit_at_1280_and_1920() -> void:
+	var window := get_tree().root
+	var saved_size := window.size
+	var saved_mode := window.content_scale_mode
+	window.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var sizes: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1920, 1080)]
+	for size in sizes:
+		window.size = size
+		var ui := _spawn_on(window)
+		await wait_process_frames(2)
+		_assert_layout(ui, size, "open")
+		ui.new_game(1)
+		await wait_process_frames(2)
+		_assert_layout(ui, size, "playing")
+		var guard := 0
+		while guard < 8:
+			var cont := _button_with_text(ui, "Continue")
+			if cont == null or cont.disabled:
+				break
+			cont.pressed.emit()
+			guard += 1
+		await wait_process_frames(2)
+		_assert_layout(ui, size, "choices")
+		ui.queue_free()
+		await wait_process_frames(1)
+	window.size = saved_size
+	window.content_scale_mode = saved_mode
+
+
+func _spawn() -> _UI:
+	var packed := load("res://example/playtest/gullhaven_playtest.tscn") as PackedScene
+	var ui := packed.instantiate() as _UI
+	add_child_autofree(ui)
+	assert_eq(ui.boot_error(), "")
+	return ui
+
+
+func _spawn_on(parent: Node) -> _UI:
+	var packed := load("res://example/playtest/gullhaven_playtest.tscn") as PackedScene
+	var ui := packed.instantiate() as _UI
+	parent.add_child(ui)
+	assert_eq(ui.boot_error(), "")
+	return ui
+
+
+func _set_toggle(ui: Node, key: String, on: bool) -> void:
+	var box := ui.find_child("Toggle_%s" % key, true, false) as CheckButton
+	assert_not_null(box, key)
+	if box.button_pressed == on:
+		return
+	box.toggled.emit(on)
+
+
+func _press(ui: Node, title: String) -> void:
+	var button := _button_with_text(ui, title)
+	assert_not_null(button, title)
+	button.pressed.emit()
+
+
+func _button_with_text(ui: Node, title: String) -> Button:
+	for node in ui.find_children("*", "Button", true, false):
+		var button := node as Button
+		if button != null and button.text == title:
+			return button
+	return null
+
+
+func _choice_button(ui: Node, label: String) -> Button:
+	var choices := ui.find_child("Choices", true, false) as VBoxContainer
+	if choices == null:
+		return null
+	var prefix := "%s (" % label
+	for child in choices.get_children():
+		var button := child as Button
+		if button == null:
+			continue
+		if button.text == label or button.text.begins_with(prefix):
+			return button
+	return null
+
+
+func _drive_until_choice(ui: Node, label: String, route_id: String) -> void:
+	var steps := 0
+	var pressed := 0
+	var saw := false
+	while steps < 40:
+		var cont := _button_with_text(ui, "Continue")
+		if cont != null and not cont.disabled:
+			cont.pressed.emit()
+			steps += 1
+			continue
+		var choice := _choice_button(ui, label)
+		if choice == null:
+			break
+		saw = true
+		var was_disabled := choice.disabled
+		choice.pressed.emit()
+		pressed += 1
+		steps += 1
+		if was_disabled or pressed >= 3:
+			break
+	assert_true(saw, "no choice button for %s" % route_id)
+	var drain := 0
+	while drain < 20:
+		var cont := _button_with_text(ui, "Continue")
+		if cont == null or cont.disabled:
+			break
+		cont.pressed.emit()
+		drain += 1
+
+
+func _assert_layout(ui: Control, size: Vector2i, phase: String) -> void:
+	var viewport := ui.get_viewport().get_visible_rect()
+	var where := "%s %s" % [size, phase]
+	assert_eq(Vector2i(viewport.size), size, "%s viewport" % where)
+	assert_eq(ui.size, Vector2(size), "%s root" % where)
+	assert_true(viewport.grow(1.0).encloses(ui.get_global_rect()), "%s root rect" % where)
+	for node_name in _PANELS:
+		var panel := ui.find_child(node_name, true, false) as Control
+		assert_not_null(panel, "%s %s" % [where, node_name])
+		var rect := panel.get_global_rect()
+		assert_gt(rect.size.x, 1.0, "%s %s width" % [where, node_name])
+		assert_gt(rect.size.y, 1.0, "%s %s height" % [where, node_name])
+		assert_true(viewport.grow(1.0).encloses(rect), "%s %s %s outside %s" % [where, node_name, rect, viewport])
+	for node in ui.find_children("*", "Button", true, false):
+		var button := node as Button
+		if button == null or not button.is_visible_in_tree():
+			continue
+		var rect := button.get_global_rect()
+		if rect.size.x <= 1.0 or rect.size.y <= 1.0:
+			continue
+		assert_true(viewport.grow(1.0).encloses(rect), "%s button '%s' %s outside %s" % [where, button.text, rect, viewport])

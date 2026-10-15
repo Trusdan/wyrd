@@ -48,10 +48,12 @@ The play scene is already set: `example/playtest/gullhaven_playtest.tscn`. If Go
 
 Press **F5**, or the Play button at the top right. (F6 plays whatever scene is open in the editor. F5 plays the main scene, which is the one you want.)
 
-A window opens. The status line says "Press New game." You will see:
+A window opens at 1600×900. Drag the edges to resize it. The panels stay inside the window and grow with it. The journal and the fact list scroll when the text is taller than the pane.
+
+The status line says "Press New game." You will see:
 
 - A seed box (it starts at `1`) and buttons: New game, Advance time, Save, Load, Reset, Abort scene.
-- Toggles: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice.
+- Toggles on two rows: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice.
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
 - A journal. Each line starts with a game time such as `day 1, 00:00`.
