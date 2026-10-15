@@ -9,14 +9,6 @@
       "severity": "warning"
     },
     {
-      "code": "W_EMPTY_UNCOVERED",
-      "col": 3,
-      "line": 5,
-      "message": "slot \"clerk\" can become empty and has no empty variant or on_empty",
-      "path": "res://tests/golden/link/speaker_unbound/quest.wyrd",
-      "severity": "warning"
-    },
-    {
       "code": "E_SPEAKER_UNBOUND",
       "col": 3,
       "line": 5,

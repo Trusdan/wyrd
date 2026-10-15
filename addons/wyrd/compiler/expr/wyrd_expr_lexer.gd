@@ -49,6 +49,9 @@ func tokenize(
 		if _is_ident_start(ch):
 			_ident()
 			continue
+		if ch == "$":
+			_binding()
+			continue
 		if _two():
 			continue
 		_punct(ch)
@@ -101,6 +104,27 @@ func _ident() -> void:
 	if word == "and" or word == "or" or word == "not" or word == "in" or word == "true" or word == "false":
 		kind = StringName(word)
 	_tokens.append(WyrdToken.new(kind, word, start_line, start_col, _line, _col))
+
+
+func _binding() -> void:
+	var start_line := _line
+	var start_col := _col
+	var start := _index
+	_bump()
+	if _index >= _text.length() or not _is_ident_start(_text[_index]):
+		_diagnostics.add(
+			WyrdDiagnostic.E_EXPR_UNEXPECTED,
+			"unexpected token \"$\"",
+			_path,
+			start_line,
+			start_col
+		)
+		_tokens.append(WyrdToken.new(&"error", "$", start_line, start_col, _line, _col))
+		return
+	while _index < _text.length() and _is_ident_cont(_text[_index]):
+		_bump()
+	var word := _text.substr(start, _index - start)
+	_tokens.append(WyrdToken.new(&"ident", word, start_line, start_col, _line, _col))
 
 
 func _string() -> void:

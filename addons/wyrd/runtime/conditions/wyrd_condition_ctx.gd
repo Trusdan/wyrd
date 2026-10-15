@@ -36,6 +36,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"held": Callable(self, &"_held"),
 		&"holder": Callable(self, &"_holder"),
 		&"known": Callable(self, &"_known"),
+		&"outcome": Callable(self, &"_outcome"),
 		&"knows": Callable(self, &"_knows"),
 		&"rel": Callable(self, &"_rel"),
 		&"slot_state": Callable(self, &"_slot_state"),
@@ -142,6 +143,15 @@ func _rel(args: Array) -> bool:
 
 func _filled(args: Array) -> bool:
 	return _holder(args) != null
+
+
+func _outcome(args: Array) -> Variant:
+	if args.size() < 2 or args[0] == null or args[1] == null or _runtime == null or _runtime.quests == null:
+		return null
+	var value := _runtime.quests.outcome(str(args[0]), str(args[1]))
+	if value.is_empty():
+		return null
+	return StringName(value)
 
 
 func _slot_state(args: Array) -> Variant:

@@ -11,7 +11,12 @@ quest open "Open"
   slot clerk = dock_clerk mode: live
   slot scribe = town_scribe mode: live
   stage arrive
+    scene desk with scribe
     variant clerk.empty:
       -> done
     -> done
   stage done
+
+scene desk
+  scribe: The desk is staffed. #line:desk
+  -> end

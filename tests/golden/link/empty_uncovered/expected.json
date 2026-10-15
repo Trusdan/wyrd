@@ -14,12 +14,22 @@
     "facts": [],
     "files": [
       {
-        "hash": "d178434cd3598d52",
+        "hash": "dac040b9cbcbcd9d",
         "path": "res://tests/golden/link/empty_uncovered/quest.wyrd"
       }
     ],
     "language_version": 1,
-    "lines": [],
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/empty_uncovered/quest.wyrd",
+        "id": "empty_uncovered/desk",
+        "kind": "spoken",
+        "scene": "desk",
+        "speaker": "scribe",
+        "tags": []
+      }
+    ],
     "pack_id": "empty_uncovered",
     "quests": [
       {
@@ -87,7 +97,14 @@
             "effects": [],
             "id": "arrive",
             "journals": [],
-            "scenes": [],
+            "scenes": [
+              {
+                "id": "desk",
+                "with": [
+                  "scribe"
+                ]
+              }
+            ],
             "transitions": [
               {
                 "target": "done",
@@ -131,7 +148,29 @@
       }
     ],
     "roles": [],
-    "scenes": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/empty_uncovered/quest.wyrd",
+        "id": "desk",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "desk",
+            "speaker": "scribe",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
     "wyrd_export": 1,
     "xref": {
       "events": [],

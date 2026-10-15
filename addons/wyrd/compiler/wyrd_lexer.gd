@@ -271,6 +271,16 @@ func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host
 			else:
 				_error(WyrdDiagnostic.E_UNEXPECTED_TOKEN, "unexpected token \"[\"", line_no, origin + index)
 			continue
+		if ch == "$":
+			if index + 1 < content.length() and _is_ident_start(content[index + 1]):
+				var end := _ident_end(content, index + 1)
+				_emit_span(&"ident", content.substr(index, end - index), line_no, origin, index, end)
+				index = end
+				continue
+			_error(WyrdDiagnostic.E_UNEXPECTED_TOKEN, "unexpected token \"$\"", line_no, origin + index)
+			_emit_span(&"error", "$", line_no, origin, index, index + 1)
+			index += 1
+			continue
 		if _is_ident_start(ch):
 			var end := _ident_end(content, index)
 			var word := content.substr(index, end - index)

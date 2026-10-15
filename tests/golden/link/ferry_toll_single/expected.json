@@ -33,6 +33,14 @@
       "severity": "warning"
     },
     {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 16,
+      "message": "locked_at slot \"ferry\" has no locked_gone variant",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
+    },
+    {
       "code": "W_PACK_UNKNOWN",
       "col": 3,
       "line": 18,

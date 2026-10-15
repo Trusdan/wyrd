@@ -13,6 +13,9 @@ extends RefCounted
 ## answer shows up there.
 
 var enabled: bool = false
+## When set, slot-state lines are kept only when the quest, role, or slot
+## equals this text or begins with it. Empty keeps every line.
+var prefix: String = ""
 var events: Array[Dictionary] = []
 
 

@@ -7,8 +7,12 @@ extends RefCounted
 ## [code]start when[/code] and [code]waits_until[/code] advance only after the
 ## tick queue has re-checked them. A stage that names a scene offers it; the
 ## host opens it, and transitions wait until that scene ends normally. An
-## aborted scene stays pending. A variant whose slot state matches replaces
-## the stage body. The quest completes when every declared outcome is resolved
+## aborted scene stays pending. The winning slot variant replaces the stage
+## body. [code]unwilling[/code] and [code]barred[/code] are evaluated live and
+## again on a tick when no scene or host step is open. Ending a scene finishes
+## the current body before that re-check. [code]route_closed[/code] does not
+## finish the quest. The quest
+## completes when every declared outcome is [code]done[/code] or [code]failed[/code]
 ## and the current body has no transition. Any [code]failed[/code] outcome
 ## fails the quest instead. [code]on_empty: wait[/code] holds a stage when a
 ## slot is empty and no variant matched. Journal text and its date are frozen
@@ -107,7 +111,7 @@ func on_tick() -> void:
 		if state.status == DORMANT or state.status == AVAILABLE:
 			_consider_start(String(quest_id), quest, state)
 		elif state.status == ACTIVE:
-			_continue(String(quest_id), quest, state, 0)
+			_continue(String(quest_id), quest, state, 0, true)
 
 
 func clear_event_fires() -> void:
@@ -388,7 +392,7 @@ func _activate(quest_id: String, quest: WyrdQuestDef, state: QuestState) -> void
 	_enter(quest_id, quest, state, 0)
 
 
-func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int) -> void:
+func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int, recheck: bool = false) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
@@ -409,6 +413,8 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 		return
 	if state.offered != "" and not state.scene_done:
 		state.waiting = "scene:%s" % state.offered
+		return
+	if recheck and _adopt_pick(quest_id, quest, state, hops):
 		return
 	var body := _body_now(quest, state)
 	if body == null:
@@ -586,12 +592,14 @@ func _maybe_finish(quest_id: String, state: QuestState, body: WyrdStageDef) -> v
 	if body.transitions.size() > 0:
 		return
 	var names: PackedStringArray = _declared.get(quest_id, PackedStringArray())
+	var failed := false
 	for branch in names:
 		if not state.outcomes.has(String(branch)):
 			return
-	var failed := false
-	for branch in names:
-		if String(state.outcomes[String(branch)]) == "failed":
+		var value := String(state.outcomes[String(branch)])
+		if value == "route_closed":
+			return
+		if value == "failed":
 			failed = true
 	state.waiting = ""
 	_set_status(quest_id, state, FAILED if failed else COMPLETED)
@@ -606,29 +614,65 @@ func _wait_blocks(state: QuestState, body: WyrdStageDef) -> bool:
 	return true
 
 
+func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int) -> bool:
+	var stage := _stage_by_id(quest, state.stage_id)
+	if stage == null:
+		return false
+	var pick := _pick(quest, stage)
+	var key := String(pick["key"])
+	var hold := bool(pick["hold"])
+	if key == state.variant and hold == state.held_empty:
+		return false
+	state.variant = key
+	state.step_at = 0
+	state.offered = ""
+	state.slots = PackedStringArray()
+	state.scene_done = false
+	state.held_empty = hold
+	state.waiting = ""
+	if hold:
+		state.waiting = "on_empty"
+		return true
+	var body := pick["body"] as WyrdStageDef
+	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+	return true
+
+
 func _pick(quest: WyrdQuestDef, stage: WyrdStageDef) -> Dictionary:
-	for entry in stage.variants:
-		var variant := entry as WyrdVariantDef
-		if variant != null and _variant_ok(quest, variant):
-			return {
-				"body": variant.body,
-				"hold": false,
-				"key": "%s.%s" % [variant.slot, String(variant.state)],
-			}
+	var chosen: WyrdVariantDef = null
+	var chosen_at := -1
+	for slot in quest.slots:
+		var found: Dictionary = runtime.roles.resolve_slot(quest.id, StringName(slot.name), true)
+		var variant: Variant = found.get("variant", null)
+		if variant == null or not (variant is WyrdVariantDef):
+			continue
+		var at := _variant_index(stage, variant)
+		if at < 0:
+			continue
+		if chosen == null or at < chosen_at:
+			chosen = variant
+			chosen_at = at
+	if chosen != null:
+		return {
+			"body": chosen.body,
+			"hold": false,
+			"key": "%s.%s" % [chosen.slot, String(chosen.state)],
+		}
 	if quest.on_empty == "wait" and _any_empty(quest):
 		return {"body": null, "hold": true, "key": ""}
 	return {"body": stage, "hold": false, "key": ""}
 
 
-func _variant_ok(quest: WyrdQuestDef, variant: WyrdVariantDef) -> bool:
-	if variant.condition != null and not runtime.eval_bool(variant.condition):
-		return false
-	return runtime.roles.slot_state(StringName(variant.slot), quest.id) == variant.state
+func _variant_index(stage: WyrdStageDef, variant: WyrdVariantDef) -> int:
+	for i in stage.variants.size():
+		if stage.variants[i] == variant:
+			return i
+	return -1
 
 
 func _any_empty(quest: WyrdQuestDef) -> bool:
 	for slot in quest.slots:
-		if runtime.roles.slot_state(StringName(slot.name), quest.id) == &"empty":
+		if runtime.roles.resolve_slot(quest.id, StringName(slot.name), false)["state"] == &"empty":
 			return true
 	return false
 

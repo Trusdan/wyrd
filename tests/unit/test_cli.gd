@@ -55,7 +55,11 @@ func test_check_gullhaven_manifest_is_clean() -> void:
 		"example/content/gullhaven/harbor.wyrdmanifest.tres",
 	]))
 	assert_eq(int(result["exit_code"]), 0, str(result["output"]))
-	assert_eq(str(result["output"]), "")
+	# The example ferry slot is locked_at and has no locked_gone variant yet.
+	assert_eq(
+		str(result["output"]),
+		"res://example/content/gullhaven/ferry_toll.wyrd:6:3: warning[W_LOCKED_GONE_UNCOVERED]: locked_at slot \"ferry\" has no locked_gone variant\n"
+	)
 
 
 func test_check_invalid_file_exits_one() -> void:
