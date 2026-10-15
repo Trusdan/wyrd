@@ -88,6 +88,7 @@ func _init() -> void:
 	quests = WyrdQuestRunner.new()
 	quests.bind(self)
 	roles.stage_of = Callable(quests, &"stage")
+	roles.seed_of = Callable(self, &"game_seed")
 	dialogue = WyrdSceneRunner.new()
 	dialogue.bind(self)
 	effects.outcome_changed.connect(quests.note_outcome)
@@ -179,6 +180,7 @@ func start_new_game(seed_value: int) -> void:
 	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
+	roles.note_started()
 
 
 func game_seed() -> int:
@@ -357,6 +359,9 @@ func _trace_role(kind: String, fields: Dictionary) -> void:
 	if kind == "slot_state":
 		_trace_slot(fields)
 		return
+	if kind == "succession":
+		_trace_succession(fields)
+		return
 	trace_add(kind, fields)
 	if trace == null or not trace.enabled:
 		return
@@ -382,6 +387,24 @@ func _trace_slot(fields: Dictionary) -> void:
 			str(fields.get("role", "")),
 			str(fields.get("slot", "")),
 			str(fields.get("state", "")),
+			str(fields.get("reason", "")),
+		]
+	)
+
+
+func _trace_succession(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("succession", fields)
+	print(
+		"wyrd succession role=%s strategy=%s from=%s to=%s reason=%s"
+		% [
+			str(fields.get("role", "")),
+			str(fields.get("strategy", "")),
+			str(fields.get("from", "")),
+			str(fields.get("to", "")),
 			str(fields.get("reason", "")),
 		]
 	)

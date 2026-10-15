@@ -252,6 +252,7 @@ func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	var who := _who(line_def.speaker, frame.quest_id)
 	view.speaker = who["id"]
 	view.display_name = String(who["name"])
+	view.roles = _roles_held(who["id"], frame)
 	view.text = _text.render(line_def.prose, line_def.line_id)
 	view.tags = line_def.tags.duplicate()
 	view.audio = _audio(line_def.line_id)
@@ -430,6 +431,27 @@ func _who(token: String, quest_id: String) -> Dictionary:
 	if shown.is_empty():
 		shown = token
 	return {"id": StringName(token), "name": shown}
+
+
+func _roles_held(entity: StringName, frame: Frame) -> PackedStringArray:
+	var found := PackedStringArray()
+	if entity == &"" or entity == &"narrator" or frame == null or runtime == null:
+		return found
+	var quest := _quest(frame.quest_id)
+	if quest == null:
+		return found
+	var seen := {}
+	for slot in quest.slots:
+		if not frame.slots.has(slot.name) or slot.role.is_empty():
+			continue
+		if runtime.roles.slot_holder(frame.quest_id, StringName(slot.name)) != entity:
+			continue
+		if seen.has(slot.role):
+			continue
+		seen[slot.role] = true
+		found.append(slot.role)
+	found.sort()
+	return found
 
 
 func _display(id: StringName) -> String:

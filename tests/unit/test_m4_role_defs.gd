@@ -56,7 +56,7 @@ func test_succession_skips_ineligible_and_dead() -> void:
 	assert_true(runtime.roles.eligible(&"ferry_master", &"cy"))
 
 
-func test_stored_strategies_do_not_run() -> void:
+func test_election_stays_stored_until_a_later_pr() -> void:
 	var opened := _boot()
 	var runtime: WyrdRuntime = opened["runtime"]
 	runtime.roles.define(&"storm_watcher", "faction_assigns(faction.harbor)", false, -1, "", "", &"", "abolish")
@@ -66,7 +66,8 @@ func test_stored_strategies_do_not_run() -> void:
 	runtime.roles.assign(&"storm_watcher", &"ada")
 	runtime.roles.vacate(&"storm_watcher", &"left")
 	assert_eq(runtime.roles.holder(&"storm_watcher"), &"")
-	assert_eq(runtime.deeds.count_matching(&"ada", &"role_abolished", &""), 0)
+	assert_true(runtime.roles.abolished(&"storm_watcher"))
+	assert_eq(runtime.deeds.count_matching(&"ada", &"role_abolished", &"storm_watcher"), 1)
 	runtime.roles.define(&"tavern_owner", "election")
 	runtime.roles.define(&"watcher", "host_decides")
 	runtime.roles.assign(&"tavern_owner", &"bea")
@@ -74,7 +75,9 @@ func test_stored_strategies_do_not_run() -> void:
 	runtime.roles.vacate(&"tavern_owner", &"left")
 	runtime.roles.vacate(&"watcher", &"left")
 	assert_eq(runtime.roles.holder(&"tavern_owner"), &"")
+	assert_false(runtime.roles.abolished(&"tavern_owner"))
 	assert_eq(runtime.roles.holder(&"watcher"), &"")
+	assert_eq(runtime.roles.binding_status(&"watcher"), &"pending")
 
 
 func test_eligibility_trace_is_one_line() -> void:
