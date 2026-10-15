@@ -7,5 +7,6 @@ facts
   harbor.room_taken  : bool   stored  doc: "Whether tonight's tavern room was taken."
   tavern.stew_bowls  : int    stored  doc: "Bowls of stew left on the hearth."
   world.storm_heard  : bool   stored  doc: "Whether the storm rumour was heard."
-  npc.{id}.alive     : bool   source: world.is_alive  doc: "Whether an npc is alive."
   world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
+  // Alive is the host world. The story uses filled(slot). npc.{id}.alive is cached
+  // until invalidated, so it can stay true after a slot is vacated.

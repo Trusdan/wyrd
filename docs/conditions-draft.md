@@ -46,6 +46,7 @@ Spoken lines keep the raw spans from the block lexer.
 
 - `{expr}` inserts a value.
 - A missing value is `{?<expr>}`, for example `{?ferry.toll_coins}`. It is not an empty string. `0` still renders as `0`. `{holder(slot).name}` is the host display name of the entity in that slot, not the role id. A role has no title field. Prose that also names the job, such as "the ferry master", writes that phrase itself.
+- The linker warns `W_HOLDER_UNGUARDED` when prose interpolates `holder(slot)` and that slot can be empty there. `when filled(slot)` (including as an `and` conjunct, or on both sides of `or`) is a guard. So is a branch that a `variant <slot>.empty` replaces. `when npc.<entity>.alive` is not a guard: that resolved fact is cached until something invalidates it, so it can stay true after the slot is vacated.
 - `{if cond}...{else}...{end}` is a conditional fragment and may nest. `{else}` is optional.
 - `{holder(ferry)|variants}` is parsed and not resolved.
 - `else` and `end` are reserved only as a whole span.

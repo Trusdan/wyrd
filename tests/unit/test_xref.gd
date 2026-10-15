@@ -94,6 +94,98 @@ func test_interpolation_before_a_write_warns() -> void:
 	assert_false(late.format().contains("W_INTERP_UNSET"))
 
 
+func test_holder_interpolation_warns_when_the_slot_can_be_empty() -> void:
+	var open_slot := WyrdDiagnostics.new()
+	_compile(open_slot, """
+		language 1
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  on_empty: wait
+		  stage arrive
+		    scene dock with ferry
+		    ~ outcome route = done
+		scene dock
+		  lookout: {holder(ferry).name} is here. #line:d1
+		  -> end
+		""")
+	assert_true(open_slot.format().contains("warning[W_HOLDER_UNGUARDED]"))
+	assert_true(open_slot.format().contains("holder(\"ferry\")"))
+	var alive_fact := WyrdDiagnostics.new()
+	_compile(alive_fact, """
+		language 1
+		facts
+		  npc.{id}.alive : bool source: world.is_alive
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  on_empty: wait
+		  stage arrive
+		    scene dock with ferry
+		    ~ outcome route = done
+		scene dock
+		  when npc.ferry_master.alive: lookout: {holder(ferry).name} is here. #line:d1
+		  -> end
+		""")
+	assert_true(alive_fact.format().contains("warning[W_HOLDER_UNGUARDED]"))
+	var either := WyrdDiagnostics.new()
+	_compile(either, """
+		language 1
+		facts
+		  player.coins : int stored
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  on_empty: wait
+		  stage arrive
+		    ~ set player.coins = 2
+		    scene dock with ferry
+		    ~ outcome route = done
+		scene dock
+		  when filled(ferry) or player.coins > 0: lookout: {holder(ferry).name} is here. #line:d1
+		  -> end
+		""")
+	assert_true(either.format().contains("warning[W_HOLDER_UNGUARDED]"))
+	var guarded := WyrdDiagnostics.new()
+	_compile(guarded, """
+		language 1
+		facts
+		  player.coins : int stored
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  on_empty: wait
+		  stage arrive
+		    ~ set player.coins = 2
+		    scene dock with ferry
+		    ~ outcome route = done
+		scene dock
+		  when filled(ferry) and player.coins >= 2: lookout: {holder(ferry).name} is here. #line:d1
+		  when not filled(ferry): lookout: The dock is empty. #line:d2
+		  -> end
+		""")
+	assert_false(guarded.format().contains("W_HOLDER_UNGUARDED"), guarded.format())
+	var replaced := WyrdDiagnostics.new()
+	_compile(replaced, """
+		language 1
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  stage arrive
+		    journal: {holder(ferry).name} is at the dock. #line:j1
+		    variant ferry.empty:
+		      journal: The dock is empty. #line:j_empty
+		    ~ outcome route = done
+		""")
+	assert_false(replaced.format().contains("W_HOLDER_UNGUARDED"), replaced.format())
+	var inside := WyrdDiagnostics.new()
+	_compile(inside, """
+		language 1
+		quest gate "Gate"
+		  slot ferry = ferry_master mode: live
+		  stage arrive
+		    ~ outcome route = done
+		    variant ferry.empty:
+		      journal: {holder(ferry).name} is gone. #line:j_empty
+		""")
+	assert_true(inside.format().contains("warning[W_HOLDER_UNGUARDED]"))
+
+
 func _compile(diagnostics: WyrdDiagnostics, body: String) -> WyrdLinkedPack:
 	var path := "user://wyrd_xref_%d.wyrd" % Time.get_ticks_usec()
 	var file := FileAccess.open(path, FileAccess.WRITE)

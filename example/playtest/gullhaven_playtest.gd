@@ -328,9 +328,13 @@ func _refresh() -> void:
 			if fact.is_pattern():
 				continue
 			_facts.add_item("world %s = %s" % [fact.key, _shown(_runtime.facts.get(StringName(fact.key)))])
+	# Live world state. A resolved npc.{id}.alive fact with no invalidate stays cached.
 	for entity_id in ["player", "ferry_master", "tavern_owner", "dock_apprentice"]:
-		var key := "npc.%s.alive" % entity_id
-		_facts.add_item("world %s = %s" % [key, _shown(_runtime.facts.get(StringName(key)))])
+		var id := StringName(entity_id)
+		var alive := "absent"
+		if _host.world.exists(id):
+			alive = "true" if _host.world.is_alive(id) else "false"
+		_facts.add_item("alive %s = %s" % [entity_id, alive])
 	_append_quest(_facts)
 	_facts.add_item("outcome crossing = %s" % _runtime.quests.outcome("ferry_toll", "crossing"))
 	_append_slots(_facts)
