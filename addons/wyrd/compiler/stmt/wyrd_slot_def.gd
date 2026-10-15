@@ -5,7 +5,8 @@ extends WyrdStmtSpan
 ##
 ## @experimental
 ## [member mode] is [code]live[/code], [code]locked_at[/code], or [code]cast[/code].
-## [member cast_when] is type-checked only. Casting arrives in M4.
+## [member cast_when] filters [method WyrdWorldAdapter.candidates] at quest start.
+## [code]candidate[/code] is the entity under test.
 
 var name: String = ""
 var role: String = ""

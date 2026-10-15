@@ -283,8 +283,19 @@ func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
 		slot.mode = &"cast"
 		var span := _span_text(items, i + 2, close)
 		slot.cast_text = span["text"]
-		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", slot.reads)
+		var compiled := _expr(
+			span["text"],
+			int(span["line"]),
+			int(span["col"]),
+			_WAIT,
+			true,
+			&"",
+			slot.reads,
+			{"candidate": WyrdSignatures.T_ENTITY}
+		)
 		slot.cast_when = compiled["compiled"]
+		if compiled["ast"] != null:
+			_warn_slot_const("cast", compiled["ast"], int(span["line"]), int(span["col"]))
 	else:
 		_unknown_msg(node, "unknown slot mode \"%s\"" % mode)
 		return

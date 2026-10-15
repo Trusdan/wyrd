@@ -3,6 +3,26 @@ extends GutTest
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 
+func test_heard_rumour_casts_the_apprentice() -> void:
+	var runtime := _play(false)
+	assert_eq(runtime.roles.slot_holder("ferry_toll", &"lookout"), &"dock_apprentice")
+	assert_eq(runtime.roles.slot_state(&"lookout", "ferry_toll"), &"default")
+	assert_eq(runtime.roles.holder(&"storm_watcher"), &"storm_watcher")
+	assert_eq(runtime.quests.offered_scene("ferry_toll"), "toll.offer_room")
+
+
+func test_unset_rumour_leaves_the_lookout_empty() -> void:
+	var opened := _Harness.new().boot_gullhaven(false, 4, false)
+	var runtime: WyrdRuntime = opened["runtime"]
+	assert_true(opened["report"].ok, opened["report"].diagnostics.format())
+	assert_eq(runtime.roles.slot_holder("ferry_toll", &"lookout"), &"")
+	assert_eq(runtime.roles.slot_state(&"lookout", "ferry_toll"), &"empty")
+	assert_eq(runtime.quests.stage("ferry_toll"), "gossip")
+	assert_eq(runtime.quests.status("ferry_toll"), &"active")
+	assert_eq(runtime.quests.waiting_reason("ferry_toll"), "on_empty")
+	assert_eq(runtime.quests.offered_scene("ferry_toll"), "")
+
+
 func test_route_take_the_room() -> void:
 	var runtime := _play(false)
 	var harness := _Harness.new()
@@ -13,7 +33,7 @@ func test_route_take_the_room() -> void:
 	assert_eq(opening[0]["speaker"], "tavern_owner")
 	assert_eq(opening[0]["name"], "innkeeper")
 	assert_eq(opening[2]["text"], "Bram, the ferry master, is on the dock.")
-	assert_eq(opening[2]["name"], "watcher")
+	assert_eq(opening[2]["name"], "Nia")
 	assert_null(opening[0]["audio"])
 	assert_eq(runtime.dialogue.choices().size(), 1)
 	assert_eq(runtime.dialogue.choices()[0].text, "Take the room")

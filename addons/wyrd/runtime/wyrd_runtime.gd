@@ -363,6 +363,9 @@ func _trace_role(kind: String, fields: Dictionary) -> void:
 	if kind == "succession":
 		_trace_succession(fields)
 		return
+	if kind == "cast":
+		_trace_cast(fields)
+		return
 	trace_add(kind, fields)
 	if trace == null or not trace.enabled:
 		return
@@ -388,6 +391,24 @@ func _trace_slot(fields: Dictionary) -> void:
 			str(fields.get("role", "")),
 			str(fields.get("slot", "")),
 			str(fields.get("state", "")),
+			str(fields.get("reason", "")),
+		]
+	)
+
+
+func _trace_cast(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("cast", fields)
+	print(
+		"wyrd cast quest=%s role=%s slot=%s entity=%s reason=%s"
+		% [
+			str(fields.get("quest", "")),
+			str(fields.get("role", "")),
+			str(fields.get("slot", "")),
+			str(fields.get("entity", "")),
 			str(fields.get("reason", "")),
 		]
 	)

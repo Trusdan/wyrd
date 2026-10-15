@@ -63,12 +63,14 @@ The status line says "Press New game." You will see:
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
+New game sets `world.storm_heard` before the quest starts. The lookout is `cast(world.storm_heard)`. With that rumour set, the cast picks once from the entities the play host registered. At seed 1 the pick is the dock apprentice, so the speaker label is **Nia**. The storm watcher role stays with the watcher. If the rumour is still false, nobody passes, the slot is empty, and `on_empty: wait` holds the quest at `gossip`.
+
 ## 5. Walk one route
 
 1. Press **New game**.
 2. The speaker is **innkeeper**. The text is: "A room's two coins a night, and the stew is free."
-3. Press **Continue**. The speaker is **watcher**: "The headland bell rang twice before the rain."
-4. Continue. The speaker is **watcher**: "Bram, the ferry master, is on the dock."
+3. Press **Continue**. The speaker is **Nia**: "The headland bell rang twice before the rain."
+4. Continue. The speaker is **Nia**: "Bram, the ferry master, is on the dock."
 5. Continue. The speaker is **bell**: "The bell notes the tide."
 6. One choice is shown: **Take the room**. Press it.
 7. The innkeeper says: "The ferry's charging double since the storm, mind."
@@ -81,7 +83,7 @@ On the right:
 - The journal has one line dated `day 1, 00:00`: "Bram, the ferry master, at the dock wants 2 coins before the crossing." That sentence stays as it was written. Bram is the personal name the play host gave the person in the ferry slot. The words "the ferry master" are written in the example. A role has no title field, so the game does not look that phrase up.
 - The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`. A row whose value changed on the last press is highlighted. Rows that did not change stay plain. Resolved facts also have a cache row, such as `cache world.season = on_event season_changed`. The value is the cache mode and the last event that dropped it. `per_query` facts are never cached.
 - The summary says `The Ferry Toll`, stage `pay_toll`, status `active`, and outcome `absent`. A waiting row shows the time check. That block stays put while the fact list scrolls.
-- Each slot row is `slot <slot> — <role title> — <holder name> — <state>`. The title is the role id with spaces (`ferry_master` becomes `ferry master`), because a role has no title field. The state is the runtime slot state, not the slot mode in the quest file. `default` means the first holder is in the slot. `successor` means someone else took it. `empty` means nobody holds it. `hostile` means disposition is too low. After this walk the rows are `slot tavern — tavern owner — innkeeper — default`, `slot ferry — ferry master — Bram — default`, and `slot lookout — storm watcher — watcher — default`.
+- Each slot row is `slot <slot> — <role title> — <holder name> — <state>`. The title is the role id with spaces (`ferry_master` becomes `ferry master`), because a role has no title field. The state is the runtime slot state, not the slot mode in the quest file. `default` means the first holder is in the slot. `successor` means someone else took it. `empty` means nobody holds it. `hostile` means disposition is too low. After this walk the rows are `slot tavern — tavern owner — innkeeper — default`, `slot ferry — ferry master — Bram — default`, and `slot lookout — storm watcher — Nia — default`. Nia is the cast pick, not the storm watcher's personal name.
 
 Press **Advance time**. The status line shows `day 1, 01:00`. The stage becomes `cross`. The fact `world.storm_heard` becomes `true`. The dock conversation opens again: "Two coins, and the boat will cross." then "The boat leaves the dock." Continue through both. The quest status becomes `completed`.
 
@@ -91,12 +93,12 @@ Press **Reset** or **New game** between routes. Set the toggles before you press
 
 | What you set | What you should see |
 |---|---|
-| Defaults, as in section 5 | Innkeeper room line, watcher, "Bram, the ferry master, is on the dock.", bell, then Take the room, then the dock lines spoken by **Bram**. Coins go from 4 to 2. Journal `day 1, 00:00`. Advance time moves the stage to `cross` and finishes the quest after the dock lines. |
+| Defaults, as in section 5 | Innkeeper room line, Nia on "The headland bell rang twice before the rain." and "Bram, the ferry master, is on the dock.", bell, then Take the room, then the dock lines spoken by **Bram**. Coins go from 4 to 2. Journal `day 1, 00:00`. Advance time moves the stage to `cross` and finishes the quest after the dock lines. |
 | **Local tag** on before New game | A second choice appears: "I have a place in town". Press it. Coins stay 4. The dock lines still play. The stage is still `pay_toll` and the journal still appears. |
 | **Lodging available** off before Take the room | After Take the room the innkeeper says "No room left tonight." and "The board lists the price as {two coins}}." The second line really does show a single `{` and an extra `}`. Coins stay 4. The stage is `pay_toll`. |
 | **Notice succeeds** off before Take the room | The room conversation plays as in section 5, then the tavern conversation is offered again and the stage is `gossip`. The journal already has Bram's toll line. |
-| **Ferry master alive** off before New game, or after New game before you continue to the dock line | The watcher says "The dock is empty." You do not see a line with `{?holder(ferry).name}`. Take the room. The journal says "The dock is empty, so the crossing waits." dated `day 1, 00:00`. The stage returns to `gossip` and then waits with no new scene. The fact list shows `alive ferry_master = false`. The ferry slot row is `slot ferry — ferry master — none — empty`. |
-| **Apprentice ready** on before New game, then **Ferry master alive** off before Take the room | The successor is Nia, a different person from Bram. The watcher says "Nia, the ferry master, is on the dock." The journal says "Nia, the ferry master, at the dock wants 2 coins before the crossing." The ferry slot row is `slot ferry — ferry master — Nia — successor`. Advance time reaches `cross`. The dock speaker is **Nia**, and the quest completes. |
+| **Ferry master alive** off before New game, or after New game before you continue to the dock line | Nia says "The dock is empty." You do not see a line with `{?holder(ferry).name}`. Take the room. The journal says "The dock is empty, so the crossing waits." dated `day 1, 00:00`. The stage returns to `gossip` and then waits with no new scene. The fact list shows `alive ferry_master = false`. The ferry slot row is `slot ferry — ferry master — none — empty`. |
+| **Apprentice ready** on before New game, then **Ferry master alive** off before Take the room | The successor is Nia, a different person from Bram. Nia also speaks the lookout line "Nia, the ferry master, is on the dock." The journal says "Nia, the ferry master, at the dock wants 2 coins before the crossing." The ferry slot row is `slot ferry — ferry master — Nia — successor`. Advance time reaches `cross`. The dock speaker is **Nia**, and the quest completes. |
 | **Season storm** on before New game, or before you continue past "Bram, the ferry master, is on the dock." | An extra line appears before the bell: narrator, "The season smells like rain." |
 | **Abort scene** while the first lines are up | The conversation stops. The status says you can save. The stage stays `gossip` and the tavern scene is offered again. The last line stays visible. |
 | **Short on coins** on before the choices appear | "Take the room (short on coins)" is grey and cannot be pressed. |
