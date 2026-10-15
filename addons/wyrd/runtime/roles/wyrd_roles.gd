@@ -7,7 +7,10 @@ extends RefCounted
 ## A binding holds [code]holder[/code], [code]since[/code], [code]status[/code]
 ## ([code]default[/code], [code]successor[/code], [code]empty[/code]), and
 ## [code]history[/code]. [method assign] is host setup for the default holder.
-## [method vacate] runs [code]relation(...)[/code] or [code]none[/code].
+## [method define] stores the same fields as a [code]role[/code] block.
+## [method eligible] tests [code]candidate[/code]. [method vacate] runs
+## [code]relation(...)[/code] or [code]none[/code]. Other succession strategies
+## and [code]vacancy: abolish[/code] are stored and do not run yet.
 ## [code]live[/code] follows the role. [code]locked_at[/code] freezes in
 ## [method enter_stage]. [code]cast[/code] freezes in [method begin_quest] to
 ## the current holder; casting proper is M4. Slot state [code]hostile[/code]
@@ -31,8 +34,13 @@ var clock: Callable = Callable()
 var config_of: Callable = Callable()
 var content_of: Callable = Callable()
 var world_of: Callable = Callable()
+## [code]eval_with(condition, locals)[/code] evaluates one eligibility condition.
+var eval_with: Callable = Callable()
+## [code]trace_of(kind, fields)[/code] records one eligibility line. Optional.
+var trace_of: Callable = Callable()
 
 var _slots: Dictionary = {}
+var _from_content: Dictionary = {}
 var _bindings: Dictionary = {}
 var _defs: Dictionary = {}
 var _frozen: Dictionary = {}
@@ -43,6 +51,9 @@ var _cast_noted: Dictionary = {}
 func bind_content(content: WyrdContent) -> void:
 	_slots.clear()
 	_frozen.clear()
+	for id in _from_content.keys():
+		_defs.erase(id)
+	_from_content.clear()
 	if content == null:
 		return
 	var ids: Array = content.quests.keys()
@@ -59,6 +70,10 @@ func bind_content(content: WyrdContent) -> void:
 				"role": StringName(slot.role),
 				"stage": slot.locked_stage,
 			})
+	var role_ids: Array = content.roles.keys()
+	role_ids.sort()
+	for role_id in role_ids:
+		install(content.roles[role_id] as WyrdRoleDef, true)
 
 
 func clear() -> void:
@@ -66,6 +81,7 @@ func clear() -> void:
 	_frozen.clear()
 	_told.clear()
 	_cast_noted.clear()
+	_apply_all_defaults()
 
 
 func export_state() -> Dictionary:
@@ -99,10 +115,18 @@ func export_state() -> Dictionary:
 		for kind in spec["kinds"]:
 			kinds.append(String(kind))
 		defs[String(role)] = {
+			"default_holder": String(spec.get("default_holder", "")),
+			"eligibility": String(spec.get("eligibility", "")),
 			"kinds": kinds,
+			"scope": String(spec.get("scope", "world")),
+			"scope_id": String(spec.get("scope_id", "")),
 			"secret": bool(spec["secret"]),
 			"strategy": String(spec["strategy"]),
+			"succession": String(spec.get("succession", _succession_text(String(spec["strategy"]), kinds))),
+			"succession_arg": String(spec.get("succession_arg", "")),
 			"threshold": int(spec["threshold"]),
+			"vacancy": String(spec.get("vacancy", "hold")),
+			"visibility": String(spec.get("visibility", "secret" if bool(spec["secret"]) else "public")),
 		}
 	var frozen := {}
 	var locks: Array = _frozen.keys()
@@ -164,11 +188,33 @@ func import_state(data: Dictionary) -> void:
 		var kinds := PackedStringArray()
 		for kind in spec.get("kinds", []):
 			kinds.append(String(kind))
+		var visibility := str(spec.get("visibility", ""))
+		if visibility != "public" and visibility != "secret":
+			visibility = "secret" if bool(spec.get("secret", false)) else "public"
+		var strategy := str(spec.get("strategy", "none"))
+		var succession := str(spec.get("succession", ""))
+		if succession.is_empty():
+			var kind_rows: Array = []
+			for kind in kinds:
+				kind_rows.append(String(kind))
+			succession = _succession_text(strategy, kind_rows)
+		var vacancy := str(spec.get("vacancy", "hold"))
+		if vacancy != "abolish":
+			vacancy = "hold"
 		_defs[StringName(str(role))] = {
+			"default_holder": StringName(str(spec.get("default_holder", ""))),
+			"eligibility": str(spec.get("eligibility", "")),
+			"eligibility_cond": null,
 			"kinds": kinds,
-			"secret": bool(spec.get("secret", false)),
-			"strategy": StringName(str(spec.get("strategy", "none"))),
+			"scope": StringName(str(spec.get("scope", "world"))),
+			"scope_id": StringName(str(spec.get("scope_id", ""))),
+			"secret": visibility == "secret",
+			"strategy": StringName(strategy),
+			"succession": succession,
+			"succession_arg": StringName(str(spec.get("succession_arg", ""))),
 			"threshold": int(spec.get("threshold", -1)),
+			"vacancy": StringName(vacancy),
+			"visibility": StringName(visibility),
 		}
 	var frozen: Dictionary = data.get("frozen", {})
 	for quest_id in frozen.keys():
@@ -185,33 +231,131 @@ func import_state(data: Dictionary) -> void:
 		for agent in told[role]:
 			bag[StringName(str(agent))] = true
 		_told[StringName(str(role))] = bag
+	_recompile_eligibility()
 
 
-func define(role: StringName, succession: String = "none", secret: bool = false, hostile_threshold: int = -1) -> void:
-	var text := succession.strip_edges()
-	var strategy := &"none"
-	var kinds := PackedStringArray()
-	if text.is_empty() or text == "none":
-		strategy = &"none"
-	elif text.begins_with("relation(") and text.ends_with(")"):
-		strategy = &"relation"
-		var inner := text.substr("relation(".length(), text.length() - "relation(".length() - 1)
-		for part in inner.split("|"):
-			var kind := part.strip_edges()
-			if not kind.is_empty():
-				kinds.append(kind)
-		if kinds.is_empty():
-			push_error("WyrdRoles.define: relation needs a kind")
-			return
-	else:
-		push_error("WyrdRoles.define: succession \"%s\" is not relation(...) or none" % text)
+func define(
+	role: StringName,
+	succession: String = "none",
+	secret: bool = false,
+	hostile_threshold: int = -1,
+	scope: String = "",
+	eligibility: String = "",
+	default_holder: StringName = &"",
+	vacancy: String = "",
+	visibility: String = ""
+) -> void:
+	if role == &"":
+		push_error("WyrdRoles.define: missing role")
 		return
-	_defs[role] = {
+	var parsed := WyrdRoleDef.parse_succession(succession)
+	if not bool(parsed["ok"]):
+		push_error("WyrdRoles.define: %s" % String(parsed["error"]))
+		return
+	var scope_text := scope.strip_edges()
+	if scope_text.is_empty():
+		scope_text = "world"
+	var scope_parsed := WyrdRoleDef.parse_scope(scope_text)
+	if not bool(scope_parsed["ok"]):
+		push_error("WyrdRoles.define: %s" % String(scope_parsed["error"]))
+		return
+	var shown := visibility.strip_edges()
+	if shown.is_empty():
+		shown = "secret" if secret else "public"
+	var vis_parsed := WyrdRoleDef.parse_visibility(shown)
+	if not bool(vis_parsed["ok"]):
+		push_error("WyrdRoles.define: %s" % String(vis_parsed["error"]))
+		return
+	var vacancy_text := vacancy.strip_edges()
+	if vacancy_text.is_empty():
+		vacancy_text = "hold"
+	var vacancy_parsed := WyrdRoleDef.parse_vacancy(vacancy_text)
+	if not bool(vacancy_parsed["ok"]):
+		push_error("WyrdRoles.define: %s" % String(vacancy_parsed["error"]))
+		return
+	var holder_text := String(default_holder).strip_edges()
+	if not holder_text.is_empty() and not WyrdRoleDef.is_dotted_ident(holder_text):
+		push_error("WyrdRoles.define: default_holder \"%s\" is not an entity id" % holder_text)
+		return
+	var elig := eligibility.strip_edges()
+	var cond: WyrdCompiledCondition = null
+	if not elig.is_empty():
+		var diags := WyrdDiagnostics.new()
+		cond = WyrdRoleDef.compile_eligibility(elig, _schema(), diags, "define", 1, 1)
+		if diags.has_errors():
+			push_error("WyrdRoles.define: %s" % diags.items[0].message)
+			return
+	var spec := _blank_spec()
+	spec["default_holder"] = StringName(holder_text)
+	spec["eligibility"] = elig
+	spec["eligibility_cond"] = cond
+	spec["kinds"] = parsed["kinds"]
+	spec["scope"] = StringName(str(scope_parsed["scope"]))
+	spec["scope_id"] = StringName(str(scope_parsed["id"]))
+	spec["secret"] = str(vis_parsed["visibility"]) == "secret"
+	spec["strategy"] = StringName(str(parsed["strategy"]))
+	spec["succession"] = succession.strip_edges() if not succession.strip_edges().is_empty() else "none"
+	spec["succession_arg"] = StringName(str(parsed["arg"]))
+	spec["threshold"] = hostile_threshold
+	spec["vacancy"] = StringName(str(vacancy_parsed["vacancy"]))
+	spec["visibility"] = StringName(str(vis_parsed["visibility"]))
+	_defs[role] = spec
+	_apply_default(role)
+
+
+func install(role: WyrdRoleDef, from_content: bool = false) -> void:
+	if role == null or role.id.is_empty():
+		return
+	var id := StringName(role.id)
+	_defs[id] = role.to_runtime_spec()
+	if from_content:
+		_from_content[id] = true
+	_apply_default(id)
+
+
+func definition(role: StringName) -> Dictionary:
+	var spec := _spec(role)
+	var kinds: Array = []
+	for kind in spec["kinds"]:
+		kinds.append(String(kind))
+	return {
+		"default_holder": String(spec["default_holder"]),
+		"eligibility": String(spec["eligibility"]),
 		"kinds": kinds,
-		"secret": secret,
-		"strategy": strategy,
-		"threshold": hostile_threshold,
+		"scope": String(spec["scope"]),
+		"scope_id": String(spec["scope_id"]),
+		"secret": bool(spec["secret"]),
+		"strategy": String(spec["strategy"]),
+		"succession": String(spec["succession"]),
+		"succession_arg": String(spec["succession_arg"]),
+		"threshold": int(spec["threshold"]),
+		"vacancy": String(spec["vacancy"]),
+		"visibility": String(spec["visibility"]),
 	}
+
+
+func eligible(role: StringName, entity: StringName) -> bool:
+	var spec := _spec(role)
+	var text := String(spec.get("eligibility", ""))
+	var cond: Variant = spec.get("eligibility_cond", null)
+	var has_rule := not text.is_empty() or cond is WyrdCompiledCondition
+	var ok := true
+	if entity == &"":
+		ok = false
+	elif not has_rule:
+		ok = true
+	elif cond is WyrdCompiledCondition:
+		if eval_with.is_valid():
+			ok = bool(eval_with.call(cond, {"candidate": entity}))
+		else:
+			push_error("WyrdRoles.eligible: no condition evaluator")
+			ok = false
+	else:
+		push_error("WyrdRoles.eligible: \"%s\" has no compiled eligibility" % String(role))
+		ok = false
+	if has_rule:
+		_trace_eligible(role, entity, ok)
+	return ok
 
 
 func assign(role: StringName, entity: StringName) -> void:
@@ -367,7 +511,7 @@ func _successor(role: StringName, old: StringName) -> StringName:
 			var id := StringName(candidate)
 			if id == old or id == &"":
 				continue
-			if _alive(id):
+			if _alive(id) and eligible(role, id):
 				return id
 	return &""
 
@@ -414,7 +558,88 @@ func _push_history(prior: Dictionary, reason: StringName) -> void:
 func _spec(role: StringName) -> Dictionary:
 	if _defs.has(role):
 		return _defs[role]
-	return {"kinds": PackedStringArray(), "secret": false, "strategy": &"none", "threshold": -1}
+	return _blank_spec()
+
+
+func _blank_spec() -> Dictionary:
+	return {
+		"default_holder": &"",
+		"eligibility": "",
+		"eligibility_cond": null,
+		"kinds": PackedStringArray(),
+		"scope": &"world",
+		"scope_id": &"",
+		"secret": false,
+		"strategy": &"none",
+		"succession": "none",
+		"succession_arg": &"",
+		"threshold": -1,
+		"vacancy": &"hold",
+		"visibility": &"public",
+	}
+
+
+func _apply_all_defaults() -> void:
+	var ids: Array = _defs.keys()
+	ids.sort()
+	for role in ids:
+		_apply_default(StringName(str(role)))
+
+
+func _apply_default(role: StringName) -> void:
+	var who := StringName(str(_spec(role).get("default_holder", "")))
+	if who == &"":
+		return
+	var prior := _binding(role)
+	if prior["holder"] != &"" and prior["status"] != EMPTY:
+		return
+	assign(role, who)
+
+
+func _trace_eligible(role: StringName, entity: StringName, ok: bool) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call("eligible", {"entity": String(entity), "ok": ok, "role": String(role)})
+
+
+func _schema() -> WyrdFactSchema:
+	if content_of.is_valid():
+		var content: Variant = content_of.call()
+		if content is WyrdContent and (content as WyrdContent).schema != null:
+			return (content as WyrdContent).schema
+	return WyrdFactSchema.new()
+
+
+func _recompile_eligibility() -> void:
+	var schema := _schema()
+	for role in _defs.keys():
+		var spec: Dictionary = _defs[role]
+		var text := String(spec.get("eligibility", ""))
+		if text.is_empty():
+			spec["eligibility_cond"] = null
+			continue
+		var diags := WyrdDiagnostics.new()
+		var compiled := WyrdRoleDef.compile_eligibility(text, schema, diags, "save", 1, 1)
+		if diags.has_errors():
+			push_error("WyrdRoles: eligibility for \"%s\" did not recompile" % String(role))
+			spec["eligibility_cond"] = null
+			continue
+		spec["eligibility_cond"] = compiled
+
+
+func _succession_text(strategy: String, kind_list: Array) -> String:
+	if strategy == "relation":
+		var joined := ""
+		for i in kind_list.size():
+			if i > 0:
+				joined += "|"
+			joined += String(kind_list[i])
+		if joined.is_empty():
+			return "none"
+		return "relation(%s)" % joined
+	if strategy.is_empty():
+		return "none"
+	return strategy
 
 
 func _is_told(role: StringName, agent: StringName) -> bool:

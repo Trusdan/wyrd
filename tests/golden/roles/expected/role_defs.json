@@ -1,0 +1,137 @@
+{
+  "diagnostics": [],
+  "roles": [
+    {
+      "default_holder": "ada",
+      "eligibility": {
+        "reads": [],
+        "source_span": {
+          "col": 16,
+          "end_col": 62,
+          "end_line": 8,
+          "line": 8
+        },
+        "specificity": 2,
+        "uses_chance": false
+      },
+      "eligibility_text": "alive(candidate) and has_tag(candidate, local)",
+      "id": "ferry_master",
+      "kinds": [
+        "apprentice",
+        "kin"
+      ],
+      "reads": [],
+      "scope": "place",
+      "scope_id": "gullhaven",
+      "span": {
+        "col": 1,
+        "end_col": 16,
+        "end_line": 12,
+        "line": 6
+      },
+      "strategy": "relation",
+      "succession": "relation(apprentice|kin)",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": null,
+      "eligibility_text": "",
+      "id": "dock_keeper",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 19,
+        "end_line": 18,
+        "line": 14
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "abolish",
+      "visibility": "secret"
+    },
+    {
+      "default_holder": "bea",
+      "eligibility": null,
+      "eligibility_text": "",
+      "id": "storm_watcher",
+      "kinds": [],
+      "reads": [],
+      "scope": "faction",
+      "scope_id": "faction.harbor",
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 23,
+        "line": 20
+      },
+      "strategy": "faction_assigns",
+      "succession": "faction_assigns(faction.harbor)",
+      "succession_arg": "faction.harbor",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": null,
+      "eligibility_text": "",
+      "id": "tavern_owner",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 23,
+        "end_line": 26,
+        "line": 25
+      },
+      "strategy": "election",
+      "succession": "election",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [
+          "player.coins"
+        ],
+        "source_span": {
+          "col": 16,
+          "end_col": 33,
+          "end_line": 30,
+          "line": 30
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "eligibility_text": "player.coins >= 0",
+      "id": "watcher",
+      "kinds": [],
+      "reads": [
+        "player.coins"
+      ],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 33,
+        "end_line": 30,
+        "line": 28
+      },
+      "strategy": "host_decides",
+      "succession": "host_decides",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    }
+  ]
+}

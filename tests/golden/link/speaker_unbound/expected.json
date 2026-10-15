@@ -116,6 +116,7 @@
         "title": "Gate"
       }
     ],
+    "roles": [],
     "scenes": [
       {
         "file": "res://tests/golden/link/speaker_unbound/scene.wyrd",

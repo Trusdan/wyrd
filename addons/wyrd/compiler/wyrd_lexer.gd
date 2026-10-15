@@ -6,7 +6,7 @@ extends RefCounted
 ## @experimental
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
-## Inside a [code]facts[/code] or [code]events[/code] block, lines stay code. Elsewhere a line that starts
+## Inside a [code]facts[/code], [code]events[/code], or [code]role[/code] block, lines stay code. Elsewhere a line that starts
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
 ## a single [code]{[/code] opens an interpolation raw span, and a stray [code]}[/code]
 ## is literal. [code]}}[/code] is not an escape.
@@ -93,7 +93,8 @@ func _lex_line(line: String, line_no: int) -> void:
 		_apply_indent(indent, line_no)
 	_saw_line = true
 	var origin := index + 1
-	var code_block := _kinds[_kinds.size() - 1] == "facts" or _kinds[_kinds.size() - 1] == "events"
+	var parent := _kinds[_kinds.size() - 1]
+	var code_block := parent == "facts" or parent == "events" or parent == "role"
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
 	if not code_block and not code_colon and _speaker_colon(content) >= 0:

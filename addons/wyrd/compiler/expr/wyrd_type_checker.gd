@@ -20,6 +20,8 @@ var reads: Array[StringName] = []
 var uses_chance: bool = false
 ## Field name to type for [code]event.<field>[/code] inside an [code]on[/code] handler.
 var event_fields: Dictionary = {}
+## Bare name to type. Eligibility compiles [code]candidate[/code] as an entity.
+var bindings: Dictionary = {}
 
 
 func check(node: WyrdExprNode, expected: StringName) -> void:
@@ -352,6 +354,10 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 		if _static_text(kid).is_empty():
 			dynamic = true
 			break
+	# A call such as alive(candidate) expects an entity and would otherwise
+	# become a constant name before the binding table is consulted.
+	if not dynamic and _bound_name(node):
+		return
 	if not force_fact and not dynamic and (expected == WyrdSignatures.T_SYMBOL or expected == WyrdSignatures.T_ENTITY):
 		_as_name(node, expected)
 		return
@@ -375,6 +381,8 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 			rebuilt.append(kid)
 	if query.is_empty() and node.kind == &"name" and node.text != "":
 		query.append(node.text)
+	if _named_binding(node, query):
+		return
 	if _event_binding(node, query):
 		return
 	var fact := schema.lookup(query)
@@ -429,6 +437,31 @@ func _as_name(node: WyrdExprNode, type_name: StringName) -> void:
 	node.text = ".".join(parts)
 	node.type_name = type_name
 	node.kids.clear()
+
+
+func _bound_name(node: WyrdExprNode) -> bool:
+	var key := ""
+	if node.kind == &"name" and node.text != "":
+		key = node.text
+	elif node.kids.size() == 1:
+		key = _static_text(node.kids[0])
+	if key.is_empty() or not bindings.has(key):
+		return false
+	node.kind = &"fact"
+	node.text = key
+	node.kids.clear()
+	node.type_name = StringName(bindings[key])
+	return true
+
+
+func _named_binding(node: WyrdExprNode, query: PackedStringArray) -> bool:
+	if query.size() != 1 or not bindings.has(query[0]):
+		return false
+	node.kind = &"fact"
+	node.text = query[0]
+	node.kids.clear()
+	node.type_name = StringName(bindings[query[0]])
+	return true
 
 
 func _event_binding(node: WyrdExprNode, query: PackedStringArray) -> bool:

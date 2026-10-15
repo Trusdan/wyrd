@@ -160,6 +160,38 @@ A stage may handle a declared world event. The form is `on <event> where <condit
 
 `await_host` is approved (Corey, 2026-10-14). See `docs/grammar-v1.md` section 9. It is a stage statement: `await_host <screen_id> returns { <field>, ... }`. The word is still not a legal identifier. The runtime pauses the remaining entry steps, calls `request_host_step`, emits `host_step_requested`, and resumes on `complete_host_step`.
 
+## Role
+
+A top-level `role <id>` block is content. It sits beside `facts`, `events`, `quest`, and `scene`. The id is a dotted identifier. A role has no title. Fields are optional. A missing field uses the default below. The same fields can be passed to `WyrdRoles.define`.
+
+```wyrd
+role ferry_master
+  scope: place(gullhaven)
+  eligibility: alive(candidate) and has_tag(candidate, local)
+  default_holder: ada
+  visibility: public
+  succession: relation(apprentice|kin)
+  vacancy: hold
+```
+
+| Field | Values | Default |
+|---|---|---|
+| `scope` | `world`, `place(<id>)`, `faction(<id>)` | `world` |
+| `eligibility` | A condition. `candidate` is the entity under test | Every entity passes |
+| `default_holder` | An entity id | None |
+| `visibility` | `public`, `secret` | `public` |
+| `succession` | `none`, `relation(<kind>\|<kind>)`, `faction_assigns(<id>)`, `election`, `host_decides` | `none` |
+| `vacancy` | `hold`, `abolish` | `hold` |
+
+`eligibility` uses `wait_trigger_or_eligibility`, so `chance` is `E_CHANCE_CONTEXT` and a `per_query` resolved fact is `E_WAIT_RESOLVER_MODE`. In that condition the bare name `candidate` is the entity being tested, not a fact. `WyrdRoles.eligible(role, entity)` evaluates it. One trace line is recorded when a condition is present: `eligible` with `role`, `entity`, and `ok`. The line does not list the facts the condition read.
+
+`relation` and `none` run on `vacate`. `relation` still requires the candidate to be alive, and now also requires `eligible`. `faction_assigns`, `election`, and `host_decides` are type-checked and stored. They do not pick a holder yet. `vacancy: abolish` is stored and does not abolish the role yet. A `default_holder` is assigned when that role's binding is empty, including after `start_new_game`.
+
+| Code | When |
+|---|---|
+| `E_ROLE_SYNTAX` | The role header or a field value is the wrong shape |
+| `E_ROLE_DUPLICATE` | The same role id is declared twice |
+
 ## Not in this draft
 
-Casting proper, `locked_gone`, and resolving `redirect beat` are M4. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.
+Role definitions are compiled from a `role` block. Casting proper, `locked_gone`, resolving `redirect beat`, and running `faction_assigns`, `election`, `host_decides`, and `vacancy: abolish` stay later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

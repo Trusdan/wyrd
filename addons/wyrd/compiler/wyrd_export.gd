@@ -31,6 +31,7 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 		"lines": _lines(pack),
 		"pack_id": pack.pack_id,
 		"quests": _quests(pack),
+		"roles": _roles(pack),
 		"scenes": _scenes(pack),
 		"wyrd_export": VERSION,
 		"xref": xref,
@@ -178,6 +179,40 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 			hosts.append({"fields": fields, "screen": String(host.get("screen", ""))})
 		data["hosts"] = hosts
 	return data
+
+
+static func _roles(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for role in file.roles:
+			var kinds: Array = []
+			for kind in role.kinds:
+				kinds.append(String(kind))
+			rows.append({
+				"default_holder": role.default_holder,
+				"eligibility": role.eligibility_text,
+				"file": str(unit["path"]),
+				"id": role.id,
+				"kinds": kinds,
+				"scope": role.scope,
+				"scope_id": role.scope_id,
+				"strategy": role.strategy,
+				"succession": role.succession_text,
+				"succession_arg": role.succession_arg,
+				"vacancy": role.vacancy,
+				"visibility": role.visibility,
+			})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var left := "%s\t%s" % [str(a["id"]), str(a["file"])]
+		var right := "%s\t%s" % [str(b["id"]), str(b["file"])]
+		return left < right
+	)
+	return rows
 
 
 static func _scenes(pack: WyrdLinkedPack) -> Array:

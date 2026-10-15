@@ -1,0 +1,375 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 1,
+      "line": 6,
+      "message": "role needs an id",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 1,
+      "line": 7,
+      "message": "a role has no title",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 9,
+      "message": "unknown role field \"colour\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 15,
+      "line": 10,
+      "message": "visibility \"hidden\" is not public or secret",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 11,
+      "message": "duplicate role field \"visibility\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 10,
+      "line": 12,
+      "message": "scope \"village\" is not world, place(...), or faction(...)",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 13,
+      "message": "duplicate role field \"scope\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 12,
+      "line": 14,
+      "message": "vacancy \"drop\" is not hold or abolish",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 15,
+      "line": 15,
+      "message": "succession \"public\" is not a role succession",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 16,
+      "message": "duplicate role field \"succession\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 17,
+      "message": "duplicate role field \"succession\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 19,
+      "line": 18,
+      "message": "default_holder \"4\" is not an entity id",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 19,
+      "message": "role field \"eligibility\" needs a value",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 20,
+      "message": "a line tag is not allowed on a role",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 3,
+      "line": 20,
+      "message": "unknown role field \"tagged\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_NOT_BOOL",
+      "col": 16,
+      "line": 22,
+      "message": "condition is int, expected bool",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHANCE_CONTEXT",
+      "col": 16,
+      "line": 24,
+      "message": "chance is not allowed in a wait, trigger, or eligibility condition",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_WAIT_RESOLVER_MODE",
+      "col": 16,
+      "line": 26,
+      "message": "resolved fact \"world.tide\" needs on_event or poll invalidation",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_UNKNOWN_FACT",
+      "col": 16,
+      "line": 28,
+      "message": "unknown fact \"missing.fact\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_SYNTAX",
+      "col": 5,
+      "line": 31,
+      "message": "a role field cannot contain a block",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ROLE_DUPLICATE",
+      "col": 1,
+      "line": 32,
+      "message": "duplicate role \"ferry_master\"",
+      "path": "res://tests/golden/roles/role_errors.wyrd",
+      "severity": "error"
+    }
+  ],
+  "roles": [
+    {
+      "default_holder": "",
+      "eligibility": null,
+      "eligibility_text": "",
+      "id": "ferry_master",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 37,
+        "end_line": 7,
+        "line": 7
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": null,
+      "eligibility_text": "",
+      "id": "dock_keeper",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 15,
+        "end_line": 20,
+        "line": 8
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [],
+        "source_span": {
+          "col": 16,
+          "end_col": 17,
+          "end_line": 22,
+          "line": 22
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "eligibility_text": "1",
+      "id": "coins_role",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 17,
+        "end_line": 22,
+        "line": 21
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [],
+        "source_span": {
+          "col": 16,
+          "end_col": 27,
+          "end_line": 24,
+          "line": 24
+        },
+        "specificity": 1,
+        "uses_chance": true
+      },
+      "eligibility_text": "chance(0.5)",
+      "id": "chance_role",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 27,
+        "end_line": 24,
+        "line": 23
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [
+          "world.tide"
+        ],
+        "source_span": {
+          "col": 16,
+          "end_col": 34,
+          "end_line": 26,
+          "line": 26
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "eligibility_text": "world.tide == high",
+      "id": "tide_role",
+      "kinds": [],
+      "reads": [
+        "world.tide"
+      ],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 34,
+        "end_line": 26,
+        "line": 25
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [],
+        "source_span": {
+          "col": 16,
+          "end_col": 32,
+          "end_line": 28,
+          "line": 28
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "eligibility_text": "missing.fact > 0",
+      "id": "missing_role",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 28,
+        "line": 27
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    },
+    {
+      "default_holder": "",
+      "eligibility": {
+        "reads": [],
+        "source_span": {
+          "col": 16,
+          "end_col": 32,
+          "end_line": 30,
+          "line": 30
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "eligibility_text": "alive(candidate)",
+      "id": "nested_role",
+      "kinds": [],
+      "reads": [],
+      "scope": "world",
+      "scope_id": "",
+      "span": {
+        "col": 1,
+        "end_col": 13,
+        "end_line": 31,
+        "line": 29
+      },
+      "strategy": "none",
+      "succession": "none",
+      "succession_arg": "",
+      "vacancy": "hold",
+      "visibility": "public"
+    }
+  ]
+}

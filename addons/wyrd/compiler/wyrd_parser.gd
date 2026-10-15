@@ -1,7 +1,7 @@
 class_name WyrdParser
 extends RefCounted
 
-## Block parser for grammar v1, plus the checked [code]facts[/code] and draft [code]events[/code] blocks.
+## Block parser for grammar v1, plus the checked [code]facts[/code] and draft [code]events[/code] and [code]role[/code] blocks.
 ##
 ## @experimental
 ## [code]quest[/code] and [code]scene[/code] bodies are a generic statement-line tree.
@@ -55,7 +55,7 @@ func parse_tokens(source: WyrdSource, tokens: Array[WyrdToken], diagnostics: Wyr
 	_check_header(statements[0])
 	for i in range(1, statements.size()):
 		var block := statements[i]
-		if block.keyword != "facts" and block.keyword != "events" and block.keyword != "quest" and block.keyword != "scene":
+		if block.keyword != "facts" and block.keyword != "events" and block.keyword != "quest" and block.keyword != "scene" and block.keyword != "role":
 			diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
 				"unexpected token \"%s\"" % _shown(block),
@@ -125,6 +125,8 @@ func _parse_statement() -> WyrdNode:
 		node.kind = &"quest"
 	elif node.keyword == "scene":
 		node.kind = &"scene"
+	elif node.keyword == "role":
+		node.kind = &"role"
 	return node
 
 

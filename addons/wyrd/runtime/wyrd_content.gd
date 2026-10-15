@@ -17,6 +17,8 @@ var schema: WyrdFactSchema
 var events: Dictionary = {}
 var quests: Dictionary = {}
 var scenes: Dictionary = {}
+## Role id to [WyrdRoleDef]. Compiled with the pack. Not a save document.
+var roles: Dictionary = {}
 var lines: Dictionary = {}
 var files: Array = []
 var conditions: Array[WyrdCompiledCondition] = []
@@ -52,6 +54,8 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			content.scenes[scene.id] = scene
 			for item in scene.items:
 				content._item(scene.id, item)
+		for role in file.roles:
+			content.roles[role.id] = role
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	return content
