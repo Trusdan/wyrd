@@ -5,6 +5,8 @@ func test_stored_fact_lints_and_resolved_fact_is_not_never_set() -> void:
 	var diagnostics := WyrdDiagnostics.new()
 	var pack := _compile(diagnostics, """
 		language 1
+		events
+		  season_changed()
 		facts
 		  player.coins : int stored
 		  world.season : symbol source: time.season invalidate: on_event(season_changed)

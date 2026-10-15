@@ -32,6 +32,7 @@ var _journal: ItemList
 var _facts: ItemList
 var _summary: Label
 var _fact_filter: LineEdit
+var _events: Label
 var _fact_rows: Array[Dictionary] = []
 var _fact_baseline: Dictionary = {}
 var _highlight_from: Dictionary = {}
@@ -46,6 +47,7 @@ var _flags := {
 	"short": false,
 	"storm": false,
 	"voice": false,
+	"watch_alive": false,
 }
 
 
@@ -85,6 +87,8 @@ func new_game(seed_value: int) -> void:
 	_runtime.deeds.record(&"arrived", &"player", &"", &"gullhaven")
 	_apply_commands()
 	_runtime.tick(0)
+	if bool(_flags["watch_alive"]):
+		_runtime.facts.set(&"harbor.watch_alive", true)
 	_started = true
 	_open_offered()
 	if not bool(_flags["ferry_alive"]):
@@ -159,6 +163,41 @@ func set_flag(name: String, on: bool) -> void:
 		_sync_ferry()
 	if name == "short":
 		_runtime.facts.set(&"player.coins", 0 if on else 4)
+	if name == "watch_alive" and on:
+		_runtime.facts.set(&"harbor.watch_alive", true)
+	_refresh()
+	_end_step()
+
+
+func emit_alive() -> void:
+	_begin_step()
+	_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), false)
+	_runtime.events.emit(&"entity_alive_changed", {"alive": false, "entity": &"ferry_master"})
+	_status.text = "Emitted entity_alive_changed."
+	_refresh()
+	_end_step()
+
+
+func batch_world() -> void:
+	_begin_step()
+	_flags["storm"] = true
+	var storm: CheckButton = _buttons.get("storm") as CheckButton
+	if storm != null:
+		storm.set_pressed_no_signal(true)
+	_host.clock.season_name = &"storm"
+	_runtime.events.begin_batch()
+	_runtime.events.emit(&"season_changed", {})
+	_runtime.events.emit(&"mechanism_state", {"actor": &"player", "object": &"dock_bell", "state": &"struck"})
+	_runtime.events.end_batch()
+	_status.text = "Batched season_changed and mechanism_state."
+	_refresh()
+	_end_step()
+
+
+func strike_bell() -> void:
+	_begin_step()
+	_runtime.events.emit(&"mechanism_state", {"actor": &"player", "object": &"dock_bell", "state": &"struck"})
+	_status.text = "Emitted mechanism_state."
 	_refresh()
 	_end_step()
 
@@ -299,12 +338,14 @@ func _arm_apprentice() -> void:
 func _sync_ferry() -> void:
 	if bool(_flags["apprentice"]):
 		_arm_apprentice()
+	var alive := bool(_flags["ferry_alive"])
 	if bool(_flags["ferry_alive"]):
 		_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), true)
 		_runtime.roles.assign(&"ferry_master", &"ferry_master")
-		return
-	_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), false)
-	_runtime.roles.vacate(&"ferry_master", &"died")
+	else:
+		_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), false)
+		_runtime.roles.vacate(&"ferry_master", &"died")
+	_runtime.events.emit(&"entity_alive_changed", {"alive": alive, "entity": &"ferry_master"})
 
 
 func _open_offered() -> void:
@@ -345,8 +386,10 @@ func _refresh() -> void:
 		button.pressed.connect(_choose_pressed.bind(button, index))
 		_choices.add_child(button)
 	_journal.clear()
-	for entry in _runtime.quests.journal("ferry_toll"):
+	for entry in _journal_records():
 		_journal.add_item("%s  %s" % [String(entry["date"]), String(entry["text"])])
+	if _events != null:
+		_events.text = _events_text()
 	_paint_inspector()
 
 
@@ -356,6 +399,11 @@ func inspector_state() -> Dictionary:
 	return {
 		"facts": _world_facts(),
 		"alive": _alive_facts(),
+		"cache": _cache_facts(),
+		"events": _event_rows(),
+		"rechecks": _runtime.last_rechecks(),
+		"flush": _runtime.events.last_wave,
+		"invalidated": _string_list(_runtime.events.last_keys),
 		"quest": _quest_fields(),
 		"outcomes": {"crossing": _shown(_runtime.quests.outcome(_QUEST_ID, "crossing"))},
 		"slots": _slot_records(),
@@ -379,6 +427,11 @@ func _paint_inspector() -> void:
 		var entity_id := String(key)
 		var alive_value := String(alive[key])
 		_fact_rows.append(_fact_row("alive %s" % entity_id, alive_value, "alive %s = %s" % [entity_id, alive_value]))
+	var cache: Dictionary = state["cache"]
+	for key in cache.keys():
+		var cache_key := String(key)
+		var cache_value := String(cache[key])
+		_fact_rows.append(_fact_row("cache %s" % cache_key, cache_value, "cache %s = %s" % [cache_key, cache_value]))
 	_fill_fact_list()
 
 
@@ -413,7 +466,7 @@ func _world_facts() -> Dictionary:
 
 
 func _alive_facts() -> Dictionary:
-	# Live world state. A resolved npc.{id}.alive fact with no invalidate stays cached.
+	# Live world state. Cache rows show the resolved npc.{id}.alive values.
 	var alive := {}
 	for entity_id in ["player", "ferry_master", "tavern_owner", "dock_apprentice"]:
 		var id := StringName(entity_id)
@@ -472,11 +525,91 @@ func _slot_records() -> Array:
 
 func _journal_records() -> Array:
 	var rows: Array = []
-	for entry in _runtime.quests.journal(_QUEST_ID):
+	_append_journal(rows, _QUEST_ID)
+	var content := _runtime.content()
+	if content == null:
+		return rows
+	var ids: Array = content.quests.keys()
+	ids.sort()
+	for quest_id in ids:
+		if String(quest_id) == _QUEST_ID:
+			continue
+		_append_journal(rows, String(quest_id))
+	return rows
+
+
+func _append_journal(rows: Array, quest_id: String) -> void:
+	for entry in _runtime.quests.journal(quest_id):
 		rows.append({
 			"date": String(entry["date"]),
 			"text": String(entry["text"]),
 		})
+
+
+func _cache_facts() -> Dictionary:
+	var rows := {}
+	var content := _runtime.content()
+	if content == null or content.schema == null:
+		return rows
+	for fact in content.schema.entries:
+		if fact.origin != &"resolved":
+			continue
+		if fact.is_pattern():
+			if fact.key == "npc.{id}.alive":
+				for entity_id in ["dock_apprentice", "ferry_master", "player", "storm_watcher", "tavern_owner"]:
+					var concrete := "npc.%s.alive" % String(entity_id)
+					rows[concrete] = _cache_label(_runtime.facts.cache_view(concrete))
+			continue
+		rows[fact.key] = _cache_label(_runtime.facts.cache_view(fact.key))
+	return rows
+
+
+func _cache_label(view: Dictionary) -> String:
+	var mode := String(view.get("mode", "absent"))
+	var event := String(view.get("event", "")).strip_edges()
+	if event.is_empty():
+		return mode if not mode.is_empty() else "absent"
+	return "%s %s" % [mode, event]
+
+
+func _event_rows() -> Array:
+	var rows: Array = []
+	for item in _runtime.events.recent:
+		var payload: Variant = item.get("payload", {})
+		rows.append({
+			"id": int(item.get("id", 0)),
+			"name": String(item.get("name", "")),
+			"payload": payload if payload is Dictionary else {},
+			"time": int(item.get("time", 0)),
+		})
+	return rows
+
+
+func _events_text() -> String:
+	var parts := PackedStringArray()
+	for item in _event_rows():
+		var row := item as Dictionary
+		var bits := PackedStringArray()
+		var payload: Dictionary = row.get("payload", {})
+		var keys: Array = payload.keys()
+		keys.sort()
+		for key in keys:
+			bits.append("%s=%s" % [String(key), str(payload[key])])
+		var name := String(row.get("name", ""))
+		if bits.is_empty():
+			parts.append(name)
+		else:
+			parts.append("%s %s" % [name, ", ".join(bits)])
+	var flush := int(_runtime.events.last_wave)
+	if parts.is_empty():
+		return "flush %d" % flush
+	return "%s  flush %d" % [" | ".join(parts), flush]
+
+
+func _string_list(keys: PackedStringArray) -> Array:
+	var rows: Array = []
+	for key in keys:
+		rows.append(String(key))
 	return rows
 
 
@@ -557,7 +690,15 @@ func _build() -> void:
 	_status.text = "Loading Gullhaven."
 	root.add_child(_status)
 	root.add_child(_controls())
+	root.add_child(_world_buttons())
 	root.add_child(_toggles())
+	_events = Label.new()
+	_events.name = "Events"
+	_events.text = "flush 0"
+	_events.clip_text = true
+	_events.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_events.custom_minimum_size = Vector2(200, 22)
+	root.add_child(_events)
 	var columns := HSplitContainer.new()
 	columns.name = "Columns"
 	columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -600,6 +741,16 @@ func _controls() -> HBoxContainer:
 	return row
 
 
+func _world_buttons() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "WorldEvents"
+	row.add_theme_constant_override("separation", 8)
+	row.add_child(_button("Emit alive", emit_alive))
+	row.add_child(_button("Batch world", batch_world))
+	row.add_child(_button("Strike bell", strike_bell))
+	return row
+
+
 func _toggles() -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.name = "Toggles"
@@ -613,6 +764,7 @@ func _toggles() -> VBoxContainer:
 		["apprentice", "Apprentice ready"],
 		["short", "Short on coins"],
 		["voice", "Voice"],
+		["watch_alive", "Watch alive"],
 	]
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)

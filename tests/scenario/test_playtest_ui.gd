@@ -14,6 +14,7 @@ const _PANELS: PackedStringArray = [
 	"FactFilter",
 	"FactScroll",
 	"Continue",
+	"Events",
 ]
 
 
@@ -126,8 +127,9 @@ func test_fact_filter_hides_other_rows() -> void:
 	filter.text = "season"
 	filter.text_changed.emit(filter.text)
 	var lines := _fact_lines(ui)
-	assert_eq(lines.size(), 1, "\n".join(lines))
-	assert_true(lines[0].contains("world.season"), lines[0])
+	assert_eq(lines.size(), 2, "\n".join(lines))
+	for line in lines:
+		assert_true(line.contains("season"), line)
 	var state := ui.inspector_state()
 	var facts: Dictionary = state["facts"]
 	assert_true(facts.has("player.coins"), "filter must not drop facts from the state record")
@@ -149,7 +151,7 @@ func test_changed_fact_is_highlighted() -> void:
 	for i in facts.item_count:
 		var text := facts.get_item_text(i)
 		var marked := facts.get_item_custom_bg_color(i).a > 0.5
-		if text.contains("world.season"):
+		if text.begins_with("world ") and text.contains("world.season"):
 			season_on = marked
 			assert_true(text.contains("storm"), text)
 		if marked:

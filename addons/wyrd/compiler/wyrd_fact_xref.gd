@@ -7,7 +7,8 @@ extends RefCounted
 ## Readers and writers reuse [WyrdDepIndex] pattern rules. [code]record deed[/code]
 ## is not a fact write. Resolved facts are never "never set". Fact defaults are not
 ## in the grammar yet, so a stored fact that is read and not written has no default.
-## [member events] records [code]on_event[/code] names as plain symbols.
+## [member events] records [code]on_event[/code] names ([code]role[/code] [code]invalidate[/code])
+## and [code]on <event>[/code] handlers ([code]role[/code] [code]emit[/code]).
 
 var facts: Array = []
 var events: Array = []
@@ -50,8 +51,10 @@ func build(
 				"file": path,
 				"line": fact.line,
 				"name": fact.invalidate_arg,
+				"role": "invalidate",
 			})
 		_lint(fact, path, read_rows.size(), write_rows.size(), diagnostics)
+	_handler_events(units)
 	_warn_interps(schema, units, writers, diagnostics)
 	facts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
 	events.sort_custom(_event_before)
@@ -218,8 +221,41 @@ func _readers(units: Array) -> Array:
 	return rows
 
 
+func _handler_events(units: Array) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for quest in file.quests:
+			for stage in quest.stages:
+				_handler_stage(stage, path)
+
+
+func _handler_stage(stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	for handler in stage.handlers:
+		events.append({
+			"col": handler.col,
+			"fact": "",
+			"file": path,
+			"line": handler.line,
+			"name": handler.event_name,
+			"role": "emit",
+		})
+	for variant in stage.variants:
+		if variant.body != null:
+			_handler_stage(variant.body, path)
+
+
 func _stage_readers(rows: Array, stage: WyrdStageDef, id: String, path: String) -> void:
 	_push(rows, _cond_reads(stage.waits_until), "stage", id, path, stage.line, stage.col)
+	for handler in stage.handlers:
+		if handler.where_cond != null:
+			_push(rows, handler.where_cond.reads, "stage", id, path, handler.line, handler.col)
+		for effect in handler.effects:
+			_effect_reader(rows, effect, id, path)
 	for row in stage.transitions:
 		var when: Variant = row["when"]
 		if when is WyrdCompiledCondition:
@@ -284,6 +320,9 @@ func _writers(units: Array) -> Array:
 func _stage_writers(rows: Array, stage: WyrdStageDef, id: String, path: String) -> void:
 	for effect in stage.effects:
 		_write(rows, effect, id, path)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_write(rows, effect, id, path)
 	for variant in stage.variants:
 		if variant.body == null:
 			continue

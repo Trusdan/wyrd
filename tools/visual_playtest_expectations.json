@@ -12,7 +12,8 @@
     "QuestSummary",
     "FactFilter",
     "FactScroll",
-    "Continue"
+    "Continue",
+    "Events"
   ],
   "defaults": {
     "ferry_alive": true,
@@ -22,7 +23,8 @@
     "storm": false,
     "apprentice": false,
     "short": false,
-    "voice": false
+    "voice": false,
+    "watch_alive": false
   },
   "scenarios": [
     {
@@ -242,6 +244,78 @@
         "contains": ["Loaded.", "stage pay_toll", "status active", "player.coins = 2", "quest The Ferry Toll", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
         "lacks": ["outcome crossing = done", "day 1, 01:00"],
         "seen": ["Can't save during a conversation.", "Saved in memory and user://playtest_save.json.", "Loaded.", "Bram, the ferry master, is on the dock."],
+        "unseen": ["{?"]
+      }
+    },
+    {
+      "id": "cache_alive_toggle",
+      "flags": {"watch_alive": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true}},
+        {"name": "02_emit_alive", "action": "press", "target": "Emit alive", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true, "contains": ["alive ferry_master = false", "cache npc.ferry_master.alive = on_event entity_alive_changed", "entity_alive_changed", "flush 1"]}},
+        {"name": "03_gone", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The ferry master is gone.", "continue_enabled": true}}
+      ],
+      "final": {
+        "contains": ["The ferry master is gone.", "alive ferry_master = false", "cache npc.ferry_master.alive = on_event entity_alive_changed"],
+        "seen": ["A room's two coins a night, and the stew is free.", "The ferry master is gone."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "season_new_game",
+      "flags": {"storm": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["world.season = storm", "season_changed"]}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain.", "contains": ["world.season = storm"]}}
+      ],
+      "final": {
+        "contains": ["world.season = storm", "The season smells like rain."],
+        "seen": ["The season smells like rain.", "Bram, the ferry master, is on the dock."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "batch_two_emits",
+      "flags": {},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_batch", "action": "press", "target": "Batch world", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true, "contains": ["season_changed", "mechanism_state", "flush 1", "world.season = storm", "harbor.bell_struck = true"]}}
+      ],
+      "final": {
+        "contains": ["season_changed", "mechanism_state", "flush 1", "world.season = storm", "The harbor bell was struck."],
+        "seen": ["A room's two coins a night, and the stew is free."],
+        "unseen": ["{?"]
+      }
+    },
+    {
+      "id": "event_during_scene",
+      "flags": {},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["world.season = absent"]}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
+        {"name": "03_storm", "action": "flag", "target": "storm", "on": true, "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true, "contains": ["world.season = storm", "season_changed"]}},
+        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "05_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain.", "contains": ["world.season = storm"]}}
+      ],
+      "final": {
+        "contains": ["The season smells like rain.", "world.season = storm"],
+        "seen": ["The headland bell rang twice before the rain.", "The season smells like rain."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "on_event_stage",
+      "flags": {},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["harbor.bell_struck = absent"]}},
+        {"name": "02_strike", "action": "press", "target": "Strike bell", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true, "contains": ["mechanism_state", "harbor.bell_struck = true", "harbor.bell_count = 1", "The harbor bell was struck."]}},
+        {"name": "03_again", "action": "press", "target": "Strike bell", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["harbor.bell_count = 1", "The harbor bell was struck."]}}
+      ],
+      "final": {
+        "contains": ["harbor.bell_struck = true", "harbor.bell_count = 1", "The harbor bell was struck.", "quest The Ferry Toll"],
+        "seen": ["The harbor bell was struck."],
         "unseen": ["{?"]
       }
     }

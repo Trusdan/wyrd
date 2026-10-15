@@ -1,0 +1,15 @@
+// [EXAMPLE CONTENT] Gullhaven harbor bell. An invented fishing village, not a host game.
+language 1
+
+quest harbor_bell "The Harbor Bell"
+  start when player.coins >= 0
+  stage wait
+    waits_until harbor.bell_struck
+    on mechanism_state where event.object == dock_bell and event.state == struck:
+      ~ set harbor.bell_struck = true
+      ~ inc harbor.bell_count by 1
+      -> struck
+  stage struck
+    ~ set harbor.watch_alive = false
+    ~ outcome bell = done
+    journal: The harbor bell was struck. #line:j_bell_01

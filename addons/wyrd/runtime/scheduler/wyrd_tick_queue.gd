@@ -61,3 +61,24 @@ func tick(budget: int, eval_one: Callable) -> int:
 		ran += 1
 	last_rechecks = ran
 	return ran
+
+
+## Re-checks [param indexes] that are watched, in ascending order, ignoring the
+## tick budget. Other dirty indexes stay dirty. Returns the indexes that ran.
+func recheck_some(indexes: PackedInt32Array, eval_one: Callable) -> PackedInt32Array:
+	var ordered: Array[int] = []
+	for index in indexes:
+		var at := int(index)
+		if not ordered.has(at):
+			ordered.append(at)
+	ordered.sort()
+	var ran := PackedInt32Array()
+	for index in ordered:
+		if not _waiting.has(index):
+			continue
+		_dirty.erase(index)
+		if eval_one.is_valid():
+			eval_one.call(index)
+		ran.append(index)
+	last_rechecks = ran.size()
+	return ran

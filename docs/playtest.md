@@ -53,7 +53,9 @@ A window opens at 1600×900. Drag the edges to resize it. The panels stay inside
 The status line says "Press New game." You will see:
 
 - A seed box (it starts at `1`) and buttons: New game, Advance time, Save, Load, Reset, Abort scene.
-- Toggles on two rows: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice.
+- A second button row: Emit alive, Batch world, Strike bell.
+- Toggles: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice, Watch alive.
+- An events line under the toggles. It lists recent world events and ends with `flush 1` after an emit or a batch. `flush 0` means nothing has been emitted since New game or Load.
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
 - A journal. Each line starts with a game time such as `day 1, 00:00`.
@@ -77,7 +79,7 @@ Leave the toggles as they are for the first walk. Ferry master alive, Lodging av
 On the right:
 
 - The journal has one line dated `day 1, 00:00`: "Bram, the ferry master, at the dock wants 2 coins before the crossing." That sentence stays as it was written. Bram is the personal name the play host gave the person in the ferry slot. The words "the ferry master" are written in the example. A role has no title field, so the game does not look that phrase up.
-- The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`. A row whose value changed on the last press is highlighted. Rows that did not change stay plain.
+- The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`. A row whose value changed on the last press is highlighted. Rows that did not change stay plain. Resolved facts also have a cache row, such as `cache world.season = on_event season_changed`. The value is the cache mode and the last event that dropped it. `per_query` facts are never cached.
 - The summary says `The Ferry Toll`, stage `pay_toll`, status `active`, and outcome `absent`. A waiting row shows the time check. That block stays put while the fact list scrolls.
 - Each slot row is `slot <slot> — <role title> — <holder name> — <state>`. The title is the role id with spaces (`ferry_master` becomes `ferry master`), because a role has no title field. The state is the runtime slot state, not the slot mode in the quest file. `default` means the first holder is in the slot. `successor` means someone else took it. `empty` means nobody holds it. `hostile` means disposition is too low. After this walk the rows are `slot tavern — tavern owner — innkeeper — default`, `slot ferry — ferry master — Bram — default`, and `slot lookout — storm watcher — watcher — default`.
 
@@ -98,6 +100,9 @@ Press **Reset** or **New game** between routes. Set the toggles before you press
 | **Season storm** on before New game, or before you continue past "Bram, the ferry master, is on the dock." | An extra line appears before the bell: narrator, "The season smells like rain." |
 | **Abort scene** while the first lines are up | The conversation stops. The status says you can save. The stage stays `gossip` and the tavern scene is offered again. The last line stays visible. |
 | **Short on coins** on before the choices appear | "Take the room (short on coins)" is grey and cannot be pressed. |
+| **Watch alive** on before New game, then **Emit alive** while the innkeeper line is up | The conversation stays on that line. Continue then shows narrator: "The ferry master is gone." The fact list shows `alive ferry_master = false` and `cache npc.ferry_master.alive = on_event entity_alive_changed`. The ferry slot is still filled. Emit alive does not vacate the role. |
+| **Batch world** after New game | The events line shows `season_changed` and `mechanism_state`, then `flush 1`. The season fact becomes `storm`. The journal gains "The harbor bell was struck." |
+| **Strike bell** after New game, then Strike bell again | The journal says "The harbor bell was struck." `harbor.bell_count` is `1` and stays `1` the second time. The innkeeper line stays up. |
 
 ## 7. Save and load
 
@@ -106,7 +111,7 @@ Finish a conversation first. Save is refused while lines are still advancing. Th
 1. Play section 5 until the journal appears and Continue is disabled. Do not press Advance time yet.
 2. Press **Save**. The status says the save is in memory and in `user://playtest_save.json`.
 3. Press **Advance time**. The dock lines open again and the clock moves to `day 1, 01:00`.
-4. Press **Load**. That conversation closes. Coins are 2 again, the stage is `pay_toll`, and the journal line is back. The clock returns to the saved time.
+4. Press **Load**. That conversation closes. Coins are 2 again, the stage is `pay_toll`, and the journal line is back. The clock returns to the saved time. The events line clears. World events are not stored in the save.
 
 **Reset** starts a fresh game at seed 0 and deletes that save file.
 

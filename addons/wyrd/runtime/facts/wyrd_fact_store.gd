@@ -29,6 +29,7 @@ var _believed: Dictionary = {}
 var _held: Dictionary = {}
 var _cache: Dictionary = {}
 var _last: Dictionary = {}
+var _reasons: Dictionary = {}
 var _subs: PackedStringArray = PackedStringArray()
 var _once: Dictionary = {}
 
@@ -119,6 +120,7 @@ func clear_values() -> void:
 	_held.clear()
 	_cache.clear()
 	_last.clear()
+	_reasons.clear()
 
 
 func subscribe(prefix: StringName) -> void:
@@ -204,41 +206,69 @@ func remember(key: StringName, value: Variant, perspective: StringName) -> bool:
 	return true
 
 
-func invalidate(prefix: StringName) -> void:
+## Drops cached concrete keys under [param prefix]. A pattern key such as
+## [code]npc.{id}.alive[/code] drops every cached concrete key of that pattern.
+## [param reason] is the event name recorded for the playtest, or empty.
+func invalidate(prefix: StringName, reason: StringName = &"") -> PackedStringArray:
 	var text := String(prefix)
-	if text.is_empty():
-		return
 	var dropped := PackedStringArray()
-	var doomed := PackedStringArray()
+	if text.is_empty():
+		return dropped
+	var doomed := {}
 	for cached in _cache.keys():
 		var cached_key := str(cached)
-		if _prefix_hit(cached_key, text):
-			doomed.append(cached_key)
-	for cached_key in doomed:
-		_remember(cached_key)
-		_cache.erase(cached_key)
-		dropped.append(cached_key)
+		if _prefix_hit(cached_key, text) or _pattern_covers(text, cached_key):
+			doomed[cached_key] = true
+	var names: Array = doomed.keys()
+	names.sort()
+	for cached_key in names:
+		var key := String(cached_key)
+		_remember(key)
+		_cache.erase(key)
+		dropped.append(key)
+		_note_reason(key, reason)
 	if _schema != null:
 		for fact in _schema.entries:
 			if fact.origin != &"resolved":
 				continue
 			var hit := _prefix_hit(fact.key, text)
 			if not hit and fact.is_pattern():
-				hit = _matches(fact, text)
-			if hit and not dropped.has(fact.key):
-				dropped.append(fact.key)
+				hit = _matches(fact, text) or fact.key == text or fact.key.begins_with(text + ".")
+			if hit:
+				_note_reason(fact.key, reason)
+				if not dropped.has(fact.key):
+					dropped.append(fact.key)
 	_notify(dropped)
+	return dropped
 
 
-func invalidate_event(event_name: StringName) -> void:
+## Drops every [code]on_event[/code] fact bound to [param event_name], including
+## every concrete cache of a pattern fact. The returned keys are sorted.
+func invalidate_event(event_name: StringName) -> PackedStringArray:
+	var found := {}
 	if _schema == null:
-		return
-	var keys := PackedStringArray()
+		return PackedStringArray()
 	for fact in _schema.entries:
-		if fact.invalidate == &"on_event" and StringName(fact.invalidate_arg) == event_name:
-			keys.append(fact.key)
-	for key in keys:
-		invalidate(StringName(key))
+		if fact.invalidate != &"on_event" or StringName(fact.invalidate_arg) != event_name:
+			continue
+		for key in invalidate(StringName(fact.key), event_name):
+			found[String(key)] = true
+		_note_reason(fact.key, event_name)
+	return _sorted_keys(found)
+
+
+## [code]mode[/code] is the schema invalidation ([code]on_event[/code], [code]poll[/code],
+## [code]per_query[/code], [code]manual[/code]) or [code]absent[/code]. [code]event[/code]
+## is the last invalidate reason. [code]cached[/code] is false for [code]per_query[/code].
+func cache_view(key: String) -> Dictionary:
+	var fact := _find(key)
+	var mode := "absent"
+	if fact != null and fact.origin == &"resolved":
+		mode = String(fact.invalidate) if fact.invalidate != &"" else "manual"
+	var event := String(_reasons.get(key, ""))
+	if event.is_empty() and fact != null:
+		event = String(_reasons.get(fact.key, ""))
+	return {"cached": _cache.has(key), "event": event, "mode": mode}
 
 
 func refresh_poll(now: int) -> void:
@@ -410,6 +440,35 @@ func _poll_every(fact: WyrdFact) -> int:
 
 func _prefix_hit(key: String, prefix: String) -> bool:
 	return key == prefix or key.begins_with(prefix + ".")
+
+
+## True when [param prefix] is a pattern fact key, or a parent of one, and
+## [param concrete] is a cached value of that pattern.
+func _pattern_covers(prefix: String, concrete: String) -> bool:
+	if _schema == null or concrete.contains("{"):
+		return false
+	for fact in _schema.entries:
+		if fact.origin != &"resolved" or not fact.is_pattern():
+			continue
+		if fact.key != prefix and not fact.key.begins_with(prefix + "."):
+			continue
+		if _matches(fact, concrete):
+			return true
+	return false
+
+
+func _note_reason(key: String, reason: StringName) -> void:
+	if reason != &"":
+		_reasons[key] = String(reason)
+
+
+func _sorted_keys(found: Dictionary) -> PackedStringArray:
+	var names: Array = found.keys()
+	names.sort()
+	var out := PackedStringArray()
+	for name in names:
+		out.append(String(name))
+	return out
 
 
 func _matches(fact: WyrdFact, concrete: String) -> bool:

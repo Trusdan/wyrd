@@ -57,8 +57,9 @@ Steps run in order. Two actions are supported:
 
 | action | target | what it presses |
 |---|---|---|
-| `press` | the button's label | New game, Continue, Advance time, Save, Load, Reset, Abort scene |
+| `press` | the button's label | New game, Continue, Advance time, Save, Load, Reset, Abort scene, Emit alive, Batch world, Strike bell |
 | `choice` | the choice's label | a choice button under the dialogue |
+| `flag` | the toggle key | sets that toggle. The step also has `"on": true` or `"on": false` |
 
 Continue moves one line. After the last line of a scene, one more Continue closes it. The words stay in the text panel, and the choice buttons, journal, or the next scene show up on that same press. The screenshot is taken after the press, so name the step for what is on screen then.
 
@@ -69,7 +70,7 @@ The file name is `{scenario}_{step}.png`, for example `default_03_lookout.png`. 
 1. Open `tools/visual_playtest_expectations.json`.
 2. Copy a scenario object.
 3. Set `id` to letters, digits, underscores, or hyphens. That id is the start of each screenshot name.
-4. Set `flags` to the toggles that differ from `defaults`. Use the toggle keys (`ferry_alive`, `local`, `lodging`, `notice`, `storm`, `apprentice`, `short`, `voice`), not the labels on the buttons.
+4. Set `flags` to the toggles that differ from `defaults`. Use the toggle keys (`ferry_alive`, `local`, `lodging`, `notice`, `storm`, `apprentice`, `short`, `voice`, `watch_alive`), not the labels on the buttons.
 5. List `steps`. Each step needs `name`, `action`, and `target`. Add `expect` for the line or panel text that must be on screen after that press.
 6. Set `final.contains` to the quest title, stage, status, and outcome the state record should hold when the route is done. Put key lines in `final.seen`. Put text that must not have appeared, including `{?`, in `final.unseen`.
 7. Run `tools/visual_playtest.sh` and read the failure line. It names the scenario and the step. Fix the expectation, or the playtest, and run it again.

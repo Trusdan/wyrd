@@ -919,7 +919,7 @@
       },
       "diagnostics": [
         {
-          "code": "E_RESOLVER_INVALIDATION",
+          "code": "E_WAIT_RESOLVER_MODE",
           "col": 10,
           "line": 23,
           "message": "resolved fact \"world.weather\" needs on_event or poll invalidation",
@@ -991,7 +991,7 @@
       },
       "diagnostics": [
         {
-          "code": "E_RESOLVER_INVALIDATION",
+          "code": "E_WAIT_RESOLVER_MODE",
           "col": 10,
           "line": 24,
           "message": "resolved fact \"world.tide\" needs on_event or poll invalidation",

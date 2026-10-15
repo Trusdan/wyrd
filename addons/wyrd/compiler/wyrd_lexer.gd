@@ -6,7 +6,7 @@ extends RefCounted
 ## @experimental
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
-## Inside a [code]facts[/code] block, lines stay code. Elsewhere a line that starts
+## Inside a [code]facts[/code] or [code]events[/code] block, lines stay code. Elsewhere a line that starts
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
 ## a single [code]{[/code] opens an interpolation raw span, and a stray [code]}[/code]
 ## is literal. [code]}}[/code] is not an escape.
@@ -93,15 +93,15 @@ func _lex_line(line: String, line_no: int) -> void:
 		_apply_indent(indent, line_no)
 	_saw_line = true
 	var origin := index + 1
-	var facts_mode := _kinds[_kinds.size() - 1] == "facts"
+	var code_block := _kinds[_kinds.size() - 1] == "facts" or _kinds[_kinds.size() - 1] == "events"
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
-	if not facts_mode and not code_colon and _speaker_colon(content) >= 0:
+	if not code_block and not code_colon and _speaker_colon(content) >= 0:
 		first_ident = _lex_speaker_line(content, line_no, origin)
-	elif not facts_mode and _when_speaker_colon(content) >= 0:
+	elif not code_block and _when_speaker_colon(content) >= 0:
 		first_ident = _lex_when_line(content, line_no, origin)
 	else:
-		first_ident = _lex_code_line(content, line_no, origin, not facts_mode)
+		first_ident = _lex_code_line(content, line_no, origin, not code_block)
 	_pending_kind = first_ident
 	_emit(&"newline", "", line_no, origin, line_no, origin)
 

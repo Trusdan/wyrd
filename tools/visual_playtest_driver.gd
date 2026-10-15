@@ -82,7 +82,7 @@ func _scenario(scenario: Dictionary) -> void:
 		return
 	print("visual-playtest: %s" % scenario_id)
 	_transcript[scenario_id] = ""
-	var reset_problem := _perform("press", "Reset")
+	var reset_problem := _perform({"action": "press", "target": "Reset"})
 	if reset_problem != "":
 		_fail(scenario_id, "00_setup", reset_problem)
 		return
@@ -104,7 +104,7 @@ func _scenario(scenario: Dictionary) -> void:
 			_fail(scenario_id, step_name, "step name must be letters, digits, underscore, or hyphen")
 			return
 		print("visual-playtest: %s %s" % [scenario_id, step_name])
-		var action_problem := _perform(String(step.get("action", "")), String(step.get("target", "")))
+		var action_problem := _perform(step)
 		await _capture(scenario_id, step_name)
 		if action_problem != "":
 			_fail(scenario_id, step_name, action_problem)
@@ -231,7 +231,17 @@ func _apply_flags(scenario: Dictionary) -> String:
 	return ""
 
 
-func _perform(action: String, target: String) -> String:
+func _perform(step: Dictionary) -> String:
+	var action := String(step.get("action", ""))
+	var target := String(step.get("target", ""))
+	if action == "flag":
+		var toggle := _play.find_child("Toggle_%s" % target, true, false) as CheckButton
+		if toggle == null:
+			return "missing toggle %s" % target
+		toggle.toggled.emit(bool(step.get("on", false)))
+		if toggle.button_pressed != bool(step.get("on", false)):
+			return "toggle %s did not stick" % target
+		return ""
 	if action == "press":
 		var button := _button_with_text(target)
 		if button == null:
@@ -427,6 +437,11 @@ func _record_state(scenario_id: String, step: String) -> Dictionary:
 		"outcomes": source.get("outcomes", {}),
 		"slots": source.get("slots", []),
 		"journal": source.get("journal", []),
+		"cache": source.get("cache", {}),
+		"events": source.get("events", []),
+		"rechecks": source.get("rechecks", 0),
+		"flush": source.get("flush", 0),
+		"invalidated": source.get("invalidated", []),
 	}
 	_states.append(record)
 	_append_jsonl(record)
@@ -472,6 +487,28 @@ func _state_rows(state: Dictionary) -> PackedStringArray:
 				String(slot.get("holder", "")),
 				String(slot.get("state", "")),
 			])
+	var cache: Variant = state.get("cache", {})
+	if cache is Dictionary:
+		var cache_names: Array = (cache as Dictionary).keys()
+		cache_names.sort()
+		for name in cache_names:
+			rows.append("cache %s = %s" % [String(name), String((cache as Dictionary)[name])])
+	var invalidated: Variant = state.get("invalidated", [])
+	if invalidated is Array:
+		for key in invalidated as Array:
+			rows.append("invalidated %s = 1" % String(key))
+	rows.append("flush = %s" % str(state.get("flush", 0)))
+	rows.append("rechecks = %s" % str(state.get("rechecks", 0)))
+	var emitted: Variant = state.get("events", [])
+	if emitted is Array:
+		for item in emitted as Array:
+			if not (item is Dictionary):
+				continue
+			var row := item as Dictionary
+			var payload_text := JSON.stringify(row.get("payload", {}))
+			if payload_text.is_empty() or payload_text == "{}":
+				payload_text = "none"
+			rows.append("event %s = %s" % [String(row.get("name", "")), payload_text])
 	var journal: Variant = state.get("journal", [])
 	if journal is Array:
 		for item in journal as Array:
@@ -625,6 +662,9 @@ func _visible_blob() -> String:
 		var button := node as Button
 		if button != null:
 			parts.append(button.text)
+	var events := _play.find_child("Events", true, false) as Label
+	if events != null:
+		parts.append(events.text)
 	for list_name in ["JournalList"]:
 		var list := _play.find_child(list_name, true, false) as ItemList
 		if list == null:

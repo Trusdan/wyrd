@@ -24,6 +24,7 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	if pack.xref != null:
 		xref = pack.xref.to_data()
 	return {
+		"events": _events(pack),
 		"facts": _facts(pack),
 		"files": files,
 		"language_version": pack.language_version,
@@ -45,6 +46,44 @@ static func xref_json(pack: WyrdLinkedPack) -> String:
 	if pack != null and pack.xref != null:
 		xref = pack.xref.to_data()
 	return to_json(xref)
+
+
+static func _events(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	var names: Array = pack.events.keys()
+	names.sort()
+	for name in names:
+		var event: WyrdEventDef = pack.events[name]
+		if event == null:
+			continue
+		var fields: Array = []
+		for field in event.fields:
+			fields.append({"name": str(field.get("name", "")), "type": str(field.get("type", ""))})
+		rows.append({
+			"fields": fields,
+			"line": event.line,
+			"name": event.name,
+		})
+	return rows
+
+
+static func _handlers(stage: WyrdStageDef) -> Array:
+	var rows: Array = []
+	if stage == null:
+		return rows
+	for handler in stage.handlers:
+		var transitions: Array = []
+		for row in handler.transitions:
+			transitions.append({"target": str(row.get("target", "")), "when": str(row.get("expr", ""))})
+		rows.append({
+			"effects": _effects(handler.effects),
+			"event": handler.event_name,
+			"transitions": transitions,
+			"where": handler.where_text,
+		})
+	return rows
 
 
 static func _facts(pack: WyrdLinkedPack) -> Array:
@@ -126,6 +165,9 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 		"variants": variants,
 		"waits": stage.waits_text,
 	}
+	var handlers := _handlers(stage)
+	if not handlers.is_empty():
+		data["handlers"] = handlers
 	if stage.hosts.size() > 0:
 		var hosts: Array = []
 		for host in stage.hosts:

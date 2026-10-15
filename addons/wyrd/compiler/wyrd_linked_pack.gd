@@ -13,3 +13,5 @@ var schema: WyrdFactSchema
 var units: Array = []
 var topics: PackedStringArray = PackedStringArray()
 var xref: WyrdFactXref
+## Event name to [WyrdEventDef]. Built at link. Not a save document.
+var events: Dictionary = {}

@@ -1,7 +1,7 @@
 class_name WyrdParser
 extends RefCounted
 
-## Block parser for grammar v1, plus the checked [code]facts[/code] block.
+## Block parser for grammar v1, plus the checked [code]facts[/code] and draft [code]events[/code] blocks.
 ##
 ## @experimental
 ## [code]quest[/code] and [code]scene[/code] bodies are a generic statement-line tree.
@@ -55,7 +55,7 @@ func parse_tokens(source: WyrdSource, tokens: Array[WyrdToken], diagnostics: Wyr
 	_check_header(statements[0])
 	for i in range(1, statements.size()):
 		var block := statements[i]
-		if block.keyword != "facts" and block.keyword != "quest" and block.keyword != "scene":
+		if block.keyword != "facts" and block.keyword != "events" and block.keyword != "quest" and block.keyword != "scene":
 			diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
 				"unexpected token \"%s\"" % _shown(block),
@@ -95,12 +95,24 @@ func _parse_statement() -> WyrdNode:
 		_advance()
 		if node.keyword == "facts":
 			_parse_fact_body(node)
+		elif node.keyword == "events":
+			_parse_event_body(node)
 		else:
 			_parse_children(node)
 		if _peek_kind() == &"dedent":
 			_advance()
 	if node.keyword == "facts":
 		node.kind = &"facts"
+		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty():
+			_diagnostics.add(
+				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
+				"unexpected token \"%s\"" % _shown(node),
+				_source.path,
+				node.start_line,
+				node.start_col
+			)
+	elif node.keyword == "events":
+		node.kind = &"events"
 		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty():
 			_diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
@@ -153,6 +165,131 @@ func _parse_fact_body(node: WyrdNode) -> void:
 			)
 			_advance()
 			_skip_nested()
+
+
+func _parse_event_body(node: WyrdNode) -> void:
+	var seen := {}
+	while _has():
+		_skip_newlines()
+		var kind := _peek_kind()
+		if kind == &"dedent" or kind == &"eof" or kind == &"":
+			break
+		var line := _collect_line()
+		var event := _read_event(line)
+		if event.name != "":
+			if seen.has(event.name):
+				_diagnostics.add(
+					WyrdDiagnostic.E_EVENT_DUPLICATE,
+					"duplicate event \"%s\"" % event.name,
+					_source.path,
+					event.line,
+					event.col
+				)
+			else:
+				seen[event.name] = true
+				node.events.append(event)
+		if _peek_kind() == &"indent":
+			_diagnostics.add(
+				WyrdDiagnostic.E_EVENT_ARG,
+				"an event declaration cannot contain a block",
+				_source.path,
+				event.line,
+				event.col
+			)
+			_advance()
+			_skip_nested()
+
+
+func _read_event(line: Array[WyrdToken]) -> WyrdEventDef:
+	var event := WyrdEventDef.new()
+	var cursor := _Cursor.new()
+	cursor.items = line
+	if line.is_empty():
+		_event_error("expected an event name", cursor, 1, 1)
+		return event
+	event.line = line[0].line
+	event.col = line[0].col
+	if cursor.kind() != &"ident":
+		_event_error("expected an event name", cursor, event.line, event.col)
+		return event
+	event.name = cursor.text()
+	cursor.advance()
+	if cursor.kind() != &"lparen":
+		_event_error("expected \"(\" after the event name", cursor, event.line, event.col)
+		event.name = ""
+		return event
+	cursor.advance()
+	if cursor.kind() != &"rparen":
+		if not _read_event_fields(cursor, event):
+			event.name = ""
+			return event
+	else:
+		cursor.advance()
+	if cursor.has():
+		_event_error("unexpected token \"%s\" in an event" % cursor.peek().display(), cursor, event.line, event.col)
+		event.name = ""
+	return event
+
+
+func _read_event_fields(cursor: _Cursor, event: WyrdEventDef) -> bool:
+	var seen := {}
+	while cursor.has():
+		if cursor.kind() != &"ident":
+			_event_error("expected a field name", cursor, event.line, event.col)
+			return false
+		var field_name := cursor.text()
+		var field_line := cursor.line()
+		var field_col := cursor.col()
+		cursor.advance()
+		if cursor.kind() != &"colon":
+			_event_error("expected \":\" after the field name", cursor, event.line, event.col)
+			return false
+		cursor.advance()
+		if cursor.kind() != &"ident" or not _TYPES.has(cursor.text()):
+			if cursor.kind() == &"ident":
+				_diagnostics.add(
+					WyrdDiagnostic.E_EVENT_TYPE,
+					"unknown event field type \"%s\"" % cursor.text(),
+					_source.path,
+					cursor.line(),
+					cursor.col()
+				)
+			else:
+				_event_error("expected a field type", cursor, event.line, event.col)
+			return false
+		if seen.has(field_name):
+			_diagnostics.add(
+				WyrdDiagnostic.E_EVENT_ARG,
+				"duplicate field \"%s\"" % field_name,
+				_source.path,
+				field_line,
+				field_col
+			)
+			return false
+		seen[field_name] = true
+		event.fields.append({"name": field_name, "type": cursor.text()})
+		cursor.advance()
+		if cursor.kind() == &"rparen":
+			cursor.advance()
+			return true
+		if cursor.kind() != &"comma":
+			_event_error("expected \",\" or \")\" in an event", cursor, event.line, event.col)
+			return false
+		cursor.advance()
+	_event_error("expected \")\" in an event", cursor, event.line, event.col)
+	return false
+
+
+func _event_error(message: String, cursor: _Cursor, fallback_line: int, fallback_col: int) -> void:
+	var line := fallback_line
+	var col := fallback_col
+	if cursor.has():
+		line = cursor.line()
+		col = cursor.col()
+	elif not cursor.items.is_empty():
+		line = cursor.items[cursor.items.size() - 1].end_line
+		col = cursor.items[cursor.items.size() - 1].end_col
+	_diagnostics.add(WyrdDiagnostic.E_EVENT_ARG, message, _source.path, line, col)
 
 
 func _node_from_line(line: Array[WyrdToken]) -> WyrdNode:

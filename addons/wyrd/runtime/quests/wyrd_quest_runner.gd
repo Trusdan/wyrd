@@ -34,6 +34,7 @@ const _HOP_LIMIT := 24
 var runtime: WyrdRuntime
 var _states: Dictionary = {}
 var _declared: Dictionary = {}
+var _fired: Dictionary = {}
 var _formatter: Callable = Callable()
 var _text: WyrdText
 
@@ -65,6 +66,7 @@ func bind(host: WyrdRuntime) -> void:
 func reset() -> void:
 	_states.clear()
 	_declared.clear()
+	_fired.clear()
 	if runtime == null or runtime.content() == null:
 		return
 	var content := runtime.content()
@@ -106,6 +108,51 @@ func on_tick() -> void:
 			_consider_start(String(quest_id), quest, state)
 		elif state.status == ACTIVE:
 			_continue(String(quest_id), quest, state, 0)
+
+
+func clear_event_fires() -> void:
+	_fired.clear()
+
+
+## Runs the current stage's first matching [code]on[/code] handler for this emit.
+## A stage handles one emit id once. A transition does not enter the next stage's
+## handlers for the same emit.
+func on_world_event(emit_id: int, event_name: StringName, payload: Dictionary) -> void:
+	if runtime == null:
+		return
+	var locals := {}
+	var payload_keys: Array = payload.keys()
+	payload_keys.sort()
+	for key in payload_keys:
+		locals["event.%s" % String(key)] = payload[key]
+	var ids: Array = _states.keys()
+	ids.sort()
+	for quest_id in ids:
+		var state := _states[quest_id] as QuestState
+		if state == null or state.status != ACTIVE:
+			continue
+		var quest := _quest(String(quest_id))
+		if quest == null:
+			continue
+		var body := _body_now(quest, state)
+		if body == null or body.handlers.is_empty():
+			continue
+		var token := "%d|%s|%s" % [emit_id, String(quest_id), state.stage_id]
+		if _fired.has(token):
+			continue
+		runtime.bind_locals(locals)
+		for handler in body.handlers:
+			if handler.event_name != String(event_name):
+				continue
+			if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
+				continue
+			_fired[token] = true
+			_arm_effects(String(quest_id))
+			runtime.effects.run_all(handler.effects)
+			_take_handler_transition(String(quest_id), quest, state, handler)
+			break
+		runtime.clear_locals()
+	runtime.clear_locals()
 
 
 func on_scene_ended(scene_id: String, status: StringName, _reason: StringName) -> void:
@@ -235,6 +282,7 @@ func export_state() -> Dictionary:
 
 
 func import_state(data: Dictionary) -> void:
+	_fired.clear()
 	for quest_id in data.keys():
 		var state := _states.get(String(quest_id)) as QuestState
 		var row: Variant = data[quest_id]
@@ -487,6 +535,16 @@ func _write_journal(quest_id: String, state: QuestState, line: WyrdLineDef) -> v
 	}
 	state.journal.append(entry)
 	journal_entry_added.emit(quest_id, line.line_id, String(entry["text"]))
+
+
+func _take_handler_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, handler: WyrdOnEventDef) -> bool:
+	for row in handler.transitions:
+		var when: Variant = row.get("when", null)
+		if when is WyrdCompiledCondition and not runtime.eval_bool(when):
+			continue
+		_goto(quest_id, quest, state, String(row.get("target", "")), 1)
+		return true
+	return false
 
 
 func _take_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, hops: int) -> bool:

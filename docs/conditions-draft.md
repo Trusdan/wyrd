@@ -38,7 +38,7 @@ Durations compile to minutes and distances to metres. `30m` is 30 minutes when a
 
 `chance(p)` is allowed in `storylet_or_choice`. In `wait_trigger_or_eligibility` it is `E_CHANCE_CONTEXT`. The condition still records `uses_chance`.
 
-In `wait_trigger_or_eligibility`, a resolved fact whose invalidation is empty or `per_query` is `E_RESOLVER_INVALIDATION`. `on_event` and `poll` are allowed. Stored facts are allowed.
+In `wait_trigger_or_eligibility`, a resolved fact whose invalidation is empty or `per_query` is `E_WAIT_RESOLVER_MODE`. `on_event` and `poll` are allowed. Stored facts are allowed. `E_RESOLVER_INVALIDATION` remains defined and is not emitted. Pack linking also requires every resolved fact to name `on_event`, `poll`, or `per_query` (`E_RESOLVER_NO_INVALIDATE` in `docs/events-draft.md`).
 
 ## Interpolation
 
@@ -99,7 +99,7 @@ Codes use the existing `path:line:col: error[CODE]: message` format.
 | `E_OP_TYPE` | An operator does not accept the operand types |
 | `E_NOT_BOOL` | A condition's type is not `bool` |
 | `E_CHANCE_CONTEXT` | `chance` appears in a wait, trigger, or eligibility condition |
-| `E_RESOLVER_INVALIDATION` | A wait condition reads a resolved fact with empty or `per_query` invalidation |
+| `E_WAIT_RESOLVER_MODE` | A wait condition reads a resolved fact with empty or `per_query` invalidation |
 
 ## Not in this draft
 

@@ -1,10 +1,14 @@
 // content/gullhaven/ferry_toll.wyrd
 language 1
 
+events
+  season_changed()
+  entity_alive_changed(entity: symbol, alive: bool)
+
 facts
   player.coins      : int     stored
   ferry.toll_coins  : int     stored
-  npc.{id}.alive    : bool    source: world.is_alive
+  npc.{id}.alive    : bool    source: world.is_alive  invalidate: on_event(entity_alive_changed)
   world.season      : symbol  source: time.season  invalidate: on_event(season_changed)
 
 quest ferry_toll "The Ferry Toll"

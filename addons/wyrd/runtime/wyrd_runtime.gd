@@ -38,6 +38,10 @@ var _trace: Array[Dictionary] = []
 var _streams: Dictionary = {}
 var _seed: int = 0
 var _minutes: int = 0
+var _emit_seq: int = 0
+var _collecting: bool = false
+var _collected: Dictionary = {}
+var _locals: Dictionary = {}
 
 
 func _init() -> void:
@@ -58,6 +62,7 @@ func _init() -> void:
 	facts.clock = Callable(self, &"now_minutes")
 	facts.resolver_of = Callable(self, &"_resolver")
 	events.on_emit = Callable(self, &"_on_emit")
+	events.on_batch = Callable(self, &"_on_batch")
 	_rpn.fact_reader = Callable(facts, &"get_in")
 	deeds.clock = Callable(self, &"now_minutes")
 	deeds.config_of = Callable(self, &"config")
@@ -167,6 +172,7 @@ func start_new_game(seed_value: int) -> void:
 	deeds.clear()
 	social.clear_state()
 	roles.clear()
+	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
 
@@ -273,6 +279,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	report.manifest_hash = _content.manifest_hash
 	facts.bind_schema(_content.schema)
 	roles.bind_content(_content)
+	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
 	return report
@@ -327,7 +334,7 @@ func eval_value(cond: WyrdCompiledCondition) -> Variant:
 	else:
 		_ctx.record_id = ""
 		_ctx.site = ""
-	return _rpn.eval(cond, {}, _ctx.funcs())
+	return _rpn.eval(cond, _locals, _ctx.funcs())
 
 
 func eval_bool(cond: WyrdCompiledCondition) -> bool:
@@ -357,7 +364,10 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 		var refused := WyrdLoadReport.new()
 		refused.diagnostics.add(WyrdDiagnostic.E_SAVE_OPEN, "a scene is open", "", 1, 1)
 		return refused
-	return WyrdSave.apply(self, data)
+	var report := WyrdSave.apply(self, data)
+	if report.ok:
+		_reset_event_memory()
+	return report
 
 
 func last_rechecks() -> int:
@@ -438,18 +448,215 @@ func _reads_per_query(cond: WyrdCompiledCondition) -> bool:
 	return false
 
 
+func bind_locals(values: Dictionary) -> void:
+	_locals = values.duplicate()
+
+
+func clear_locals() -> void:
+	_locals.clear()
+
+
+func debug_dump() -> String:
+	var lines := PackedStringArray()
+	if events != null:
+		lines.append(events.debug_dump())
+	lines.append("dirty %d" % _queue.dirty_count())
+	if _content != null and _content.schema != null:
+		for fact in _content.schema.entries:
+			if fact.origin != &"resolved":
+				continue
+			var view := facts.cache_view(fact.key)
+			lines.append("cache %s %s %s" % [fact.key, str(view.get("mode", "")), str(view.get("event", ""))])
+	return "\n".join(lines)
+
+
 func _mark_keys(keys: PackedStringArray) -> void:
 	if _content == null or _content.deps == null or keys.is_empty():
 		return
 	var names: Array[StringName] = []
 	for key in keys:
 		names.append(StringName(key))
-	_queue.mark(_content.deps.affected(names))
+	var hits := _content.deps.affected(names)
+	_queue.mark(hits)
+	if _collecting:
+		for index in hits:
+			_collected[int(index)] = true
+
+
+func _on_batch(opening: bool) -> void:
+	if opening:
+		_collecting = true
+		_collected.clear()
+		trace_add("batch_begin", {"time": now_minutes()})
+		return
+	var ran := _flush_collected()
+	trace_add("batch_end", {"rechecks": _as_ints(ran), "time": now_minutes()})
+	if quests != null:
+		quests.on_tick()
+	_collecting = false
+	_collected.clear()
 
 
 func _on_emit(event_name: StringName, payload: Dictionary) -> void:
-	facts.invalidate_event(event_name)
-	trace_add("emit", {"name": String(event_name), "payload": payload})
+	var problem := _payload_problem(event_name, payload)
+	var shown := _payload_strings(payload)
+	if problem != "":
+		push_error("Wyrd.events.emit: %s" % problem)
+		trace_add("emit_rejected", {
+			"name": String(event_name),
+			"payload": shown,
+			"reason": problem,
+			"time": now_minutes(),
+		})
+		return
+	var normalized := _normalize_payload(event_name, payload)
+	_emit_seq += 1
+	var emit_id := _emit_seq
+	var owned := not _collecting
+	if owned:
+		_collecting = true
+		_collected.clear()
+	var keys := facts.invalidate_event(event_name)
+	if events != null:
+		events.last_keys = keys
+		events.remember({
+			"id": emit_id,
+			"keys": _key_list(keys),
+			"name": String(event_name),
+			"payload": _payload_strings(normalized),
+			"time": now_minutes(),
+		})
+	if quests != null:
+		quests.on_world_event(emit_id, event_name, normalized)
+	var in_batch := events != null and events.batching()
+	if in_batch or not owned:
+		trace_add("emit", {
+			"id": emit_id,
+			"keys": keys,
+			"name": String(event_name),
+			"payload": normalized,
+			"rechecks": [],
+			"time": now_minutes(),
+		})
+		return
+	var ran := _flush_collected()
+	trace_add("emit", {
+		"id": emit_id,
+		"keys": keys,
+		"name": String(event_name),
+		"payload": normalized,
+		"rechecks": _as_ints(ran),
+		"time": now_minutes(),
+	})
+	if quests != null:
+		quests.on_tick()
+	_collecting = false
+	_collected.clear()
+
+
+func _flush_collected() -> PackedInt32Array:
+	var indexes := PackedInt32Array()
+	var pending: Array = _collected.keys()
+	pending.sort()
+	for key in pending:
+		indexes.append(int(key))
+	_collected.clear()
+	var ran := _queue.recheck_some(indexes, Callable(self, &"_recheck"))
+	if events != null:
+		events.last_flush = ran.size()
+		events.last_wave = 1
+	return ran
+
+
+func _reset_event_memory() -> void:
+	_emit_seq = 0
+	_collecting = false
+	_collected.clear()
+	_locals.clear()
+	if events != null:
+		events.reset_session()
+	if quests != null:
+		quests.clear_event_fires()
+
+
+func _payload_problem(event_name: StringName, payload: Dictionary) -> String:
+	if _content == null or not _content.events.has(String(event_name)):
+		return "unknown event \"%s\"" % String(event_name)
+	var event := _content.events[String(event_name)] as WyrdEventDef
+	if event == null:
+		return "unknown event \"%s\"" % String(event_name)
+	var incoming := _payload_strings(payload)
+	var declared := {}
+	for field in event.fields:
+		declared[str(field.get("name", ""))] = str(field.get("type", ""))
+	var names: Array = incoming.keys()
+	names.sort()
+	for name in names:
+		if not declared.has(String(name)):
+			return "unknown field \"%s\"" % String(name)
+		if not _field_ok(String(declared[String(name)]), incoming[name]):
+			return "field \"%s\" is not %s" % [String(name), String(declared[String(name)])]
+	var required: Array = declared.keys()
+	required.sort()
+	for name in required:
+		if not incoming.has(String(name)):
+			return "missing field \"%s\"" % String(name)
+	return ""
+
+
+func _normalize_payload(event_name: StringName, payload: Dictionary) -> Dictionary:
+	var event := _content.events[String(event_name)] as WyrdEventDef
+	var incoming := _payload_strings(payload)
+	var out := {}
+	if event == null:
+		return out
+	for field in event.fields:
+		var name := str(field.get("name", ""))
+		out[name] = _coerce_field(str(field.get("type", "")), incoming.get(name))
+	return out
+
+
+func _payload_strings(payload: Dictionary) -> Dictionary:
+	var out := {}
+	for key in payload.keys():
+		out[String(key)] = payload[key]
+	return out
+
+
+func _field_ok(type_name: String, value: Variant) -> bool:
+	match type_name:
+		"bool":
+			return value is bool
+		"int":
+			return typeof(value) == TYPE_INT
+		"float":
+			return value is float or typeof(value) == TYPE_INT
+		"symbol":
+			return value is String or value is StringName
+		_:
+			return false
+
+
+func _coerce_field(type_name: String, value: Variant) -> Variant:
+	if type_name == "symbol":
+		return StringName(str(value))
+	if type_name == "float" and typeof(value) == TYPE_INT:
+		return float(value)
+	return value
+
+
+func _as_ints(values: PackedInt32Array) -> Array:
+	var rows: Array = []
+	for value in values:
+		rows.append(int(value))
+	return rows
+
+
+func _key_list(keys: PackedStringArray) -> Array:
+	var rows: Array = []
+	for key in keys:
+		rows.append(String(key))
+	return rows
 
 
 func loaded_fact_key() -> String:

@@ -5,6 +5,8 @@ scene toll.offer_room
   on_abort:
     ~ record deed left(actor: player, place: gullhaven, tags: [cut], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
   tavern: A room's two coins a night, and the stew is free. #line:a91f
+  when harbor.watch_alive and not npc.ferry_master.alive: narrator: The ferry master is gone. #line:a_gone
+  when harbor.bell_count > 0: narrator: The harbor bell was struck. #line:a_bell_count
   lookout: The headland bell rang twice before the rain. #line:a_look
   when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
   when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
