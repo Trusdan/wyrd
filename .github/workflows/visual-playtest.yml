@@ -1,0 +1,44 @@
+name: Visual playtest
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pinned Godot
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source tools/pins.env
+          mkdir -p "$HOME/.local/bin" /tmp/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q -o /tmp/godot.zip -d /tmp/godot-bin
+          install -m 0755 "/tmp/godot-bin/Godot_v${GODOT_TAG}_linux.x86_64" "$HOME/.local/bin/godot"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          godot --version
+
+      - name: Install xvfb
+        run: sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb
+
+      - name: Visual playtest
+        run: tools/visual_playtest.sh
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-playtest
+          path: visual-playtest-out/
+          if-no-files-found: warn

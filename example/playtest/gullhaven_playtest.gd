@@ -261,8 +261,9 @@ func _apply_commands() -> void:
 	else:
 		_host.actions.set_result_for(&"post_notice", WyrdCommandResult.failed(&"lost"))
 	_host.clock.season_name = &"storm" if bool(_flags["storm"]) else &""
-	if _started:
-		_runtime.events.emit(&"season_changed", {})
+	# New game reads facts while it is still starting, which caches world.season.
+	# The event drops that cache so the clock above is what the lines see.
+	_runtime.events.emit(&"season_changed", {})
 
 
 func _arm_apprentice() -> void:

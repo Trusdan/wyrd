@@ -1,0 +1,247 @@
+{
+  "width": 1600,
+  "height": 900,
+  "panels": [
+    "StatusLine",
+    "Controls",
+    "Toggles",
+    "Columns",
+    "Dialogue",
+    "Side",
+    "JournalScroll",
+    "FactScroll",
+    "Continue"
+  ],
+  "defaults": {
+    "ferry_alive": true,
+    "local": false,
+    "lodging": true,
+    "notice": true,
+    "storm": false,
+    "apprentice": false,
+    "short": false,
+    "voice": false
+  },
+  "scenarios": [
+    {
+      "id": "default",
+      "flags": {},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": false, "continue_enabled": true, "status_contains": "New game, seed 1."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock.", "continue_enabled": true}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind.", "continue_enabled": true}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross.", "continue_enabled": true}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock.", "continue_enabled": true}},
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock.", "continue_enabled": false, "contains": ["quest The Ferry Toll", "stage pay_toll", "status active", "waiting waits_until", "player.coins = 2", "harbor.room_taken = true", "Bram, the ferry master, at the dock wants 2 coins before the crossing.", "slot ferry \u2014 ferry master \u2014 Bram \u2014 default"]}},
+        {"name": "10_advance", "action": "press", "target": "Advance time", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross.", "continue_enabled": true, "status_contains": "day 1, 01:00", "contains": ["stage cross", "status active", "world.storm_heard = true", "outcome crossing = done"]}},
+        {"name": "11_leaves_again", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock.", "continue_enabled": true}},
+        {"name": "12_complete", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock.", "continue_enabled": false, "contains": ["status completed", "stage cross", "outcome crossing = done"]}}
+      ],
+      "final": {
+        "contains": ["quest The Ferry Toll", "stage cross", "status completed", "outcome crossing = done", "player.coins = 2", "slot ferry \u2014 ferry master \u2014 Bram \u2014 default"],
+        "lacks": ["stage pay_toll"],
+        "seen": ["Bram, the ferry master, is on the dock.", "Two coins, and the boat will cross.", "The boat leaves the dock.", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "unseen": ["{?", "The dock is empty.", "Nia, the ferry master"]
+      }
+    },
+    {
+      "id": "successor",
+      "flags": {"apprentice": true, "ferry_alive": false},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Nia, the ferry master, is on the dock."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Two coins, and the boat will cross."}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage pay_toll", "status active", "Nia, the ferry master, at the dock wants 2 coins before the crossing.", "slot ferry \u2014 ferry master \u2014 Nia \u2014 successor"]}},
+        {"name": "10_advance", "action": "press", "target": "Advance time", "expect": {"speaker": "Nia", "line": "Two coins, and the boat will cross.", "status_contains": "day 1, 01:00", "contains": ["stage cross", "outcome crossing = done"]}},
+        {"name": "11_leaves_again", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "12_complete", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["status completed", "outcome crossing = done", "stage cross"]}}
+      ],
+      "final": {
+        "contains": ["quest The Ferry Toll", "status completed", "outcome crossing = done", "stage cross", "slot ferry \u2014 ferry master \u2014 Nia \u2014 successor"],
+        "seen": ["Nia, the ferry master, is on the dock.", "Nia, the ferry master, at the dock wants 2 coins before the crossing.", "Two coins, and the boat will cross."],
+        "unseen": ["{?", "The dock is empty.", "Bram, the ferry master, is on the dock."]
+      }
+    },
+    {
+      "id": "empty_slot",
+      "flags": {"ferry_alive": false},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_empty", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The dock is empty."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "", "line": "Two coins, and the boat will cross."}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage gossip", "status active", "waiting on_empty", "The dock is empty, so the crossing waits.", "alive ferry_master = false", "slot ferry \u2014 ferry master \u2014 none \u2014 empty"]}}
+      ],
+      "final": {
+        "contains": ["quest The Ferry Toll", "stage gossip", "status active", "waiting on_empty", "alive ferry_master = false", "slot ferry \u2014 ferry master \u2014 none \u2014 empty", "The dock is empty, so the crossing waits."],
+        "lacks": ["outcome crossing = done", "stage pay_toll"],
+        "seen": ["The dock is empty.", "The dock is empty, so the crossing waits."],
+        "unseen": ["{?", "Bram, the ferry master, is on the dock.", "Bram, the ferry master, at the dock wants", "Nia, the ferry master"]
+      }
+    },
+    {
+      "id": "local_tag",
+      "flags": {"local": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room", "I have a place in town"]}},
+        {"name": "06_place", "action": "choice", "target": "I have a place in town", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross."}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage pay_toll", "status active", "player.coins = 4", "harbor.room_taken = absent", "Bram, the ferry master, at the dock wants 2 coins before the crossing."]}}
+      ],
+      "final": {
+        "contains": ["stage pay_toll", "status active", "player.coins = 4", "quest The Ferry Toll", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "lacks": ["outcome crossing = done"],
+        "seen": ["I have a place in town", "Bram, the ferry master, is on the dock.", "Two coins, and the boat will cross."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "lodging",
+      "flags": {"lodging": false},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_no_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "No room left tonight."}},
+        {"name": "07_board", "action": "press", "target": "Continue", "expect": {"speaker": "innkeeper", "line": "The board lists the price as {two coins}}."}},
+        {"name": "08_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage pay_toll", "status active", "player.coins = 4", "harbor.room_taken = absent", "The board lists the price as {two coins}}.", "Bram, the ferry master, at the dock wants 2 coins before the crossing."]}}
+      ],
+      "final": {
+        "contains": ["stage pay_toll", "status active", "player.coins = 4", "The board lists the price as {two coins}}.", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "lacks": ["outcome crossing = done", "{?"],
+        "seen": ["No room left tonight.", "The board lists the price as {two coins}}."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "notice_success",
+      "flags": {"notice": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross."}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage pay_toll", "status active", "waiting waits_until", "player.coins = 2", "Bram, the ferry master, at the dock wants 2 coins before the crossing."], "lacks": ["stage gossip"]}}
+      ],
+      "final": {
+        "contains": ["quest The Ferry Toll", "stage pay_toll", "status active", "player.coins = 2", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "lacks": ["outcome crossing = done", "stage gossip"],
+        "seen": ["Bram, the ferry master, is on the dock.", "Two coins, and the boat will cross."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "notice_fail",
+      "flags": {"notice": false},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
+        {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross."}},
+        {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "09_reoffer", "action": "press", "target": "Continue", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true, "contains": ["stage gossip", "status active", "Bram, the ferry master, at the dock wants 2 coins before the crossing."], "lacks": ["stage pay_toll", "outcome crossing = done"]}}
+      ],
+      "final": {
+        "contains": ["stage gossip", "status active", "quest The Ferry Toll", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "lacks": ["outcome crossing = done", "stage pay_toll"],
+        "seen": ["Bram, the ferry master, is on the dock.", "A room's two coins a night, and the stew is free."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "storm",
+      "flags": {"storm": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "04_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain."}},
+        {"name": "05_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
+        {"name": "06_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room", "The bell notes the tide."]}}
+      ],
+      "final": {
+        "contains": ["stage gossip", "status active", "quest The Ferry Toll"],
+        "lacks": ["outcome crossing = done"],
+        "seen": ["The season smells like rain.", "Bram, the ferry master, is on the dock.", "The bell notes the tide."],
+        "unseen": ["{?", "The dock is empty."]
+      }
+    },
+    {
+      "id": "voice_on",
+      "flags": {"voice": true},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": true, "continue_enabled": true}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "audio": true}}
+      ],
+      "final": {
+        "contains": ["The headland bell rang twice before the rain."],
+        "seen": ["A room's two coins a night, and the stew is free.", "The headland bell rang twice before the rain."],
+        "unseen": ["{?"]
+      }
+    },
+    {
+      "id": "voice_off",
+      "flags": {"voice": false},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": false, "continue_enabled": true}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "audio": false}}
+      ],
+      "final": {
+        "contains": ["The headland bell rang twice before the rain."],
+        "seen": ["A room's two coins a night, and the stew is free.", "The headland bell rang twice before the rain."],
+        "unseen": ["{?"]
+      }
+    },
+    {
+      "id": "save_load",
+      "flags": {},
+      "steps": [
+        {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true}},
+        {"name": "02_save_refused", "action": "press", "target": "Save", "expect": {"status_contains": "Can't save during a conversation.", "speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
+        {"name": "03_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
+        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "05_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
+        {"name": "06_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
+        {"name": "07_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
+        {"name": "08_toll", "action": "press", "target": "Continue", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross."}},
+        {"name": "09_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
+        {"name": "10_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage pay_toll", "Bram, the ferry master, at the dock wants 2 coins before the crossing.", "player.coins = 2"]}},
+        {"name": "11_save", "action": "press", "target": "Save", "expect": {"status_contains": "Saved in memory and user://playtest_save.json.", "continue_enabled": false, "contains": ["stage pay_toll", "player.coins = 2"]}},
+        {"name": "12_advance", "action": "press", "target": "Advance time", "expect": {"speaker": "Bram", "line": "Two coins, and the boat will cross.", "status_contains": "day 1, 01:00", "contains": ["stage cross"]}},
+        {"name": "13_load", "action": "press", "target": "Load", "expect": {"status_contains": "Loaded.", "continue_enabled": false, "contains": ["stage pay_toll", "status active", "player.coins = 2", "Bram, the ferry master, at the dock wants 2 coins before the crossing."], "lacks": ["stage cross", "day 1, 01:00", "outcome crossing = done"]}}
+      ],
+      "final": {
+        "contains": ["Loaded.", "stage pay_toll", "status active", "player.coins = 2", "quest The Ferry Toll", "Bram, the ferry master, at the dock wants 2 coins before the crossing."],
+        "lacks": ["outcome crossing = done", "day 1, 01:00"],
+        "seen": ["Can't save during a conversation.", "Saved in memory and user://playtest_save.json.", "Loaded.", "Bram, the ferry master, is on the dock."],
+        "unseen": ["{?"]
+      }
+    }
+  ]
+}
