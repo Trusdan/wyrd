@@ -189,7 +189,7 @@ role ferry_master
 
 `eligibility` uses `wait_trigger_or_eligibility`, so `chance` is `E_CHANCE_CONTEXT` and a `per_query` resolved fact is `E_WAIT_RESOLVER_MODE`. In that condition the bare name `candidate` is the entity being tested, not a fact. `WyrdRoles.eligible(role, entity)` evaluates it. One trace line is recorded when a condition is present: `eligible` with `role`, `entity`, and `ok`. The line does not list the facts the condition read.
 
-`relation` and `none` run on `vacate`. `relation` still requires the candidate to be alive, and now also requires `eligible`. `faction_assigns`, `election`, and `host_decides` are type-checked and stored. They do not pick a holder yet. `vacancy: abolish` is stored and does not abolish the role yet. A `default_holder` is assigned when that role's binding is empty, including after `start_new_game`.
+`relation`, `faction_assigns`, and `host_decides` run on `vacate`. `relation` requires the candidate to be alive, eligible, and a different entity. `faction_assigns` picks from `WyrdWorldAdapter.members`, ordered by a registered `faction_rank` (higher wins) and a seeded tie-break. `host_decides` leaves the role pending until `assign`. `election` is stored and does not pick yet. `vacancy: abolish` runs when the strategy finds nobody. A `default_holder` is assigned when that role's binding is empty, including after `start_new_game`.
 
 | Code | When |
 |---|---|
@@ -198,4 +198,4 @@ role ferry_master
 
 ## Not in this draft
 
-Role definitions are compiled from a `role` block. `unwilling`, `barred`, and `locked_gone` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. Casting proper, resolving `redirect beat`, and running `faction_assigns`, `election`, `host_decides`, and `vacancy: abolish` stay later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.
+Role definitions are compiled from a `role` block. `unwilling`, `barred`, and `locked_gone` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, and `vacancy: abolish` run. `election`, the `contested` slot state, and casting proper stay later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. Resolving `redirect beat` stays later too. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

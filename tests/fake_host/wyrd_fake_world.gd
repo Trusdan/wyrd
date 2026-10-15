@@ -12,6 +12,7 @@ class EntityRecord extends RefCounted:
 
 
 var _entities: Dictionary = {}
+var _members: Dictionary = {}
 
 
 func add_entity(
@@ -74,6 +75,25 @@ func display_name(id: StringName) -> String:
 	if record == null:
 		return ""
 	return record.display_name
+
+
+func add_member(faction: StringName, entity: StringName) -> void:
+	if faction == &"" or entity == &"":
+		push_error("WyrdFakeWorld.add_member: missing faction or entity")
+		return
+	if not _members.has(faction):
+		_members[faction] = {}
+	(_members[faction] as Dictionary)[entity] = true
+
+
+func members(faction: StringName) -> PackedStringArray:
+	var rows := PackedStringArray()
+	if not _members.has(faction):
+		return rows
+	for id in (_members[faction] as Dictionary).keys():
+		rows.append(String(id))
+	rows.sort()
+	return rows
 
 
 func _record(id: StringName) -> EntityRecord:

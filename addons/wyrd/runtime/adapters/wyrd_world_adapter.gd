@@ -34,3 +34,9 @@ func is_alive(id: StringName) -> bool:
 func display_name(id: StringName) -> String:
 	push_error("not implemented: WyrdWorldAdapter.display_name(%s)" % id)
 	return ""
+
+
+## Entity ids that belong to [param faction]. Order is not significant.
+func members(faction: StringName) -> PackedStringArray:
+	push_error("not implemented: WyrdWorldAdapter.members(%s)" % faction)
+	return PackedStringArray()

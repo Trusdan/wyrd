@@ -10,6 +10,9 @@ extends RefCounted
 var id: String = ""
 var speaker: StringName = &""
 var display_name: String = ""
+## Role ids this speaker holds among the slots passed into the scene. Sorted.
+## The host formats a name-plus-role label from these ids.
+var roles: PackedStringArray = PackedStringArray()
 var text: String = ""
 var tags: PackedStringArray = PackedStringArray()
 var audio: Variant = null

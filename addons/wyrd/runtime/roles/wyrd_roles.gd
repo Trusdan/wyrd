@@ -9,8 +9,10 @@ extends RefCounted
 ## [code]history[/code]. [method assign] is host setup for the default holder.
 ## [method define] stores the same fields as a [code]role[/code] block.
 ## [method eligible] tests [code]candidate[/code]. [method vacate] runs
-## [code]relation(...)[/code] or [code]none[/code]. Other succession strategies
-## and [code]vacancy: abolish[/code] are stored and do not run yet.
+## [code]relation(...)[/code], [code]faction_assigns(...)[/code], and
+## [code]host_decides[/code]. [code]election[/code] does not pick yet.
+## [code]vacancy: abolish[/code] runs when a strategy finds nobody.
+## [code]host_decides[/code] stays pending until [method assign].
 ## [code]live[/code] follows the role. [code]locked_at[/code] freezes in
 ## [method enter_stage]. [code]cast[/code] freezes in [method begin_quest] to
 ## the current holder; casting proper is M4. Slot state [code]hostile[/code]
@@ -25,6 +27,8 @@ extends RefCounted
 
 signal role_holder_changed(role_id: StringName, old_holder: StringName, new_holder: StringName)
 signal role_vacant(role_id: StringName)
+## Emitted when [code]host_decides[/code] is waiting for [method assign].
+signal succession_requested(role_id: StringName, departed: StringName)
 
 const PLAYER: StringName = &"player"
 const EMPTY: StringName = &"empty"
@@ -34,6 +38,7 @@ const HOSTILE: StringName = &"hostile"
 const LOCKED_GONE: StringName = &"locked_gone"
 const BARRED: StringName = &"barred"
 const UNWILLING: StringName = &"unwilling"
+const PENDING: StringName = &"pending"
 const _STATE_ORDER: PackedStringArray = [
 	"locked_gone", "empty", "barred", "hostile", "unwilling", "successor", "default",
 ]
@@ -51,6 +56,12 @@ var eval_with: Callable = Callable()
 var trace_of: Callable = Callable()
 ## [code]stage_of(quest_id)[/code] returns the quest's current stage id. Optional.
 var stage_of: Callable = Callable()
+## [code]seed_of()[/code] returns the game seed used for a faction tie-break.
+var seed_of: Callable = Callable()
+## [code]faction_rank(faction, entity)[/code] returns an int. Higher wins.
+var faction_rank: Callable = Callable()
+## [code]host_decides(role, departed)[/code] is told about a pending request.
+var host_decides: Callable = Callable()
 
 var _slots: Dictionary = {}
 var _from_content: Dictionary = {}
@@ -59,6 +70,9 @@ var _defs: Dictionary = {}
 var _frozen: Dictionary = {}
 var _told: Dictionary = {}
 var _cast_noted: Dictionary = {}
+var _pending: Dictionary = {}
+var _abolished: Dictionary = {}
+var _started: bool = false
 
 
 func bind_content(content: WyrdContent) -> void:
@@ -94,6 +108,8 @@ func clear() -> void:
 	_frozen.clear()
 	_told.clear()
 	_cast_noted.clear()
+	_pending.clear()
+	_abolished.clear()
 	_apply_all_defaults()
 
 
@@ -165,7 +181,28 @@ func export_state() -> Dictionary:
 		for agent in agents:
 			names.append(String(agent))
 		told[String(role)] = names
-	return {"bindings": bindings, "defs": defs, "frozen": frozen, "told": told}
+	var pending := {}
+	var waiting: Array = _pending.keys()
+	waiting.sort()
+	for role in waiting:
+		var request: Dictionary = _pending[role]
+		pending[String(role)] = {
+			"departed": String(request.get("departed", "")),
+			"since": int(request.get("since", 0)),
+		}
+	var abolished: Array = []
+	var ceased: Array = _abolished.keys()
+	ceased.sort()
+	for role in ceased:
+		abolished.append(String(role))
+	return {
+		"abolished": abolished,
+		"bindings": bindings,
+		"defs": defs,
+		"frozen": frozen,
+		"pending": pending,
+		"told": told,
+	}
 
 
 func import_state(data: Dictionary) -> void:
@@ -174,6 +211,8 @@ func import_state(data: Dictionary) -> void:
 	_frozen.clear()
 	_told.clear()
 	_cast_noted.clear()
+	_pending.clear()
+	_abolished.clear()
 	var bindings: Dictionary = data.get("bindings", {})
 	for role in bindings.keys():
 		var row: Dictionary = bindings[role]
@@ -244,6 +283,19 @@ func import_state(data: Dictionary) -> void:
 		for agent in told[role]:
 			bag[StringName(str(agent))] = true
 		_told[StringName(str(role))] = bag
+	var pending: Dictionary = data.get("pending", {})
+	for role in pending.keys():
+		var request: Dictionary = pending[role] if pending[role] is Dictionary else {}
+		_pending[StringName(str(role))] = {
+			"departed": StringName(str(request.get("departed", ""))),
+			"since": int(request.get("since", 0)),
+		}
+	var abolished: Variant = data.get("abolished", [])
+	if abolished is Array:
+		for role in abolished:
+			var id := StringName(str(role))
+			if id != &"":
+				_abolished[id] = true
 	_recompile_eligibility()
 
 
@@ -313,6 +365,8 @@ func define(
 	spec["vacancy"] = StringName(str(vacancy_parsed["vacancy"]))
 	spec["visibility"] = StringName(str(vis_parsed["visibility"]))
 	_defs[role] = spec
+	_abolished.erase(role)
+	_pending.erase(role)
 	_apply_default(role)
 
 
@@ -323,6 +377,8 @@ func install(role: WyrdRoleDef, from_content: bool = false) -> void:
 	_defs[id] = role.to_runtime_spec()
 	if from_content:
 		_from_content[id] = true
+	_abolished.erase(id)
+	_pending.erase(id)
 	_apply_default(id)
 
 
@@ -371,9 +427,52 @@ func eligible(role: StringName, entity: StringName) -> bool:
 	return ok
 
 
+func set_faction_rank(fn: Callable) -> void:
+	if not fn.is_valid():
+		push_error("WyrdRoles.set_faction_rank: missing callable")
+		return
+	faction_rank = fn
+
+
+func set_host_decides(fn: Callable) -> void:
+	if not fn.is_valid():
+		push_error("WyrdRoles.set_host_decides: missing callable")
+		return
+	host_decides = fn
+
+
+## Called from [method WyrdRuntime.start_new_game]. A role that uses
+## [code]host_decides[/code] needs a callback or a [signal succession_requested]
+## connection before play starts.
+func note_started() -> void:
+	_started = true
+	if not _any_host_decides():
+		return
+	if _host_ready():
+		return
+	push_error("WyrdRoles: host_decides has no callback")
+
+
+func abolished(role: StringName) -> bool:
+	return _abolished.has(role)
+
+
+func departed(role: StringName) -> StringName:
+	if not _pending.has(role):
+		return &""
+	return (_pending[role] as Dictionary).get("departed", &"")
+
+
 func assign(role: StringName, entity: StringName) -> void:
 	if role == &"" or entity == &"":
 		push_error("WyrdRoles.assign: missing role or entity")
+		return
+	if _abolished.has(role):
+		push_error("WyrdRoles.assign: \"%s\" is abolished" % String(role))
+		return
+	var request: Dictionary = _pending.get(role, {})
+	if not request.is_empty() and entity == request.get("departed", &""):
+		push_error("WyrdRoles.assign: successor of \"%s\" must differ from the departed holder" % String(role))
 		return
 	var prior := _binding(role)
 	var old: StringName = prior["holder"]
@@ -386,33 +485,41 @@ func assign(role: StringName, entity: StringName) -> void:
 	prior["status"] = DEFAULT
 	_bindings[role] = prior
 	_refresh_told(role)
+	if not request.is_empty():
+		_pending.erase(role)
+		var left: StringName = request.get("departed", &"")
+		_record_role_changed(role, left, entity)
+		_trace_succession(role, "host_decides", left, entity, "assigned")
 	if old != entity:
 		role_holder_changed.emit(role, old, entity)
 
 
 func vacate(role: StringName, reason: StringName) -> void:
+	if _abolished.has(role) or _pending.has(role):
+		return
 	var prior := _binding(role)
 	var old: StringName = prior["holder"]
 	if old == &"":
 		return
 	_push_history(prior, reason)
-	var next := _successor(role, old)
-	if next == &"":
-		prior["holder"] = &""
-		prior["since"] = _now()
-		prior["status"] = EMPTY
-		_bindings[role] = prior
-		_refresh_told(role)
-		role_vacant.emit(role)
+	var strategy := String(_spec(role)["strategy"])
+	if strategy == "host_decides":
+		_begin_pending(role, prior, old)
 		return
-	prior["holder"] = next
-	prior["since"] = _now()
-	prior["status"] = SUCCESSOR
-	_bindings[role] = prior
-	_refresh_told(role)
-	role_holder_changed.emit(role, old, next)
-	if deeds != null:
-		deeds.record(&"role_changed", old, next, &"", PackedStringArray(), 1.0, null, &"public", false)
+	var next := &""
+	if strategy == "relation":
+		next = _relation_successor(role, old)
+	elif strategy == "faction_assigns":
+		next = _faction_successor(role, old)
+	if next != &"" and next != old:
+		_trace_succession(role, strategy, old, next, "picked")
+		_take_successor(role, prior, old, next)
+		return
+	_trace_succession(role, strategy, old, &"", "none")
+	if _spec(role)["vacancy"] == &"abolish":
+		_abolish(role, prior, old)
+		return
+	_leave_empty(role, prior)
 
 
 func tell(role: StringName, agent: StringName) -> void:
@@ -551,9 +658,9 @@ func _resolved(quest_id: String, slot_name: String) -> Dictionary:
 	return {"holder": live["holder"], "role": role, "status": live["status"]}
 
 
-func _successor(role: StringName, old: StringName) -> StringName:
+func _relation_successor(role: StringName, old: StringName) -> StringName:
 	var spec := _spec(role)
-	if spec["strategy"] != &"relation" or social == null:
+	if social == null:
 		return &""
 	var kinds: PackedStringArray = spec["kinds"]
 	for kind in kinds:
@@ -564,6 +671,135 @@ func _successor(role: StringName, old: StringName) -> StringName:
 			if _alive(id) and eligible(role, id):
 				return id
 	return &""
+
+
+func _faction_successor(role: StringName, old: StringName) -> StringName:
+	var faction := StringName(str(_spec(role).get("succession_arg", "")))
+	var world := _world()
+	if world == null or faction == &"":
+		return &""
+	var seen := {}
+	var ids: Array = []
+	for raw in world.members(faction):
+		var who := StringName(str(raw))
+		if who == &"" or who == old or seen.has(who):
+			continue
+		seen[who] = true
+		if _alive(who) and eligible(role, who):
+			ids.append(String(who))
+	if ids.is_empty():
+		return &""
+	ids.sort()
+	var key := StringName("%s|%s|%s" % [String(role), String(faction), String(old)])
+	var rng := WyrdRng.for_decision(_game_seed(), &"faction_assigns", key, _now())
+	var rolls := {}
+	for id in ids:
+		rolls[String(id)] = rng.next_u32()
+	var best := ""
+	var best_rank := 0
+	var best_roll := 0
+	for id in ids:
+		var text := String(id)
+		var rank := _rank(faction, text)
+		var roll := int(rolls[text])
+		var better := best.is_empty() or rank > best_rank
+		if not better and rank == best_rank:
+			better = roll > best_roll or (roll == best_roll and text < best)
+		if better:
+			best = text
+			best_rank = rank
+			best_roll = roll
+	return StringName(best)
+
+
+func _begin_pending(role: StringName, prior: Dictionary, old: StringName) -> void:
+	prior["holder"] = &""
+	prior["since"] = _now()
+	prior["status"] = PENDING
+	_bindings[role] = prior
+	_pending[role] = {"departed": old, "since": int(prior["since"])}
+	_refresh_told(role)
+	_trace_succession(role, "host_decides", old, &"", "pending")
+	succession_requested.emit(role, old)
+	if host_decides.is_valid():
+		host_decides.call(role, old)
+
+
+func _take_successor(role: StringName, prior: Dictionary, old: StringName, next: StringName) -> void:
+	prior["holder"] = next
+	prior["since"] = _now()
+	prior["status"] = SUCCESSOR
+	_bindings[role] = prior
+	_refresh_told(role)
+	role_holder_changed.emit(role, old, next)
+	_record_role_changed(role, old, next)
+
+
+func _leave_empty(role: StringName, prior: Dictionary) -> void:
+	prior["holder"] = &""
+	prior["since"] = _now()
+	prior["status"] = EMPTY
+	_bindings[role] = prior
+	_refresh_told(role)
+	role_vacant.emit(role)
+
+
+func _abolish(role: StringName, prior: Dictionary, old: StringName) -> void:
+	prior["holder"] = &""
+	prior["since"] = _now()
+	prior["status"] = EMPTY
+	_bindings[role] = prior
+	_abolished[role] = true
+	_pending.erase(role)
+	_refresh_told(role)
+	if deeds != null and old != &"":
+		deeds.record(&"role_abolished", old, role, &"", PackedStringArray(), 1.0, null, &"public", false)
+	role_vacant.emit(role)
+	_trace_succession(role, String(_spec(role)["strategy"]), old, &"", "abolished")
+
+
+func _record_role_changed(role: StringName, old: StringName, next: StringName) -> void:
+	if deeds == null or old == &"" or next == &"" or old == next:
+		return
+	deeds.record(&"role_changed", old, next, &"", PackedStringArray([String(role)]), 1.0, null, &"public", false)
+
+
+func _trace_succession(role: StringName, strategy: String, old: StringName, next: StringName, reason: String) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call("succession", {
+		"from": String(old),
+		"reason": reason,
+		"role": String(role),
+		"strategy": strategy,
+		"to": String(next),
+	})
+
+
+func _rank(faction: StringName, entity: String) -> int:
+	if not faction_rank.is_valid():
+		return 0
+	var value: Variant = faction_rank.call(faction, StringName(entity))
+	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
+		return int(value)
+	return 0
+
+
+func _game_seed() -> int:
+	if seed_of.is_valid():
+		return int(seed_of.call())
+	return 0
+
+
+func _any_host_decides() -> bool:
+	for role in _defs.keys():
+		if String((_defs[role] as Dictionary).get("strategy", "")) == "host_decides":
+			return true
+	return false
+
+
+func _host_ready() -> bool:
+	return host_decides.is_valid() or succession_requested.get_connections().size() > 0
 
 
 func _stage_variants(quest_id: String, slot_name: String) -> Array:
@@ -750,6 +986,8 @@ func _apply_all_defaults() -> void:
 
 
 func _apply_default(role: StringName) -> void:
+	if _abolished.has(role):
+		return
 	var who := StringName(str(_spec(role).get("default_holder", "")))
 	if who == &"":
 		return
