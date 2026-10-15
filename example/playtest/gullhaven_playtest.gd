@@ -9,6 +9,8 @@ const _MANIFEST := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _SAVE_PATH := "user://playtest_save.json"
 const _FERRY_NAME := "Bram"
 const _SUCCESSOR_NAME := "Nia"
+const _QUEST_ID := "ferry_toll"
+const _CHANGED_BG := Color(0.62, 0.42, 0.1)
 
 var _runtime: WyrdRuntime
 
@@ -28,6 +30,11 @@ var _continue: Button
 var _choices: VBoxContainer
 var _journal: ItemList
 var _facts: ItemList
+var _summary: Label
+var _fact_filter: LineEdit
+var _fact_rows: Array[Dictionary] = []
+var _fact_baseline: Dictionary = {}
+var _highlight_from: Dictionary = {}
 var _seed: LineEdit
 var _buttons: Dictionary = {}
 var _flags := {
@@ -66,6 +73,7 @@ func boot_error() -> String:
 func new_game(seed_value: int) -> void:
 	if not _boot.is_empty():
 		return
+	_begin_step()
 	_place_entities()
 	_runtime.start_new_game(seed_value)
 	_runtime.roles.assign(&"tavern_owner", &"tavern_owner")
@@ -83,22 +91,28 @@ func new_game(seed_value: int) -> void:
 		_sync_ferry()
 	_status.text = "New game, seed %d." % seed_value
 	_refresh()
+	_end_step()
 
 
 func press_continue() -> void:
+	_begin_step()
 	if _dlg().line() != null:
 		_dlg().advance()
 	_open_offered()
 	_refresh()
+	_end_step()
 
 
 func press_choice(label: String) -> bool:
+	_begin_step()
 	for view in _dlg().choices():
 		if view.text == label and view.enabled:
 			_dlg().choose(view.index)
 			_open_offered()
 			_refresh()
+			_end_step()
 			return true
+	_end_step()
 	return false
 
 
@@ -130,12 +144,14 @@ func journal_count() -> int:
 
 
 func set_flag(name: String, on: bool) -> void:
+	_begin_step()
 	_flags[name] = on
 	var button: CheckButton = _buttons.get(name) as CheckButton
 	if button != null:
 		button.set_pressed_no_signal(on)
 	if name == "voice" or not _started:
 		_refresh()
+		_end_step()
 		return
 	_place_entities()
 	_apply_commands()
@@ -144,13 +160,16 @@ func set_flag(name: String, on: bool) -> void:
 	if name == "short":
 		_runtime.facts.set(&"player.coins", 0 if on else 4)
 	_refresh()
+	_end_step()
 
 
 func advance_time() -> void:
+	_begin_step()
 	_runtime.tick(60)
 	_open_offered()
 	_status.text = "Advanced 60 minutes. %s." % WyrdText.game_date(_runtime.now_minutes())
 	_refresh()
+	_end_step()
 
 
 func save_game() -> bool:
@@ -172,6 +191,7 @@ func save_game() -> bool:
 
 
 func load_game() -> bool:
+	_begin_step()
 	if _dlg().is_open():
 		_dlg().abort(&"load")
 	var parsed: Variant = null
@@ -180,19 +200,23 @@ func load_game() -> bool:
 	var data: Dictionary = parsed if parsed is Dictionary else _slot
 	if data.is_empty():
 		_status.text = "Nothing to load."
+		_end_step()
 		return false
 	var report := _runtime.load_state(data)
 	if not report.ok:
 		_status.text = report.diagnostics.format()
+		_end_step()
 		return false
 	_started = true
 	_open_offered()
 	_status.text = "Loaded."
 	_refresh()
+	_end_step()
 	return true
 
 
 func reset_play() -> void:
+	_begin_step()
 	_slot.clear()
 	if FileAccess.file_exists(_SAVE_PATH):
 		DirAccess.remove_absolute(_SAVE_PATH)
@@ -202,6 +226,7 @@ func reset_play() -> void:
 	_body.text = ""
 	_status.text = "Reset."
 	_refresh()
+	_end_step()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -291,7 +316,7 @@ func _open_offered() -> void:
 
 
 func _refresh() -> void:
-	if _body == null:
+	if _body == null or _runtime == null:
 		return
 	var line: Variant = _dlg().line()
 	if line != null:
@@ -322,62 +347,178 @@ func _refresh() -> void:
 	_journal.clear()
 	for entry in _runtime.quests.journal("ferry_toll"):
 		_journal.add_item("%s  %s" % [String(entry["date"]), String(entry["text"])])
-	_facts.clear()
+	_paint_inspector()
+
+
+## Full playtest state. The visual harness writes this to state.jsonl.
+## It is not the rows currently drawn in the fact list: a filter can hide those.
+func inspector_state() -> Dictionary:
+	return {
+		"facts": _world_facts(),
+		"alive": _alive_facts(),
+		"quest": _quest_fields(),
+		"outcomes": {"crossing": _shown(_runtime.quests.outcome(_QUEST_ID, "crossing"))},
+		"slots": _slot_records(),
+		"journal": _journal_records(),
+	}
+
+
+func _paint_inspector() -> void:
+	if _summary == null or _facts == null:
+		return
+	var state := inspector_state()
+	_summary.text = _summary_text(state)
+	_fact_rows.clear()
+	var facts: Dictionary = state["facts"]
+	for key in facts.keys():
+		var fact_key := String(key)
+		var fact_value := String(facts[key])
+		_fact_rows.append(_fact_row(fact_key, fact_value, "world %s = %s" % [fact_key, fact_value]))
+	var alive: Dictionary = state["alive"]
+	for key in alive.keys():
+		var entity_id := String(key)
+		var alive_value := String(alive[key])
+		_fact_rows.append(_fact_row("alive %s" % entity_id, alive_value, "alive %s = %s" % [entity_id, alive_value]))
+	_fill_fact_list()
+
+
+func _summary_text(state: Dictionary) -> String:
+	var lines := PackedStringArray()
+	var quest: Dictionary = state["quest"]
+	lines.append("quest %s" % String(quest["title"]))
+	lines.append("stage %s" % String(quest["stage"]))
+	lines.append("status %s" % String(quest["status"]))
+	var outcomes: Dictionary = state["outcomes"]
+	for key in outcomes.keys():
+		lines.append("outcome %s = %s" % [String(key), String(outcomes[key])])
+	lines.append("waiting %s" % String(quest["waiting"]))
+	var slots: Array = state["slots"]
+	for item in slots:
+		var slot := item as Dictionary
+		lines.append("slot %s — %s — %s — %s" % [String(slot["name"]), String(slot["role"]), String(slot["holder"]), String(slot["state"])])
+	return "\n".join(lines)
+
+
+func _world_facts() -> Dictionary:
+	var facts := {}
 	var content := _runtime.content()
-	if content != null and content.schema != null:
-		for fact in content.schema.entries:
-			if fact.is_pattern():
-				continue
-			_facts.add_item("world %s = %s" % [fact.key, _shown(_runtime.facts.get(StringName(fact.key)))])
+	if content == null or content.schema == null:
+		return facts
+	for fact in content.schema.entries:
+		if fact.is_pattern():
+			continue
+		var key := String(fact.key)
+		facts[key] = _shown(_runtime.facts.get(StringName(key)))
+	return facts
+
+
+func _alive_facts() -> Dictionary:
 	# Live world state. A resolved npc.{id}.alive fact with no invalidate stays cached.
+	var alive := {}
 	for entity_id in ["player", "ferry_master", "tavern_owner", "dock_apprentice"]:
 		var id := StringName(entity_id)
-		var alive := "absent"
+		var value := "absent"
 		if _host.world.exists(id):
-			alive = "true" if _host.world.is_alive(id) else "false"
-		_facts.add_item("alive %s = %s" % [entity_id, alive])
-	_append_quest(_facts)
-	_facts.add_item("outcome crossing = %s" % _shown(_runtime.quests.outcome("ferry_toll", "crossing")))
-	_append_slots(_facts)
+			value = "true" if _host.world.is_alive(id) else "false"
+		alive[entity_id] = value
+	return alive
 
 
-func _append_quest(list: ItemList) -> void:
+func _quest_fields() -> Dictionary:
 	# pay_toll is the stage. The quest id is ferry_toll; the panel shows the title.
-	var quest_id := "ferry_toll"
-	var title := quest_id
+	var title := _QUEST_ID
 	var content := _runtime.content()
 	if content != null:
-		var quest := content.quests.get(quest_id) as WyrdQuestDef
+		var quest := content.quests.get(_QUEST_ID) as WyrdQuestDef
 		if quest != null and not quest.title.is_empty():
 			title = quest.title
-	list.add_item("quest %s" % title)
-	list.add_item("stage %s" % _shown(_runtime.quests.stage(quest_id)))
-	list.add_item("status %s" % _shown(String(_runtime.quests.status(quest_id))))
-	var waiting := _runtime.quests.waiting_reason(quest_id)
-	if not waiting.is_empty():
-		list.add_item("waiting %s" % waiting)
+	return {
+		"id": _QUEST_ID,
+		"title": title,
+		"stage": _shown(_runtime.quests.stage(_QUEST_ID)),
+		"status": _shown(String(_runtime.quests.status(_QUEST_ID))),
+		"waiting": _shown(_runtime.quests.waiting_reason(_QUEST_ID)),
+	}
 
 
-func _append_slots(list: ItemList) -> void:
+func _slot_records() -> Array:
 	# A role id is a symbol. The grammar has no title, so the readable title
 	# is that id with spaces. The state is the runtime slot state
 	# (default, successor, empty, hostile), not the slot mode (live, locked_at, cast).
+	var rows: Array = []
 	var content := _runtime.content()
 	if content == null:
-		return
-	var quest := content.quests.get("ferry_toll") as WyrdQuestDef
+		return rows
+	var quest := content.quests.get(_QUEST_ID) as WyrdQuestDef
 	if quest == null:
-		return
+		return rows
 	for slot in quest.slots:
-		var holder_id := _runtime.roles.slot_holder("ferry_toll", StringName(slot.name))
+		var holder_id := _runtime.roles.slot_holder(_QUEST_ID, StringName(slot.name))
 		var holder_name := "none"
 		if holder_id != &"":
 			holder_name = _host.world.display_name(holder_id)
 			if holder_name.is_empty():
 				holder_name = String(holder_id)
 		var title := slot.role.replace("_", " ")
-		var state := String(_runtime.roles.slot_state(StringName(slot.name), "ferry_toll"))
-		list.add_item("slot %s — %s — %s — %s" % [slot.name, title, holder_name, state])
+		var state := _shown(String(_runtime.roles.slot_state(StringName(slot.name), _QUEST_ID)))
+		rows.append({
+			"name": String(slot.name),
+			"role": title,
+			"holder": holder_name,
+			"state": state,
+		})
+	return rows
+
+
+func _journal_records() -> Array:
+	var rows: Array = []
+	for entry in _runtime.quests.journal(_QUEST_ID):
+		rows.append({
+			"date": String(entry["date"]),
+			"text": String(entry["text"]),
+		})
+	return rows
+
+
+func _fact_row(key: String, value: String, text: String) -> Dictionary:
+	var had := _highlight_from.has(key)
+	var previous := String(_highlight_from.get(key, ""))
+	var changed := had and previous != value
+	return {"key": key, "value": value, "text": text, "changed": changed}
+
+
+func _fill_fact_list() -> void:
+	_facts.clear()
+	var query := ""
+	if _fact_filter != null:
+		query = _fact_filter.text.strip_edges().to_lower()
+	for row in _fact_rows:
+		var key := String(row["key"]).to_lower()
+		var value := String(row["value"]).to_lower()
+		var text := String(row["text"]).to_lower()
+		if not query.is_empty() and not key.contains(query) and not value.contains(query) and not text.contains(query):
+			continue
+		_facts.add_item(String(row["text"]))
+		if bool(row["changed"]):
+			var index := _facts.item_count - 1
+			_facts.set_item_custom_bg_color(index, _CHANGED_BG)
+			_facts.set_item_custom_fg_color(index, Color(1, 0.96, 0.88))
+
+
+func _on_fact_filter(_text: String) -> void:
+	if _facts == null:
+		return
+	_fill_fact_list()
+
+
+func _begin_step() -> void:
+	_highlight_from = _fact_baseline.duplicate()
+
+
+func _end_step() -> void:
+	_fact_baseline.clear()
+	for row in _fact_rows:
+		_fact_baseline[String(row["key"])] = String(row["value"])
 
 
 func _shown(value: Variant) -> String:
@@ -450,9 +591,11 @@ func _controls() -> HBoxContainer:
 	row.add_child(_button("Reset", reset_play))
 	row.add_child(_button("Abort scene", func() -> void:
 		if _dlg().is_open():
+			_begin_step()
 			_dlg().abort(&"left")
 			_status.text = "Aborted. You can save."
 			_refresh()
+			_end_step()
 	))
 	return row
 
@@ -527,11 +670,22 @@ func _side() -> VBoxContainer:
 	var journal_label := Label.new()
 	journal_label.text = "Journal"
 	column.add_child(journal_label)
-	column.add_child(_scroll_list("Journal", 120))
-	var fact_label := Label.new()
-	fact_label.text = "Facts, quest, slots"
-	column.add_child(fact_label)
-	column.add_child(_scroll_list("Fact", 180))
+	column.add_child(_scroll_list("Journal", 72))
+	# Quest, stage, status, outcome, waiting, and slots stay on screen.
+	# The fact list below them scrolls, and a filter can hide rows.
+	_summary = Label.new()
+	_summary.name = "QuestSummary"
+	_summary.add_theme_font_size_override("font_size", 14)
+	_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	column.add_child(_summary)
+	_fact_filter = LineEdit.new()
+	_fact_filter.name = "FactFilter"
+	_fact_filter.placeholder_text = "Filter facts"
+	_fact_filter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_fact_filter.text_changed.connect(_on_fact_filter)
+	column.add_child(_fact_filter)
+	column.add_child(_scroll_list("Fact", 80))
 	return column
 
 
@@ -557,9 +711,11 @@ func _choose_pressed(button: Button, index: int) -> void:
 	# pressed.emit() still fires when the button is disabled. choose() errors then.
 	if button.disabled:
 		return
+	_begin_step()
 	_dlg().choose(index)
 	_open_offered()
 	_refresh()
+	_end_step()
 
 
 func _flag_toggled(on: bool, key: String) -> void:

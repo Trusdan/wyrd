@@ -9,6 +9,8 @@
     "Dialogue",
     "Side",
     "JournalScroll",
+    "QuestSummary",
+    "FactFilter",
     "FactScroll",
     "Continue"
   ],

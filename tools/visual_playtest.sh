@@ -103,6 +103,23 @@ if not (out / "index.html").is_file():
     problems.append("missing index.html")
 if not (out / "index.md").is_file():
     problems.append("missing index.md")
+elif "state.md" not in (out / "index.md").read_text(encoding="utf-8"):
+    problems.append("index.md does not link state.md")
+state_md = out / "state.md"
+if not state_md.is_file():
+    problems.append("missing state.md")
+state_path = out / "state.jsonl"
+if not state_path.is_file():
+    problems.append("missing state.jsonl")
+elif report_path.is_file() and json.loads(report_path.read_text(encoding="utf-8")).get("ok"):
+    lines = [line for line in state_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not lines:
+        problems.append("state.jsonl is empty")
+    else:
+        sample = json.loads(lines[-1])
+        for key in ("scenario", "step", "facts", "quest", "outcomes", "slots", "journal"):
+            if key not in sample:
+                problems.append("state.jsonl missing %s" % key)
 if not list(out.glob("*.png")):
     problems.append("no screenshots")
 if "visual-playtest: ok" not in text:

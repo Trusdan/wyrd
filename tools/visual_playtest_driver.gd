@@ -18,6 +18,7 @@ var _failures: Array[Dictionary] = []
 var _shots: Array[Dictionary] = []
 var _transcript: Dictionary = {}
 var _last_blob := ""
+var _states: Array[Dictionary] = []
 var _date_only: RegEx
 
 
@@ -33,7 +34,7 @@ func _run() -> void:
 	_date_only = RegEx.create_from_string("^day \\d+, \\d{2}:\\d{2}$")
 	var spec := _load_spec()
 	if not _failures.is_empty():
-		_finish()
+		await _finish()
 		return
 	# _ready is still inside the tree setup. Wait a frame before adding the playtest.
 	await get_tree().process_frame
@@ -41,12 +42,12 @@ func _run() -> void:
 	var packed := load(_SCENE) as PackedScene
 	if packed == null:
 		_fail("boot", "scene", "playtest scene did not load")
-		_finish()
+		await _finish()
 		return
 	var ui := packed.instantiate() as Control
 	if ui == null:
 		_fail("boot", "scene", "playtest scene did not instantiate")
-		_finish()
+		await _finish()
 		return
 	_play = ui
 	print("visual-playtest: spawning")
@@ -59,19 +60,19 @@ func _run() -> void:
 	var boot := String(_play.call("boot_error"))
 	if boot != "":
 		_fail("boot", "load", boot)
-		_finish()
+		await _finish()
 		return
 	var unknown := _unknown_toggle()
 	if unknown != "":
 		_fail("spec", "defaults", "toggle %s is not listed in defaults" % unknown)
-		_finish()
+		await _finish()
 		return
 	print("visual-playtest: viewport %s" % _play.get_viewport().get_visible_rect().size)
 	var scenarios := spec["scenarios"] as Array
 	for item in scenarios:
 		var scenario := item as Dictionary
 		await _scenario(scenario)
-	_finish()
+	await _finish()
 
 
 func _scenario(scenario: Dictionary) -> void:
@@ -121,8 +122,13 @@ func _scenario(scenario: Dictionary) -> void:
 
 
 func _finish() -> void:
+	_write_state_md()
 	_write_gallery()
 	_write_report()
+	if is_instance_valid(_play):
+		_play.queue_free()
+		_play = null
+	await get_tree().process_frame
 	if _failures.is_empty():
 		print("visual-playtest: ok")
 		get_tree().quit(0)
@@ -274,13 +280,21 @@ func _choice(label: String) -> Button:
 
 func _capture(scenario_id: String, step: String) -> void:
 	await _settle()
-	var blob := _visible_blob()
-	_last_blob = blob
+	var visible := _visible_blob()
+	var state := _record_state(scenario_id, step)
+	var rows := _state_rows(state)
+	var state_text := "\n".join(rows)
+	# Fact, quest, and slot checks use the state record. The visible blob is
+	# only what is on screen (status, dialogue, buttons, journal).
+	_last_blob = visible + "\n" + state_text
 	var past := String(_transcript.get(scenario_id, ""))
-	_transcript[scenario_id] = past + blob + "\n"
-	var text_problem := _text_problem(blob)
+	_transcript[scenario_id] = past + visible + "\n"
+	var text_problem := _text_problem(visible)
 	if text_problem != "":
 		_fail(scenario_id, step, text_problem)
+	var state_problem := _state_problem(rows)
+	if state_problem != "":
+		_fail(scenario_id, step, state_problem)
 	var layout_problem := _layout_problem()
 	if layout_problem != "":
 		_fail(scenario_id, step, layout_problem)
@@ -385,17 +399,103 @@ func _text_problem(blob: String) -> String:
 		if _date_only.search(row) != null:
 			return "journal entry has no text: %s" % row
 		index += 1
-	var facts := _play.find_child("FactList", true, false) as ItemList
-	if facts == null:
-		return "fact list is missing"
-	var fact_index := 0
-	while fact_index < facts.item_count:
-		var fact_row := facts.get_item_text(fact_index)
-		var fact_problem := _panel_row_problem(fact_row)
-		if fact_problem != "":
-			return fact_problem
-		fact_index += 1
 	return ""
+
+
+func _state_problem(rows: PackedStringArray) -> String:
+	for row in rows:
+		var problem := _panel_row_problem(row)
+		if problem != "":
+			return problem
+		if _date_only.search(row.strip_edges()) != null:
+			return "journal entry has no text: %s" % row.strip_edges()
+	return ""
+
+
+func _record_state(scenario_id: String, step: String) -> Dictionary:
+	var raw: Variant = _play.call("inspector_state")
+	if not (raw is Dictionary):
+		_fail(scenario_id, step, "playtest did not return state")
+		return {}
+	var source := raw as Dictionary
+	var record := {
+		"scenario": scenario_id,
+		"step": step,
+		"facts": source.get("facts", {}),
+		"alive": source.get("alive", {}),
+		"quest": source.get("quest", {}),
+		"outcomes": source.get("outcomes", {}),
+		"slots": source.get("slots", []),
+		"journal": source.get("journal", []),
+	}
+	_states.append(record)
+	_append_jsonl(record)
+	return record
+
+
+func _state_rows(state: Dictionary) -> PackedStringArray:
+	var rows := PackedStringArray()
+	var facts: Variant = state.get("facts", {})
+	if facts is Dictionary:
+		var keys: Array = (facts as Dictionary).keys()
+		keys.sort()
+		for key in keys:
+			rows.append("world %s = %s" % [String(key), String((facts as Dictionary)[key])])
+	var alive: Variant = state.get("alive", {})
+	if alive is Dictionary:
+		var names: Array = (alive as Dictionary).keys()
+		names.sort()
+		for name in names:
+			rows.append("alive %s = %s" % [String(name), String((alive as Dictionary)[name])])
+	var quest: Variant = state.get("quest", {})
+	if quest is Dictionary:
+		var fields := quest as Dictionary
+		rows.append("quest %s" % String(fields.get("title", "")))
+		rows.append("stage %s" % String(fields.get("stage", "")))
+		rows.append("status %s" % String(fields.get("status", "")))
+		var outcomes: Variant = state.get("outcomes", {})
+		if outcomes is Dictionary:
+			var outcome_names: Array = (outcomes as Dictionary).keys()
+			outcome_names.sort()
+			for name in outcome_names:
+				rows.append("outcome %s = %s" % [String(name), String((outcomes as Dictionary)[name])])
+		rows.append("waiting %s" % String(fields.get("waiting", "")))
+	var slots: Variant = state.get("slots", [])
+	if slots is Array:
+		for item in slots as Array:
+			if not (item is Dictionary):
+				continue
+			var slot := item as Dictionary
+			rows.append("slot %s — %s — %s — %s" % [
+				String(slot.get("name", "")),
+				String(slot.get("role", "")),
+				String(slot.get("holder", "")),
+				String(slot.get("state", "")),
+			])
+	var journal: Variant = state.get("journal", [])
+	if journal is Array:
+		for item in journal as Array:
+			if not (item is Dictionary):
+				continue
+			var entry := item as Dictionary
+			rows.append("%s  %s" % [String(entry.get("date", "")), String(entry.get("text", ""))])
+	return rows
+
+
+func _append_jsonl(record: Dictionary) -> void:
+	var line := JSON.stringify(record)
+	if line.is_empty():
+		_fail(String(record.get("scenario", "")), String(record.get("step", "")), "could not encode state")
+		return
+	var path := _out.path_join("state.jsonl")
+	var file := FileAccess.open(path, FileAccess.READ_WRITE)
+	if file == null:
+		file = FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		_fail(String(record.get("scenario", "")), String(record.get("step", "")), "could not write state.jsonl")
+		return
+	file.seek_end()
+	file.store_string(line + "\n")
 
 
 func _marker_problem(text: String) -> String:
@@ -418,7 +518,7 @@ func _panel_row_problem(row: String) -> String:
 		if value.is_empty():
 			return "blank panel value \"%s\"" % row.strip_edges()
 		return ""
-	if row.begins_with("quest ") or row.begins_with("stage ") or row.begins_with("status "):
+	if row.begins_with("quest ") or row.begins_with("stage ") or row.begins_with("status ") or row.begins_with("waiting "):
 		var rest := row.substr(row.find(" ") + 1).strip_edges()
 		if rest.is_empty():
 			return "blank panel value \"%s\"" % row.strip_edges()
@@ -525,7 +625,7 @@ func _visible_blob() -> String:
 		var button := node as Button
 		if button != null:
 			parts.append(button.text)
-	for list_name in ["JournalList", "FactList"]:
+	for list_name in ["JournalList"]:
 		var list := _play.find_child(list_name, true, false) as ItemList
 		if list == null:
 			continue
@@ -580,8 +680,8 @@ func _fail(scenario_id: String, step: String, message: String) -> void:
 
 
 func _write_gallery() -> void:
-	var html := "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Visual playtest</title>\n<style>\nbody{font-family:sans-serif;margin:24px;background:#16181d;color:#e8e6e3;}\nimg{max-width:100%;border:1px solid #333;}\n.fail{color:#ffb4a8;}\nh2{margin-top:2rem;}\n</style>\n</head>\n<body>\n<h1>Visual playtest</h1>\n"
-	var md := "# Visual playtest\n\n"
+	var html := "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Visual playtest</title>\n<style>\nbody{font-family:sans-serif;margin:24px;background:#16181d;color:#e8e6e3;}\nimg{max-width:100%;border:1px solid #333;}\n.fail{color:#ffb4a8;}\nh2{margin-top:2rem;}\na{color:#9ecbff;}\n</style>\n</head>\n<body>\n<h1>Visual playtest</h1>\n<p><a href=\"state.md\">Readable state</a> · <a href=\"state.jsonl\">state.jsonl</a></p>\n"
+	var md := "# Visual playtest\n\n[Readable state](state.md) · [state.jsonl](state.jsonl)\n\n"
 	if _failures.is_empty():
 		html += "<p>Result: ok</p>\n"
 		md += "Result: ok\n"
@@ -618,6 +718,23 @@ func _write_gallery() -> void:
 	html += "</body>\n</html>\n"
 	_write_text(_out.path_join("index.html"), html)
 	_write_text(_out.path_join("index.md"), md)
+
+
+func _write_state_md() -> void:
+	var md := "# Playtest state\n\nFull state after every step. [state.jsonl](state.jsonl) is the same data, one JSON object per line. Fact, quest, and slot checks read this record, including rows the fact list has scrolled out of view.\n"
+	var current := ""
+	for state in _states:
+		var scenario_id := String(state.get("scenario", ""))
+		var step := String(state.get("step", ""))
+		if scenario_id != current:
+			current = scenario_id
+			md += "\n## %s\n" % scenario_id
+		md += "\n### %s\n\n" % step
+		for row in _state_rows(state):
+			md += "- %s\n" % row
+	if _states.is_empty():
+		md += "\nNo steps were recorded.\n"
+	_write_text(_out.path_join("state.md"), md)
 
 
 func _write_report() -> void:

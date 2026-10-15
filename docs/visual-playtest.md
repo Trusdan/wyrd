@@ -31,7 +31,7 @@ The script imports the project, starts a 1600×900 virtual screen, and opens the
 
 When it finishes it prints `visual-playtest passed`. A failed check prints `visual-playtest failed` and the script exits non-zero.
 
-Open `visual-playtest-out/index.html` in a browser to see every shot. `index.md` is the same gallery in Markdown. `report.json` is the machine-readable result. `godot.log` is the engine log from the windowed run.
+Open `visual-playtest-out/index.html` in a browser to see every shot. `index.md` is the same gallery in Markdown, and it links to `state.md`. `state.jsonl` is one JSON object per step with the facts, the quest, the slots, and the journal. `report.json` is the machine-readable result. `godot.log` is the engine log from the windowed run.
 
 `visual-playtest-out/` is gitignored.
 
@@ -39,10 +39,11 @@ Open `visual-playtest-out/index.html` in a browser to see every shot. `index.md`
 
 Each failure names the scenario and the step.
 
-- Any visible label, button, journal row, or fact/quest/slot row contains `{?` or `{}`. That is a missing or empty interpolation. A fact, quest, outcome, or slot row with an empty value fails the same way (`world.season =` with nothing after the equals sign is a failure). An unset fact shows the word `absent`, including the season before Season storm is on. A line that is only a journal date, and a dialogue body that is empty while Continue is enabled, fail too. A literal brace in example prose, such as `{two coins}}`, is left as written. An empty speaker label is left as written: a line can be on screen when the slot it names has no holder.
+- Any visible label, button, or journal row contains `{?` or `{}`. That is a missing or empty interpolation. A dialogue body that is empty while Continue is enabled fails too. A literal brace in example prose, such as `{two coins}}`, is left as written. An empty speaker label is left as written: a line can be on screen when the slot it names has no holder.
+- The same `{?`, `{}`, and blank-value checks for facts, the quest, the outcome, and the slots read `state.jsonl`, not the fact list on screen. A row the list has scrolled out of view still fails the run if its value is blank (`world.season =` with nothing after the equals sign). An unset fact shows the word `absent`, including the season before Season storm is on. A journal line that is only a date fails too.
 - The Godot log from the windowed run contains a script error, a parse error, `ERROR:`, or `WARNING:`. These engine lines are ignored, and only these: `ObjectDB instances were leaked` and `resources still in use at exit` (printed while the process is exiting), `Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver` (the virtual display's software OpenGL driver), and `binds once to the current holder; casting is M4` (the example quest's cast slot prints this on every new game, and the role tests require that warning).
 - A main panel is missing, has no size, or sits outside the 1600×900 viewport. The panel names are the `panels` list in the expectations file. Every visible button is checked the same way.
-- The scenario's `final` block. `contains` and `lacks` are matched against the last screen. `seen` and `unseen` are matched against every screen in that scenario, including the lines that have already scrolled off the dialogue panel. Quest title, stage, status, and outcome are read from the fact panel, so they belong in `contains`.
+- The scenario's `final` block. `contains` and `lacks` for a fact, quest, outcome, or slot row are matched against the state recorded for the last step, so a row hidden by the fact-list scrollbar still counts. Dialogue, buttons, and journal lines are matched against the last screen. `seen` and `unseen` are matched against every screen in that scenario, including the lines that have already scrolled off the dialogue panel. Quest title, stage, status, and outcome belong in `contains`.
 
 Each step can also set `expect` for the screen just after that button press: `speaker`, `line`, `audio` (true when the current line has a voice clip), `continue_enabled`, `status_contains`, `contains`, and `lacks`.
 
@@ -70,7 +71,7 @@ The file name is `{scenario}_{step}.png`, for example `default_03_lookout.png`. 
 3. Set `id` to letters, digits, underscores, or hyphens. That id is the start of each screenshot name.
 4. Set `flags` to the toggles that differ from `defaults`. Use the toggle keys (`ferry_alive`, `local`, `lodging`, `notice`, `storm`, `apprentice`, `short`, `voice`), not the labels on the buttons.
 5. List `steps`. Each step needs `name`, `action`, and `target`. Add `expect` for the line or panel text that must be on screen after that press.
-6. Set `final.contains` to the quest title, stage, status, and outcome you should see when the route is done. Put key lines in `final.seen`. Put text that must not have appeared, including `{?`, in `final.unseen`.
+6. Set `final.contains` to the quest title, stage, status, and outcome the state record should hold when the route is done. Put key lines in `final.seen`. Put text that must not have appeared, including `{?`, in `final.unseen`.
 7. Run `tools/visual_playtest.sh` and read the failure line. It names the scenario and the step. Fix the expectation, or the playtest, and run it again.
 
 You do not need to change the driver to add a route.

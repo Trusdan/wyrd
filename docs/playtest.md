@@ -57,7 +57,7 @@ The status line says "Press New game." You will see:
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
 - A journal. Each line starts with a game time such as `day 1, 00:00`.
-- A list of facts, the quest title, the stage, the status, and one row per slot: role title, the current holder's personal name, and the slot state. A fact with no value shows `absent`. The season is one of those until Season storm is on, so the row reads `world world.season = absent`.
+- A quest summary that stays on screen: the quest title, the stage, the status, the outcome, the waiting reason, and one row per slot. A slot row is the role title, the current holder's personal name, and the slot state. Under that, a fact list with a filter box. The filter keeps rows whose name or value contains what you type. A fact that changed on the last press is highlighted. A fact with no value shows `absent`. The season is one of those until Season storm is on, so the row reads `world world.season = absent`. The summary does not scroll away when the fact list does.
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
@@ -77,8 +77,8 @@ Leave the toggles as they are for the first walk. Ferry master alive, Lodging av
 On the right:
 
 - The journal has one line dated `day 1, 00:00`: "Bram, the ferry master, at the dock wants 2 coins before the crossing." That sentence stays as it was written. Bram is the personal name the play host gave the person in the ferry slot. The words "the ferry master" are written in the example. A role has no title field, so the game does not look that phrase up.
-- The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`.
-- The quest row says `The Ferry Toll`. The stage row says `pay_toll`. The status row says `active`. A waiting row shows the time check.
+- The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`. A row whose value changed on the last press is highlighted. Rows that did not change stay plain.
+- The summary says `The Ferry Toll`, stage `pay_toll`, status `active`, and outcome `absent`. A waiting row shows the time check. That block stays put while the fact list scrolls.
 - Each slot row is `slot <slot> — <role title> — <holder name> — <state>`. The title is the role id with spaces (`ferry_master` becomes `ferry master`), because a role has no title field. The state is the runtime slot state, not the slot mode in the quest file. `default` means the first holder is in the slot. `successor` means someone else took it. `empty` means nobody holds it. `hostile` means disposition is too low. After this walk the rows are `slot tavern — tavern owner — innkeeper — default`, `slot ferry — ferry master — Bram — default`, and `slot lookout — storm watcher — watcher — default`.
 
 Press **Advance time**. The status line shows `day 1, 01:00`. The stage becomes `cross`. The fact `world.storm_heard` becomes `true`. The dock conversation opens again: "Two coins, and the boat will cross." then "The boat leaves the dock." Continue through both. The quest status becomes `completed`.
