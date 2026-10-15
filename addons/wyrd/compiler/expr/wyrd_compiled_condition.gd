@@ -14,6 +14,8 @@ var reads: Array[StringName] = []
 var specificity: int = 0
 var uses_chance: bool = false
 var source_span: Dictionary = {"col": 1, "end_col": 1, "end_line": 1, "line": 1}
+## Expression text for a prose interpolation. Empty on a condition. Not saved.
+var source_text: String = ""
 
 
 func to_data() -> Dictionary:

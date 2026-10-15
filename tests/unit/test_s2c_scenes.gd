@@ -123,7 +123,7 @@ func test_missing_fact_hides_the_line_and_holder_death_aborts() -> void:
 	var ids := _Harness.new().ids_of(rows)
 	assert_false(ids.has("h2"))
 	assert_true(ids.has("h3"))
-	assert_eq(rows[1]["text"], "You have .")
+	assert_eq(rows[1]["text"], "You have {?meter.n}.")
 	assert_eq(runtime.dialogue.choices().size(), 2)
 	assert_eq(runtime.dialogue.choices()[0].id, "c_go")
 	assert_true(runtime.dialogue.choices()[1].enabled)
@@ -151,6 +151,36 @@ func test_missing_fact_hides_the_line_and_holder_death_aborts() -> void:
 	assert_eq(reasons, ["aborted:holder_died", "aborted:holder_left"])
 	assert_eq(runtime.quests.status("sample"), &"active")
 	assert_eq(runtime.quests.stage("sample"), "talk")
+
+
+func test_spoken_line_interpolates_holder_name_and_a_fact() -> void:
+	var path := "user://wyrd_interp_line.wyrd"
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string("language 1\nfacts\n  ferry.toll_coins : int stored\nquest gate \"Gate\"\n  slot ferry = ferry_master mode: live\n  on_empty: wait\n  stage arrive\n    scene dock with ferry\n    ~ outcome route = done\nscene dock\n  ferry: {holder(ferry).name} wants {ferry.toll_coins} coins. #line:d1\n  -> end\n")
+	file.close()
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"interp"
+	manifest.files = PackedStringArray([path])
+	var runtime := WyrdRuntime.new()
+	var host := WyrdFakeHost.new()
+	host.register_into(runtime)
+	var report := runtime.load_content(manifest)
+	assert_true(report.ok, report.diagnostics.format())
+	assert_true(report.diagnostics.format().contains("warning[W_INTERP_UNSET]"))
+	host.world.add_entity(&"ferry_master", &"person", "Bram", PackedStringArray(), true)
+	host.world.add_entity(&"player", &"person", "traveler", PackedStringArray(), true)
+	runtime.start_new_game(1)
+	runtime.roles.assign(&"ferry_master", &"ferry_master")
+	runtime.tick(0)
+	runtime.dialogue.open_scene("dock")
+	var missing := runtime.dialogue.line()
+	assert_not_null(missing)
+	assert_eq(missing.text, "Bram wants {?ferry.toll_coins} coins.")
+	assert_eq(missing.display_name, "Bram")
+	runtime.dialogue.abort(&"stop")
+	runtime.facts.set(&"ferry.toll_coins", 2)
+	runtime.dialogue.open_scene("dock")
+	assert_eq(runtime.dialogue.line().text, "Bram wants 2 coins.")
 
 
 func _boot() -> Dictionary:

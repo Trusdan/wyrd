@@ -4,8 +4,10 @@ extends RefCounted
 ## Renders compiled prose and the default journal date.
 ##
 ## @experimental
-## Interpolation runs at display time. The whole line then goes through
-## [method TranslationServer.translate] with the line id as context.
+## Interpolation runs at display time. A missing value renders as
+## [code]{?<expr>}[/code], not an empty string. [code]0[/code] stays [code]0[/code].
+## The whole line then goes through [method TranslationServer.translate]
+## with the line id as context.
 ## The default date is [code]day N, HH:MM[/code] from game minutes, day 1 at
 ## minute 0, 1440 minutes per day. A host formatter replaces it for new text.
 
@@ -34,7 +36,7 @@ func _walk(node: WyrdExprNode) -> String:
 			built += _walk(kid)
 		return built
 	if node.kind == &"value" or node.kind == &"variants":
-		return _show(_eval(node.payload))
+		return _insert(_eval(node.payload), node.payload)
 	if node.kind == &"if":
 		if _eval(node.payload) == true:
 			return _walk(node.b)
@@ -48,9 +50,24 @@ func _eval(payload: Variant) -> Variant:
 	return null
 
 
+func _insert(value: Variant, payload: Variant) -> String:
+	if value == null:
+		return _missing_marker(payload)
+	return _show(value)
+
+
+func _missing_marker(payload: Variant) -> String:
+	var label := ""
+	if payload is WyrdCompiledCondition:
+		label = (payload as WyrdCompiledCondition).source_text.strip_edges()
+	if label.is_empty():
+		return "{?}"
+	return "{?%s}" % label
+
+
 func _show(value: Variant) -> String:
 	if value == null:
-		return ""
+		return _missing_marker(null)
 	if value is bool:
 		return "true" if value else "false"
 	return str(value)

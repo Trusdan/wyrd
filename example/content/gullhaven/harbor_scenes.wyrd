@@ -8,7 +8,8 @@ scene toll.offer_room
   lookout: The headland bell rang twice before the rain. #line:a_look
   when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
   when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
-  when npc.ferry_master.alive: lookout: The ferry master is on the dock. #line:a_alive
+  // "the ferry master" is prose. A role has no title field.
+  when npc.ferry_master.alive: lookout: {holder(ferry).name}, the ferry master, is on the dock. #line:a_alive
   when world.season == storm: narrator: The season smells like rain. #line:a_season
   dock.bell: The bell notes the tide. #line:a_bell
   * [Take the room] disabled_when {player.coins < 2} "short on coins" -> took #line:c_room

@@ -52,6 +52,7 @@ func build(
 				"name": fact.invalidate_arg,
 			})
 		_lint(fact, path, read_rows.size(), write_rows.size(), diagnostics)
+	_warn_interps(schema, units, writers, diagnostics)
 	facts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
 	events.sort_custom(_event_before)
 
@@ -126,6 +127,79 @@ func _lint(fact: WyrdFact, path: String, read_count: int, write_count: int, diag
 			fact.col,
 			WyrdDiagnostic.SEVERITY_WARNING
 		)
+
+
+func _warn_interps(schema: WyrdFactSchema, units: Array, writers: Array, diagnostics: WyrdDiagnostics) -> void:
+	if schema == null:
+		return
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_warn_stage(schema, stage, path, writers, diagnostics)
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.line_def != null:
+					_warn_prose(schema, item.line_def.prose, path, writers, diagnostics)
+				if item.choice != null:
+					_warn_prose(schema, item.choice.label, path, writers, diagnostics)
+
+
+func _warn_stage(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
+	if stage == null:
+		return
+	for journal in stage.journals:
+		_warn_prose(schema, journal.prose, path, writers, diagnostics)
+	for variant in stage.variants:
+		if variant.body != null:
+			_warn_stage(schema, variant.body, path, writers, diagnostics)
+
+
+func _warn_prose(schema: WyrdFactSchema, node: WyrdExprNode, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
+	if node == null:
+		return
+	if node.kind == &"value" or node.kind == &"variants":
+		_warn_value(schema, node, path, writers, diagnostics)
+	_warn_prose(schema, node.a, path, writers, diagnostics)
+	_warn_prose(schema, node.b, path, writers, diagnostics)
+	_warn_prose(schema, node.c, path, writers, diagnostics)
+	for kid in node.kids:
+		_warn_prose(schema, kid, path, writers, diagnostics)
+
+
+func _warn_value(schema: WyrdFactSchema, node: WyrdExprNode, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
+	if not (node.payload is WyrdCompiledCondition):
+		return
+	var compiled := node.payload as WyrdCompiledCondition
+	for key in compiled.reads:
+		var text := String(key)
+		var fact := schema.lookup(PackedStringArray(text.split(".")))
+		if fact == null or fact.origin != &"stored" or fact.is_pattern():
+			continue
+		if _written_before(writers, text, path, node.line, node.col):
+			continue
+		diagnostics.add(
+			WyrdDiagnostic.W_INTERP_UNSET,
+			"interpolation reads stored fact \"%s\" before it is set" % text,
+			path,
+			node.line,
+			node.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _written_before(writers: Array, key: String, path: String, line: int, col: int) -> bool:
+	for row in writers:
+		var reads: Array = row["reads"]
+		if reads.is_empty() or String(reads[0]) != key:
+			continue
+		var file := str(row["file"])
+		var at_line := int(row["line"])
+		var at_col := int(row["col"])
+		if file < path or (file == path and (at_line < line or (at_line == line and at_col < col))):
+			return true
+	return false
 
 
 func _readers(units: Array) -> Array:

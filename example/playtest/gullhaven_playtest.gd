@@ -7,6 +7,8 @@ extends Control
 
 const _MANIFEST := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _SAVE_PATH := "user://playtest_save.json"
+const _FERRY_NAME := "Bram"
+const _SUCCESSOR_NAME := "Nia"
 
 var _runtime: WyrdRuntime
 
@@ -243,9 +245,9 @@ func _place_entities() -> void:
 		tags.append("local")
 	_host.world.add_entity(&"player", &"person", "traveler", tags, true)
 	_host.world.add_entity(&"tavern_owner", &"person", "innkeeper", PackedStringArray(), true)
-	_host.world.add_entity(&"ferry_master", &"person", "ferry master", PackedStringArray(), true)
+	_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), true)
 	_host.world.add_entity(&"storm_watcher", &"person", "watcher", PackedStringArray(), true)
-	_host.world.add_entity(&"dock_apprentice", &"person", "apprentice", PackedStringArray(), true)
+	_host.world.add_entity(&"dock_apprentice", &"person", _SUCCESSOR_NAME, PackedStringArray(), true)
 	_host.world.add_entity(&"dock.bell", &"object", "bell", PackedStringArray(), true)
 
 
@@ -272,10 +274,10 @@ func _sync_ferry() -> void:
 	if bool(_flags["apprentice"]):
 		_arm_apprentice()
 	if bool(_flags["ferry_alive"]):
-		_host.world.add_entity(&"ferry_master", &"person", "ferry master", PackedStringArray(), true)
+		_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), true)
 		_runtime.roles.assign(&"ferry_master", &"ferry_master")
 		return
-	_host.world.add_entity(&"ferry_master", &"person", "ferry master", PackedStringArray(), false)
+	_host.world.add_entity(&"ferry_master", &"person", _FERRY_NAME, PackedStringArray(), false)
 	_runtime.roles.vacate(&"ferry_master", &"died")
 
 
@@ -329,18 +331,48 @@ func _refresh() -> void:
 	for entity_id in ["player", "ferry_master", "tavern_owner", "dock_apprentice"]:
 		var key := "npc.%s.alive" % entity_id
 		_facts.add_item("world %s = %s" % [key, _shown(_runtime.facts.get(StringName(key)))])
-	_facts.add_item("quest %s | %s | %s" % [
-		String(_runtime.quests.status("ferry_toll")),
-		_runtime.quests.stage("ferry_toll"),
-		_runtime.quests.waiting_reason("ferry_toll"),
-	])
+	_append_quest(_facts)
 	_facts.add_item("outcome crossing = %s" % _runtime.quests.outcome("ferry_toll", "crossing"))
-	for slot_name in ["tavern", "ferry", "lookout"]:
-		_facts.add_item("slot %s = %s (%s)" % [
-			slot_name,
-			String(_runtime.roles.slot_holder("ferry_toll", StringName(slot_name))),
-			String(_runtime.roles.slot_state(StringName(slot_name), "ferry_toll")),
-		])
+	_append_slots(_facts)
+
+
+func _append_quest(list: ItemList) -> void:
+	# pay_toll is the stage. The quest id is ferry_toll; the panel shows the title.
+	var quest_id := "ferry_toll"
+	var title := quest_id
+	var content := _runtime.content()
+	if content != null:
+		var quest := content.quests.get(quest_id) as WyrdQuestDef
+		if quest != null and not quest.title.is_empty():
+			title = quest.title
+	list.add_item("quest %s" % title)
+	list.add_item("stage %s" % _runtime.quests.stage(quest_id))
+	list.add_item("status %s" % String(_runtime.quests.status(quest_id)))
+	var waiting := _runtime.quests.waiting_reason(quest_id)
+	if not waiting.is_empty():
+		list.add_item("waiting %s" % waiting)
+
+
+func _append_slots(list: ItemList) -> void:
+	# A role id is a symbol. The grammar has no title, so the readable title
+	# is that id with spaces. The state is the runtime slot state
+	# (default, successor, empty, hostile), not the slot mode (live, locked_at, cast).
+	var content := _runtime.content()
+	if content == null:
+		return
+	var quest := content.quests.get("ferry_toll") as WyrdQuestDef
+	if quest == null:
+		return
+	for slot in quest.slots:
+		var holder_id := _runtime.roles.slot_holder("ferry_toll", StringName(slot.name))
+		var holder_name := "none"
+		if holder_id != &"":
+			holder_name = _host.world.display_name(holder_id)
+			if holder_name.is_empty():
+				holder_name = String(holder_id)
+		var title := slot.role.replace("_", " ")
+		var state := String(_runtime.roles.slot_state(StringName(slot.name), "ferry_toll"))
+		list.add_item("slot %s — %s — %s — %s" % [slot.name, title, holder_name, state])
 
 
 func _shown(value: Variant) -> String:

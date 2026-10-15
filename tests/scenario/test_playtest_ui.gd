@@ -63,6 +63,60 @@ func test_toolbar_and_toggles_do_not_error() -> void:
 	await wait_process_frames(1)
 
 
+func test_quest_panel_labels_title_and_stage() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	_drive_until_choice(ui, "Take the room", "quest-panel")
+	var facts := ui.find_child("FactList", true, false) as ItemList
+	assert_not_null(facts)
+	var lines := PackedStringArray()
+	for i in facts.item_count:
+		lines.append(facts.get_item_text(i))
+	assert_true(lines.has("quest The Ferry Toll"), "\n".join(lines))
+	assert_true(lines.has("stage pay_toll"), "\n".join(lines))
+	assert_true(lines.has("status active"), "\n".join(lines))
+	assert_false(lines.has("quest pay_toll"))
+	assert_eq(ui.quest_stage(), "pay_toll")
+	var journal := ui.find_child("JournalList", true, false) as ItemList
+	assert_not_null(journal)
+	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_true(lines.has("slot tavern — tavern owner — innkeeper — default"), "\n".join(lines))
+	assert_true(lines.has("slot ferry — ferry master — Bram — default"), "\n".join(lines))
+	assert_true(lines.has("slot lookout — storm watcher — watcher — default"), "\n".join(lines))
+	await wait_process_frames(1)
+
+
+func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
+	var successor := _spawn()
+	_set_toggle(successor, "apprentice", true)
+	_set_toggle(successor, "ferry_alive", false)
+	_press(successor, "New game")
+	_drive_until_choice(successor, "Take the room", "successor-slot")
+	var successor_facts := successor.find_child("FactList", true, false) as ItemList
+	assert_not_null(successor_facts)
+	var successor_lines := PackedStringArray()
+	for i in successor_facts.item_count:
+		successor_lines.append(successor_facts.get_item_text(i))
+	assert_true(successor_lines.has("slot ferry — ferry master — Nia — successor"), "\n".join(successor_lines))
+	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
+	assert_not_null(successor_journal)
+	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	var empty := _spawn()
+	_set_toggle(empty, "ferry_alive", false)
+	_press(empty, "New game")
+	_drive_until_choice(empty, "Take the room", "empty-slot")
+	var empty_facts := empty.find_child("FactList", true, false) as ItemList
+	assert_not_null(empty_facts)
+	var empty_lines := PackedStringArray()
+	for i in empty_facts.item_count:
+		empty_lines.append(empty_facts.get_item_text(i))
+	assert_true(empty_lines.has("slot ferry — ferry master — none — empty"), "\n".join(empty_lines))
+	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
+	assert_not_null(empty_journal)
+	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	await wait_process_frames(1)
+
+
 func test_panels_fit_at_1280_and_1920() -> void:
 	var window := get_tree().root
 	var saved_size := window.size

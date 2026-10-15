@@ -45,6 +45,7 @@ In `wait_trigger_or_eligibility`, a resolved fact whose invalidation is empty or
 Spoken lines keep the raw spans from the block lexer.
 
 - `{expr}` inserts a value.
+- A missing value is `{?<expr>}`, for example `{?ferry.toll_coins}`. It is not an empty string. `0` still renders as `0`. `{holder(slot).name}` is the host display name of the entity in that slot, not the role id. A role has no title field. Prose that also names the job, such as "the ferry master", writes that phrase itself.
 - `{if cond}...{else}...{end}` is a conditional fragment and may nest. `{else}` is optional.
 - `{holder(ferry)|variants}` is parsed and not resolved.
 - `else` and `end` are reserved only as a whole span.

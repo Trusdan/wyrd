@@ -196,6 +196,7 @@ func _compile(text: String, line: int, col: int, require_bool: bool) -> Dictiona
 		_signatures,
 		require_bool
 	)
+	compiled.source_text = text.strip_edges()
 	return {"ast": compiler.ast, "value": compiled}
 
 
