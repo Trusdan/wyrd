@@ -89,6 +89,7 @@ func _init() -> void:
 	quests.bind(self)
 	roles.stage_of = Callable(quests, &"stage")
 	roles.seed_of = Callable(self, &"game_seed")
+	roles.election_of = Callable(self, &"_election")
 	dialogue = WyrdSceneRunner.new()
 	dialogue.bind(self)
 	effects.outcome_changed.connect(quests.note_outcome)
@@ -780,6 +781,13 @@ func _spatial() -> WyrdSpatialAdapter:
 	var found := adapter(WyrdSpatialAdapter)
 	if found is WyrdSpatialAdapter:
 		return found as WyrdSpatialAdapter
+	return null
+
+
+func _election() -> WyrdElectionAdapter:
+	var found := adapter(WyrdElectionAdapter)
+	if found is WyrdElectionAdapter:
+		return found as WyrdElectionAdapter
 	return null
 
 

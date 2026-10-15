@@ -672,7 +672,8 @@ func _variant_index(stage: WyrdStageDef, variant: WyrdVariantDef) -> int:
 
 func _any_empty(quest: WyrdQuestDef) -> bool:
 	for slot in quest.slots:
-		if runtime.roles.resolve_slot(quest.id, StringName(slot.name), false)["state"] == &"empty":
+		var state: StringName = runtime.roles.resolve_slot(quest.id, StringName(slot.name), false)["state"]
+		if state == &"empty" or state == &"contested":
 			return true
 	return false
 

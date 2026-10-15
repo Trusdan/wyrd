@@ -17,7 +17,7 @@ const _ROLE_FIELDS := {
 	"vacancy": true,
 	"visibility": true,
 }
-const _BARE_STATES: PackedStringArray = ["default", "successor", "empty", "hostile", "locked_gone"]
+const _BARE_STATES: PackedStringArray = ["default", "successor", "empty", "hostile", "locked_gone", "contested"]
 const _COND_STATES: PackedStringArray = ["unwilling", "barred"]
 const _OUTCOMES: PackedStringArray = ["route_closed", "done", "failed"]
 const _DEED_TYPES := {

@@ -169,6 +169,10 @@ func test_variant_locked_gone() -> void:
 	_assert_bare_state("locked_gone")
 
 
+func test_variant_contested() -> void:
+	_assert_bare_state("contested")
+
+
 func test_variant_unwilling() -> void:
 	var variant := _variant("ferry.unwilling(player.coins < 1):")
 	assert_eq(String(variant.state), "unwilling")

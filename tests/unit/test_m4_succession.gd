@@ -42,7 +42,7 @@ func test_faction_tie_break_is_seeded() -> void:
 	assert_false(other.is_empty())
 
 
-func test_host_decides_stays_pending_until_assign() -> void:
+func test_host_decides_stays_contested_until_assign() -> void:
 	var opened := _boot()
 	var runtime: WyrdRuntime = opened["runtime"]
 	var heard: Array = []
@@ -56,12 +56,13 @@ func test_host_decides_stays_pending_until_assign() -> void:
 	runtime.roles.vacate(&"dock_keeper", &"left")
 	assert_eq(heard, [["dock_keeper", "ada"]])
 	assert_eq(runtime.roles.holder(&"dock_keeper"), &"")
-	assert_eq(runtime.roles.binding_status(&"dock_keeper"), &"pending")
+	assert_eq(runtime.roles.binding_status(&"dock_keeper"), &"contested")
+	assert_eq(runtime.roles.slot_state(&"dock_keeper"), &"contested")
 	assert_eq(runtime.roles.departed(&"dock_keeper"), &"ada")
 	assert_false(runtime.roles.abolished(&"dock_keeper"))
 	runtime.roles.assign(&"dock_keeper", &"ada")
 	assert_push_error("must differ")
-	assert_eq(runtime.roles.binding_status(&"dock_keeper"), &"pending")
+	assert_eq(runtime.roles.binding_status(&"dock_keeper"), &"contested")
 	runtime.roles.assign(&"dock_keeper", &"bea")
 	assert_eq(runtime.roles.holder(&"dock_keeper"), &"bea")
 	assert_eq(runtime.roles.binding_status(&"dock_keeper"), &"default")
@@ -103,7 +104,7 @@ func test_abolish_after_every_strategy_fails() -> void:
 	runtime.roles.assign(&"watcher", &"bea")
 	runtime.roles.vacate(&"watcher", &"left")
 	assert_false(runtime.roles.abolished(&"watcher"))
-	assert_eq(runtime.roles.binding_status(&"watcher"), &"pending")
+	assert_eq(runtime.roles.binding_status(&"watcher"), &"contested")
 	runtime.roles.define(&"ferry_master", "relation(apprentice)", false, -1, "", "", &"", "abolish")
 	runtime.social.set_kind(&"ada", &"ada", &"apprentice")
 	runtime.roles.assign(&"ferry_master", &"ada")
@@ -179,7 +180,7 @@ func test_pending_and_abolished_round_trip() -> void:
 	fresh.start_new_game(9)
 	var report := fresh.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_eq(fresh.roles.binding_status(&"dock_keeper"), &"pending")
+	assert_eq(fresh.roles.binding_status(&"dock_keeper"), &"contested")
 	assert_eq(fresh.roles.departed(&"dock_keeper"), &"ada")
 	assert_true(fresh.roles.abolished(&"ferry_master"))
 	fresh.roles.assign(&"ferry_master", &"cy")

@@ -42,7 +42,7 @@ A role id is a symbol (`ferry_master`). A role and a slot have no title or displ
 
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
 
-Slot states: `default`, `successor`, `empty`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `empty` / `locked_gone`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
+Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `contested` is the exception: no `contested` variant uses the `empty` variant, and the state stays `contested`. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
 
 ## Scene
 
@@ -101,7 +101,7 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_DUPLICATE` | A slot name is repeated in one quest |
 | `E_STAGE_DUPLICATE` | A stage id is repeated in one quest |
 | `E_SLOT_UNKNOWN` | `variant` or `with` names a slot this quest does not declare |
-| `E_SLOT_STATE` | The variant state is not one of the seven names, or its condition shape is wrong |
+| `E_SLOT_STATE` | The variant state is not one of the eight names, or its condition shape is wrong |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
 | `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong |
@@ -141,7 +141,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `E_STAGE_UNKNOWN` | A stage `on_fail` names a stage this quest does not declare |
 | `W_SCENE_UNUSED` | No quest stage runs the scene |
 | `W_SLOT_UNUSED` | A passed slot is not a speaker in the scene |
-| `W_EMPTY_UNCOVERED` | A slot used by a reachable stage has neither `variant <slot>.empty` nor quest `on_empty` |
+| `W_EMPTY_UNCOVERED` | A slot used by a reachable stage has neither `variant <slot>.empty` nor quest `on_empty`. A `contested` variant does not cover it |
 | `W_LOCKED_GONE_UNCOVERED` | A `locked_at` slot has no `locked_gone` variant on a reachable stage |
 | `W_SLOT_COND_ALWAYS` | An `unwilling` or `barred` condition is always true |
 | `W_SLOT_COND_NEVER` | An `unwilling` or `barred` condition is never true |
@@ -189,7 +189,7 @@ role ferry_master
 
 `eligibility` uses `wait_trigger_or_eligibility`, so `chance` is `E_CHANCE_CONTEXT` and a `per_query` resolved fact is `E_WAIT_RESOLVER_MODE`. In that condition the bare name `candidate` is the entity being tested, not a fact. `WyrdRoles.eligible(role, entity)` evaluates it. One trace line is recorded when a condition is present: `eligible` with `role`, `entity`, and `ok`. The line does not list the facts the condition read.
 
-`relation`, `faction_assigns`, and `host_decides` run on `vacate`. `relation` requires the candidate to be alive, eligible, and a different entity. `faction_assigns` picks from `WyrdWorldAdapter.members`, ordered by a registered `faction_rank` (higher wins) and a seeded tie-break. `host_decides` leaves the role pending until `assign`. `election` is stored and does not pick yet. `vacancy: abolish` runs when the strategy finds nobody. A `default_holder` is assigned when that role's binding is empty, including after `start_new_game`.
+`relation`, `faction_assigns`, `host_decides`, and `election` run on `vacate`. `relation` requires the candidate to be alive, eligible, and a different entity. `faction_assigns` picks from `WyrdWorldAdapter.members`, ordered by a registered `faction_rank` (higher wins) and a seeded tie-break. `host_decides` and `election` leave the role `contested` until `assign`. `election` emits `election_needed` and calls `WyrdElectionAdapter.start_election`. `vacancy: abolish` runs when the strategy finds nobody. A `default_holder` is assigned when that role's binding is empty, including after `start_new_game`.
 
 | Code | When |
 |---|---|
@@ -198,4 +198,4 @@ role ferry_master
 
 ## Not in this draft
 
-Role definitions are compiled from a `role` block. `unwilling`, `barred`, and `locked_gone` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, and `vacancy: abolish` run. `election`, the `contested` slot state, and casting proper stay later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. Resolving `redirect beat` stays later too. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.
+Role definitions are compiled from a `role` block. `unwilling`, `barred`, `locked_gone`, and `contested` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, `election`, and `vacancy: abolish` run. Casting proper stays later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. Resolving `redirect beat` stays later too. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

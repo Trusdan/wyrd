@@ -5,23 +5,25 @@ extends RefCounted
 ##
 ## @experimental
 ## A binding holds [code]holder[/code], [code]since[/code], [code]status[/code]
-## ([code]default[/code], [code]successor[/code], [code]empty[/code]), and
-## [code]history[/code]. [method assign] is host setup for the default holder.
-## [method define] stores the same fields as a [code]role[/code] block.
-## [method eligible] tests [code]candidate[/code]. [method vacate] runs
-## [code]relation(...)[/code], [code]faction_assigns(...)[/code], and
-## [code]host_decides[/code]. [code]election[/code] does not pick yet.
-## [code]vacancy: abolish[/code] runs when a strategy finds nobody.
-## [code]host_decides[/code] stays pending until [method assign].
-## [code]live[/code] follows the role. [code]locked_at[/code] freezes in
+## ([code]default[/code], [code]successor[/code], [code]empty[/code],
+## [code]contested[/code]), and [code]history[/code]. [method assign] is host
+## setup for the default holder. [method define] stores the same fields as a
+## [code]role[/code] block. [method eligible] tests [code]candidate[/code].
+## [method vacate] runs [code]relation(...)[/code], [code]faction_assigns(...)[/code],
+## [code]host_decides[/code], and [code]election[/code]. [code]election[/code] and
+## [code]host_decides[/code] leave the role [code]contested[/code] until
+## [method assign]. [code]vacancy: abolish[/code] runs when a strategy finds
+## nobody. [code]live[/code] follows the role. [code]locked_at[/code] freezes in
 ## [method enter_stage]. [code]cast[/code] freezes in [method begin_quest] to
 ## the current holder; casting proper is M4. Slot state [code]hostile[/code]
 ## means disposition toward [code]player[/code] is below the threshold.
-## Precedence is [code]locked_gone[/code] / [code]empty[/code], then
-## [code]barred[/code], [code]hostile[/code], [code]unwilling[/code],
+## Precedence is [code]locked_gone[/code], [code]contested[/code], [code]empty[/code],
+## then [code]barred[/code], [code]hostile[/code], [code]unwilling[/code],
 ## [code]successor[/code], and [code]default[/code]. The first of those with a
-## declared variant on the current stage wins. [code]locked_gone[/code] is a
-## frozen [code]locked_at[/code] holder who was vacated or is not alive.
+## declared variant on the current stage wins. [code]contested[/code] with no
+## variant uses the [code]empty[/code] variant and stays [code]contested[/code].
+## [code]locked_gone[/code] is a frozen [code]locked_at[/code] holder who was
+## vacated or is not alive.
 ## A secret holder's key [code]role.<id>.holder[/code] is in [code]known/[/code]
 ## only for agents passed to [method tell].
 
@@ -29,6 +31,8 @@ signal role_holder_changed(role_id: StringName, old_holder: StringName, new_hold
 signal role_vacant(role_id: StringName)
 ## Emitted when [code]host_decides[/code] is waiting for [method assign].
 signal succession_requested(role_id: StringName, departed: StringName)
+## Emitted when [code]election[/code] is waiting for [method assign].
+signal election_needed(role_id: StringName, departed: StringName)
 
 const PLAYER: StringName = &"player"
 const EMPTY: StringName = &"empty"
@@ -38,9 +42,9 @@ const HOSTILE: StringName = &"hostile"
 const LOCKED_GONE: StringName = &"locked_gone"
 const BARRED: StringName = &"barred"
 const UNWILLING: StringName = &"unwilling"
-const PENDING: StringName = &"pending"
+const CONTESTED: StringName = &"contested"
 const _STATE_ORDER: PackedStringArray = [
-	"locked_gone", "empty", "barred", "hostile", "unwilling", "successor", "default",
+	"locked_gone", "contested", "empty", "barred", "hostile", "unwilling", "successor", "default",
 ]
 
 var social: WyrdSocial
@@ -58,6 +62,8 @@ var trace_of: Callable = Callable()
 var stage_of: Callable = Callable()
 ## [code]seed_of()[/code] returns the game seed used for a faction tie-break.
 var seed_of: Callable = Callable()
+## [code]election_of()[/code] returns the registered [WyrdElectionAdapter], or null.
+var election_of: Callable = Callable()
 ## [code]faction_rank(faction, entity)[/code] returns an int. Higher wins.
 var faction_rank: Callable = Callable()
 ## [code]host_decides(role, departed)[/code] is told about a pending request.
@@ -221,18 +227,24 @@ func import_state(data: Dictionary) -> void:
 			if not (item is Dictionary):
 				continue
 			var prior: Dictionary = item
+			var prior_status := StringName(str(prior.get("status", "")))
+			if prior_status == &"pending":
+				prior_status = CONTESTED
 			history.append({
 				"holder": StringName(str(prior.get("holder", ""))),
 				"reason": StringName(str(prior.get("reason", ""))),
 				"since": int(prior.get("since", 0)),
-				"status": StringName(str(prior.get("status", ""))),
+				"status": prior_status,
 				"until": int(prior.get("until", 0)),
 			})
+		var status := StringName(str(row.get("status", "empty")))
+		if status == &"pending":
+			status = CONTESTED
 		_bindings[StringName(str(role))] = {
 			"history": history,
 			"holder": StringName(str(row.get("holder", ""))),
 			"since": int(row.get("since", 0)),
-			"status": StringName(str(row.get("status", "empty"))),
+			"status": status,
 		}
 	var defs: Dictionary = data.get("defs", {})
 	for role in defs.keys():
@@ -443,14 +455,14 @@ func set_host_decides(fn: Callable) -> void:
 
 ## Called from [method WyrdRuntime.start_new_game]. A role that uses
 ## [code]host_decides[/code] needs a callback or a [signal succession_requested]
-## connection before play starts.
+## connection before play starts. A role that uses [code]election[/code] needs
+## a [WyrdElectionAdapter] or an [signal election_needed] connection.
 func note_started() -> void:
 	_started = true
-	if not _any_host_decides():
-		return
-	if _host_ready():
-		return
-	push_error("WyrdRoles: host_decides has no callback")
+	if _any_strategy("host_decides") and not _host_ready():
+		push_error("WyrdRoles: host_decides has no callback")
+	if _any_strategy("election") and not _election_ready():
+		push_error("WyrdRoles: election has no adapter")
 
 
 func abolished(role: StringName) -> bool:
@@ -489,7 +501,7 @@ func assign(role: StringName, entity: StringName) -> void:
 		_pending.erase(role)
 		var left: StringName = request.get("departed", &"")
 		_record_role_changed(role, left, entity)
-		_trace_succession(role, "host_decides", left, entity, "assigned")
+		_trace_succession(role, String(_spec(role).get("strategy", "")), left, entity, "assigned")
 	if old != entity:
 		role_holder_changed.emit(role, old, entity)
 
@@ -503,8 +515,8 @@ func vacate(role: StringName, reason: StringName) -> void:
 		return
 	_push_history(prior, reason)
 	var strategy := String(_spec(role)["strategy"])
-	if strategy == "host_decides":
-		_begin_pending(role, prior, old)
+	if strategy == "host_decides" or strategy == "election":
+		_begin_contested(role, prior, old, strategy)
 		return
 	var next := &""
 	if strategy == "relation":
@@ -570,6 +582,21 @@ func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = fals
 			winner_state = StringName(state_name)
 			winner_reason = _state_reason(state_name, gone)
 			saw = true
+		if state_name == "contested":
+			var contest := _match_variant("contested", variants, who)
+			if contest != null:
+				winner = contest
+				winner_state = CONTESTED
+				winner_reason = "contested"
+				break
+			var fallback := _match_variant("empty", variants, who)
+			if fallback != null:
+				winner = fallback
+				winner_state = CONTESTED
+				winner_reason = "fallback_empty"
+				break
+			higher = true
+			continue
 		var match := _match_variant(state_name, variants, who)
 		if match == null:
 			higher = true
@@ -712,14 +739,20 @@ func _faction_successor(role: StringName, old: StringName) -> StringName:
 	return StringName(best)
 
 
-func _begin_pending(role: StringName, prior: Dictionary, old: StringName) -> void:
+func _begin_contested(role: StringName, prior: Dictionary, old: StringName, strategy: String) -> void:
 	prior["holder"] = &""
 	prior["since"] = _now()
-	prior["status"] = PENDING
+	prior["status"] = CONTESTED
 	_bindings[role] = prior
 	_pending[role] = {"departed": old, "since": int(prior["since"])}
 	_refresh_told(role)
-	_trace_succession(role, "host_decides", old, &"", "pending")
+	_trace_succession(role, strategy, old, &"", "contested")
+	if strategy == "election":
+		election_needed.emit(role, old)
+		var poll := _election()
+		if poll != null:
+			poll.start_election(role, old)
+		return
 	succession_requested.emit(role, old)
 	if host_decides.is_valid():
 		host_decides.call(role, old)
@@ -791,15 +824,28 @@ func _game_seed() -> int:
 	return 0
 
 
-func _any_host_decides() -> bool:
+func _any_strategy(strategy: String) -> bool:
 	for role in _defs.keys():
-		if String((_defs[role] as Dictionary).get("strategy", "")) == "host_decides":
+		if String((_defs[role] as Dictionary).get("strategy", "")) == strategy:
 			return true
 	return false
 
 
 func _host_ready() -> bool:
 	return host_decides.is_valid() or succession_requested.get_connections().size() > 0
+
+
+func _election_ready() -> bool:
+	return _election() != null or election_needed.get_connections().size() > 0
+
+
+func _election() -> WyrdElectionAdapter:
+	if not election_of.is_valid():
+		return null
+	var found: Variant = election_of.call()
+	if found is WyrdElectionAdapter:
+		return found as WyrdElectionAdapter
+	return null
 
 
 func _stage_variants(quest_id: String, slot_name: String) -> Array:
@@ -859,8 +905,10 @@ func _state_applies(
 	match state_name:
 		"locked_gone":
 			return not gone.is_empty()
+		"contested":
+			return gone.is_empty() and status == CONTESTED
 		"empty":
-			return gone.is_empty() and (who == &"" or status == EMPTY)
+			return gone.is_empty() and status != CONTESTED and (who == &"" or status == EMPTY)
 		"barred":
 			return present and _match_variant("barred", variants, who) != null
 		"hostile":
@@ -879,6 +927,8 @@ func _state_reason(state_name: String, gone: String) -> String:
 	match state_name:
 		"locked_gone":
 			return gone if not gone.is_empty() else "frozen_vacated"
+		"contested":
+			return "contested"
 		"empty":
 			return "no_holder"
 		"barred":
