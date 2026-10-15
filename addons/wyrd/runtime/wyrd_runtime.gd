@@ -76,6 +76,8 @@ func _init() -> void:
 	roles.config_of = Callable(self, &"config")
 	roles.content_of = Callable(self, &"content")
 	roles.world_of = Callable(self, &"_world")
+	roles.eval_with = Callable(self, &"eval_with_locals")
+	roles.trace_of = Callable(self, &"_trace_role")
 	deeds.deed_recorded.connect(_on_deed)
 	roles.role_holder_changed.connect(_on_role)
 	roles.role_vacant.connect(_on_role_vacant)
@@ -339,6 +341,22 @@ func eval_value(cond: WyrdCompiledCondition) -> Variant:
 
 func eval_bool(cond: WyrdCompiledCondition) -> bool:
 	return eval_value(cond) == true
+
+
+func eval_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> bool:
+	var saved := _locals.duplicate()
+	_locals = locals.duplicate()
+	var ok := eval_bool(cond)
+	_locals = saved
+	return ok
+
+
+func _trace_role(kind: String, fields: Dictionary) -> void:
+	trace_add(kind, fields)
+	if trace == null or not trace.enabled:
+		return
+	var flag := "true" if bool(fields.get("ok", false)) else "false"
+	print("wyrd %s role=%s entity=%s ok=%s" % [kind, str(fields.get("role", "")), str(fields.get("entity", "")), flag])
 
 
 func condition_dirty(index: int) -> bool:

@@ -1,0 +1,30 @@
+language 1
+
+facts
+  player.coins : int stored
+
+role ferry_master
+  scope: place(gullhaven)
+  eligibility: alive(candidate) and has_tag(candidate, local)
+  default_holder: ada
+  visibility: public
+  succession: relation(apprentice|kin)
+  vacancy: hold
+
+role dock_keeper
+  scope: world
+  visibility: secret
+  succession: none
+  vacancy: abolish
+
+role storm_watcher
+  scope: faction(faction.harbor)
+  succession: faction_assigns(faction.harbor)
+  default_holder: bea
+
+role tavern_owner
+  succession: election
+
+role watcher
+  succession: host_decides
+  eligibility: player.coins >= 0

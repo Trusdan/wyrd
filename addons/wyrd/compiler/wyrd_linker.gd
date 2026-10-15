@@ -55,11 +55,14 @@ func finish_xref(pack: WyrdLinkedPack, fact_paths: Dictionary) -> void:
 
 func _index_symbols(units: Array) -> void:
 	var quests := {}
+	var roles := {}
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
 		for quest in file.quests:
 			_claim(quests, quest.id, path, quest.line, quest.col, WyrdDiagnostic.E_QUEST_DUPLICATE, "quest")
+		for role in file.roles:
+			_claim(roles, role.id, path, role.line, role.col, WyrdDiagnostic.E_ROLE_DUPLICATE, "role")
 		for scene in file.scenes:
 			if scene.id.is_empty():
 				continue

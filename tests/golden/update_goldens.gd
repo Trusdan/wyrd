@@ -8,5 +8,6 @@ func _init() -> void:
 	var conditions := WyrdConditionGolden.write_expected()
 	var statements := WyrdStmtGolden.write_expected()
 	var links := WyrdLinkGolden.write_expected()
-	print("Updated %d golden files, %d condition files, %d statement files, and %d link files." % [count, conditions, statements, links])
+	var roles := WyrdRoleGolden.write_expected()
+	print("Updated %d golden files, %d condition files, %d statement files, %d link files, and %d role files." % [count, conditions, statements, links, roles])
 	quit(0)

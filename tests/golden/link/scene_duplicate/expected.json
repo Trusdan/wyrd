@@ -61,6 +61,7 @@
     ],
     "pack_id": "scene_duplicate",
     "quests": [],
+    "roles": [],
     "scenes": [
       {
         "file": "res://tests/golden/link/scene_duplicate/a.wyrd",

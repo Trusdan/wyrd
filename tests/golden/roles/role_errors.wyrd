@@ -1,0 +1,33 @@
+language 1
+
+facts
+  world.tide : symbol source: world.tide invalidate: per_query
+
+role
+role ferry_master "The Ferry Master"
+role dock_keeper
+  colour: red
+  visibility: hidden
+  visibility: public
+  scope: village
+  scope: place()
+  vacancy: drop
+  succession: public
+  succession: relation()
+  succession: faction_assigns()
+  default_holder: 4
+  eligibility:
+  tagged: none #line:ab12
+role coins_role
+  eligibility: 1
+role chance_role
+  eligibility: chance(0.5)
+role tide_role
+  eligibility: world.tide == high
+role missing_role
+  eligibility: missing.fact > 0
+role nested_role
+  eligibility: alive(candidate)
+    extra: 1
+role ferry_master
+  succession: none

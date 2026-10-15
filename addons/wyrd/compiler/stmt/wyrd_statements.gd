@@ -9,6 +9,14 @@ extends RefCounted
 
 const _WAIT := WyrdCondition.CONTEXT_WAIT
 const _STORY := WyrdCondition.CONTEXT_STORYLET
+const _ROLE_FIELDS := {
+	"default_holder": true,
+	"eligibility": true,
+	"scope": true,
+	"succession": true,
+	"vacancy": true,
+	"visibility": true,
+}
 const _BARE_STATES: PackedStringArray = ["default", "successor", "empty", "hostile", "locked_gone"]
 const _COND_STATES: PackedStringArray = ["unwilling", "barred"]
 const _OUTCOMES: PackedStringArray = ["route_closed", "done", "failed"]
@@ -54,6 +62,7 @@ func compile(
 	_event_fields = {}
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
+	var seen_roles := {}
 	for child in tree.children:
 		if child.keyword == "quest":
 			var quest := _quest(child)
@@ -63,7 +72,108 @@ func compile(
 			var scene := _scene(child)
 			file.scenes.append(scene)
 			WyrdStmtSpan.add_reads(file.reads, scene.reads)
+		elif child.keyword == "role":
+			var role := _compile_role(child)
+			if role.id.is_empty():
+				continue
+			if seen_roles.has(role.id):
+				_error(WyrdDiagnostic.E_ROLE_DUPLICATE, "duplicate role \"%s\"" % role.id, role.line, role.col)
+				continue
+			seen_roles[role.id] = true
+			file.roles.append(role)
+			WyrdStmtSpan.add_reads(file.reads, role.reads)
 	return file
+
+
+func _compile_role(node: WyrdNode) -> WyrdRoleDef:
+	var role := WyrdRoleDef.new()
+	role.take_span(node)
+	_line_id(node, false)
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "a line tag is not allowed on a role", node.start_line, node.start_col)
+	if not node.title.is_empty():
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "a role has no title", node.start_line, node.start_col)
+	var ident := _dotted_at(node.head, 0)
+	role.id = String(ident["name"])
+	if role.id.is_empty() or int(ident["next"]) != node.head.size():
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role needs an id", node.start_line, node.start_col)
+		role.id = ""
+	var seen := {}
+	for child in node.children:
+		var field := child.keyword
+		if not child.line_tag.is_empty():
+			_error(WyrdDiagnostic.E_ROLE_SYNTAX, "a line tag is not allowed on a role", child.start_line, child.start_col)
+		if not _ROLE_FIELDS.has(field):
+			_error(WyrdDiagnostic.E_ROLE_SYNTAX, "unknown role field \"%s\"" % field, child.start_line, child.start_col)
+			_role_block(child)
+			continue
+		if seen.has(field):
+			_error(WyrdDiagnostic.E_ROLE_SYNTAX, "duplicate role field \"%s\"" % field, child.start_line, child.start_col)
+			_role_block(child)
+			continue
+		seen[field] = true
+		_role_field(child, role, field)
+	return role
+
+
+func _role_field(node: WyrdNode, role: WyrdRoleDef, field: String) -> void:
+	_role_block(node)
+	var items := node.head
+	if items.is_empty() or items[0].kind != &"colon" or items.size() == 1:
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role field \"%s\" needs a value" % field, node.start_line, node.start_col)
+		return
+	var span := _span_text(items, 1, items.size())
+	var text := String(span["text"])
+	var line := int(span["line"])
+	var col := int(span["col"])
+	if text.is_empty():
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role field \"%s\" needs a value" % field, line, col)
+		return
+	match field:
+		"scope":
+			var parsed := WyrdRoleDef.parse_scope(text)
+			if not bool(parsed["ok"]):
+				_error(WyrdDiagnostic.E_ROLE_SYNTAX, String(parsed["error"]), line, col)
+				return
+			role.scope = String(parsed["scope"])
+			role.scope_id = String(parsed["id"])
+		"eligibility":
+			role.eligibility_text = text
+			role.eligibility = WyrdRoleDef.compile_eligibility(text, _schema, _diagnostics, _path, line, col)
+			if role.eligibility != null:
+				WyrdStmtSpan.add_reads(role.reads, role.eligibility.reads)
+		"default_holder":
+			var parsed := WyrdRoleDef.parse_holder(text)
+			if not bool(parsed["ok"]):
+				_error(WyrdDiagnostic.E_ROLE_SYNTAX, String(parsed["error"]), line, col)
+				return
+			role.default_holder = String(parsed["holder"])
+		"visibility":
+			var parsed := WyrdRoleDef.parse_visibility(text)
+			if not bool(parsed["ok"]):
+				_error(WyrdDiagnostic.E_ROLE_SYNTAX, String(parsed["error"]), line, col)
+				return
+			role.visibility = String(parsed["visibility"])
+		"succession":
+			var parsed := WyrdRoleDef.parse_succession(text)
+			if not bool(parsed["ok"]):
+				_error(WyrdDiagnostic.E_ROLE_SYNTAX, String(parsed["error"]), line, col)
+				return
+			role.succession_text = text
+			role.strategy = String(parsed["strategy"])
+			role.kinds = parsed["kinds"]
+			role.succession_arg = String(parsed["arg"])
+		"vacancy":
+			var parsed := WyrdRoleDef.parse_vacancy(text)
+			if not bool(parsed["ok"]):
+				_error(WyrdDiagnostic.E_ROLE_SYNTAX, String(parsed["error"]), line, col)
+				return
+			role.vacancy = String(parsed["vacancy"])
+
+
+func _role_block(node: WyrdNode) -> void:
+	for child in node.children:
+		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "a role field cannot contain a block", child.start_line, child.start_col)
 
 
 func _quest(node: WyrdNode) -> WyrdQuestDef:

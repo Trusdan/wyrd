@@ -32,6 +32,7 @@
     ],
     "pack_id": "scene_unused",
     "quests": [],
+    "roles": [],
     "scenes": [
       {
         "file": "res://tests/golden/link/scene_unused/scene.wyrd",

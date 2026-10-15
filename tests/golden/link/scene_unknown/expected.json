@@ -107,6 +107,7 @@
         "title": "Gate"
       }
     ],
+    "roles": [],
     "scenes": [
       {
         "file": "res://tests/golden/link/scene_unknown/scene.wyrd",

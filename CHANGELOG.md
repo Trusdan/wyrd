@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A `role <id>` block compiles `scope`, `eligibility`, `default_holder`, `visibility`, `succession`, and `vacancy`. `roles.define()` stores the same definition. `eligible(role, entity)` tests `candidate`. `relation` succession also requires eligibility. `faction_assigns`, `election`, `host_decides`, and `vacancy: abolish` are stored and do not run yet.
+
 ## 0.1.0-s3 - 2026-10-15
 
 Packaging for a host pin. `tools/vendor_wyrd.sh` copies `addons/wyrd` and writes `VERSION`. See `docs/host-checklist.md`. Tags before 1.0 are for the host check only.

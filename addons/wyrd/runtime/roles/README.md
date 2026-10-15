@@ -2,7 +2,11 @@
 
 `WyrdRoles` keeps one binding per role: `holder`, `since`, `status` (`default`, `successor`, `empty`), and `history`.
 
-`assign` sets the default holder. `vacate` tries `relation(kind|kind)` in order, using outgoing kinds on the current holder, skipping anyone the world adapter says is not alive, and choosing the lowest id. `none` leaves the role empty. A successor emits `role_holder_changed` and records verb `role_changed`. No successor emits `role_vacant`.
+A role definition comes from a `role <id>` block or from `define()`. Both store `scope`, `eligibility`, `default_holder`, `visibility`, `succession`, and `vacancy`. See `docs/statements-draft.md`.
+
+`eligible(role, entity)` runs the eligibility condition with `candidate` bound to that entity. No condition means every entity passes. When a condition is present, the trace bus gets one `eligible` line (`role`, `entity`, `ok`) and, if tracing is on, the console prints `wyrd eligible role=<id> entity=<id> ok=<bool>`. The line does not grow with the facts the condition reads.
+
+`assign` sets the holder. A `default_holder` is assigned when the binding is empty, including on a new game. `vacate` tries `relation(kind|kind)` in order, using outgoing kinds on the current holder, skipping anyone who is not alive or who fails eligibility, and choosing the lowest id. `none` leaves the role empty. `faction_assigns`, `election`, and `host_decides` are stored and do not pick a holder yet. `vacancy: abolish` is stored and does not abolish the role yet. A successor emits `role_holder_changed` and records verb `role_changed`. No successor emits `role_vacant`.
 
 Slot modes:
 

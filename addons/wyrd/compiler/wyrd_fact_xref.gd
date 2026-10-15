@@ -218,6 +218,8 @@ func _readers(units: Array) -> Array:
 				_stage_readers(rows, stage, "%s.%s" % [quest.id, stage.id], path)
 		for scene in file.scenes:
 			_scene_readers(rows, scene, path)
+		for role in file.roles:
+			_push(rows, _cond_reads(role.eligibility), "eligibility", role.id, path, role.line, role.col)
 	return rows
 
 

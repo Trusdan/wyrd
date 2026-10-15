@@ -44,7 +44,7 @@ func test_succession_chain_none_and_secret() -> void:
 	assert_eq(runtime.facts.get_in(&"role.ferry_master.holder", &"known/player"), &"")
 	assert_true(runtime.roles.revealed(&"player", &"role.ferry_master.holder"))
 	runtime.roles.define(&"watcher", "public")
-	assert_push_error("not relation")
+	assert_push_error("not a role succession")
 	assert_eq(changed[0][2], "cy")
 	runtime.social.set_kind(&"ada", &"bea", &"apprentice")
 	host.world.add_entity(&"bea", &"person", "bea", PackedStringArray(), true)

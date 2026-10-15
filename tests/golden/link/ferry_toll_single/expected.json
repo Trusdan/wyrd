@@ -512,6 +512,7 @@
         "title": "The Ferry Toll"
       }
     ],
+    "roles": [],
     "scenes": [
       {
         "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",

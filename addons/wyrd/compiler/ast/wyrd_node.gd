@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## [member kind] is [code]file[/code], [code]facts[/code], [code]quest[/code], [code]scene[/code],
-## [code]fact[/code], or [code]line[/code]. Quest and scene bodies stay a generic line tree.
+## [code]role[/code], [code]fact[/code], or [code]line[/code]. Quest, scene, and role bodies stay a generic line tree.
 
 var kind: StringName = &"line"
 var keyword: String = ""
