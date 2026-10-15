@@ -20,7 +20,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 - `quests` — status, stage, outcome, journal, `abandon`, `request_host_step`, `complete_host_step`, `register_date_formatter`. Signals: `quest_state_changed`, `stage_changed`, `journal_entry_added`, `content_unavailable`, `host_step_requested`.
 - `dialogue` — `open_scene`, `advance`, `choose`, `abort`, `register_line_audio`, `can_save`. Signals: `line_ready`, `choices_ready`, `scene_ended`.
 
-`can_save()` is false while a scene is open. `start_new_game` does not write a save.
+`save_state()` returns a JSON-safe dictionary. `load_state(data)` returns a `WyrdLoadReport`. Both refuse while a scene is open (`E_SAVE_OPEN`). `rng_stream(name)` returns a named PCG32 stream seeded from the game seed. `draw_u32(name)` draws from that stream. `trace` is a `WyrdTrace`; turn `enabled` on to record. `start_new_game` clears streams and the trace log. It does not write a save.
 
 `believed/` and `held/` perspectives exist as empty maps and refuse writes (M5). `knows`, `believes`, and `held` stay false.
 
@@ -36,6 +36,8 @@ The quest completes when every declared outcome is set and the current body has 
 
 Journal text is interpolated once and stored with the game time. The default date is `day N, HH:MM` (day 1 at minute 0, 1440 minutes per day). `register_date_formatter` replaces that for later writes. A stored date does not change.
 
-`await_host` is not parsed. See `docs/grammar-v1.md` section 9. The host step is `request_host_step` / `complete_host_step`.
+`await_host <screen> returns { field, ... }` is a stage statement (`docs/grammar-v1.md` section 9). It pauses the remaining entry steps. `complete_host_step` resumes them. A waiting host step is part of the save.
 
-Saves are a later slice.
+## Save
+
+`runtime/save` writes schema version 1: content pack id and manifest hash, facts, deeds, social baselines and kinds, roles, quests (including frozen journal text), effect provenance, game minutes, the game seed, and every named RNG stream. 64-bit integers are 16 hex digits. The migration table is empty. A manifest hash that does not match warns in a debug build and is silent in a release. See `runtime/save/README.md` and `runtime/trace/README.md`.

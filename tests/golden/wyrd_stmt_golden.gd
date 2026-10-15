@@ -94,7 +94,7 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 	var variants: Array = []
 	for variant in stage.variants:
 		variants.append(_variant(variant))
-	return {
+	var data := {
 		"effects": _effects(stage.effects),
 		"id": stage.id,
 		"journals": journals,
@@ -106,6 +106,16 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 		"waits_text": stage.waits_text,
 		"waits_until": _cond(stage.waits_until),
 	}
+	if stage.hosts.size() > 0:
+		var hosts: Array = []
+		for host in stage.hosts:
+			var fields: Array = []
+			var packed: PackedStringArray = host.get("fields", PackedStringArray())
+			for field in packed:
+				fields.append(String(field))
+			hosts.append({"fields": fields, "line": int(host.get("line", 0)), "screen": String(host.get("screen", ""))})
+		data["hosts"] = hosts
+	return data
 
 
 static func _variant(variant: WyrdVariantDef) -> Dictionary:

@@ -70,6 +70,9 @@ const W_FACT_NEVER_READ: StringName = &"W_FACT_NEVER_READ"
 const W_FACT_NEVER_SET: StringName = &"W_FACT_NEVER_SET"
 const W_FACT_UNUSED: StringName = &"W_FACT_UNUSED"
 const I_COMMANDS_SKIPPED: StringName = &"I_COMMANDS_SKIPPED"
+const E_SAVE_OPEN: StringName = &"E_SAVE_OPEN"
+const E_SAVE_VERSION: StringName = &"E_SAVE_VERSION"
+const W_SAVE_MANIFEST: StringName = &"W_SAVE_MANIFEST"
 
 var severity: StringName = SEVERITY_ERROR
 var code: StringName = &""

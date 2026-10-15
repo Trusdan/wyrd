@@ -121,6 +121,14 @@ func to_state() -> Dictionary:
 	}
 
 
+static func format_u64(value: int) -> String:
+	return _hex64(value)
+
+
+static func parse_u64(text: String) -> Dictionary:
+	return _parse_hex(text, "value")
+
+
 static func from_state(data: Dictionary) -> WyrdRng:
 	var parsed := _decode(data)
 	if parsed.is_empty():

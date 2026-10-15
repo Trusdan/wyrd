@@ -11,7 +11,7 @@ scene toll.offer_room
   when npc.ferry_master.alive: lookout: The ferry master is on the dock. #line:a_alive
   when world.season == storm: narrator: The season smells like rain. #line:a_season
   dock.bell: The bell notes the tide. #line:a_bell
-  * [Take the room] -> took #line:c_room
+  * [Take the room] disabled_when {player.coins < 2} "short on coins" -> took #line:c_room
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
     ~ set player.coins = player.coins - 2
     ~ set harbor.room_taken = true

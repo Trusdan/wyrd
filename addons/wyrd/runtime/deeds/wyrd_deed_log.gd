@@ -40,6 +40,78 @@ var _by_target: Dictionary = {}
 var _by_verb: Dictionary = {}
 
 
+func export_state() -> Dictionary:
+	var rows: Array = []
+	for i in size():
+		var row := row_at(i)
+		rows.append({
+			"actor": String(row["actor"]),
+			"id": int(row["id"]),
+			"magnitude": float(row["magnitude"]),
+			"memorable": bool(row["memorable"]),
+			"place": String(row["place"]),
+			"t": int(row["t"]),
+			"tags": _string_list(row["tags"]),
+			"target": String(row["target"]),
+			"verb": String(row["verb"]),
+			"visibility": String(row["visibility"]),
+			"witnesses": _string_list(row["witnesses"]),
+		})
+	return {"next": _next, "rows": rows}
+
+
+func import_state(data: Dictionary) -> void:
+	clear()
+	for item in data.get("rows", []):
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var tags := _packed(row.get("tags", []))
+		var witnesses := _packed(row.get("witnesses", []))
+		var index := _id.size()
+		_id.append(int(row.get("id", 0)))
+		_t.append(int(row.get("t", 0)))
+		_verb.append(String(row.get("verb", "")))
+		_actor.append(String(row.get("actor", "")))
+		_target.append(String(row.get("target", "")))
+		_place.append(String(row.get("place", "")))
+		_magnitude.append(float(row.get("magnitude", 1.0)))
+		_visibility.append(String(row.get("visibility", "public")))
+		_memorable.append(1 if bool(row.get("memorable", false)) else 0)
+		_tag_at.append(_tags.size())
+		_tag_n.append(tags.size())
+		for tag in tags:
+			_tags.append(tag)
+		_wit_at.append(_witnesses.size())
+		_wit_n.append(witnesses.size())
+		for wit in witnesses:
+			_witnesses.append(wit)
+		_index(_by_actor, StringName(_actor[index]), index)
+		_index(_by_target, StringName(_target[index]), index)
+		_index(_by_verb, StringName(_verb[index]), index)
+	var next := int(data.get("next", 1))
+	_next = next if next > 0 else 1
+
+
+func _string_list(value: Variant) -> Array:
+	var rows: Array = []
+	if value is PackedStringArray:
+		for item in value:
+			rows.append(String(item))
+	elif value is Array:
+		for item in value:
+			rows.append(String(item))
+	return rows
+
+
+func _packed(value: Variant) -> PackedStringArray:
+	var rows := PackedStringArray()
+	if value is Array:
+		for item in value:
+			rows.append(String(item))
+	return rows
+
+
 func clear() -> void:
 	_next = 1
 	_id = PackedInt32Array()

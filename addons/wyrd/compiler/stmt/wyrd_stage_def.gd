@@ -5,6 +5,7 @@ extends WyrdStmtSpan
 ##
 ## @experimental
 ## [member scenes] entries are [code]id[/code], [code]with[/code], and a span.
+## [member hosts] entries are [code]screen[/code], [code]fields[/code], and a span.
 ## [member transitions] entries are [code]target[/code], [code]when[/code], [code]expr[/code], and a span.
 ## [member variants] holds [WyrdVariantDef] records. The array is untyped so the
 ## stage and variant records can name each other.
@@ -16,4 +17,5 @@ var journals: Array[WyrdLineDef] = []
 var scenes: Array = []
 var transitions: Array = []
 var effects: Array[WyrdEffectDef] = []
+var hosts: Array = []
 var variants: Array = []

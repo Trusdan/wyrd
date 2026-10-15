@@ -18,6 +18,7 @@ var social: WyrdSocial
 var roles: WyrdRoles
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
+var trace: WyrdTrace
 
 var _runtime: WyrdRuntime
 
@@ -31,6 +32,7 @@ func _init() -> void:
 	roles = _runtime.roles
 	quests = _runtime.quests
 	dialogue = _runtime.dialogue
+	trace = _runtime.trace
 
 
 func get_version() -> String:
@@ -67,6 +69,22 @@ func now_minutes() -> int:
 
 func can_save() -> bool:
 	return _runtime.can_save()
+
+
+func save_state() -> Dictionary:
+	return _runtime.save_state()
+
+
+func load_state(data: Dictionary) -> WyrdLoadReport:
+	return _runtime.load_state(data)
+
+
+func rng_stream(name: StringName) -> WyrdRng:
+	return _runtime.rng_stream(name)
+
+
+func draw_u32(name: StringName) -> int:
+	return _runtime.draw_u32(name)
 
 
 func content() -> WyrdContent:

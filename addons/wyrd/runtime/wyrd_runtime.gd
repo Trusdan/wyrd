@@ -7,7 +7,8 @@ extends RefCounted
 ## S2a loads a manifest by compiling its [code].wyrd[/code] sources, then keeps
 ## a fact store, a condition table, and a fixed-work tick queue. S2b adds the
 ## deed log, relationship axes, and role slots. S2c runs slice effects, quests,
-## and scenes. Saves are a later slice. Callables stay in the registries.
+## and scenes. S2d saves that state and can record a decision trace.
+## Callables stay in the registries.
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
 const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "slot_state"]
@@ -21,6 +22,7 @@ var social: WyrdSocial
 var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
+var trace: WyrdTrace
 
 var _config: WyrdConfig
 var _content: WyrdContent
@@ -33,6 +35,7 @@ var _functions: Dictionary = {}
 var _flags: PackedByteArray = PackedByteArray()
 var _always: PackedInt32Array = PackedInt32Array()
 var _trace: Array[Dictionary] = []
+var _streams: Dictionary = {}
 var _seed: int = 0
 var _minutes: int = 0
 
@@ -51,6 +54,7 @@ func _init() -> void:
 	_ctx.bind(self)
 	facts.on_keys = Callable(self, &"_mark_keys")
 	facts.tracer = Callable(self, &"note")
+	facts.on_resolved = Callable(self, &"_on_resolved")
 	facts.clock = Callable(self, &"now_minutes")
 	facts.resolver_of = Callable(self, &"_resolver")
 	events.on_emit = Callable(self, &"_on_emit")
@@ -80,6 +84,7 @@ func _init() -> void:
 	effects.outcome_changed.connect(quests.note_outcome)
 	dialogue.scene_ended.connect(quests.on_scene_ended)
 	roles.role_holder_changed.connect(dialogue.note_role)
+	trace = WyrdTrace.new()
 
 
 func get_version() -> String:
@@ -155,6 +160,9 @@ func start_new_game(seed_value: int) -> void:
 	_seed = seed_value
 	_minutes = 0
 	_trace.clear()
+	_streams.clear()
+	if trace != null:
+		trace.events.clear()
 	facts.clear_values()
 	deeds.clear()
 	social.clear_state()
@@ -165,6 +173,52 @@ func start_new_game(seed_value: int) -> void:
 
 func game_seed() -> int:
 	return _seed
+
+
+func play_minutes() -> int:
+	return _minutes
+
+
+func restore_clock(seed_value: int, minutes: int) -> void:
+	_seed = seed_value
+	_minutes = maxi(minutes, 0)
+
+
+func rng_stream(name: StringName) -> WyrdRng:
+	var key := String(name)
+	if not _streams.has(key):
+		var created := WyrdRng.new()
+		created.seed_with(_seed, WyrdRng.stream_id(name))
+		_streams[key] = created
+	return _streams[key] as WyrdRng
+
+
+func draw_u32(name: StringName) -> int:
+	var value := rng_stream(name).next_u32()
+	trace_add("draw", {"op": "u32", "stream": String(name), "value": value})
+	return value
+
+
+func export_rng() -> Dictionary:
+	var out := {}
+	var names: Array = _streams.keys()
+	names.sort()
+	for stream_name in names:
+		out[String(stream_name)] = (_streams[stream_name] as WyrdRng).to_state()
+	return out
+
+
+func import_rng(data: Dictionary) -> bool:
+	var built := {}
+	for stream_name in data.keys():
+		if not (data[stream_name] is Dictionary):
+			return false
+		var restored := WyrdRng.from_state(data[stream_name])
+		if restored == null:
+			return false
+		built[String(stream_name)] = restored
+	_streams = built
+	return true
 
 
 func now_minutes() -> int:
@@ -232,6 +286,7 @@ func tick(game_minutes: int) -> void:
 	if game_minutes < 0:
 		push_error("Wyrd.tick: game minutes must be >= 0")
 		return
+	trace_add("tick", {"minutes": game_minutes})
 	_minutes += game_minutes
 	facts.refresh_poll(now_minutes())
 	if game_minutes > 0:
@@ -289,6 +344,22 @@ func can_save() -> bool:
 	return dialogue == null or dialogue.can_save()
 
 
+func save_state() -> Dictionary:
+	if not can_save():
+		push_error("Wyrd.save_state: a scene is open")
+		return {}
+	return WyrdSave.capture(self)
+
+
+func load_state(data: Dictionary) -> WyrdLoadReport:
+	if not can_save():
+		push_error("Wyrd.load_state: a scene is open")
+		var refused := WyrdLoadReport.new()
+		refused.diagnostics.add(WyrdDiagnostic.E_SAVE_OPEN, "a scene is open", "", 1, 1)
+		return refused
+	return WyrdSave.apply(self, data)
+
+
 func last_rechecks() -> int:
 	return _queue.last_rechecks
 
@@ -303,6 +374,16 @@ func unwatch_condition(index: int) -> void:
 
 func note(row: Dictionary) -> void:
 	_trace.append(row)
+
+
+func trace_add(kind: String, fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	trace.add(kind, fields)
+
+
+func _on_resolved(key: String, value: Variant) -> void:
+	trace_add("resolver", {"key": key, "value": value})
 
 
 func trace_log() -> Array[Dictionary]:
@@ -366,8 +447,9 @@ func _mark_keys(keys: PackedStringArray) -> void:
 	_queue.mark(_content.deps.affected(names))
 
 
-func _on_emit(event_name: StringName, _payload: Dictionary) -> void:
+func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 	facts.invalidate_event(event_name)
+	trace_add("emit", {"name": String(event_name), "payload": payload})
 
 
 func loaded_fact_key() -> String:

@@ -21,6 +21,53 @@ var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
 
 
+func export_state() -> Dictionary:
+	var kinds: Array = []
+	var sources: Array = _kinds.keys()
+	sources.sort()
+	for source in sources:
+		var outgoing: Dictionary = _kinds[source]
+		var targets: Array = outgoing.keys()
+		targets.sort()
+		for target in targets:
+			var bag: Dictionary = outgoing[target]
+			var names: Array = bag.keys()
+			names.sort()
+			for kind in names:
+				kinds.append({"kind": String(kind), "source": String(source), "target": String(target)})
+	var baselines: Array = []
+	var edges: Array = _baseline.keys()
+	edges.sort()
+	for edge in edges:
+		var parts := String(edge).split("\t")
+		if parts.size() != 3:
+			continue
+		baselines.append({
+			"axis": parts[2],
+			"source": parts[0],
+			"target": parts[1],
+			"value": float(_baseline[edge]),
+		})
+	return {"baselines": baselines, "kinds": kinds}
+
+
+func import_state(data: Dictionary) -> void:
+	clear_state()
+	for item in data.get("kinds", []):
+		if item is Dictionary:
+			var row: Dictionary = item
+			set_kind(StringName(str(row.get("source", ""))), StringName(str(row.get("target", ""))), StringName(str(row.get("kind", ""))))
+	for item in data.get("baselines", []):
+		if item is Dictionary:
+			var row: Dictionary = item
+			set_baseline(
+				StringName(str(row.get("source", ""))),
+				StringName(str(row.get("target", ""))),
+				StringName(str(row.get("axis", ""))),
+				float(row.get("value", 0.0))
+			)
+
+
 func clear_state() -> void:
 	_kinds.clear()
 	_baseline.clear()

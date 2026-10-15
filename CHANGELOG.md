@@ -2,14 +2,20 @@
 
 ## Unreleased
 
-S2c quest runner, scene runner, and the six slice effects. Saves, replay, and the playtest scene are S2d.
+S2 slice runtime. S2 exit met: a save loads back to the same state, a recorded trace replays the same decisions, and the Gullhaven playtest scene is the project main scene (`docs/playtest.md`).
+
+- `save_state` / `load_state` store schema version 1, language version, pack ids and manifest hashes, facts, the deed log, relationship baselines and kinds, role bindings and history, quest status, stage, outcomes, slot locks, and frozen journal text, plus every named RNG stream. 64-bit values are hex. A save during an open scene is refused. A hash mismatch warns in a debug build and is silent in a release. The migration table is empty.
+- `WyrdTrace` records host answers and Wyrd decisions. Replaying the inputs on a fresh runtime reproduces the decisions. A changed host answer shows up in the diff.
+- `await_host <screen_id> returns { <field>, ... }` is approved and parsed. It pauses the remaining stage-entry steps until `complete_host_step`.
+
+S2c quest runner, scene runner, and the six slice effects.
 
 - `set`, `inc`, `record deed`, `unlock topic`, `do` / `on_fail`, and `outcome` run at play time. Provenance stores scene, choice, and game minutes.
 - Quest statuses include unavailable when `requires` names another pack. `start when` and `waits_until` advance only after a dirty re-check. A stage offers a scene; the host opens it. An aborted scene stays pending.
 - A quest completes when every declared outcome is resolved and the current body has no transition. A `failed` outcome fails the quest.
 - Journal text and its date freeze at the write. The default date is `day N, HH:MM` from game minutes. A host may register another formatter.
 - Dialogue text is always on screen. `line_audio` may be null. Audio does not hide a line or advance it. `advance()` is the only way on. `can_save()` is false while a scene is open.
-- `await_host` is a proposal in `docs/grammar-v1.md` section 9. It is not parsed. The runtime API is `request_host_step` / `complete_host_step`.
+- `request_host_step` / `complete_host_step` are the runtime API a host step uses. The statement form is approved in S2d.
 
 S2a runtime core and fact store. The Gullhaven manifest loads into a runtime, facts and conditions evaluate against the fake host, and a dirty re-check matches a full scan. Deeds, quests, scenes, and saves are later slices.
 

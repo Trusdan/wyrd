@@ -137,19 +137,19 @@ Approved by Corey, 2026-10-14. Items 1–4 and 6–9 are the frozen lexical and 
 6. **Prose escapes.** `{{` is the only escape for `{`. A stray `}` is literal. There is no `}}` escape and no backslash escape in prose.
 7. **Titles.** Inside double-quoted titles, `\"` escapes a quote and `\\` escapes a backslash.
 8. **Header.** `language 1` is required. Anything else is an error.
-9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. No syntax for them is defined here.
+9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. The word `await_host` stays reserved (it is not a legal identifier). Its statement form is in section 9. No syntax is defined here for the other reserved words.
 10. **Examples.** The quest, scene, and facts examples remain illustrations until the slice compiler.
 
-## 9. Proposal: `await_host` (pending approval)
+## 9. `await_host`
 
-**Status: proposal. Not approved. Not parsed. Sections 1–6 stay frozen.** `await_host` remains a reserved word (section 6) and is not a legal identifier.
+**Status: approved by Corey, 2026-10-14. Sections 1–6 stay frozen.** `await_host` remains a reserved word (section 6) and is not a legal identifier. Fact keys, quest ids, speakers, and role names still cannot use it.
 
-A host-modal step would be one statement inside a stage:
+A host-modal step is one statement inside a stage:
 
 ```wyrd
 await_host <screen_id> returns { <field>, <field> }
 ```
 
-`<screen_id>` is an identifier. `<field>` names are identifiers. The braces are the returns list, not prose interpolation. Nothing else is proposed: no condition, no block, no nested effects.
+`<screen_id>` is an identifier. `<field>` names are identifiers. The braces are the returns list, not prose interpolation. There is no condition, no block, and no nested effects. An empty `{}` is allowed. A field name may appear only once.
 
-The S2c runtime does not read this statement. A test or host calls `request_host_step`, waits on `host_step_requested`, and finishes with `complete_host_step`. Parsing `await_host` waits for the owner's approval.
+The compiler stores the step on the stage. At stage entry the runtime pauses remaining entry steps, calls `request_host_step`, and emits `host_step_requested`. `complete_host_step` stores the returned fields and resumes the steps that follow. A save is refused while a scene is open; a waiting host step is stored and resumed after load.

@@ -1,0 +1,77 @@
+{
+  "diagnostics": [],
+  "quests": [
+    {
+      "id": "gate",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 13,
+        "end_line": 7,
+        "line": 3
+      },
+      "stages": [
+        {
+          "effects": [],
+          "hosts": [
+            {
+              "fields": [
+                "ok",
+                "note"
+              ],
+              "line": 5,
+              "screen": "board"
+            }
+          ],
+          "id": "ask",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 12,
+            "end_line": 6,
+            "line": 4
+          },
+          "transitions": [
+            {
+              "col": 8,
+              "expr": "",
+              "line": 6,
+              "target": "done",
+              "when": null
+            }
+          ],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        },
+        {
+          "effects": [],
+          "id": "done",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 13,
+            "end_line": 7,
+            "line": 7
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Gate"
+    }
+  ],
+  "reads": [],
+  "scenes": []
+}

@@ -208,7 +208,9 @@ func _chance(args: Array) -> bool:
 		bucket = int(_runtime.now_minutes() / float(size))
 	var key := StringName("%s:%s" % [record_id, site])
 	var rng := WyrdRng.for_decision(_runtime.game_seed(), &"chance", key, bucket)
-	return rng.randf() < p
+	var hit := rng.randf() < p
+	_runtime.trace_add("roll", {"key": String(key), "pass": hit, "stream": "chance"})
+	return hit
 
 
 func _knows(_args: Array) -> bool:
