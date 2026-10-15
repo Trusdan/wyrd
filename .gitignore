@@ -1,4 +1,5 @@
 .godot/
 *.translation
 tests/bench/out/
+visual-playtest-out/
 .DS_Store

@@ -261,8 +261,9 @@ func _apply_commands() -> void:
 	else:
 		_host.actions.set_result_for(&"post_notice", WyrdCommandResult.failed(&"lost"))
 	_host.clock.season_name = &"storm" if bool(_flags["storm"]) else &""
-	if _started:
-		_runtime.events.emit(&"season_changed", {})
+	# New game reads facts while it is still starting, which caches world.season.
+	# The event drops that cache so the clock above is what the lines see.
+	_runtime.events.emit(&"season_changed", {})
 
 
 func _arm_apprentice() -> void:
@@ -336,7 +337,7 @@ func _refresh() -> void:
 			alive = "true" if _host.world.is_alive(id) else "false"
 		_facts.add_item("alive %s = %s" % [entity_id, alive])
 	_append_quest(_facts)
-	_facts.add_item("outcome crossing = %s" % _runtime.quests.outcome("ferry_toll", "crossing"))
+	_facts.add_item("outcome crossing = %s" % _shown(_runtime.quests.outcome("ferry_toll", "crossing")))
 	_append_slots(_facts)
 
 
@@ -350,8 +351,8 @@ func _append_quest(list: ItemList) -> void:
 		if quest != null and not quest.title.is_empty():
 			title = quest.title
 	list.add_item("quest %s" % title)
-	list.add_item("stage %s" % _runtime.quests.stage(quest_id))
-	list.add_item("status %s" % String(_runtime.quests.status(quest_id)))
+	list.add_item("stage %s" % _shown(_runtime.quests.stage(quest_id)))
+	list.add_item("status %s" % _shown(String(_runtime.quests.status(quest_id))))
 	var waiting := _runtime.quests.waiting_reason(quest_id)
 	if not waiting.is_empty():
 		list.add_item("waiting %s" % waiting)
@@ -380,9 +381,15 @@ func _append_slots(list: ItemList) -> void:
 
 
 func _shown(value: Variant) -> String:
+	# null is a fact that was never set. An empty name is the same on screen:
+	# time.season is "" until a season is chosen, and str("") would leave the
+	# row blank. Both read as absent.
 	if value == null:
 		return "absent"
-	return str(value)
+	var text := str(value).strip_edges()
+	if text.is_empty():
+		return "absent"
+	return text
 
 
 func _build() -> void:

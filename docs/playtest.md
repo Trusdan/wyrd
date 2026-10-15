@@ -57,7 +57,7 @@ The status line says "Press New game." You will see:
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
 - A journal. Each line starts with a game time such as `day 1, 00:00`.
-- A list of facts, the quest title, the stage, the status, and one row per slot: role title, the current holder's personal name, and the slot state.
+- A list of facts, the quest title, the stage, the status, and one row per slot: role title, the current holder's personal name, and the slot state. A fact with no value shows `absent`. The season is one of those until Season storm is on, so the row reads `world world.season = absent`.
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
