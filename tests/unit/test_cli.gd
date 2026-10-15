@@ -3,14 +3,15 @@ extends GutTest
 
 func test_render_prints_version_and_command_list() -> void:
 	var text := WyrdCli.render()
-	assert_true(text.begins_with("wyrd 0.1.0-s3\n"))
+	assert_true(text.begins_with("wyrd 0.2.0-m4\n"))
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
 	assert_true(text.contains("check: compile and link a content pack"))
 	assert_true(text.contains("test: not implemented"))
 	assert_true(text.contains("tag-lines: write missing #line: ids"))
 	assert_true(text.contains("export-json: write the linked pack as JSON"))
 	assert_true(text.contains("facts: print the fact cross-reference"))
-	assert_eq(WyrdCli.COMMANDS.size(), 5)
+	assert_true(text.contains("roles: print a sorted table of role holders"))
+	assert_eq(WyrdCli.COMMANDS.size(), 6)
 
 
 func test_execute_without_args_matches_render() -> void:
@@ -55,11 +56,7 @@ func test_check_gullhaven_manifest_is_clean() -> void:
 		"example/content/gullhaven/harbor.wyrdmanifest.tres",
 	]))
 	assert_eq(int(result["exit_code"]), 0, str(result["output"]))
-	# The example ferry slot is locked_at and has no locked_gone variant yet.
-	assert_eq(
-		str(result["output"]),
-		"res://example/content/gullhaven/ferry_toll.wyrd:6:3: warning[W_LOCKED_GONE_UNCOVERED]: locked_at slot \"ferry\" has no locked_gone variant\n"
-	)
+	assert_eq(str(result["output"]), "")
 
 
 func test_check_invalid_file_exits_one() -> void:

@@ -1,6 +1,7 @@
 extends GutTest
 
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
+const _Election := preload("res://example/playtest/harbor_election.gd")
 
 
 func test_harbor_conditions_follow_facts_and_the_fake_host() -> void:
@@ -130,6 +131,7 @@ func _harbor() -> Dictionary:
 	var runtime := WyrdRuntime.new()
 	var host := WyrdFakeHost.new()
 	host.register_into(runtime)
+	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
 	var report := runtime.load_content(load(_HARBOR) as WyrdContentManifest)
 	assert_true(report.ok, report.diagnostics.format())
 	runtime.start_new_game(11)

@@ -2,9 +2,9 @@
 
 Wyrd is a generic narrative and dialogue engine for Godot 4, written in typed GDScript. It is itself the dialogue manager. A host vendors `addons/wyrd` and implements the adapters.
 
-This repository is the S0 skeleton through the S2 runtime, plus typed host world events. Condition and statement drafts are not frozen. `check --manifest` compiles and links a pack. `WyrdRuntime.load_content` compiles that manifest again at runtime. `save_state` / `load_state` round-trip a closed scene, and a recorded trace replays the same decisions. Press F5 to run the Gullhaven playtest. A walkthrough for someone without a Godot setup is [docs/playtest.md](docs/playtest.md). There is no support guarantee before 1.0.
+This repository is the S0 skeleton through the M4 role runtime, plus typed host world events. Condition and statement drafts are not frozen. `check --manifest` compiles and links a pack. `WyrdRuntime.load_content` compiles that manifest again at runtime. `save_state` / `load_state` round-trip a closed scene, and a recorded trace replays the same decisions. Press F5 to run the Gullhaven playtest. A walkthrough for someone without a Godot setup is [docs/playtest.md](docs/playtest.md). There is no support guarantee before 1.0.
 
-Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.1.0-s3` (`addons/wyrd/VERSION`).
+Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.2.0-m4` (`addons/wyrd/VERSION`).
 
 ## Hosts
 
@@ -17,6 +17,7 @@ Install that Godot so `godot` is on your `PATH`, then run `tools/run_tests.sh`. 
 ```bash
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
+godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- roles --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
 godot --headless --path . -s res://tests/bench/bench.gd -- --iterations 1000 --out res://tests/bench/out/latest.json
 ```
 

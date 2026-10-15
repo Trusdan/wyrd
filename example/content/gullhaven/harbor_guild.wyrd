@@ -1,0 +1,43 @@
+// [EXAMPLE CONTENT] Gullhaven guild quest. An invented fishing village, not a host game.
+language 1
+
+quest harbor_guild "The Harbor Guild"
+  slot factor = harbor_factor mode: live
+  slot reeve = harbor_reeve mode: live
+  on_empty: wait
+  requires: [pack.harbor]
+  start when deed_count(player, verb: asked_guild, place: gullhaven) > 0
+
+  stage petition
+    variant factor.barred(not has_tag(player, local)):
+      journal: The guild ledger is closed to visitors. #line:j_guild_barred
+      ~ outcome petition = route_closed
+      waits_until false
+    variant factor.unwilling(harbor.factor_refuses):
+      journal: The factor will not sign. #line:j_guild_unwilling
+      waits_until false
+    variant factor.empty:
+      journal: The factor's chair is empty. #line:j_guild_empty
+      waits_until false
+    variant factor.successor:
+      journal: The guild names a new factor. #line:j_guild_next
+      -> signed
+    variant factor.default:
+      journal: The factor reads the levy. #line:j_guild_levy
+      ~ set harbor.guild_signed = false
+      ~ outcome petition = done
+      waits_until harbor.guild_signed
+      -> signed
+
+  stage signed
+    variant reeve.contested:
+      journal: The harbor votes for a reeve. #line:j_guild_vote
+      waits_until false
+    variant reeve.empty:
+      journal: No reeve sits the chair. #line:j_guild_noreeve
+      waits_until false
+    journal: The levy is signed. #line:j_guild_signed
+    ~ set harbor.factor_refuses = false
+    ~ set harbor.levy_posted = false
+    ~ outcome levy = done
+    waits_until harbor.levy_posted

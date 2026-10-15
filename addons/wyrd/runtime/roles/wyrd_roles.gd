@@ -622,6 +622,33 @@ func binding_status(role: StringName) -> StringName:
 	return _binding(role)["status"]
 
 
+## Sorted table of every role. [param prefix] keeps ids that start with that text.
+## Columns are role, holder, status, strategy, flags (pending and/or abolished),
+## and frozen slots. Built in one pass so a few hundred roles stay cheap.
+func render_table(prefix: String = "") -> String:
+	var header := PackedStringArray(["role", "holder", "status", "strategy", "flags", "frozen"])
+	var frozen_of := _frozen_by_role()
+	var ids := PackedStringArray()
+	var seen := {}
+	for role in _bindings.keys():
+		var name := String(role)
+		if not seen.has(name):
+			seen[name] = true
+			ids.append(name)
+	for role in _defs.keys():
+		var name := String(role)
+		if not seen.has(name):
+			seen[name] = true
+			ids.append(name)
+	ids.sort()
+	var rows: Array[PackedStringArray] = []
+	for name in ids:
+		if not prefix.is_empty() and not name.begins_with(prefix):
+			continue
+		rows.append(_table_cells(StringName(name), frozen_of))
+	return _format_table(header, rows)
+
+
 func binding_since(role: StringName) -> int:
 	return int(_binding(role)["since"])
 
@@ -1023,6 +1050,82 @@ func _alive(id: StringName) -> bool:
 	if world == null:
 		return true
 	return world.is_alive(id)
+
+
+func _frozen_by_role() -> Dictionary:
+	var grouped := {}
+	var locks: Array = _frozen.keys()
+	locks.sort()
+	for lock in locks:
+		var parts := String(lock).split("\t")
+		if parts.size() != 2:
+			continue
+		var row := _slot_row(parts[0], parts[1])
+		var role_name := String(row.get("role", ""))
+		if role_name.is_empty():
+			continue
+		if not grouped.has(role_name):
+			grouped[role_name] = []
+		var snap: Dictionary = _frozen[lock]
+		var who := String(snap.get("holder", ""))
+		if who.is_empty():
+			who = "-"
+		var cell := "%s/%s=%s:%s" % [parts[0], parts[1], who, String(snap.get("status", ""))]
+		(grouped[role_name] as Array).append(cell)
+	return grouped
+
+
+func _table_cells(role: StringName, frozen_of: Dictionary) -> PackedStringArray:
+	var binding := _binding(role)
+	var who := String(binding.get("holder", ""))
+	if who.is_empty():
+		who = "-"
+	var status := String(binding.get("status", ""))
+	if status.is_empty():
+		status = "empty"
+	var strategy := String(_spec(role).get("succession", "none"))
+	if strategy.is_empty():
+		strategy = "none"
+	var flags := PackedStringArray()
+	if _pending.has(role):
+		flags.append("pending")
+	if _abolished.has(role):
+		flags.append("abolished")
+	var flag_text := "-" if flags.is_empty() else ",".join(flags)
+	var frozen := "-"
+	if frozen_of.has(String(role)):
+		var cells: Array = frozen_of[String(role)]
+		if not cells.is_empty():
+			var packed := PackedStringArray()
+			for item in cells:
+				packed.append(String(item))
+			frozen = ", ".join(packed)
+	return PackedStringArray([String(role), who, status, strategy, flag_text, frozen])
+
+
+func _format_table(header: PackedStringArray, rows: Array[PackedStringArray]) -> String:
+	var width := PackedInt32Array()
+	width.resize(header.size())
+	for i in header.size():
+		width[i] = header[i].length()
+	for row in rows:
+		for i in header.size():
+			if row[i].length() > width[i]:
+				width[i] = row[i].length()
+	var lines := PackedStringArray()
+	lines.resize(rows.size() + 1)
+	lines[0] = _format_line(header, width)
+	for i in rows.size():
+		lines[i + 1] = _format_line(rows[i], width)
+	return "\n".join(lines) + "\n"
+
+
+func _format_line(cells: PackedStringArray, width: PackedInt32Array) -> String:
+	var parts := PackedStringArray()
+	parts.resize(cells.size())
+	for i in cells.size():
+		parts[i] = cells[i].rpad(width[i])
+	return "  ".join(parts)
 
 
 func _binding(role: StringName) -> Dictionary:

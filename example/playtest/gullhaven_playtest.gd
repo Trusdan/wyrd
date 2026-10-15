@@ -6,6 +6,7 @@ extends Control
 ## The host is the scripted fake host. F5 runs this scene.
 
 const _MANIFEST := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
+const _Election := preload("res://example/playtest/harbor_election.gd")
 const _SAVE_PATH := "user://playtest_save.json"
 const _FERRY_NAME := "Bram"
 const _SUCCESSOR_NAME := "Nia"
@@ -56,6 +57,8 @@ func _ready() -> void:
 	_runtime = WyrdRuntime.new()
 	_host = WyrdFakeHost.new()
 	_host.register_into(_runtime)
+	# harbor_reeve is an election. New game errors without an adapter.
+	_runtime.register_adapter(WyrdElectionAdapter, _Election.new())
 	_dlg().register_line_audio(Callable(self, &"_line_audio"))
 	_runtime.facts.subscribe(&"")
 	_runtime.facts.fact_changed.connect(func(_key: StringName, _old_value: Variant, _new_value: Variant) -> void: _refresh())

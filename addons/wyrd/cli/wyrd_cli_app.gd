@@ -9,10 +9,11 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]check[/code] lexes, parses, compiles, and links a pack.
 ## [code]tag-lines[/code] writes missing line ids. [code]export-json[/code] writes
 ## the debug pack document. [code]facts[/code] prints the cross-reference.
+## [code]roles[/code] prints a sorted table of role holders.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles"]
 
 
 static func version_line() -> String:
@@ -26,6 +27,7 @@ static func command_lines() -> PackedStringArray:
 		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
 		"facts: print the fact cross-reference",
+		"roles: print a sorted table of role holders",
 	])
 
 
@@ -50,7 +52,19 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _export(args)
 	if command == "facts":
 		return _facts(args)
+	if command == "roles":
+		return _roles(args)
 	return {"exit_code": 1, "output": "wyrd: unknown command \"%s\"\n" % command}
+
+
+class _NoElection extends WyrdElectionAdapter:
+	func start_election(_role: StringName, _departed: StringName) -> void:
+		pass
+
+
+class _NoHost extends RefCounted:
+	func decide(_role: StringName, _departed: StringName) -> void:
+		pass
 
 
 static func _check(args: PackedStringArray) -> Dictionary:
@@ -125,6 +139,60 @@ static func _facts(args: PackedStringArray) -> Dictionary:
 	return {"exit_code": 1 if diagnostics.has_errors() else 0, "output": output}
 
 
+static func _roles(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var runtime: WyrdRuntime = _Runtime.new()
+	runtime.roles.set_host_decides(Callable(_NoHost.new(), &"decide"))
+	runtime.register_adapter(WyrdElectionAdapter, _NoElection.new())
+	var report := runtime.load_content(_manifest(parsed))
+	if not report.ok:
+		return {"exit_code": 1, "output": report.diagnostics.format()}
+	runtime.start_new_game(1)
+	var save_path := str(parsed["save"])
+	if not save_path.is_empty():
+		var resolved := _resolve(save_path)
+		if not FileAccess.file_exists(resolved):
+			return {"exit_code": 1, "output": "wyrd: no such file: %s\n" % save_path}
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(resolved))
+		if not (data is Dictionary):
+			return {"exit_code": 1, "output": "wyrd: save is not a JSON object\n"}
+		var loaded_save := runtime.load_state(data)
+		if not loaded_save.ok:
+			return {"exit_code": 1, "output": loaded_save.diagnostics.format()}
+	var table := runtime.roles.render_table(str(parsed["prefix"]))
+	var lines := PackedStringArray()
+	if not table.is_empty():
+		lines.append(table.trim_suffix("\n"))
+	var formatted := diagnostics.format()
+	if not formatted.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append(formatted.trim_suffix("\n"))
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 0, "output": output}
+
+
+static func _manifest(parsed: Dictionary) -> WyrdContentManifest:
+	var path := str(parsed["manifest"])
+	if not path.is_empty():
+		return load(path) as WyrdContentManifest
+	var created := WyrdContentManifest.new()
+	created.pack_id = StringName(str(parsed["pack_id"]))
+	created.language_version = int(parsed["language_version"])
+	created.files = parsed["files"]
+	return created
+
+
 static func _load(parsed: Dictionary) -> Dictionary:
 	var files: PackedStringArray = parsed["files"]
 	if files.is_empty():
@@ -156,6 +224,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var as_json := false
 	var manifest := ""
 	var out := ""
+	var prefix := ""
+	var save_path := ""
 	var positionals: PackedStringArray = PackedStringArray()
 	var i := 1
 	while i < args.size():
@@ -176,6 +246,16 @@ static func _options(args: PackedStringArray) -> Dictionary:
 			if i >= args.size():
 				return _fail("wyrd: -o needs a path\n")
 			out = args[i]
+		elif arg == "--prefix":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --prefix needs text\n")
+			prefix = args[i]
+		elif arg == "--save":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --save needs a path\n")
+			save_path = args[i]
 		elif arg.begins_with("-"):
 			return _fail("wyrd: unknown option \"%s\"\n" % arg)
 		else:
@@ -190,8 +270,9 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var language_version := 1
 	var note_path := ""
 	var commands_path := ""
+	var manifest_path := ""
 	if not manifest.is_empty():
-		var manifest_path := _resolve(manifest)
+		manifest_path = _resolve(manifest)
 		if not FileAccess.file_exists(manifest_path):
 			return _fail("wyrd: no such file: %s\n" % manifest)
 		var resource := ResourceLoader.load(manifest_path)
@@ -219,9 +300,12 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"error": "",
 		"files": files,
 		"language_version": language_version,
+		"manifest": manifest_path if not manifest.is_empty() else "",
 		"note_path": note_path,
 		"out": out,
 		"pack_id": pack_id,
+		"prefix": prefix,
+		"save": save_path,
 		"strict": strict,
 	}
 
@@ -235,9 +319,12 @@ static func _fail(message: String) -> Dictionary:
 		"error": message,
 		"files": PackedStringArray(),
 		"language_version": 1,
+		"manifest": "",
 		"note_path": "",
 		"out": "",
 		"pack_id": "",
+		"prefix": "",
+		"save": "",
 		"strict": false,
 	}
 

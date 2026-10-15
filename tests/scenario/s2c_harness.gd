@@ -2,12 +2,15 @@ extends RefCounted
 
 const SAMPLE := "res://tests/scenario/pack/sample.wyrdmanifest.tres"
 const HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
+const _Election := preload("res://example/playtest/harbor_election.gd")
 
 
 func open_pack(path: String) -> Dictionary:
 	var runtime := WyrdRuntime.new()
 	var host := WyrdFakeHost.new()
 	host.register_into(runtime)
+	if path == HARBOR:
+		runtime.register_adapter(WyrdElectionAdapter, _Election.new())
 	var report := runtime.load_content(load(path) as WyrdContentManifest)
 	return {"host": host, "report": report, "runtime": runtime}
 

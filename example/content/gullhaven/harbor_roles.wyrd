@@ -1,0 +1,31 @@
+// [EXAMPLE CONTENT] Gullhaven roles. An invented fishing village, not a host game.
+language 1
+
+role tavern_owner
+  default_holder: tavern_owner
+  succession: none
+  vacancy: hold
+
+role ferry_master
+  scope: place(gullhaven)
+  default_holder: ferry_master
+  succession: relation(apprentice)
+  vacancy: hold
+
+role storm_watcher
+  default_holder: storm_watcher
+  succession: none
+  vacancy: hold
+
+role harbor_factor
+  scope: faction(faction.harbor)
+  eligibility: alive(candidate)
+  default_holder: net_mender
+  succession: faction_assigns(faction.harbor)
+  vacancy: abolish
+
+role harbor_reeve
+  scope: place(gullhaven)
+  default_holder: tide_clerk
+  succession: election
+  vacancy: hold
