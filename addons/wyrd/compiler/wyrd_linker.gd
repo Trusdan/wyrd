@@ -267,6 +267,7 @@ func _mark_coverage(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictio
 			continue
 		if not variant.slot.is_empty():
 			used[variant.slot] = true
+		# contested falls back to the empty variant, so it does not cover empty.
 		if variant.state == &"empty":
 			empty_covered[variant.slot] = true
 		elif variant.state == &"locked_gone":
