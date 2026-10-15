@@ -7,7 +7,8 @@ extends RefCounted
 ## Turn [member enabled] on before play. [method replay] drives the recorded
 ## inputs ([code]open_scene[/code], [code]advance[/code], [code]choose[/code],
 ## [code]abort[/code], [code]tick[/code], [code]emit[/code],
-## [code]complete_host[/code], [code]draw[/code]) on another runtime. Host
+## [code]complete_host[/code], [code]draw[/code], [code]batch_begin[/code],
+## [code]batch_end[/code], [code]emit_rejected[/code]) on another runtime. Host
 ## answers and decisions are compared with [method diff]. A different host
 ## answer shows up there.
 
@@ -42,6 +43,10 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 		match String(row.get("kind", "")):
 			"abort":
 				runtime.dialogue.abort(StringName(str(row.get("reason", ""))))
+			"batch_begin":
+				runtime.events.begin_batch()
+			"batch_end":
+				runtime.events.end_batch()
 			"advance":
 				runtime.dialogue.advance()
 			"choose":
@@ -50,7 +55,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.quests.complete_host_step(String(row.get("quest", "")), _dict(row.get("values", {})))
 			"draw":
 				runtime.draw_u32(StringName(str(row.get("stream", ""))))
-			"emit":
+			"emit", "emit_rejected":
 				runtime.events.emit(StringName(str(row.get("name", ""))), _dict(row.get("payload", {})))
 			"open_scene":
 				runtime.dialogue.open_scene(String(row.get("id", "")))

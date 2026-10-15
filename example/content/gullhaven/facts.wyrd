@@ -1,12 +1,19 @@
 // [EXAMPLE CONTENT] Gullhaven facts. An invented fishing village, not a host game.
 language 1
 
+events
+  season_changed()
+  entity_alive_changed(entity: symbol, alive: bool)
+  mechanism_state(object: symbol, state: symbol, actor: symbol)
+
 facts
   player.coins       : int    stored  doc: "Coins the player is carrying."
   ferry.toll_coins   : int    stored  doc: "Coins counted toward the ferry toll."
   harbor.room_taken  : bool   stored  doc: "Whether tonight's tavern room was taken."
+  harbor.watch_alive : bool   stored  doc: "Whether the dock watch is looking for the ferry master."
+  harbor.bell_struck : bool   stored  doc: "Whether the harbor bell was struck."
+  harbor.bell_count  : int    stored  doc: "How many times the harbor bell was struck."
   tavern.stew_bowls  : int    stored  doc: "Bowls of stew left on the hearth."
   world.storm_heard  : bool   stored  doc: "Whether the storm rumour was heard."
   world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
-  // Alive is the host world. The story uses filled(slot). npc.{id}.alive is cached
-  // until invalidated, so it can stay true after a slot is vacated.
+  npc.{id}.alive     : bool   source: world.is_alive  invalidate: on_event(entity_alive_changed)  doc: "Whether that person is alive in the host world."

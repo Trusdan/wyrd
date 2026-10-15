@@ -10,6 +10,7 @@
     }
   ],
   "export": {
+    "events": [],
     "facts": [],
     "files": [
       {

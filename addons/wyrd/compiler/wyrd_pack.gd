@@ -45,12 +45,14 @@ static func compile(
 				continue
 			merged.entries.append(fact)
 			fact_paths[fact] = path
+	var events := _merge_events(parsed, diagnostics)
+	_lint_resolvers(merged, events, fact_paths, diagnostics)
 	var units: Array = []
 	for row in parsed:
 		var tree: WyrdNode = row["tree"]
 		var source: WyrdSource = row["source"]
 		tree.schema = merged
-		var file := WyrdStatements.new().compile(source, tree, diagnostics)
+		var file := WyrdStatements.new().compile(source, tree, diagnostics, events)
 		units.append({
 			"file": file,
 			"hash": WyrdExport.hash_text(source.text),
@@ -59,6 +61,7 @@ static func compile(
 		})
 	var linker := WyrdLinker.new()
 	var pack := linker.link(units, merged, pack_id, language_version, commands, note_path, skip_commands_note, diagnostics)
+	pack.events = events
 	linker.finish_xref(pack, fact_paths)
 	diagnostics.sort_items()
 	return pack
@@ -106,6 +109,61 @@ static func _unique(files: PackedStringArray) -> PackedStringArray:
 		out.append(item)
 		prev = item
 	return out
+
+
+static func _merge_events(parsed: Array, diagnostics: WyrdDiagnostics) -> Dictionary:
+	var events := {}
+	var where := {}
+	for row in parsed:
+		var path := str(row["path"])
+		var tree: WyrdNode = row["tree"]
+		for child in tree.children:
+			if child.keyword != "events":
+				continue
+			for event in child.events:
+				if where.has(event.name):
+					var prior: Dictionary = where[event.name]
+					diagnostics.add(
+						WyrdDiagnostic.E_EVENT_DUPLICATE,
+						"duplicate event \"%s\" also declared in %s:%d:%d" % [event.name, str(prior["path"]), int(prior["line"]), int(prior["col"])],
+						path,
+						event.line,
+						event.col
+					)
+					continue
+				where[event.name] = {"col": event.col, "line": event.line, "path": path}
+				events[event.name] = event
+	return events
+
+
+static func _lint_resolvers(
+	schema: WyrdFactSchema,
+	events: Dictionary,
+	fact_paths: Dictionary,
+	diagnostics: WyrdDiagnostics
+) -> void:
+	if schema == null:
+		return
+	for fact in schema.entries:
+		if fact.origin != &"resolved":
+			continue
+		var path := str(fact_paths.get(fact, ""))
+		if fact.invalidate == &"":
+			diagnostics.add(
+				WyrdDiagnostic.E_RESOLVER_NO_INVALIDATE,
+				"resolved fact \"%s\" needs invalidate: on_event, poll, or per_query" % fact.key,
+				path,
+				fact.line,
+				fact.col
+			)
+		elif fact.invalidate == &"on_event" and not events.has(fact.invalidate_arg):
+			diagnostics.add(
+				WyrdDiagnostic.E_EVENT_UNKNOWN,
+				"unknown event \"%s\"" % fact.invalidate_arg,
+				path,
+				fact.line,
+				fact.col
+			)
 
 
 static func _redeclare(prior: WyrdFact, fact: WyrdFact, prior_path: String) -> String:

@@ -128,7 +128,7 @@ scene toll.gate
 """)
 	assert_true(file.codes.has("E_CHANCE_CONTEXT"))
 	assert_eq(file.codes.count("E_CHANCE_CONTEXT"), 4)
-	assert_true(file.codes.has("E_RESOLVER_INVALIDATION"))
+	assert_true(file.codes.has("E_WAIT_RESOLVER_MODE"))
 	var choice: WyrdChoiceDef = file.unit.scenes[0].items[0].choice
 	assert_true(choice.condition.uses_chance)
 	assert_false(file.unit.quests[0].stages[2].waits_until.uses_chance)

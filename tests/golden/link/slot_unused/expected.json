@@ -26,6 +26,7 @@
     }
   ],
   "export": {
+    "events": [],
     "facts": [],
     "files": [
       {

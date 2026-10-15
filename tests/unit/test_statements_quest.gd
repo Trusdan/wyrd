@@ -115,7 +115,7 @@ quest ferry_toll "The Ferry Toll"
   stage pay
     waits_until world.weather == calm
 """)
-	assert_eq(file.codes, ["E_RESOLVER_INVALIDATION"])
+	assert_eq(file.codes, ["E_WAIT_RESOLVER_MODE"])
 	assert_true(file.unit.quests[0].stages[0].reads.has(&"world.weather"))
 
 

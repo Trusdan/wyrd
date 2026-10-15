@@ -11,7 +11,7 @@
     {
       "code": "W_FACT_NEVER_READ",
       "col": 3,
-      "line": 6,
+      "line": 10,
       "message": "stored fact \"ferry.toll_coins\" is set but never read",
       "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
       "severity": "warning"
@@ -19,7 +19,7 @@
     {
       "code": "W_FACT_UNUSED",
       "col": 3,
-      "line": 7,
+      "line": 11,
       "message": "fact \"npc.{id}.alive\" is never read or written",
       "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
       "severity": "warning"
@@ -27,7 +27,7 @@
     {
       "code": "W_FACT_UNUSED",
       "col": 3,
-      "line": 8,
+      "line": 12,
       "message": "fact \"world.season\" is never read or written",
       "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
       "severity": "warning"
@@ -35,20 +35,41 @@
     {
       "code": "W_PACK_UNKNOWN",
       "col": 3,
-      "line": 14,
+      "line": 18,
       "message": "pack \"harbor\" is not loaded; the quest stays unavailable until it is",
       "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
       "severity": "warning"
     }
   ],
   "export": {
+    "events": [
+      {
+        "fields": [
+          {
+            "name": "entity",
+            "type": "symbol"
+          },
+          {
+            "name": "alive",
+            "type": "bool"
+          }
+        ],
+        "line": 6,
+        "name": "entity_alive_changed"
+      },
+      {
+        "fields": [],
+        "line": 5,
+        "name": "season_changed"
+      }
+    ],
     "facts": [
       {
         "doc": "",
         "invalidate": "",
         "invalidate_arg": "",
         "key": "ferry.toll_coins",
-        "line": 6,
+        "line": 10,
         "origin": "stored",
         "pattern": false,
         "resolver": "",
@@ -57,10 +78,10 @@
       },
       {
         "doc": "",
-        "invalidate": "",
-        "invalidate_arg": "",
+        "invalidate": "on_event",
+        "invalidate_arg": "entity_alive_changed",
         "key": "npc.{id}.alive",
-        "line": 7,
+        "line": 11,
         "origin": "resolved",
         "pattern": true,
         "resolver": "world.is_alive",
@@ -72,7 +93,7 @@
         "invalidate": "",
         "invalidate_arg": "",
         "key": "player.coins",
-        "line": 5,
+        "line": 9,
         "origin": "stored",
         "pattern": false,
         "resolver": "",
@@ -84,7 +105,7 @@
         "invalidate": "on_event",
         "invalidate_arg": "season_changed",
         "key": "world.season",
-        "line": 8,
+        "line": 12,
         "origin": "resolved",
         "pattern": false,
         "resolver": "time.season",
@@ -94,7 +115,7 @@
     ],
     "files": [
       {
-        "hash": "5ba5d024e94d0d8c",
+        "hash": "9ee1e19c5837228d",
         "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd"
       }
     ],
@@ -675,10 +696,19 @@
       "events": [
         {
           "col": 3,
+          "fact": "npc.{id}.alive",
+          "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+          "line": 11,
+          "name": "entity_alive_changed",
+          "role": "invalidate"
+        },
+        {
+          "col": 3,
           "fact": "world.season",
           "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
-          "line": 8,
-          "name": "season_changed"
+          "line": 12,
+          "name": "season_changed",
+          "role": "invalidate"
         }
       ],
       "facts": [
@@ -687,7 +717,7 @@
           "doc": "",
           "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
           "key": "ferry.toll_coins",
-          "line": 6,
+          "line": 10,
           "readers": [],
           "source": "stored",
           "type": "int",
@@ -697,7 +727,7 @@
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "ferry_toll.pay_toll",
               "kind": "effect",
-              "line": 24
+              "line": 28
             }
           ]
         },
@@ -706,7 +736,7 @@
           "doc": "",
           "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
           "key": "npc.{id}.alive",
-          "line": 7,
+          "line": 11,
           "readers": [],
           "source": "world.is_alive",
           "type": "bool",
@@ -717,35 +747,35 @@
           "doc": "",
           "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
           "key": "player.coins",
-          "line": 5,
+          "line": 9,
           "readers": [
             {
               "col": 3,
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "ferry_toll.pay_toll",
               "kind": "stage",
-              "line": 21
+              "line": 25
             },
             {
               "col": 8,
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "ferry_toll.pay_toll",
               "kind": "stage",
-              "line": 29
+              "line": 33
             },
             {
               "col": 5,
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "c_room",
               "kind": "effect",
-              "line": 39
+              "line": 43
             },
             {
               "col": 3,
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "a_cross",
               "kind": "line",
-              "line": 49
+              "line": 53
             }
           ],
           "source": "stored",
@@ -756,7 +786,7 @@
               "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
               "id": "c_room",
               "kind": "effect",
-              "line": 39
+              "line": 43
             }
           ]
         },
@@ -765,7 +795,7 @@
           "doc": "",
           "file": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
           "key": "world.season",
-          "line": 8,
+          "line": 12,
           "readers": [],
           "source": "time.season",
           "type": "symbol",

@@ -14,6 +14,7 @@ var title: String = ""
 var line_tag: String = ""
 var children: Array[WyrdNode] = []
 var entries: Array[WyrdFact] = []
+var events: Array[WyrdEventDef] = []
 var schema: WyrdFactSchema = null
 var start_line: int = 1
 var start_col: int = 1

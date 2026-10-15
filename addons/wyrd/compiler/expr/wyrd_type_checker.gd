@@ -18,6 +18,8 @@ var context: StringName = &"storylet_or_choice"
 var minutes_per_day: int = 1440
 var reads: Array[StringName] = []
 var uses_chance: bool = false
+## Field name to type for [code]event.<field>[/code] inside an [code]on[/code] handler.
+var event_fields: Dictionary = {}
 
 
 func check(node: WyrdExprNode, expected: StringName) -> void:
@@ -373,6 +375,8 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 			rebuilt.append(kid)
 	if query.is_empty() and node.kind == &"name" and node.text != "":
 		query.append(node.text)
+	if _event_binding(node, query):
+		return
 	var fact := schema.lookup(query)
 	if fact == null:
 		if not force_fact and not dynamic and query.size() == 1 and expected != WyrdSignatures.T_FACT_KEY:
@@ -427,6 +431,21 @@ func _as_name(node: WyrdExprNode, type_name: StringName) -> void:
 	node.kids.clear()
 
 
+func _event_binding(node: WyrdExprNode, query: PackedStringArray) -> bool:
+	if query.size() != 2 or query[0] != "event" or event_fields.is_empty():
+		return false
+	var field := query[1]
+	node.kind = &"fact"
+	node.text = "event.%s" % field
+	node.kids.clear()
+	if not event_fields.has(field):
+		_error(WyrdDiagnostic.E_EVENT_ARG, "unknown event field \"%s\"" % field, node)
+		node.type_name = &"error"
+		return true
+	node.type_name = StringName(event_fields[field])
+	return true
+
+
 func _note(fact: WyrdFact, node: WyrdExprNode) -> void:
 	var key := StringName(fact.key)
 	if not reads.has(key):
@@ -435,7 +454,7 @@ func _note(fact: WyrdFact, node: WyrdExprNode) -> void:
 		return
 	if fact.invalidate == &"" or fact.invalidate == &"per_query":
 		_error(
-			WyrdDiagnostic.E_RESOLVER_INVALIDATION,
+			WyrdDiagnostic.E_WAIT_RESOLVER_MODE,
 			"resolved fact \"%s\" needs on_event or poll invalidation" % fact.key,
 			node
 		)

@@ -31,9 +31,16 @@ var _line_ids: Dictionary = {}
 var _labels: Dictionary = {}
 var _label_uses: Array = []
 var _track_labels: bool = false
+var _events: Dictionary = {}
+var _event_fields: Dictionary = {}
 
 
-func compile(source: WyrdSource, tree: WyrdNode, diagnostics: WyrdDiagnostics) -> WyrdFileDef:
+func compile(
+	source: WyrdSource,
+	tree: WyrdNode,
+	diagnostics: WyrdDiagnostics,
+	events: Dictionary = {}
+) -> WyrdFileDef:
 	_lines = source.text.split("\n")
 	_diagnostics = diagnostics
 	_schema = tree.schema if tree.schema != null else WyrdFactSchema.new()
@@ -43,6 +50,8 @@ func compile(source: WyrdSource, tree: WyrdNode, diagnostics: WyrdDiagnostics) -
 	_labels = {}
 	_label_uses = []
 	_track_labels = false
+	_events = events
+	_event_fields = {}
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
 	for child in tree.children:
@@ -78,6 +87,8 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 				_requires(child, quest)
 			"stage":
 				_stage(child, quest)
+			"on":
+				_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", child.start_line, child.start_col)
 			_:
 				_unknown(child)
 	_finish_quest(quest)
@@ -108,6 +119,11 @@ func _finish_body(stage: WyrdStageDef, stage_names: Dictionary, slot_names: Dict
 		var target := String(row["target"])
 		if not stage_names.has(target):
 			_error(WyrdDiagnostic.E_STAGE_UNKNOWN, "unknown stage \"%s\"" % target, int(row["line"]), int(row["col"]))
+	for handler in stage.handlers:
+		for row in handler.transitions:
+			var target := String(row["target"])
+			if not stage_names.has(target):
+				_error(WyrdDiagnostic.E_STAGE_UNKNOWN, "unknown stage \"%s\"" % target, int(row["line"]), int(row["col"]))
 	for ref in stage.scenes:
 		for slot in ref["with"]:
 			var name := String(slot["name"])
@@ -283,6 +299,8 @@ func _stage_stmt(node: WyrdNode, stage: WyrdStageDef) -> void:
 			_variant(node, stage)
 		"await_host":
 			_await_host(node, stage)
+		"on":
+			_on_event(node, stage)
 		"redirect":
 			_unknown_msg(node, "redirect beat is only valid in a variant")
 		_:
@@ -298,6 +316,77 @@ func _waits(node: WyrdNode, stage: WyrdStageDef) -> void:
 	stage.waits_text = span["text"]
 	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", stage.reads)
 	stage.waits_until = compiled["compiled"]
+	_no_block(node)
+
+
+func _on_event(node: WyrdNode, stage: WyrdStageDef) -> void:
+	_line_id(node, false)
+	var items := node.head
+	var limit := items.size()
+	if limit > 0 and items[limit - 1].kind == &"colon":
+		limit -= 1
+	var shape := limit >= 3 and items[0].kind == &"ident" and items[1].text == "where"
+	if not shape:
+		_unknown_msg(node, "on needs <event> where <condition>")
+		return
+	var handler := WyrdOnEventDef.new()
+	handler.take_span(node)
+	handler.event_name = items[0].text
+	var event: WyrdEventDef = _events.get(handler.event_name) as WyrdEventDef
+	if event == null:
+		_error(WyrdDiagnostic.E_EVENT_UNKNOWN, "unknown event \"%s\"" % handler.event_name, items[0].line, items[0].col)
+	var span := _span_text(items, 2, limit)
+	handler.where_text = span["text"]
+	var saved := _event_fields.duplicate()
+	_event_fields = {}
+	if event != null:
+		for field in event.fields:
+			_event_fields[str(field["name"])] = StringName(str(field["type"]))
+	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads)
+	handler.where_cond = compiled["compiled"]
+	for child in node.children:
+		match child.keyword:
+			"~", "outcome":
+				_keep_effect(child, handler.effects, handler.reads)
+			"->":
+				_handler_transition(child, handler)
+			_:
+				_error(
+					WyrdDiagnostic.E_STMT_UNKNOWN,
+					"on <event> only nests effects and transitions",
+					child.start_line,
+					child.start_col
+				)
+	_event_fields = saved
+	stage.handlers.append(handler)
+	WyrdStmtSpan.add_reads(stage.reads, handler.reads)
+
+
+func _handler_transition(node: WyrdNode, handler: WyrdOnEventDef) -> void:
+	_line_id(node, false)
+	var items := node.head
+	if items.is_empty() or items[0].kind != &"ident":
+		_unknown_msg(node, "stage transition needs a stage id")
+		return
+	var when: WyrdCompiledCondition = null
+	var expr := ""
+	if items.size() > 1:
+		if items.size() < 3 or items[1].text != "when":
+			_unknown_msg(node, "stage transition needs -> <stage> or -> <stage> when <condition>")
+			return
+		var span := _span_text(items, 2, items.size())
+		expr = span["text"]
+		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads)
+		when = compiled["compiled"]
+	handler.transitions.append({
+		"col": items[0].col,
+		"end_col": node.end_col,
+		"end_line": node.end_line,
+		"expr": expr,
+		"line": items[0].line,
+		"target": items[0].text,
+		"when": when,
+	})
 	_no_block(node)
 
 
@@ -532,6 +621,8 @@ func _scene_stmt(node: WyrdNode, scene: WyrdSceneDef) -> void:
 			_when_line(node, scene)
 		"on_empty", "requires":
 			_unknown(node)
+		"on":
+			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", node.start_line, node.start_col)
 		_:
 			var spoken := _speaker(node)
 			if int(spoken["colon"]) >= 0:
@@ -1048,7 +1139,7 @@ func _expr(
 		return {"ast": null, "compiled": null}
 	var compiler := WyrdCondition.new()
 	var compiled := compiler.compile(
-		text, _schema, _diagnostics, _path, line, col, context, WyrdCondition.MINUTES_PER_DAY, _signatures, require_bool, expected
+		text, _schema, _diagnostics, _path, line, col, context, WyrdCondition.MINUTES_PER_DAY, _signatures, require_bool, expected, _event_fields
 	)
 	WyrdStmtSpan.add_reads(into, compiled.reads)
 	return {"ast": compiler.ast, "compiled": compiled}

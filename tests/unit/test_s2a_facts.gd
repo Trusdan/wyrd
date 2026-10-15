@@ -70,6 +70,8 @@ func test_resolvers_events_and_poll() -> void:
 
 const _STORED := """
 language 1
+events
+  season_changed()
 facts
   player.coins : int stored
   ferry.toll_coins : int stored
@@ -81,8 +83,11 @@ scene room
 
 const _RESOLVED := """
 language 1
+events
+  season_changed()
+  entity_alive_changed(entity: symbol, alive: bool)
 facts
-  npc.{id}.alive : bool source: world.is_alive
+  npc.{id}.alive : bool source: world.is_alive invalidate: on_event(entity_alive_changed)
   world.season : symbol source: time.season invalidate: on_event(season_changed)
   world.hour : int source: time.hour invalidate: poll(15)
 scene room

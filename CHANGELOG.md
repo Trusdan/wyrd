@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+WFR13 host world events. A pack declares an `events` block. `Wyrd.events.emit` type-checks the payload, drops `on_event` caches (a pattern key drops every concrete cache), and re-checks dirty conditions before it returns. `begin_batch` / `end_batch` coalesce that re-check. A missing invalidate mode on a resolved fact is `E_RESOLVER_NO_INVALIDATE`. A wait that reads a resolved fact with an empty or `per_query` mode is `E_WAIT_RESOLVER_MODE`. The event log is not part of `save_state`. See `docs/events-draft.md`.
+
 S2 slice runtime. S2 exit met: a save loads back to the same state, a recorded trace replays the same decisions, and the Gullhaven playtest scene is the project main scene (`docs/playtest.md`).
 
 - `save_state` / `load_state` store schema version 1, language version, pack ids and manifest hashes, facts, the deed log, relationship baselines and kinds, role bindings and history, quest status, stage, outcomes, slot locks, and frozen journal text, plus every named RNG stream. 64-bit values are hex. A save during an open scene is refused. A hash mismatch warns in a debug build and is silent in a release. The migration table is empty.

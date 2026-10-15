@@ -152,10 +152,14 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 
 Resolved facts are never "never set". `record deed` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.
 
+## Stage `on`
+
+A stage may handle a declared world event. The form is `on <event> where <condition>:` followed by nested `~` effects and `->` transitions. `event.<field>` is a readonly binding in that condition and in those nested expressions. It is not a stored fact. Storylet `on`, and `on` outside a stage, are `E_STMT_UNKNOWN`. The event schema, payload check, and runtime are in `docs/events-draft.md`.
+
 ## Host-modal step
 
 `await_host` is approved (Corey, 2026-10-14). See `docs/grammar-v1.md` section 9. It is a stage statement: `await_host <screen_id> returns { <field>, ... }`. The word is still not a legal identifier. The runtime pauses the remaining entry steps, calls `request_host_step`, emits `host_step_requested`, and resumes on `complete_host_step`.
 
 ## Not in this draft
 
-Casting proper, `locked_gone`, and resolving `redirect beat` are M4. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Host world-event schemas are later host-adapter work. `test` stays unimplemented.
+Casting proper, `locked_gone`, and resolving `redirect beat` are M4. Until then a `cast` slot binds once to the role's current holder when the quest starts. The linker warns `W_EMPTY_UNCOVERED` when a slot can become empty and the quest does not cover it. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

@@ -14,6 +14,7 @@ var pack_id: String = ""
 var language_version: int = 1
 var manifest_hash: int = 0
 var schema: WyrdFactSchema
+var events: Dictionary = {}
 var quests: Dictionary = {}
 var scenes: Dictionary = {}
 var lines: Dictionary = {}
@@ -33,6 +34,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 	content.pack_id = pack.pack_id
 	content.language_version = pack.language_version
 	content.schema = pack.schema
+	content.events = pack.events.duplicate()
 	content.manifest_hash = hash_pack(pack)
 	for unit in pack.units:
 		content.files.append({"hash": str(unit["hash"]), "path": str(unit["path"])})
