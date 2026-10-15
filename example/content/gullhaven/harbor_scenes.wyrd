@@ -9,7 +9,9 @@ scene toll.offer_room
   when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
   when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
   // "the ferry master" is prose. A role has no title field.
-  when npc.ferry_master.alive: lookout: {holder(ferry).name}, the ferry master, is on the dock. #line:a_alive
+  // filled() is the slot, not the cached npc.ferry_master.alive fact.
+  when filled(ferry): lookout: {holder(ferry).name}, the ferry master, is on the dock. #line:a_alive
+  when not filled(ferry): lookout: The dock is empty. #line:a_empty
   when world.season == storm: narrator: The season smells like rain. #line:a_season
   dock.bell: The bell notes the tide. #line:a_bell
   * [Take the room] disabled_when {player.coins < 2} "short on coins" -> took #line:c_room

@@ -117,6 +117,66 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	await wait_process_frames(1)
 
 
+func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
+	var bram := _spawn()
+	_press(bram, "New game")
+	var opening := _read_lines(bram)
+	assert_eq(_text_of(opening, "The headland bell rang twice before the rain."), "watcher")
+	assert_eq(_line_named(opening, "Bram, the ferry master, is on the dock."), "watcher")
+	assert_false(_has_text(opening, "The dock is empty."))
+	_press_choice(bram, "Take the room")
+	var rest := _read_lines(bram)
+	assert_eq(_line_named(rest, "Two coins, and the boat will cross."), "Bram")
+	var journal := bram.find_child("JournalList", true, false) as ItemList
+	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	_assert_no_missing_holder(opening)
+	_assert_no_missing_holder(rest)
+	var successor := _spawn()
+	_set_toggle(successor, "apprentice", true)
+	_set_toggle(successor, "ferry_alive", false)
+	_press(successor, "New game")
+	var successor_opening := _read_lines(successor)
+	assert_eq(_line_named(successor_opening, "Nia, the ferry master, is on the dock."), "watcher")
+	assert_false(_has_text(successor_opening, "Bram, the ferry master, is on the dock."))
+	assert_false(_has_text(successor_opening, "The dock is empty."))
+	_press_choice(successor, "Take the room")
+	var successor_rest := _read_lines(successor)
+	assert_eq(_line_named(successor_rest, "Two coins, and the boat will cross."), "Nia")
+	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
+	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	_assert_no_missing_holder(successor_opening)
+	_assert_no_missing_holder(successor_rest)
+	var empty := _spawn()
+	_set_toggle(empty, "ferry_alive", false)
+	_press(empty, "New game")
+	var empty_opening := _read_lines(empty)
+	assert_eq(_line_named(empty_opening, "The dock is empty."), "watcher")
+	assert_false(_has_text(empty_opening, "Bram, the ferry master, is on the dock."))
+	_press_choice(empty, "Take the room")
+	var empty_rest := _read_lines(empty)
+	assert_false(_has_text(empty_rest, "Bram, the ferry master, is on the dock."))
+	assert_false(_has_text(empty_rest, "Nia, the ferry master, is on the dock."))
+	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
+	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	var empty_facts := empty.find_child("FactList", true, false) as ItemList
+	var empty_fact_lines := PackedStringArray()
+	for i in empty_facts.item_count:
+		empty_fact_lines.append(empty_facts.get_item_text(i))
+	assert_true(empty_fact_lines.has("alive ferry_master = false"), "\n".join(empty_fact_lines))
+	_assert_no_missing_holder(empty_opening)
+	_assert_no_missing_holder(empty_rest)
+	var mid := _spawn()
+	_press(mid, "New game")
+	var first := _read_lines(mid, 1)
+	assert_eq(String(first[0]["text"]), "A room's two coins a night, and the stew is free.")
+	_set_toggle(mid, "ferry_alive", false)
+	var mid_rest := _read_lines(mid)
+	assert_eq(_line_named(mid_rest, "The dock is empty."), "watcher")
+	assert_false(_has_text(mid_rest, "Bram, the ferry master, is on the dock."))
+	_assert_no_missing_holder(mid_rest)
+	await wait_process_frames(1)
+
+
 func test_panels_fit_at_1280_and_1920() -> void:
 	var window := get_tree().root
 	var saved_size := window.size
@@ -196,6 +256,62 @@ func _choice_button(ui: Node, label: String) -> Button:
 		if button.text == label or button.text.begins_with(prefix):
 			return button
 	return null
+
+
+func _shown_line(ui: Node) -> Dictionary:
+	var dialogue := ui.find_child("Dialogue", true, false) as VBoxContainer
+	assert_not_null(dialogue)
+	var labels: Array[Label] = []
+	for child in dialogue.get_children():
+		var label := child as Label
+		if label != null:
+			labels.append(label)
+	assert_gte(labels.size(), 2)
+	return {"speaker": labels[0].text, "text": labels[1].text}
+
+
+func _read_lines(ui: Node, limit: int = 20) -> Array:
+	var rows: Array = []
+	var guard := 0
+	while guard < limit:
+		var cont := _button_with_text(ui, "Continue")
+		if cont == null or cont.disabled:
+			break
+		rows.append(_shown_line(ui))
+		cont.pressed.emit()
+		guard += 1
+	return rows
+
+
+func _press_choice(ui: Node, label: String) -> void:
+	var choice := _choice_button(ui, label)
+	assert_not_null(choice, label)
+	assert_false(choice.disabled, label)
+	choice.pressed.emit()
+
+
+func _line_named(rows: Array, text: String) -> String:
+	for row in rows:
+		if String(row["text"]) == text:
+			return String(row["speaker"])
+	assert_true(false, "missing line \"%s\"" % text)
+	return ""
+
+
+func _text_of(rows: Array, text: String) -> String:
+	return _line_named(rows, text)
+
+
+func _has_text(rows: Array, text: String) -> bool:
+	for row in rows:
+		if String(row["text"]) == text:
+			return true
+	return false
+
+
+func _assert_no_missing_holder(rows: Array) -> void:
+	for row in rows:
+		assert_false(String(row["text"]).contains("{?"), String(row["text"]))
 
 
 func _drive_until_choice(ui: Node, label: String, route_id: String) -> void:

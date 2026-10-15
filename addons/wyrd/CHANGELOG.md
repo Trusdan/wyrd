@@ -23,6 +23,7 @@ S2b deeds, disposition, and roles. Draft. Quests, scenes, and saves are later sl
 - `live` follows the role. `locked_at` freezes when the stage is entered. `cast` binds once at quest start and logs that casting is M4.
 - Succession is `relation(kind|kind)` or `none`. Secret holders are written to `known/<agent>` only through `tell`.
 - Linker warning `W_EMPTY_UNCOVERED` when a slot has no empty variant and no `on_empty`.
+- Linker warning `W_HOLDER_UNGUARDED` when prose interpolates `holder(slot)` and that slot can be empty without `filled(slot)` or an empty variant on that branch.
 
 S2a runtime core and fact store. Draft. Deeds, quests, scenes, and saves are later slices.
 

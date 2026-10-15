@@ -42,6 +42,7 @@ func link(
 	_quests(units, pack)
 	_scenes_of(units)
 	_commands_of(units)
+	_warn_holder_gaps(units)
 	pack.xref = WyrdFactXref.new()
 	return pack
 
@@ -387,6 +388,287 @@ func _uses(scene: WyrdSceneDef, slot_name: String) -> bool:
 		if item.line_def != null and item.line_def.speaker == slot_name:
 			return true
 	return false
+
+
+func _warn_holder_gaps(units: Array) -> void:
+	# holder(slot) in prose is safe when the line's when requires filled(slot),
+	# or when an empty variant replaces the branch that contains the prose.
+	var sites: Dictionary = {}
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			var slots := _slot_set(quest)
+			for stage in quest.stages:
+				_holder_stage(stage, {}, slots, path, sites)
+	_spread_diverts(sites)
+	for scene_id in sites.keys():
+		_holder_scene(String(scene_id), sites[scene_id])
+
+
+func _holder_stage(
+	stage: WyrdStageDef,
+	inherited: Dictionary,
+	slots: Dictionary,
+	path: String,
+	sites: Dictionary
+) -> void:
+	if stage == null:
+		return
+	var excluded := inherited.duplicate()
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null and variant.state == &"empty" and slots.has(variant.slot):
+			excluded[variant.slot] = true
+	var here: Array = [{"excluded": excluded, "slots": slots}]
+	for journal in stage.journals:
+		_warn_holder_prose(journal.prose, "", here, path)
+	for ref in stage.scenes:
+		_add_holder_site(sites, str(ref["id"]), excluded, slots)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null or variant.body == null:
+			continue
+		var child := inherited.duplicate()
+		if variant.state == &"empty":
+			child.erase(variant.slot)
+		else:
+			child = excluded.duplicate()
+		_holder_stage(variant.body, child, slots, path, sites)
+
+
+func _holder_scene(scene_id: String, site_map: Dictionary) -> void:
+	if not _scenes.has(scene_id):
+		return
+	var located: Dictionary = _scenes[scene_id]
+	var scene: WyrdSceneDef = located["scene"]
+	var path := str(located["path"])
+	var sites: Array = site_map.values()
+	if sites.is_empty():
+		return
+	for item in scene.items:
+		if item.line_def != null:
+			_warn_holder_prose(item.line_def.prose, item.line_def.condition_text, sites, path)
+		if item.choice != null:
+			_warn_holder_prose(item.choice.label, item.choice.condition_text, sites, path)
+
+
+func _warn_holder_prose(node: WyrdExprNode, condition: String, sites: Array, path: String) -> void:
+	if node == null:
+		return
+	if node.kind == &"value" and node.payload is WyrdCompiledCondition:
+		for slot_name in _holder_slots(node.payload as WyrdCompiledCondition):
+			if _holder_exposed(sites, slot_name, condition):
+				_diagnostics.add(
+					WyrdDiagnostic.W_HOLDER_UNGUARDED,
+					"holder(\"%s\") is interpolated where slot \"%s\" can be empty" % [slot_name, slot_name],
+					path,
+					node.line,
+					node.col,
+					WyrdDiagnostic.SEVERITY_WARNING
+				)
+	_warn_holder_prose(node.a, condition, sites, path)
+	_warn_holder_prose(node.b, condition, sites, path)
+	_warn_holder_prose(node.c, condition, sites, path)
+	for kid in node.kids:
+		_warn_holder_prose(kid, condition, sites, path)
+
+
+func _holder_exposed(sites: Array, slot_name: String, condition: String) -> bool:
+	if _implies_filled(condition, slot_name):
+		return false
+	for site in sites:
+		var slots: Dictionary = site["slots"]
+		var excluded: Dictionary = site["excluded"]
+		if slots.has(slot_name) and not excluded.has(slot_name):
+			return true
+	return false
+
+
+func _implies_filled(expr: String, slot_name: String) -> bool:
+	var text := expr.strip_edges()
+	if text.is_empty():
+		return false
+	var unwrapped := _unwrap_parens(text)
+	if unwrapped != text:
+		return _implies_filled(unwrapped, slot_name)
+	var ands := _split_top(text, " and ")
+	if ands.size() > 1:
+		for part in ands:
+			if _implies_filled(part, slot_name):
+				return true
+		return false
+	var ors := _split_top(text, " or ")
+	if ors.size() > 1:
+		for part in ors:
+			if not _implies_filled(part, slot_name):
+				return false
+		return true
+	return text.replace(" ", "") == "filled(%s)" % slot_name
+
+
+func _unwrap_parens(text: String) -> String:
+	if text.length() < 2 or not text.begins_with("(") or not text.ends_with(")"):
+		return text
+	var depth := 0
+	for i in text.length():
+		var ch := text.substr(i, 1)
+		if ch == "(":
+			depth += 1
+		elif ch == ")":
+			depth -= 1
+			if depth == 0 and i < text.length() - 1:
+				return text
+	return text.substr(1, text.length() - 2).strip_edges()
+
+
+func _split_top(text: String, op: String) -> PackedStringArray:
+	var parts := PackedStringArray()
+	var depth := 0
+	var start := 0
+	var i := 0
+	while i < text.length():
+		var ch := text.substr(i, 1)
+		if ch == "(":
+			depth += 1
+			i += 1
+			continue
+		if ch == ")":
+			depth -= 1
+			i += 1
+			continue
+		if depth == 0 and text.substr(i).begins_with(op):
+			parts.append(text.substr(start, i - start).strip_edges())
+			i += op.length()
+			start = i
+			continue
+		i += 1
+	parts.append(text.substr(start).strip_edges())
+	return parts
+
+
+func _holder_slots(compiled: WyrdCompiledCondition) -> PackedStringArray:
+	var found := {}
+	var stack: Array = []
+	var code := compiled.code
+	var ip := 0
+	while ip < code.size():
+		var op := code[ip]
+		ip += 1
+		if op == WyrdOpcodes.PUSH_CONST:
+			stack.append(compiled.consts[code[ip]])
+			ip += 1
+		elif op == WyrdOpcodes.LOAD_FACT:
+			stack.append(null)
+			ip += 1
+		elif op == WyrdOpcodes.PUSH_TRUE or op == WyrdOpcodes.PUSH_FALSE or op == WyrdOpcodes.PUSH_NIL:
+			stack.append(null)
+		elif op == WyrdOpcodes.LOAD_KEY:
+			var count := code[ip]
+			ip += 1
+			for _i in count:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.NEG or op == WyrdOpcodes.NOT:
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.ADD or op == WyrdOpcodes.SUB or op == WyrdOpcodes.MUL or op == WyrdOpcodes.DIV or op == WyrdOpcodes.EQ or op == WyrdOpcodes.NE or op == WyrdOpcodes.LT or op == WyrdOpcodes.LE or op == WyrdOpcodes.GT or op == WyrdOpcodes.GE:
+			if not stack.is_empty():
+				stack.pop_back()
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_RANGE:
+			for _i in 3:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_SET:
+			var count := code[ip]
+			ip += 1
+			for _i in count + 1:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.CALL:
+			var name := String(compiled.consts[code[ip]])
+			var argc := code[ip + 1]
+			ip += 2
+			var args: Array = []
+			for _i in argc:
+				if stack.is_empty():
+					args.append(null)
+				else:
+					args.push_front(stack.pop_back())
+			if name == "holder" and args.size() == 1 and (args[0] is String or args[0] is StringName):
+				found[String(args[0])] = true
+			stack.append(null)
+		elif op == WyrdOpcodes.JUMP:
+			ip += 1
+		elif op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
+			if not stack.is_empty():
+				stack.pop_back()
+			ip += 1
+		else:
+			break
+	var names := PackedStringArray()
+	for key in found.keys():
+		names.append(String(key))
+	names.sort()
+	return names
+
+
+func _add_holder_site(sites: Dictionary, scene_id: String, excluded: Dictionary, slots: Dictionary) -> void:
+	if scene_id.is_empty():
+		return
+	if not sites.has(scene_id):
+		sites[scene_id] = {}
+	var bag: Dictionary = sites[scene_id]
+	var key := "s:%s|e:%s" % [_dict_keys(slots), _dict_keys(excluded)]
+	bag[key] = {"excluded": excluded.duplicate(), "slots": slots.duplicate()}
+
+
+func _spread_diverts(sites: Dictionary) -> void:
+	var growing := true
+	var guard := 0
+	while growing and guard < 32:
+		guard += 1
+		growing = false
+		for scene_id in _scenes.keys():
+			if not sites.has(scene_id):
+				continue
+			var scene: WyrdSceneDef = (_scenes[scene_id] as Dictionary)["scene"]
+			for item in scene.items:
+				if item.divert_kind != &"scene" or item.target.is_empty():
+					continue
+				if not sites.has(item.target):
+					sites[item.target] = {}
+				var dest: Dictionary = sites[item.target]
+				var source: Dictionary = sites[scene_id]
+				for key in source.keys():
+					if dest.has(key):
+						continue
+					dest[key] = source[key]
+					growing = true
+
+
+func _slot_set(quest: WyrdQuestDef) -> Dictionary:
+	var slots := {}
+	for slot in quest.slots:
+		if not slot.name.is_empty():
+			slots[slot.name] = true
+	return slots
+
+
+func _dict_keys(bag: Dictionary) -> String:
+	var names: Array = bag.keys()
+	names.sort()
+	var parts := PackedStringArray()
+	for name in names:
+		parts.append(String(name))
+	return ",".join(parts)
 
 
 func _host_steps(units: Array) -> void:
