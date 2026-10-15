@@ -297,21 +297,24 @@ func _refresh() -> void:
 		_continue.disabled = false
 	else:
 		_continue.disabled = true
+	# pressed is still emitting when a choice calls choose(). choose() emits
+	# line_ready / choices_ready before that handler returns, and those
+	# listeners call _refresh. free() on the button that is emitting is
+	# "Attempted to free a locked object". Remove it now and delete next frame.
 	while _choices.get_child_count() > 0:
 		var child := _choices.get_child(0)
 		_choices.remove_child(child)
-		child.free()
+		if child.is_queued_for_deletion():
+			continue
+		child.queue_free()
 	for view in _dlg().choices():
 		var button := Button.new()
 		button.text = view.text if view.enabled else "%s (%s)" % [view.text, view.reason]
 		button.disabled = not view.enabled
 		button.add_theme_color_override("font_disabled_color", Color(0.45, 0.45, 0.45))
 		var index: int = int(view.index)
-		button.pressed.connect(func() -> void:
-			_dlg().choose(index)
-			_open_offered()
-			_refresh()
-		)
+		# bind copies the index. A loop lambda would share the last value.
+		button.pressed.connect(_choose_pressed.bind(button, index))
 		_choices.add_child(button)
 	_journal.clear()
 	for entry in _runtime.quests.journal("ferry_toll"):
@@ -347,27 +350,33 @@ func _shown(value: Variant) -> String:
 
 
 func _build() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var backdrop := ColorRect.new()
 	backdrop.color = Color(0.12, 0.13, 0.16)
-	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(backdrop)
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 16)
 	margin.add_theme_constant_override("margin_top", 16)
 	margin.add_theme_constant_override("margin_right", 16)
 	margin.add_theme_constant_override("margin_bottom", 16)
 	add_child(margin)
 	var root := VBoxContainer.new()
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 8)
 	margin.add_child(root)
 	_status = Label.new()
+	_status.name = "StatusLine"
 	_status.text = "Loading Gullhaven."
 	root.add_child(_status)
 	root.add_child(_controls())
 	root.add_child(_toggles())
-	var columns := HBoxContainer.new()
+	var columns := HSplitContainer.new()
+	columns.name = "Columns"
+	columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	columns.add_theme_constant_override("separation", 12)
 	root.add_child(columns)
@@ -379,6 +388,7 @@ func _build() -> void:
 
 func _controls() -> HBoxContainer:
 	var row := HBoxContainer.new()
+	row.name = "Controls"
 	row.add_theme_constant_override("separation", 8)
 	_seed = LineEdit.new()
 	_seed.placeholder_text = "seed"
@@ -404,10 +414,11 @@ func _controls() -> HBoxContainer:
 	return row
 
 
-func _toggles() -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 6)
-	for spec in [
+func _toggles() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.name = "Toggles"
+	box.add_theme_constant_override("separation", 2)
+	var specs: Array[Array] = [
 		["ferry_alive", "Ferry master alive"],
 		["local", "Local tag"],
 		["lodging", "Lodging available"],
@@ -416,20 +427,32 @@ func _toggles() -> HBoxContainer:
 		["apprentice", "Apprentice ready"],
 		["short", "Short on coins"],
 		["voice", "Voice"],
-	]:
-		var box := CheckButton.new()
-		box.text = String(spec[1])
-		box.button_pressed = bool(_flags[spec[0]])
+	]
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	for i in specs.size():
+		if i == 4:
+			box.add_child(row)
+			row = HBoxContainer.new()
+			row.add_theme_constant_override("separation", 6)
+		var spec: Array = specs[i]
+		var toggle := CheckButton.new()
 		var key := String(spec[0])
-		box.toggled.connect(func(on: bool) -> void: set_flag(key, on))
-		_buttons[key] = box
-		row.add_child(box)
-	return row
+		toggle.name = "Toggle_%s" % key
+		toggle.text = String(spec[1])
+		toggle.button_pressed = bool(_flags[key])
+		toggle.toggled.connect(_flag_toggled.bind(key))
+		_buttons[key] = toggle
+		row.add_child(toggle)
+	box.add_child(row)
+	return box
 
 
 func _dialogue() -> VBoxContainer:
 	var column := VBoxContainer.new()
+	column.name = "Dialogue"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 8)
 	_speaker = Label.new()
 	_speaker.add_theme_font_size_override("font_size", 18)
@@ -437,35 +460,67 @@ func _dialogue() -> VBoxContainer:
 	_body = Label.new()
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.custom_minimum_size = Vector2(360, 80)
+	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_theme_font_size_override("font_size", 22)
 	column.add_child(_body)
 	_continue = _button("Continue", press_continue)
+	_continue.name = "Continue"
 	_continue.disabled = true
 	column.add_child(_continue)
 	_choices = VBoxContainer.new()
+	_choices.name = "Choices"
 	column.add_child(_choices)
 	return column
 
 
 func _side() -> VBoxContainer:
 	var column := VBoxContainer.new()
-	column.custom_minimum_size = Vector2(420, 0)
+	column.name = "Side"
+	column.custom_minimum_size = Vector2(320, 0)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", 8)
 	var journal_label := Label.new()
 	journal_label.text = "Journal"
 	column.add_child(journal_label)
-	_journal = ItemList.new()
-	_journal.custom_minimum_size = Vector2(0, 120)
-	_journal.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(_journal)
+	column.add_child(_scroll_list("Journal", 120))
 	var fact_label := Label.new()
 	fact_label.text = "Facts, quest, slots"
 	column.add_child(fact_label)
-	_facts = ItemList.new()
-	_facts.custom_minimum_size = Vector2(0, 220)
-	_facts.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(_facts)
+	column.add_child(_scroll_list("Fact", 180))
 	return column
+
+
+func _scroll_list(title: String, min_height: int) -> ScrollContainer:
+	var scroll := ScrollContainer.new()
+	scroll.name = "%sScroll" % title
+	scroll.custom_minimum_size = Vector2(0, min_height)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var list := ItemList.new()
+	list.name = "%sList" % title
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	if title == "Journal":
+		_journal = list
+	else:
+		_facts = list
+	return scroll
+
+
+func _choose_pressed(button: Button, index: int) -> void:
+	# pressed.emit() still fires when the button is disabled. choose() errors then.
+	if button.disabled:
+		return
+	_dlg().choose(index)
+	_open_offered()
+	_refresh()
+
+
+func _flag_toggled(on: bool, key: String) -> void:
+	set_flag(key, on)
 
 
 func _button(title: String, call: Callable) -> Button:
