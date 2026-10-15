@@ -38,6 +38,8 @@ quest <id> "<Title>"
 
 `cast(<condition>)` is type-checked only. Casting arrives in M4. `requires` and `redirect beat` are parsed only.
 
+A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
+
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
 
 Slot states: `default`, `successor`, `empty`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. The slice runtime handles the first four.

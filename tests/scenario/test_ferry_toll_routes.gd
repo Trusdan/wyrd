@@ -12,12 +12,16 @@ func test_route_take_the_room() -> void:
 	assert_eq(opening[0]["text"], "A room's two coins a night, and the stew is free.")
 	assert_eq(opening[0]["speaker"], "tavern_owner")
 	assert_eq(opening[0]["name"], "innkeeper")
+	assert_eq(opening[2]["text"], "Bram, the ferry master, is on the dock.")
+	assert_eq(opening[2]["name"], "watcher")
 	assert_null(opening[0]["audio"])
 	assert_eq(runtime.dialogue.choices().size(), 1)
 	assert_eq(runtime.dialogue.choices()[0].text, "Take the room")
 	harness.choose_text(runtime, "Take the room")
 	var rest := harness.line_rows(runtime)
 	assert_eq(harness.ids_of(rest), PackedStringArray(["a920", "a_cross", "a_leave"]))
+	assert_eq(rest[1]["speaker"], "ferry_master")
+	assert_eq(rest[1]["name"], "Bram")
 	assert_false(runtime.dialogue.is_open())
 	assert_eq(runtime.facts.get(&"player.coins"), 2)
 	assert_eq(runtime.facts.get(&"harbor.room_taken"), true)
@@ -26,22 +30,22 @@ func test_route_take_the_room() -> void:
 	assert_true(runtime.quests.waiting_reason("ferry_toll").begins_with("waits_until:"))
 	var entry: Dictionary = runtime.quests.journal("ferry_toll")[0]
 	assert_eq(entry["id"], "j_ft_01")
-	assert_eq(String(entry["text"]), "ferry master at the dock wants 2 coins before the crossing.")
+	assert_eq(String(entry["text"]), "Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 	assert_eq(runtime.facts.get(&"ferry.toll_coins"), 2)
 	runtime.facts.set(&"ferry.toll_coins", 9)
-	assert_eq(String(runtime.quests.journal("ferry_toll")[0]["text"]), "ferry master at the dock wants 2 coins before the crossing.")
+	assert_eq(String(runtime.quests.journal("ferry_toll")[0]["text"]), "Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 
 
 func test_journal_uses_the_holder_display_name() -> void:
 	var opened := _boot(false)
 	var runtime: WyrdRuntime = opened["runtime"]
 	var host: WyrdFakeHost = opened["host"]
-	host.world.add_entity(&"ferry_master", &"person", "Bram", PackedStringArray(), true)
+	host.world.add_entity(&"ferry_master", &"person", "Sera", PackedStringArray(), true)
 	_finish_room(runtime)
 	assert_eq(runtime.roles.holder(&"ferry"), &"ferry_master")
-	assert_eq(host.world.display_name(&"ferry_master"), "Bram")
+	assert_eq(host.world.display_name(&"ferry_master"), "Sera")
 	var entry: Dictionary = runtime.quests.journal("ferry_toll")[0]
-	assert_eq(String(entry["text"]), "Bram at the dock wants 2 coins before the crossing.")
+	assert_eq(String(entry["text"]), "Sera, the ferry master, at the dock wants 2 coins before the crossing.")
 
 
 func test_route_local_place() -> void:
@@ -134,7 +138,7 @@ func test_route_ferry_empty_waits() -> void:
 	runtime.dialogue.open_scene("toll.offer_room")
 	var opening := harness.line_rows(runtime)
 	assert_true(harness.ids_of(opening).has("a_alive"))
-	host.world.add_entity(&"ferry_master", &"person", "ferry master", PackedStringArray(), false)
+	host.world.add_entity(&"ferry_master", &"person", "Bram", PackedStringArray(), false)
 	runtime.roles.vacate(&"ferry_master", &"died")
 	harness.choose_text(runtime, "Take the room")
 	harness.line_rows(runtime)
@@ -166,13 +170,13 @@ func test_route_successor_resumes() -> void:
 	_finish_room(runtime)
 	assert_eq(runtime.quests.stage("ferry_toll"), "pay_toll")
 	assert_ne(runtime.quests.variant_of("ferry_toll"), "ferry.empty")
-	assert_string_contains(String(runtime.quests.journal("ferry_toll")[0]["text"]), "apprentice")
+	assert_eq(String(runtime.quests.journal("ferry_toll")[0]["text"]), "Nia, the ferry master, at the dock wants 2 coins before the crossing.")
 	runtime.tick(0)
 	assert_eq(runtime.quests.stage("ferry_toll"), "cross")
 	runtime.dialogue.open_scene("toll.depart")
 	var rows := _Harness.new().line_rows(runtime)
 	assert_eq(rows[0]["speaker"], "dock_apprentice")
-	assert_eq(rows[0]["name"], "apprentice")
+	assert_eq(rows[0]["name"], "Nia")
 	assert_eq(runtime.quests.status("ferry_toll"), &"completed")
 	assert_eq(runtime.quests.outcome("ferry_toll", "crossing"), "done")
 

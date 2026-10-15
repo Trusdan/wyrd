@@ -94,9 +94,9 @@ func _blank() -> WyrdRuntime:
 	var host: WyrdFakeHost = opened["host"]
 	host.world.add_entity(&"player", &"person", "traveler", PackedStringArray(), true)
 	host.world.add_entity(&"tavern_owner", &"person", "innkeeper", PackedStringArray(), true)
-	host.world.add_entity(&"ferry_master", &"person", "ferry master", PackedStringArray(), true)
+	host.world.add_entity(&"ferry_master", &"person", "Bram", PackedStringArray(), true)
 	host.world.add_entity(&"storm_watcher", &"person", "watcher", PackedStringArray(), true)
-	host.world.add_entity(&"dock_apprentice", &"person", "apprentice", PackedStringArray(), true)
+	host.world.add_entity(&"dock_apprentice", &"person", "Nia", PackedStringArray(), true)
 	host.world.add_entity(&"dock.bell", &"object", "bell", PackedStringArray(), true)
 	return opened["runtime"]
 
