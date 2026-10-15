@@ -102,7 +102,6 @@ func test_slot_modes_and_states() -> void:
 	runtime.roles.enter_stage("gate", "pay")
 	assert_eq(runtime.roles.slot_holder("gate", &"ferry"), &"ada")
 	runtime.roles.begin_quest("gate")
-	assert_push_warning("casting is M4")
 	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"")
 	runtime.roles.assign(&"watcher", &"ada")
 	runtime.roles.begin_quest("gate")
@@ -112,7 +111,6 @@ func test_slot_modes_and_states() -> void:
 	runtime.roles.assign(&"watcher", &"bea")
 	runtime.roles.vacate(&"watcher", &"left")
 	runtime.roles.begin_quest("gate")
-	assert_push_warning("casting is M4")
 	runtime.roles.assign(&"watcher", &"ada")
 	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"")
 	runtime.start_new_game(9)
@@ -121,11 +119,10 @@ func test_slot_modes_and_states() -> void:
 	runtime.social.set_kind(&"ada", &"bea", &"apprentice")
 	runtime.roles.vacate(&"watcher", &"left")
 	runtime.roles.begin_quest("gate")
-	assert_push_warning("casting is M4")
-	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"bea")
-	assert_eq(runtime.roles.slot_state(&"lookout", "gate"), &"successor")
+	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"")
+	assert_eq(runtime.roles.slot_state(&"lookout", "gate"), &"empty")
 	runtime.roles.assign(&"watcher", &"ada")
-	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"bea")
+	assert_eq(runtime.roles.slot_holder("gate", &"lookout"), &"")
 
 
 func test_conditions_read_deeds_and_known_player() -> void:

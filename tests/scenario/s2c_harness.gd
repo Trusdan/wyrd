@@ -12,7 +12,7 @@ func open_pack(path: String) -> Dictionary:
 	return {"host": host, "report": report, "runtime": runtime}
 
 
-func boot_gullhaven(local_tag: bool = false, coins: int = 4) -> Dictionary:
+func boot_gullhaven(local_tag: bool = false, coins: int = 4, storm_heard: bool = true) -> Dictionary:
 	var opened := open_pack(HARBOR)
 	var runtime: WyrdRuntime = opened["runtime"]
 	var host: WyrdFakeHost = opened["host"]
@@ -30,6 +30,10 @@ func boot_gullhaven(local_tag: bool = false, coins: int = 4) -> Dictionary:
 	runtime.roles.assign(&"ferry_master", &"ferry_master")
 	runtime.roles.assign(&"storm_watcher", &"storm_watcher")
 	runtime.facts.set(&"player.coins", coins)
+	# The example cast reads world.storm_heard. Left false, nobody passes and
+	# on_empty: wait holds gossip. Route tests set it so the cast can pick.
+	if storm_heard:
+		runtime.facts.set(&"world.storm_heard", true)
 	runtime.deeds.record(&"arrived", &"player", &"", &"gullhaven")
 	runtime.tick(0)
 	return opened

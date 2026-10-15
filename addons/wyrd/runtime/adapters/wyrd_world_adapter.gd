@@ -40,3 +40,16 @@ func display_name(id: StringName) -> String:
 func members(faction: StringName) -> PackedStringArray:
 	push_error("not implemented: WyrdWorldAdapter.members(%s)" % faction)
 	return PackedStringArray()
+
+
+## Entity ids that match [param filter]. An empty kind and tag means every entity
+## the host is willing to offer. Order is not significant. Object and item
+## casting is not a separate path.
+func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
+	var kind := ""
+	var tag := ""
+	if filter != null:
+		kind = String(filter.kind)
+		tag = String(filter.tag)
+	push_error("not implemented: WyrdWorldAdapter.candidates(%s, %s)" % [kind, tag])
+	return PackedStringArray()

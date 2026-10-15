@@ -14,8 +14,8 @@ extends RefCounted
 ## [code]host_decides[/code] leave the role [code]contested[/code] until
 ## [method assign]. [code]vacancy: abolish[/code] runs when a strategy finds
 ## nobody. [code]live[/code] follows the role. [code]locked_at[/code] freezes in
-## [method enter_stage]. [code]cast[/code] freezes in [method begin_quest] to
-## the current holder; casting proper is M4. Slot state [code]hostile[/code]
+## [method enter_stage]. [code]cast[/code] picks once in [method begin_quest]
+## from [method WyrdWorldAdapter.candidates] and freezes that entity. Slot state [code]hostile[/code]
 ## means disposition toward [code]player[/code] is below the threshold.
 ## Precedence is [code]locked_gone[/code], [code]contested[/code], [code]empty[/code],
 ## then [code]barred[/code], [code]hostile[/code], [code]unwilling[/code],
@@ -54,13 +54,13 @@ var clock: Callable = Callable()
 var config_of: Callable = Callable()
 var content_of: Callable = Callable()
 var world_of: Callable = Callable()
-## [code]eval_with(condition, locals)[/code] evaluates one eligibility condition.
+## [code]eval_with(condition, locals)[/code] evaluates one eligibility or cast condition.
 var eval_with: Callable = Callable()
-## [code]trace_of(kind, fields)[/code] records one eligibility or slot-state line. Optional.
+## [code]trace_of(kind, fields)[/code] records one eligibility, slot-state, succession, or cast line. Optional.
 var trace_of: Callable = Callable()
 ## [code]stage_of(quest_id)[/code] returns the quest's current stage id. Optional.
 var stage_of: Callable = Callable()
-## [code]seed_of()[/code] returns the game seed used for a faction tie-break.
+## [code]seed_of()[/code] returns the game seed used for a faction tie-break or a cast pick.
 var seed_of: Callable = Callable()
 ## [code]election_of()[/code] returns the registered [WyrdElectionAdapter], or null.
 var election_of: Callable = Callable()
@@ -75,7 +75,6 @@ var _bindings: Dictionary = {}
 var _defs: Dictionary = {}
 var _frozen: Dictionary = {}
 var _told: Dictionary = {}
-var _cast_noted: Dictionary = {}
 var _pending: Dictionary = {}
 var _abolished: Dictionary = {}
 var _started: bool = false
@@ -113,7 +112,6 @@ func clear() -> void:
 	_bindings.clear()
 	_frozen.clear()
 	_told.clear()
-	_cast_noted.clear()
 	_pending.clear()
 	_abolished.clear()
 	_apply_all_defaults()
@@ -216,7 +214,6 @@ func import_state(data: Dictionary) -> void:
 	_defs.clear()
 	_frozen.clear()
 	_told.clear()
-	_cast_noted.clear()
 	_pending.clear()
 	_abolished.clear()
 	var bindings: Dictionary = data.get("bindings", {})
@@ -652,12 +649,10 @@ func begin_quest(quest_id: String) -> void:
 		var key := _freeze_key(quest_id, slot.name)
 		if _frozen.has(key):
 			continue
-		var live := _binding(StringName(slot.role))
-		_frozen[key] = {"holder": live["holder"], "status": live["status"]}
-		if _cast_noted.has(slot.name):
-			continue
-		_cast_noted[slot.name] = true
-		push_warning("cast slot \"%s\" binds once to the current holder; casting is M4" % slot.name)
+		var picked := _cast_pick(quest_id, slot)
+		var status := DEFAULT if picked != &"" else EMPTY
+		_frozen[key] = {"holder": picked, "status": status}
+		_trace_cast(quest_id, slot, picked)
 
 
 func enter_stage(quest_id: String, stage_id: String) -> void:
@@ -795,6 +790,48 @@ func _record_role_changed(role: StringName, old: StringName, next: StringName) -
 	if deeds == null or old == &"" or next == &"" or old == next:
 		return
 	deeds.record(&"role_changed", old, next, &"", PackedStringArray([String(role)]), 1.0, null, &"public", false)
+
+
+func _cast_pick(quest_id: String, slot: WyrdSlotDef) -> StringName:
+	var world := _world()
+	if world == null:
+		return &""
+	var seen := {}
+	var ids: Array = []
+	for raw in world.candidates(WyrdEntityFilter.new()):
+		var who := StringName(str(raw))
+		if who == &"" or seen.has(who):
+			continue
+		seen[who] = true
+		if _cast_accepts(slot, who):
+			ids.append(String(who))
+	if ids.is_empty():
+		return &""
+	ids.sort()
+	var key := StringName("%s|%s" % [quest_id, slot.name])
+	var rng := WyrdRng.for_decision(_game_seed(), &"cast", key, _now())
+	return StringName(String(ids[rng.randi_bounded(ids.size())]))
+
+
+func _cast_accepts(slot: WyrdSlotDef, entity: StringName) -> bool:
+	if slot.cast_when == null:
+		return true
+	if not eval_with.is_valid():
+		push_error("WyrdRoles: cast has no condition evaluator")
+		return false
+	return bool(eval_with.call(slot.cast_when, {"candidate": entity}))
+
+
+func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call("cast", {
+		"entity": String(picked),
+		"quest": quest_id,
+		"reason": "picked" if picked != &"" else "empty",
+		"role": slot.role,
+		"slot": slot.name,
+	})
 
 
 func _trace_succession(role: StringName, strategy: String, old: StringName, next: StringName, reason: String) -> void:

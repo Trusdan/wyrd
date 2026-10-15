@@ -96,6 +96,21 @@ func members(faction: StringName) -> PackedStringArray:
 	return rows
 
 
+func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
+	var rows := PackedStringArray()
+	for id in _entities.keys():
+		var record := _entities[id] as EntityRecord
+		if record == null:
+			continue
+		if filter != null and filter.kind != &"" and record.kind != filter.kind:
+			continue
+		if filter != null and filter.tag != &"" and not record.tags.has(String(filter.tag)):
+			continue
+		rows.append(String(id))
+	rows.sort()
+	return rows
+
+
 func _record(id: StringName) -> EntityRecord:
 	if not _entities.has(id):
 		return null

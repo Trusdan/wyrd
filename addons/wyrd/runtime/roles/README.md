@@ -18,7 +18,7 @@ Slot modes:
 
 - `live` is the current holder.
 - `locked_at` freezes in `enter_stage` for that stage and stays frozen. If that frozen holder is vacated or is not alive, the slot state is `locked_gone` even when the role has a successor. `holder()` stays the frozen person.
-- `cast` freezes in `begin_quest` to whoever holds the role then. Casting proper is M4.
+- `cast` picks once in `begin_quest` from `WyrdWorldAdapter.candidates`. The condition is tested with `candidate` bound to each id. A seeded pick is frozen with status `default`. No survivor leaves the slot `empty`. A later `begin_quest` does not pick again. One `cast` trace line (`quest`, `role`, `slot`, `entity`, `reason`) is written when tracing is on. Reasons are `picked` and `empty`. `WyrdTrace.prefix` filters it the same way as a slot line.
 
 Slot-state precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant on the current stage wins, except `contested`: with no `contested` variant the `empty` variant is used and the state stays `contested` (reason `fallback_empty`). `locked_gone` still beats a contest. `hostile` is `disposition(holder, player)` below `hostile_threshold` (20, or the role override). `unwilling` evaluates its condition with `$h` bound to the holder. `barred` evaluates its condition against the player. A quest resolution writes one `slot_state` trace line (`quest`, `role`, `slot`, `state`, `reason`). Set `WyrdTrace.prefix` to keep lines whose quest, role, or slot starts with that text. The same state and reason are not logged again until they change. A `contested` variant does not satisfy the empty coverage warning.
 

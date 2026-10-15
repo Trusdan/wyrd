@@ -36,7 +36,7 @@ quest <id> "<Title>"
       redirect beat <beat> to <slot>
 ```
 
-`cast(<condition>)` is type-checked only. Casting arrives in M4. `requires` and `redirect beat` are parsed only.
+`cast(<condition>)` picks once at quest start. In that condition `candidate` is the entity being tested. A constant condition warns `W_SLOT_COND_ALWAYS` or `W_SLOT_COND_NEVER`. `requires` and `redirect beat` are parsed only.
 
 A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
 
@@ -198,4 +198,4 @@ role ferry_master
 
 ## Not in this draft
 
-Role definitions are compiled from a `role` block. `unwilling`, `barred`, `locked_gone`, and `contested` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, `election`, and `vacancy: abolish` run. Casting proper stays later M4 work. Until then a `cast` slot binds once to the role's current holder when the quest starts. Resolving `redirect beat` stays later too. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.
+Role definitions are compiled from a `role` block. `unwilling`, `barred`, `locked_gone`, and `contested` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, `election`, and `vacancy: abolish` run. `cast(<condition>)` asks `WyrdWorldAdapter.candidates` once when the quest starts, keeps the ids the condition accepts, and freezes a seeded pick. No survivor leaves the slot `empty`. The freeze is saved with the other slot locks. One `cast` line is logged. Resolving `redirect beat` stays later too. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

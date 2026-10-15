@@ -84,6 +84,9 @@ func new_game(seed_value: int) -> void:
 	if bool(_flags["apprentice"]):
 		_arm_apprentice()
 	_runtime.facts.set(&"player.coins", 0 if bool(_flags["short"]) else 4)
+	# The lookout cast reads world.storm_heard. A false rumour leaves the slot
+	# empty, and on_empty: wait holds gossip. Set it so the cast can pick.
+	_runtime.facts.set(&"world.storm_heard", true)
 	_runtime.deeds.record(&"arrived", &"player", &"", &"gullhaven")
 	_apply_commands()
 	_runtime.tick(0)

@@ -32,8 +32,8 @@
       "flags": {},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": false, "continue_enabled": true, "status_contains": "New game, seed 1."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock.", "continue_enabled": true}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock.", "continue_enabled": true}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind.", "continue_enabled": true}},
@@ -56,8 +56,8 @@
       "flags": {"apprentice": true, "ferry_alive": false},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Nia, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Nia, the ferry master, is on the dock."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -79,8 +79,8 @@
       "flags": {"ferry_alive": false},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_empty", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The dock is empty."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_empty", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The dock is empty."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -100,8 +100,8 @@
       "flags": {"local": true},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room", "I have a place in town"]}},
         {"name": "06_place", "action": "choice", "target": "I have a place in town", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -121,8 +121,8 @@
       "flags": {"lodging": false},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_no_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "No room left tonight."}},
@@ -141,8 +141,8 @@
       "flags": {"notice": true},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -162,8 +162,8 @@
       "flags": {"notice": false},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
         {"name": "05_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -183,8 +183,8 @@
       "flags": {"storm": true},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain.", "contains": ["world.season = storm"]}},
         {"name": "05_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide.", "continue_enabled": true}},
         {"name": "06_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room", "The bell notes the tide."]}}
@@ -201,7 +201,7 @@
       "flags": {"voice": true},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": true, "continue_enabled": true}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "audio": true}}
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain.", "audio": true}}
       ],
       "final": {
         "contains": ["The headland bell rang twice before the rain."],
@@ -214,7 +214,7 @@
       "flags": {"voice": false},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "audio": false, "continue_enabled": true}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "audio": false}}
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain.", "audio": false}}
       ],
       "final": {
         "contains": ["The headland bell rang twice before the rain."],
@@ -228,8 +228,8 @@
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true}},
         {"name": "02_save_refused", "action": "press", "target": "Save", "expect": {"status_contains": "Can't save during a conversation.", "speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free."}},
-        {"name": "03_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "03_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "05_bell", "action": "press", "target": "Continue", "expect": {"speaker": "bell", "line": "The bell notes the tide."}},
         {"name": "06_choices", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["Take the room"]}},
         {"name": "07_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
@@ -266,8 +266,8 @@
       "flags": {"storm": true},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["world.season = storm", "season_changed"]}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain."}},
-        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain."}},
+        {"name": "03_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "04_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain.", "contains": ["world.season = storm"]}}
       ],
       "final": {
@@ -294,9 +294,9 @@
       "flags": {},
       "steps": [
         {"name": "01_new_game", "action": "press", "target": "New game", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "contains": ["world.season = absent"]}},
-        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
-        {"name": "03_storm", "action": "flag", "target": "storm", "on": true, "expect": {"speaker": "watcher", "line": "The headland bell rang twice before the rain.", "continue_enabled": true, "contains": ["world.season = storm", "season_changed"]}},
-        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "watcher", "line": "Bram, the ferry master, is on the dock."}},
+        {"name": "02_headland", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain.", "continue_enabled": true}},
+        {"name": "03_storm", "action": "flag", "target": "storm", "on": true, "expect": {"speaker": "Nia", "line": "The headland bell rang twice before the rain.", "continue_enabled": true, "contains": ["world.season = storm", "season_changed"]}},
+        {"name": "04_lookout", "action": "press", "target": "Continue", "expect": {"speaker": "Nia", "line": "Bram, the ferry master, is on the dock."}},
         {"name": "05_season", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The season smells like rain.", "contains": ["world.season = storm"]}}
       ],
       "final": {
