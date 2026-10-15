@@ -15,5 +15,8 @@ facts
   harbor.bell_count  : int    stored  doc: "How many times the harbor bell was struck."
   tavern.stew_bowls  : int    stored  doc: "Bowls of stew left on the hearth."
   world.storm_heard  : bool   stored  doc: "Whether the storm rumour was heard."
+  harbor.factor_refuses : bool stored doc: "Whether the harbor factor refuses to sign."
+  harbor.guild_signed   : bool stored doc: "Whether the harbor guild has signed the levy."
+  harbor.levy_posted    : bool stored doc: "Whether the signed levy has been posted."
   world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
   npc.{id}.alive     : bool   source: world.is_alive  invalidate: on_event(entity_alive_changed)  doc: "Whether that person is alive in the host world."

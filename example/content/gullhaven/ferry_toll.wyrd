@@ -23,6 +23,9 @@ quest ferry_toll "The Ferry Toll"
     ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
     ~ unlock topic storm_rumour
     ~ do post_notice(player) on_fail -> gossip
+    variant ferry.locked_gone:
+      journal: The ferry master who took the lock is gone. #line:j_ft_gone
+      waits_until false
     variant ferry.empty:
       journal: The dock is empty, so the crossing waits. #line:j_ft_empty
       -> gossip

@@ -4,13 +4,16 @@ Generic example village for Wyrd.
 
 Gullhaven is a fishing village invented for Wyrd. Its people and places are not from any host game.
 
-`content/gullhaven/` is the S1 slice, pack `harbor`:
+`content/gullhaven/` is the example pack `harbor`:
 
 - `facts.wyrd` declares the shared facts, including one pattern and one resolved season.
-- `ferry_toll.wyrd` is the quest: live, locked, and cast slots, a deed-count start, a wait, a journal, a variant, and the six slice effects.
+- `harbor_roles.wyrd` defines the tavern owner, ferry master, storm watcher, harbor factor, and harbor reeve.
+- `ferry_toll.wyrd` is the ferry quest: live, locked, and cast slots, a deed-count start, a wait, a journal, `locked_gone`, and the six slice effects.
+- `harbor_guild.wyrd` is The Harbor Guild. It starts on `asked_guild` and runs a guild-assigned factor, an elected reeve, a barred visitor, an unwilling factor, and abolish.
 - `harbor_scenes.wyrd` is `toll.offer_room` (slot, entity, and narrator lines, choices, a nested `do`, and `on_abort`). After `-> scene toll.depart` the success path is `-> end`, so it does not fall into `no_room`.
 - `dock_scenes.wyrd` is `toll.depart`, reached with `-> scene` from the other file.
-- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`.
+- `harbor_bell.wyrd` is the harbor bell quest.
+- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`. `playtest/harbor_election.gd` is the no-op election adapter New game registers.
 
 ```bash
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
