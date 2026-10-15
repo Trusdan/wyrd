@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.0-s3 - 2026-10-15
+
+Packaging for a host pin. `tools/vendor_wyrd.sh` copies `addons/wyrd` and writes `VERSION`. See `docs/host-checklist.md`. Tags before 1.0 are for the host check only.
+
 WFR13 host world events. A pack declares an `events` block. `Wyrd.events.emit` type-checks the payload, drops `on_event` caches (a pattern key drops every concrete cache), and re-checks dirty conditions before it returns. `begin_batch` / `end_batch` coalesce that re-check. A missing invalidate mode on a resolved fact is `E_RESOLVER_NO_INVALIDATE`. A wait that reads a resolved fact with an empty or `per_query` mode is `E_WAIT_RESOLVER_MODE`. The event log is not part of `save_state`. See `docs/events-draft.md`.
 
 S2 slice runtime. S2 exit met: a save loads back to the same state, a recorded trace replays the same decisions, and the Gullhaven playtest scene is the project main scene (`docs/playtest.md`).

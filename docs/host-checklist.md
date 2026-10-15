@@ -1,0 +1,69 @@
+# Host checklist
+
+A host pins a Wyrd tag and vendors `addons/wyrd`. The host's own `.wyrd` content and tests stay in the host repository. Tags before 1.0 are for the host check only. Godot and GUT stay on the pins in `tools/pins.env`.
+
+## Vendor
+
+From a Wyrd checkout:
+
+```bash
+tools/vendor_wyrd.sh /path/to/host-project
+tools/vendor_wyrd.sh /path/to/host-project <tag-or-commit>
+```
+
+`/path/to/host-project` is the directory that will contain `addons/`. The script copies `addons/wyrd` only, writes `addons/wyrd/VERSION`, and prints `git describe` for the commit it used. When that commit is an exact tag, it prints the tag too.
+
+Run the script again to refresh `addons/wyrd`. Files the source no longer has are removed from that folder. The rest of the host project stays. The script is part of this repository. It is not inside the vendored folder. Fixes land here, then the host vendors the new pin.
+
+## Configure
+
+The editor plugin registers no autoload in this pin. Construct the facade in `addons/wyrd/runtime/wyrd.gd` (or a `WyrdRuntime`) and call `configure` with a `WyrdConfig`.
+
+`WyrdConfig` holds the hour bucket, deed half-lives, axis deltas, `disposition_default`, `hostile_threshold`, and `scheduler_work_per_tick`. Fact declarations live in the host's `.wyrd` files. An optional disposition callable is `social.register_formula`. The default is `disposition_default + affinity / 2`.
+
+## Adapters
+
+Subclass each base directly and pass the instance to `register_adapter(base, adapter)`:
+
+- `WyrdWorldAdapter`
+- `WyrdInventoryAdapter`
+- `WyrdSpatialAdapter`
+- `WyrdTimeAdapter`
+- `WyrdActionAdapter`
+
+`register_adapter` accepts a script whose parent is that base. An adapter method that stays on the stub reports an error and returns a typed fallback. Typed host functions use `register_function`.
+
+`WyrdActionAdapter.execute` runs commands. `load_content` reads `wyrd_commands.json` beside the manifest.
+
+Dialogue text stays on screen. `dialogue.register_line_audio` is optional and may stay unset. Audio never hides a line and never advances it. `dialogue.advance()` is the only way on.
+
+## Load
+
+`load_content(manifest)` compiles the manifest's `.wyrd` sources. Any error refuses the load. An exported game includes `*.wyrd` and the manifest in the export filter.
+
+Check the pack from the host project with the pinned Godot:
+
+```bash
+godot --headless --path /path/to/host-project \
+  -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest path/to/pack.wyrdmanifest.tres
+```
+
+## Start and load
+
+`start_new_game(seed)` stores the seed, clears facts, deeds, roles, quests, RNG streams, and the trace, and sets play minutes to 0.
+
+`load_state(data)` restores a document from `save_state()`. Load content first. `start_new_game` and `load_state` both refuse while a scene is open.
+
+## Save
+
+Call `can_save()` before writing a save. It is false while a scene is open. Embed the dictionary from `save_state()` in the host save and pass that same dictionary to `load_state`. One shape is `save["wyrd"]`.
+
+The document is schema version 1. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, and each named RNG stream. 64-bit values are hex. The event log is not included. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. See `addons/wyrd/runtime/save/README.md`.
+
+## Events
+
+When the host world changes, call `events.emit(event_name, payload)`. The payload is checked against the pack's `events` block. A mismatch is an error and leaves caches in place. A match drops `on_event` caches and re-checks dirty conditions before `emit` returns. `events.begin_batch()` and `events.end_batch()` coalesce that re-check.
+
+## Tick
+
+Call `tick(game_minutes)` when the host clock advances. `game_minutes` is how many minutes to add, and it is zero or greater. `tick` moves the play clock, refreshes due polls, re-checks dirty conditions up to `scheduler_work_per_tick`, and advances quests and an open scene.

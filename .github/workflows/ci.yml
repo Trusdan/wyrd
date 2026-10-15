@@ -16,6 +16,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Vendor script smoke
+        run: tools/vendor_wyrd_smoke.sh
+
       - name: Install pinned Godot
         run: |
           set -euo pipefail
