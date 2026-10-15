@@ -12,7 +12,9 @@ extends RefCounted
 ## and the current body has no transition. Any [code]failed[/code] outcome
 ## fails the quest instead. [code]on_empty: wait[/code] holds a stage when a
 ## slot is empty and no variant matched. Journal text and its date are frozen
-## at the write. The default date is [code]day N, HH:MM[/code].
+## at the write. The default date is [code]day N, HH:MM[/code]. An
+## [code]await_host[/code] step calls [method request_host_step] and pauses
+## the remaining entry steps until [method complete_host_step].
 
 signal quest_state_changed(quest_id: String, status: StringName)
 signal stage_changed(quest_id: String, stage_id: String)
@@ -51,6 +53,7 @@ class QuestState extends RefCounted:
 	var entered: bool = false
 	var held_empty: bool = false
 	var waiting: String = ""
+	var step_at: int = 0
 
 
 func bind(host: WyrdRuntime) -> void:
@@ -197,6 +200,76 @@ func offer_for(scene_id: String) -> Dictionary:
 	return {"quest": "", "slots": PackedStringArray()}
 
 
+func export_state() -> Dictionary:
+	var out := {}
+	var ids: Array = _states.keys()
+	ids.sort()
+	for quest_id in ids:
+		var state := _states[quest_id] as QuestState
+		if state == null:
+			continue
+		var fields: Array = []
+		for field in state.host_fields:
+			fields.append(String(field))
+		var slots: Array = []
+		for slot_name in state.slots:
+			slots.append(String(slot_name))
+		out[String(quest_id)] = {
+			"entered": state.entered,
+			"held_empty": state.held_empty,
+			"host_fields": fields,
+			"host_returns": state.host_returns.duplicate(true),
+			"host_screen": state.host_screen,
+			"journal": state.journal.duplicate(true),
+			"offered": state.offered,
+			"outcomes": state.outcomes.duplicate(true),
+			"scene_done": state.scene_done,
+			"slots": slots,
+			"stage": state.stage_id,
+			"status": String(state.status),
+			"step_at": state.step_at,
+			"variant": state.variant,
+			"waiting": state.waiting,
+		}
+	return out
+
+
+func import_state(data: Dictionary) -> void:
+	for quest_id in data.keys():
+		var state := _states.get(String(quest_id)) as QuestState
+		var row: Variant = data[quest_id]
+		if state == null or not (row is Dictionary):
+			continue
+		var item: Dictionary = row
+		state.status = StringName(str(item.get("status", "dormant")))
+		state.stage_id = String(item.get("stage", ""))
+		state.variant = String(item.get("variant", ""))
+		state.outcomes = (item.get("outcomes", {}) as Dictionary).duplicate(true)
+		state.offered = String(item.get("offered", ""))
+		state.scene_done = bool(item.get("scene_done", false))
+		state.host_screen = String(item.get("host_screen", ""))
+		state.host_returns = (item.get("host_returns", {}) as Dictionary).duplicate(true)
+		var journal: Array = []
+		for entry in item.get("journal", []):
+			if entry is Dictionary:
+				var copy: Dictionary = (entry as Dictionary).duplicate(true)
+				copy["minutes"] = int(copy.get("minutes", 0))
+				journal.append(copy)
+		state.journal = journal
+		state.entered = bool(item.get("entered", false))
+		state.held_empty = bool(item.get("held_empty", false))
+		state.waiting = String(item.get("waiting", ""))
+		state.step_at = int(item.get("step_at", 0))
+		var slots := PackedStringArray()
+		for slot_name in item.get("slots", []):
+			slots.append(String(slot_name))
+		state.slots = slots
+		var fields := PackedStringArray()
+		for field in item.get("host_fields", []):
+			fields.append(String(field))
+		state.host_fields = fields
+
+
 func abandon(quest_id: String) -> void:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -224,6 +297,11 @@ func request_host_step(quest_id: String, screen_id: StringName, fields: PackedSt
 	state.host_screen = String(screen_id)
 	state.host_fields = fields.duplicate()
 	state.waiting = "host:%s" % state.host_screen
+	if runtime != null:
+		var names: Array = []
+		for field in state.host_fields:
+			names.append(String(field))
+		runtime.trace_add("host_step", {"fields": names, "quest": quest_id, "screen": state.host_screen})
 	host_step_requested.emit(quest_id, screen_id, state.host_fields)
 
 
@@ -232,6 +310,8 @@ func complete_host_step(quest_id: String, values: Dictionary) -> void:
 	if state == null or state.host_screen.is_empty():
 		push_error("WyrdQuestRunner.complete_host_step: \"%s\" is not waiting on the host" % quest_id)
 		return
+	if runtime != null:
+		runtime.trace_add("complete_host", {"quest": quest_id, "values": values.duplicate(true)})
 	state.host_returns = values.duplicate(true)
 	state.host_screen = ""
 	if state.waiting.begins_with("host:"):
@@ -285,6 +365,9 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 	var body := _body_now(quest, state)
 	if body == null:
 		return
+	if state.step_at < _entry_steps(body).size():
+		_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+		return
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -305,6 +388,7 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	var pick := _pick(quest, stage)
 	state.variant = String(pick["key"])
 	state.entered = true
+	state.step_at = 0
 	state.offered = ""
 	state.slots = PackedStringArray()
 	state.scene_done = false
@@ -315,7 +399,10 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 		state.waiting = "on_empty"
 		return
 	var body := pick["body"] as WyrdStageDef
-	var divert := _run_steps(quest_id, state, body)
+	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+
+
+func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, hops: int, divert: String) -> void:
 	if divert != "":
 		_goto(quest_id, quest, state, divert, hops + 1)
 		return
@@ -333,19 +420,33 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	_maybe_finish(quest_id, state, body)
 
 
-func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef) -> String:
-	if body == null:
-		return ""
+func _entry_steps(body: WyrdStageDef) -> Array:
 	var steps: Array = []
+	if body == null:
+		return steps
 	for journal_line in body.journals:
 		steps.append({"at": journal_line.line, "journal": journal_line, "kind": &"journal"})
 	for effect in body.effects:
 		steps.append({"at": effect.line, "effect": effect, "kind": &"effect"})
 	for scene in body.scenes:
 		steps.append({"at": int(scene.get("line", 0)), "kind": &"scene", "scene": scene})
+	for host in body.hosts:
+		steps.append({
+			"at": int(host.get("line", 0)),
+			"fields": host.get("fields", PackedStringArray()),
+			"kind": &"host",
+			"screen": String(host.get("screen", "")),
+		})
 	steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
-	var offered := false
-	for step in steps:
+	return steps
+
+
+func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef) -> String:
+	var steps := _entry_steps(body)
+	var offered := state.offered != ""
+	while state.step_at < steps.size():
+		var step: Dictionary = steps[state.step_at]
+		state.step_at += 1
 		var kind: StringName = step["kind"]
 		if kind == &"journal":
 			_write_journal(quest_id, state, step["journal"])
@@ -357,6 +458,13 @@ func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef) -> Stri
 		elif kind == &"scene" and not offered:
 			_offer(state, step["scene"])
 			offered = true
+		elif kind == &"host":
+			var fields := PackedStringArray()
+			var raw: Variant = step.get("fields", PackedStringArray())
+			if raw is PackedStringArray:
+				fields = raw
+			request_host_step(quest_id, StringName(str(step.get("screen", ""))), fields)
+			return ""
 	return ""
 
 
@@ -395,6 +503,9 @@ func _goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, target: Str
 	if _stage_by_id(quest, target) == null:
 		push_error("WyrdQuestRunner: unknown stage \"%s\"" % target)
 		return
+	var previous := state.stage_id
+	if runtime != null:
+		runtime.trace_add("transition", {"from": previous, "quest": quest_id, "to": target})
 	state.stage_id = target
 	state.entered = false
 	state.held_empty = false

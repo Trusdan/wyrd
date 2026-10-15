@@ -117,7 +117,7 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 			"slot": variant.slot,
 			"state": String(variant.state),
 		})
-	return {
+	var data := {
 		"effects": _effects(stage.effects),
 		"id": stage.id,
 		"journals": journals,
@@ -126,6 +126,16 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 		"variants": variants,
 		"waits": stage.waits_text,
 	}
+	if stage.hosts.size() > 0:
+		var hosts: Array = []
+		for host in stage.hosts:
+			var fields: Array = []
+			var packed: PackedStringArray = host.get("fields", PackedStringArray())
+			for field in packed:
+				fields.append(String(field))
+			hosts.append({"fields": fields, "screen": String(host.get("screen", ""))})
+		data["hosts"] = hosts
+	return data
 
 
 static func _scenes(pack: WyrdLinkedPack) -> Array:

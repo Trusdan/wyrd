@@ -150,7 +150,7 @@ Resolved facts are never "never set". `record deed` is not a fact write. A passe
 
 ## Host-modal step
 
-`await_host` is proposed in `docs/grammar-v1.md` section 9 and is **not approved**. It is not parsed. The word stays reserved. The runtime exposes the step through `request_host_step`, `complete_host_step`, and `host_step_requested`.
+`await_host` is approved (Corey, 2026-10-14). See `docs/grammar-v1.md` section 9. It is a stage statement: `await_host <screen_id> returns { <field>, ... }`. The word is still not a legal identifier. The runtime pauses the remaining entry steps, calls `request_host_step`, emits `host_step_requested`, and resumes on `complete_host_step`.
 
 ## Not in this draft
 

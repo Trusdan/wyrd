@@ -2,12 +2,18 @@
 
 ## Unreleased
 
-S2c quest runner, scene runner, and the six slice effects. Draft. Saves, replay, and the playtest scene are S2d.
+S2 slice runtime. S2 exit met. Draft. Saves, replay, `await_host`, and the Gullhaven playtest scene are in this slice. See `docs/playtest.md`.
+
+- `save_state` / `load_state` round-trip facts, deeds, roles, quests, journal text, and every named RNG stream. Schema version 1. Hex for 64-bit values. No save while a scene is open.
+- `WyrdTrace` records and replays inputs. A changed host answer is visible in the diff.
+- `await_host` is parsed and pauses the remaining entry steps until `complete_host_step`.
+
+S2c quest runner, scene runner, and the six slice effects. Draft.
 
 - The six slice effects run at play time, including `do` failure divert and outcome signals.
 - Quest stages, waits, variants, outcomes, and a frozen journal. Default date `day N, HH:MM`.
 - Scene playback keeps text on screen with or without `line_audio`. `can_save()` is false while a scene is open.
-- Host-modal step is a runtime API. `await_host` is proposed in `docs/grammar-v1.md` and is not parsed.
+- Host-modal step is `request_host_step` / `complete_host_step`. The statement form is approved in S2d.
 
 S2b deeds, disposition, and roles. Draft. Quests, scenes, and saves are later slices.
 

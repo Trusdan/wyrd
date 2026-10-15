@@ -25,6 +25,36 @@ func bind(host: WyrdRuntime) -> void:
 	runtime = host
 
 
+func export_state() -> Dictionary:
+	var out := {}
+	var keys: Array = provenance.keys()
+	keys.sort()
+	for key in keys:
+		var row: Dictionary = provenance[key]
+		out[String(key)] = {
+			"choice": String(row.get("choice", "")),
+			"scene": String(row.get("scene", "")),
+			"time": int(row.get("time", 0)),
+		}
+	return out
+
+
+func import_state(data: Dictionary) -> void:
+	provenance.clear()
+	var keys: Array = data.keys()
+	keys.sort()
+	for key in keys:
+		var row: Variant = data[key]
+		if not (row is Dictionary):
+			continue
+		var item: Dictionary = row
+		provenance[String(key)] = {
+			"choice": String(item.get("choice", "")),
+			"scene": String(item.get("scene", "")),
+			"time": int(item.get("time", 0)),
+		}
+
+
 func clear() -> void:
 	quest_id = ""
 	scene_id = ""
@@ -130,7 +160,13 @@ func _command(effect: WyrdEffectDef) -> String:
 		push_error("WyrdEffects: no action adapter for \"%s\"" % effect.command)
 	else:
 		result = adapter.execute(cmd)
-	if result != null and result.is_ok():
+	var ok := result != null and result.is_ok()
+	var reason := ""
+	if result != null:
+		reason = String(result.reason)
+	if runtime != null:
+		runtime.trace_add("command", {"name": String(effect.command), "ok": ok, "reason": reason})
+	if ok:
 		return ""
 	if effect.on_fail.is_empty():
 		push_error("WyrdEffects: \"%s\" failed with no on_fail" % effect.command)

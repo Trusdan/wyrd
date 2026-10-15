@@ -1,0 +1,13 @@
+language 1
+
+facts
+  gate.n : int stored
+
+quest host_step "Host Step"
+  start when gate.n >= 0
+  stage ask
+    await_host board returns { ok, note }
+    ~ set gate.n = 3
+    -> done
+  stage done
+    ~ outcome crossing = done

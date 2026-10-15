@@ -1,0 +1,7 @@
+language 1
+
+quest gate "Gate"
+  stage ask
+    await_host board returns { ok, note }
+    -> done
+  stage done

@@ -68,6 +68,125 @@ func clear() -> void:
 	_cast_noted.clear()
 
 
+func export_state() -> Dictionary:
+	var bindings := {}
+	var roles: Array = _bindings.keys()
+	roles.sort()
+	for role in roles:
+		var row: Dictionary = _bindings[role]
+		var history: Array = []
+		for item in row["history"]:
+			var prior: Dictionary = item
+			history.append({
+				"holder": String(prior.get("holder", "")),
+				"reason": String(prior.get("reason", "")),
+				"since": int(prior.get("since", 0)),
+				"status": String(prior.get("status", "")),
+				"until": int(prior.get("until", 0)),
+			})
+		bindings[String(role)] = {
+			"history": history,
+			"holder": String(row.get("holder", "")),
+			"since": int(row.get("since", 0)),
+			"status": String(row.get("status", "")),
+		}
+	var defs := {}
+	var defined: Array = _defs.keys()
+	defined.sort()
+	for role in defined:
+		var spec: Dictionary = _defs[role]
+		var kinds: Array = []
+		for kind in spec["kinds"]:
+			kinds.append(String(kind))
+		defs[String(role)] = {
+			"kinds": kinds,
+			"secret": bool(spec["secret"]),
+			"strategy": String(spec["strategy"]),
+			"threshold": int(spec["threshold"]),
+		}
+	var frozen := {}
+	var locks: Array = _frozen.keys()
+	locks.sort()
+	for lock in locks:
+		var parts := String(lock).split("\t")
+		if parts.size() != 2:
+			continue
+		if not frozen.has(parts[0]):
+			frozen[parts[0]] = {}
+		var snap: Dictionary = _frozen[lock]
+		(frozen[parts[0]] as Dictionary)[parts[1]] = {
+			"holder": String(snap.get("holder", "")),
+			"status": String(snap.get("status", "")),
+		}
+	var told := {}
+	var secret_roles: Array = _told.keys()
+	secret_roles.sort()
+	for role in secret_roles:
+		var agents: Array = (_told[role] as Dictionary).keys()
+		agents.sort()
+		var names: Array = []
+		for agent in agents:
+			names.append(String(agent))
+		told[String(role)] = names
+	return {"bindings": bindings, "defs": defs, "frozen": frozen, "told": told}
+
+
+func import_state(data: Dictionary) -> void:
+	_bindings.clear()
+	_defs.clear()
+	_frozen.clear()
+	_told.clear()
+	_cast_noted.clear()
+	var bindings: Dictionary = data.get("bindings", {})
+	for role in bindings.keys():
+		var row: Dictionary = bindings[role]
+		var history: Array = []
+		for item in row.get("history", []):
+			if not (item is Dictionary):
+				continue
+			var prior: Dictionary = item
+			history.append({
+				"holder": StringName(str(prior.get("holder", ""))),
+				"reason": StringName(str(prior.get("reason", ""))),
+				"since": int(prior.get("since", 0)),
+				"status": StringName(str(prior.get("status", ""))),
+				"until": int(prior.get("until", 0)),
+			})
+		_bindings[StringName(str(role))] = {
+			"history": history,
+			"holder": StringName(str(row.get("holder", ""))),
+			"since": int(row.get("since", 0)),
+			"status": StringName(str(row.get("status", "empty"))),
+		}
+	var defs: Dictionary = data.get("defs", {})
+	for role in defs.keys():
+		var spec: Dictionary = defs[role]
+		var kinds := PackedStringArray()
+		for kind in spec.get("kinds", []):
+			kinds.append(String(kind))
+		_defs[StringName(str(role))] = {
+			"kinds": kinds,
+			"secret": bool(spec.get("secret", false)),
+			"strategy": StringName(str(spec.get("strategy", "none"))),
+			"threshold": int(spec.get("threshold", -1)),
+		}
+	var frozen: Dictionary = data.get("frozen", {})
+	for quest_id in frozen.keys():
+		var slots: Dictionary = frozen[quest_id]
+		for slot_name in slots.keys():
+			var snap: Dictionary = slots[slot_name]
+			_frozen[_freeze_key(String(quest_id), String(slot_name))] = {
+				"holder": StringName(str(snap.get("holder", ""))),
+				"status": StringName(str(snap.get("status", ""))),
+			}
+	var told: Dictionary = data.get("told", {})
+	for role in told.keys():
+		var bag := {}
+		for agent in told[role]:
+			bag[StringName(str(agent))] = true
+		_told[StringName(str(role))] = bag
+
+
 func define(role: StringName, succession: String = "none", secret: bool = false, hostile_threshold: int = -1) -> void:
 	var text := succession.strip_edges()
 	var strategy := &"none"

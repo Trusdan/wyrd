@@ -18,6 +18,7 @@ signal fact_changed(key: StringName, old_value: Variant, new_value: Variant)
 
 var on_keys: Callable = Callable()
 var tracer: Callable = Callable()
+var on_resolved: Callable = Callable()
 var clock: Callable = Callable()
 var resolver_of: Callable = Callable()
 
@@ -35,6 +36,80 @@ var _once: Dictionary = {}
 func bind_schema(schema: WyrdFactSchema) -> void:
 	_schema = schema
 	clear_values()
+
+
+func export_state() -> Dictionary:
+	return {
+		"believed": {},
+		"held": {},
+		"known": _export_known(),
+		"world": _export_bag(_world),
+	}
+
+
+func import_state(data: Dictionary) -> void:
+	clear_values()
+	var world: Dictionary = data.get("world", {})
+	var world_keys: Array = world.keys()
+	world_keys.sort()
+	for key in world_keys:
+		set_in(StringName(str(key)), _saved_value(String(key), world[key]))
+	var known: Dictionary = data.get("known", {})
+	var agents: Array = known.keys()
+	agents.sort()
+	for agent in agents:
+		var bag: Variant = known[agent]
+		if not (bag is Dictionary):
+			continue
+		var perspective := StringName("known/%s" % String(agent))
+		var keys: Array = (bag as Dictionary).keys()
+		keys.sort()
+		for key in keys:
+			var text := String(key)
+			var value: Variant = _saved_value(text, (bag as Dictionary)[key])
+			if _find(text) == null:
+				remember(StringName(text), value, perspective)
+			else:
+				set_in(StringName(text), value, perspective)
+	if (data.get("believed", {}) as Dictionary).size() > 0 or (data.get("held", {}) as Dictionary).size() > 0:
+		push_error("WyrdFactStore: believed and held perspectives are M5")
+
+
+func _export_known() -> Dictionary:
+	var out := {}
+	var agents: Array = _known.keys()
+	agents.sort()
+	for agent in agents:
+		out[String(agent)] = _export_bag(_known[agent])
+	return out
+
+
+func _export_bag(bag: Dictionary) -> Dictionary:
+	var out := {}
+	var keys: Array = bag.keys()
+	keys.sort()
+	for key in keys:
+		out[String(key)] = _plain_fact(bag[key])
+	return out
+
+
+func _plain_fact(value: Variant) -> Variant:
+	if value is StringName:
+		return String(value)
+	return value
+
+
+func _saved_value(key: String, value: Variant) -> Variant:
+	var fact := _find(key)
+	if fact == null:
+		return value if not (value is String) else value
+	if fact.type_name == &"int" and typeof(value) == TYPE_FLOAT:
+		return int(value)
+	if fact.type_name == &"float" and typeof(value) == TYPE_INT:
+		return float(value)
+	if fact.type_name == &"symbol":
+		return StringName(str(value))
+	return value
 
 
 func clear_values() -> void:
@@ -196,6 +271,8 @@ func _resolved(fact: WyrdFact, concrete: String) -> Variant:
 	if fact.invalidate != &"per_query" and _cache.has(concrete):
 		return (_cache[concrete] as Dictionary)["value"]
 	var resolved := _call_resolver(fact, concrete)
+	if on_resolved.is_valid():
+		on_resolved.call(concrete, resolved)
 	if fact.invalidate == &"per_query":
 		return resolved
 	var had := _last.has(concrete)

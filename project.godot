@@ -8,6 +8,7 @@ config_version=5
 config/name="Wyrd"
 config/description="Generic narrative and dialogue engine."
 config/features=PackedStringArray("4.7")
+run/main_scene="res://example/playtest/gullhaven_playtest.tscn"
 
 [editor_plugins]
 

@@ -74,6 +74,8 @@ func open_scene(scene_id: String) -> void:
 	if _scene(scene_id) == null:
 		push_error("WyrdSceneRunner.open_scene: unknown scene \"%s\"" % scene_id)
 		return
+	if runtime != null:
+		runtime.trace_add("open_scene", {"id": scene_id})
 	var quest_id := ""
 	var slots := PackedStringArray()
 	if runtime != null and runtime.quests != null:
@@ -89,6 +91,8 @@ func advance() -> void:
 	if _wait != &"line":
 		push_error("WyrdSceneRunner.advance: no line is waiting")
 		return
+	if runtime != null:
+		runtime.trace_add("advance", {})
 	_line = null
 	_wait = &""
 	var frame := _top()
@@ -107,6 +111,8 @@ func choose(index: int) -> void:
 	if not _choices[index].enabled:
 		push_error("WyrdSceneRunner.choose: choice %d is disabled" % index)
 		return
+	if runtime != null:
+		runtime.trace_add("choose", {"index": index})
 	var choice := _pending[index]
 	var frame := _top()
 	_choices.clear()
@@ -126,6 +132,8 @@ func abort(reason: StringName) -> void:
 	if not is_open():
 		push_error("WyrdSceneRunner.abort: no scene is open")
 		return
+	if runtime != null:
+		runtime.trace_add("abort", {"reason": String(reason)})
 	if _aborting:
 		return
 	_aborting = true
@@ -217,6 +225,16 @@ func _pump() -> void:
 				continue
 			_choices = views
 			_wait = &"choice"
+			if runtime != null:
+				var rows: Array = []
+				for view in views:
+					rows.append({
+						"enabled": view.enabled,
+						"index": view.index,
+						"reason": view.reason,
+						"text": view.text,
+					})
+				runtime.trace_add("choices", {"rows": rows})
 			choices_ready.emit(views)
 			return
 		if item.kind == &"label":
@@ -237,6 +255,9 @@ func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	view.text = _text.render(line_def.prose, line_def.line_id)
 	view.tags = line_def.tags.duplicate()
 	view.audio = _audio(line_def.line_id)
+	if runtime != null:
+		runtime.trace_add("line_audio", {"id": view.id, "present": view.audio != null})
+		runtime.trace_add("line", {"id": view.id, "text": view.text})
 	_line = view
 	_wait = &"line"
 	line_ready.emit(view)

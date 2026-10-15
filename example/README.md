@@ -17,3 +17,7 @@ godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manife
 ```
 
 That check is empty. `check example/content` uses pack id `content`, so `requires: [pack.harbor]` warns and command schemas are skipped. Journal text is unquoted prose, so `{...}` interpolates. Quest titles stay quoted. Every file starts with an `[EXAMPLE CONTENT]` comment.
+
+## Playtest
+
+`playtest/gullhaven_playtest.tscn` is the project main scene. F5 opens a plain window: dialogue, choices, a journal dated `day N, HH:MM`, and a live fact and quest table. Toggles reach each ferry route. Voice plays a generated tone and leaves the text on screen. Save and Load use an in-memory slot and `user://playtest_save.json`. How to install Godot and walk the routes is [docs/playtest.md](../docs/playtest.md).

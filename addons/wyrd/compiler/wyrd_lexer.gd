@@ -101,7 +101,7 @@ func _lex_line(line: String, line_no: int) -> void:
 	elif not facts_mode and _when_speaker_colon(content) >= 0:
 		first_ident = _lex_when_line(content, line_no, origin)
 	else:
-		first_ident = _lex_code_line(content, line_no, origin)
+		first_ident = _lex_code_line(content, line_no, origin, not facts_mode)
 	_pending_kind = first_ident
 	_emit(&"newline", "", line_no, origin, line_no, origin)
 
@@ -236,7 +236,7 @@ func _dotted_end(content: String, start: int) -> int:
 	return -1
 
 
-func _lex_code_line(content: String, line_no: int, origin: int) -> String:
+func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host: bool = false) -> String:
 	var first_ident := ""
 	var index := 0
 	while index < content.length():
@@ -273,10 +273,11 @@ func _lex_code_line(content: String, line_no: int, origin: int) -> String:
 		if _is_ident_start(ch):
 			var end := _ident_end(content, index)
 			var word := content.substr(index, end - index)
-			if first_ident.is_empty():
+			var leading := first_ident.is_empty()
+			if leading:
 				first_ident = word
 			_emit_span(&"ident", word, line_no, origin, index, end)
-			_check_reserved(word, line_no, origin + index)
+			_check_reserved(word, line_no, origin + index, leading and allow_await_host)
 			index = end
 			continue
 		if _is_digit(ch):
@@ -427,7 +428,9 @@ func _read_string(content: String, index: int, line_no: int, origin: int) -> int
 	return cursor
 
 
-func _check_reserved(word: String, line_no: int, col: int) -> void:
+func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false) -> void:
+	if statement_ok and word == "await_host":
+		return
 	if _RESERVED.has(word):
 		_error(WyrdDiagnostic.E_RESERVED_WORD, "reserved word \"%s\"" % word, line_no, col)
 

@@ -8,4 +8,4 @@ Entry steps (journal, effect, scene offer) run in source order, once. A variant 
 
 `waiting_reason` is `host:<screen>`, `scene:<id>`, `waits_until: <text>`, `on_empty`, or empty.
 
-`request_host_step` blocks the stage until `complete_host_step`. The grammar statement `await_host` is a proposal and is not parsed.
+`await_host` is an entry step. It calls `request_host_step` and pauses the steps after it. `complete_host_step` continues them. A scene offer does not pause the steps before it; the stage waits on the scene after those steps have run.

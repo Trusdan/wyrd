@@ -281,6 +281,8 @@ func _stage_stmt(node: WyrdNode, stage: WyrdStageDef) -> void:
 			_keep_effect(node, stage.effects, stage.reads)
 		"variant":
 			_variant(node, stage)
+		"await_host":
+			_await_host(node, stage)
 		"redirect":
 			_unknown_msg(node, "redirect beat is only valid in a variant")
 		_:
@@ -296,6 +298,47 @@ func _waits(node: WyrdNode, stage: WyrdStageDef) -> void:
 	stage.waits_text = span["text"]
 	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", stage.reads)
 	stage.waits_until = compiled["compiled"]
+	_no_block(node)
+
+
+func _await_host(node: WyrdNode, stage: WyrdStageDef) -> void:
+	_line_id(node, false)
+	var items := node.head
+	var close := _closing(items, 2, &"lbrace", &"rbrace") if items.size() >= 3 else -1
+	var shape := (
+		items.size() >= 4
+		and items[0].kind == &"ident"
+		and items[1].kind == &"ident"
+		and items[1].text == "returns"
+		and close >= 3
+		and close + 1 == items.size()
+	)
+	if not shape:
+		_unknown_msg(node, "await_host needs <screen_id> returns { <field>, ... }")
+		return
+	var fields := PackedStringArray()
+	var i := 3
+	while i < close:
+		if items[i].kind != &"ident":
+			_unknown_msg(node, "await_host needs <screen_id> returns { <field>, ... }")
+			return
+		fields.append(items[i].text)
+		i += 1
+		if i < close and items[i].kind == &"comma":
+			i += 1
+			if i >= close:
+				_unknown_msg(node, "await_host needs <screen_id> returns { <field>, ... }")
+				return
+			continue
+		if i != close:
+			_unknown_msg(node, "await_host needs <screen_id> returns { <field>, ... }")
+			return
+	stage.hosts.append({
+		"col": node.start_col,
+		"fields": fields,
+		"line": node.start_line,
+		"screen": items[0].text,
+	})
 	_no_block(node)
 
 

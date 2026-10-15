@@ -38,6 +38,7 @@ func link(
 	pack.units = units
 	_index_symbols(units)
 	_lines(units)
+	_host_steps(units)
 	_quests(units, pack)
 	_scenes_of(units)
 	_commands_of(units)
@@ -386,3 +387,42 @@ func _uses(scene: WyrdSceneDef, slot_name: String) -> bool:
 		if item.line_def != null and item.line_def.speaker == slot_name:
 			return true
 	return false
+
+
+func _host_steps(units: Array) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_host_stage(stage, path)
+
+
+func _host_stage(stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	for host in stage.hosts:
+		var seen := {}
+		var fields: PackedStringArray = host.get("fields", PackedStringArray())
+		for field in fields:
+			if seen.has(field):
+				_diagnostics.add(
+					WyrdDiagnostic.E_STMT_UNKNOWN,
+					"duplicate await_host field \"%s\"" % field,
+					path,
+					int(host.get("line", 1)),
+					int(host.get("col", 1))
+				)
+			seen[field] = true
+		if String(host.get("screen", "")).is_empty():
+			_diagnostics.add(
+				WyrdDiagnostic.E_STMT_UNKNOWN,
+				"await_host needs a screen id",
+				path,
+				int(host.get("line", 1)),
+				int(host.get("col", 1))
+			)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_host_stage(variant.body, path)

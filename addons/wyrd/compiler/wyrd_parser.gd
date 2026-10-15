@@ -5,7 +5,8 @@ extends RefCounted
 ##
 ## @experimental
 ## [code]quest[/code] and [code]scene[/code] bodies are a generic statement-line tree.
-## Their statements are not interpreted here.
+## Their statements are not interpreted here. [code]await_host[/code] stays a
+## line in that tree; the statement compiler reads the screen id and fields.
 
 const _TYPES: PackedStringArray = ["bool", "int", "float", "symbol"]
 
