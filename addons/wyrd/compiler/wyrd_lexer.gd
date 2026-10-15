@@ -442,8 +442,20 @@ func _read_string(content: String, index: int, line_no: int, origin: int) -> int
 func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false) -> void:
 	if statement_ok and word == "await_host":
 		return
+	if _belief_verb(word):
+		return
 	if _RESERVED.has(word):
 		_error(WyrdDiagnostic.E_RESERVED_WORD, "reserved word \"%s\"" % word, line_no, col)
+
+
+## [code]believe[/code], [code]declare[/code], and [code]retract[/code] stay reserved
+## as identifiers. They are legal only as the effect verb immediately after [code]~[/code].
+func _belief_verb(word: String) -> bool:
+	if word != "believe" and word != "declare" and word != "retract":
+		return false
+	if _tokens.size() < 2:
+		return false
+	return _tokens[_tokens.size() - 2].kind == &"tilde"
 
 
 func _emit_span(kind: StringName, text: String, line_no: int, origin: int, start: int, end: int) -> void:

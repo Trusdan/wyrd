@@ -5,12 +5,15 @@ extends WyrdStmtSpan
 ##
 ## @experimental
 ## [member kind] is [code]set[/code], [code]inc[/code], [code]record_deed[/code],
-## [code]unlock_topic[/code], [code]do[/code], or [code]outcome[/code].
+## [code]unlock_topic[/code], [code]do[/code], [code]outcome[/code],
+## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code], or
+## [code]retract[/code]. [member agent] is the belief agent or group id.
 ## [member args] holds named deed or command arguments.
 ## Command names are checked against [code]WyrdCommandSchema[/code] when the linker has one.
 
 var kind: StringName = &""
 var fact_key: String = ""
+var agent: String = ""
 var target: WyrdCompiledCondition = null
 var target_text: String = ""
 var value: WyrdCompiledCondition = null

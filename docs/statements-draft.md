@@ -10,7 +10,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
 5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
 6. `record deed` also accepts `visibility:` and `memorable:`.
-7. Only the six slice effects are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
+7. The six slice effects plus `believe`, `unbelieve`, `declare`, and `retract` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
 9. The separate S1b-perf pass is not part of this draft. It landed as its own change before linking.
 
@@ -79,8 +79,14 @@ Line conditions and choice conditions use `storylet_or_choice`. The first depth-
 | `~ unlock topic <id>` | Parsed and stored. |
 | `~ do <command>(...)` | Arguments are type-checked. The linker checks the name against `wyrd_commands.json` beside the manifest. A missing file skips that check with `I_COMMANDS_SKIPPED` when a `do` exists. |
 | `~ outcome <branch> = route_closed \| done \| failed` | Also accepted without the `~` inside a stage. |
+| `~ believe <agent> <fact> = <expr>` | Stored schema fact only. `<agent>` is a dotted id. |
+| `~ unbelieve <agent> <fact>` | Removes that agent's belief. A missing belief is a no-op. |
+| `~ declare <group> <fact> = <expr>` | Stored schema fact only. `<group>` is a dotted id. |
+| `~ retract <group> <fact>` | Removes that group's held fact. A missing fact is a no-op. |
 
 `witnesses` is `auto` or a set. A `do` argument that is only a name path is an entity id when lookup misses, and a fact read when lookup hits. Any other argument is an expression.
+
+`believe`, `declare`, and `retract` are reserved words. They are legal only as the effect verb immediately after `~`. As an identifier they stay `E_RESERVED_WORD`. `unbelieve` is not reserved.
 
 `lock topic`, `start quest`, `advance`, `assign role`, `vacate role`, `adjust baseline`, and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
@@ -109,9 +115,9 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_LABEL_DUPLICATE` | A label is repeated in one scene |
 | `E_CHOICE_SYNTAX` | A choice line is not one of the forms above |
 | `E_SPEAKER_SHAPE` | A speaker is not a dotted identifier |
-| `E_WRITE_RESOLVED` | `set` or `inc` targets a resolved fact |
+| `E_WRITE_RESOLVED` | `set`, `inc`, or a belief effect targets a resolved fact |
 | `E_WRITE_TYPE` | A write value does not match the stored fact, or `inc` is not numeric |
-| `E_EFFECT_NOT_IN_SLICE` | The effect is outside the six forms, or the outcome value is not one of the three |
+| `E_EFFECT_NOT_IN_SLICE` | The effect is outside the slice and belief forms, or the outcome value is not one of the three |
 | `E_NO_SET_DISPOSITION` | The effect is `set_disposition` |
 | `E_LINE_ID_MISSING` | A spoken line, journal entry, or choice label has no `#line:` |
 | `E_LINE_ID_DUPLICATE` | The same `#line:` id appears twice in one file |

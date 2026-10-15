@@ -302,6 +302,7 @@ static func _effects(effects: Array) -> Array:
 		for arg in effect.args:
 			args.append({"name": str(arg["name"]), "text": str(arg["text"])})
 		rows.append({
+			"agent": effect.agent,
 			"args": args,
 			"branch": effect.branch,
 			"command": effect.command,

@@ -149,7 +149,7 @@ func test_save_keeps_eligibility() -> void:
 	runtime.roles.define(&"ferry_master", "none", false, -1, "world", _ELIGIBILITY, &"ada")
 	assert_eq(runtime.roles.holder(&"ferry_master"), &"ada")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 1)
+	assert_eq(int(saved["schema_version"]), 2)
 	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
 	var fresh := WyrdRuntime.new()
 	var host := WyrdFakeHost.new()

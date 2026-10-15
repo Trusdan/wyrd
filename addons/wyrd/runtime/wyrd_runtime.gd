@@ -59,6 +59,7 @@ func _init() -> void:
 	_ctx.bind(self)
 	facts.on_keys = Callable(self, &"_mark_keys")
 	facts.tracer = Callable(self, &"note")
+	facts.on_belief = Callable(self, &"_trace_belief")
 	facts.on_resolved = Callable(self, &"_on_resolved")
 	facts.clock = Callable(self, &"now_minutes")
 	facts.resolver_of = Callable(self, &"_resolver")
@@ -432,11 +433,33 @@ func _trace_succession(fields: Dictionary) -> void:
 	)
 
 
+func _trace_belief(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	var op := str(fields.get("op", ""))
+	var perspective := "held" if op == "declare" or op == "retract" else "believed"
+	var shown := "" if fields.get("value") == null else str(fields.get("value"))
+	var row := {
+		"key": str(fields.get("key", "")),
+		"op": op,
+		"perspective": perspective,
+		"value": shown,
+		"who": str(fields.get("who", "")),
+	}
+	trace_add("belief", row)
+	print(
+		"wyrd belief op=%s perspective=%s who=%s key=%s value=%s"
+		% [row["op"], row["perspective"], row["who"], row["key"], row["value"]]
+	)
+
+
 func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot"]:
+	for name in ["quest", "role", "slot", "who", "key"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true

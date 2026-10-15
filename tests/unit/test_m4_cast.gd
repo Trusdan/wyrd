@@ -142,15 +142,15 @@ func test_null_world_and_missing_evaluator_cast_empty() -> void:
 	assert_eq(hosted.roles.slot_state(&"lookout", "gate"), &"empty")
 
 
-func test_cast_freeze_round_trips_on_schema_1() -> void:
+func test_cast_freeze_round_trips_on_schema_2() -> void:
 	var opened := _boot(_LOCAL, 8)
 	var runtime: WyrdRuntime = opened["runtime"]
 	_people(opened["host"])
 	runtime.roles.begin_quest("gate")
 	var picked := String(runtime.roles.slot_holder("gate", &"lookout"))
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 1)
-	assert_eq(WyrdSave.migrations.size(), 0)
+	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(WyrdSave.migrations.size(), 1)
 	var frozen: Dictionary = ((saved["roles"] as Dictionary)["frozen"] as Dictionary)["gate"]
 	assert_eq(String((frozen["lookout"] as Dictionary)["holder"]), picked)
 	assert_eq(String((frozen["lookout"] as Dictionary)["status"]), "default")

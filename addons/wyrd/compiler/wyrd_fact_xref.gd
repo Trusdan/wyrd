@@ -293,8 +293,10 @@ func _scene_readers(rows: Array, scene: WyrdSceneDef, path: String) -> void:
 
 
 func _effect_reader(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:
-	if effect.kind == &"set" or effect.kind == &"inc":
+	if effect.kind == &"set" or effect.kind == &"inc" or effect.kind == &"believe" or effect.kind == &"declare":
 		_push(rows, _cond_reads(effect.value), "effect", id, path, effect.line, effect.col)
+		return
+	if effect.kind == &"unbelieve" or effect.kind == &"retract":
 		return
 	_push(rows, effect.reads, "effect", id, path, effect.line, effect.col)
 
@@ -333,7 +335,7 @@ func _stage_writers(rows: Array, stage: WyrdStageDef, id: String, path: String) 
 
 
 func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:
-	if effect.kind != &"set" and effect.kind != &"inc":
+	if effect.kind != &"set" and effect.kind != &"inc" and effect.kind != &"believe" and effect.kind != &"declare":
 		return
 	if effect.fact_key.is_empty():
 		return

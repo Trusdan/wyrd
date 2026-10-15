@@ -2,7 +2,7 @@
 
 `WyrdFactStore` keeps stored facts per perspective and a resolver cache.
 
-World and `known/<agent>` are active. Only `known/player` is used by the slice. `believed/` and `held/` stay empty.
+World, `known/<agent>`, `believed/<agent>`, and `held/<group>` are active. Only schema-declared stored facts can be believed or held. A belief write does not change `world` or `known`. `clear_in` removes one believed or held key and drops an owner whose bag is empty. `knows`, `believes`, and `held` conditions stay false.
 
 A stored write of the wrong type is refused, logged with `push_error`, and recorded as a trace row (`kind`, `key`, `detail`). Resolved facts are not writable. A missing read is null, and a condition comparison of that null is false.
 

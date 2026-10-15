@@ -183,6 +183,7 @@
             "disabled_when": "",
             "effects": [
               {
+                "agent": "",
                 "args": [
                   {
                     "compiled": {
@@ -658,6 +659,7 @@
       ],
       "on_abort": [
         {
+          "agent": "",
           "args": [],
           "branch": "crossing",
           "command": "",

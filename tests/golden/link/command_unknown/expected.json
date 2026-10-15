@@ -45,6 +45,7 @@
           {
             "effects": [
               {
+                "agent": "",
                 "args": [],
                 "branch": "",
                 "command": "",
@@ -88,6 +89,7 @@
                 "verb": ""
               },
               {
+                "agent": "",
                 "args": [
                   {
                     "name": "",
@@ -106,6 +108,7 @@
                 "verb": ""
               },
               {
+                "agent": "",
                 "args": [],
                 "branch": "route",
                 "command": "",
