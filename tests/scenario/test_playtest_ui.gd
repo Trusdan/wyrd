@@ -10,6 +10,8 @@ const _PANELS: PackedStringArray = [
 	"Dialogue",
 	"Side",
 	"JournalScroll",
+	"QuestSummary",
+	"FactFilter",
 	"FactScroll",
 	"Continue",
 ]
@@ -67,11 +69,7 @@ func test_quest_panel_labels_title_and_stage() -> void:
 	var ui := _spawn()
 	_press(ui, "New game")
 	_drive_until_choice(ui, "Take the room", "quest-panel")
-	var facts := ui.find_child("FactList", true, false) as ItemList
-	assert_not_null(facts)
-	var lines := PackedStringArray()
-	for i in facts.item_count:
-		lines.append(facts.get_item_text(i))
+	var lines := _summary_lines(ui)
 	assert_true(lines.has("quest The Ferry Toll"), "\n".join(lines))
 	assert_true(lines.has("stage pay_toll"), "\n".join(lines))
 	assert_true(lines.has("status active"), "\n".join(lines))
@@ -92,11 +90,7 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	_set_toggle(successor, "ferry_alive", false)
 	_press(successor, "New game")
 	_drive_until_choice(successor, "Take the room", "successor-slot")
-	var successor_facts := successor.find_child("FactList", true, false) as ItemList
-	assert_not_null(successor_facts)
-	var successor_lines := PackedStringArray()
-	for i in successor_facts.item_count:
-		successor_lines.append(successor_facts.get_item_text(i))
+	var successor_lines := _summary_lines(successor)
 	assert_true(successor_lines.has("slot ferry — ferry master — Nia — successor"), "\n".join(successor_lines))
 	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
 	assert_not_null(successor_journal)
@@ -105,11 +99,7 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	_set_toggle(empty, "ferry_alive", false)
 	_press(empty, "New game")
 	_drive_until_choice(empty, "Take the room", "empty-slot")
-	var empty_facts := empty.find_child("FactList", true, false) as ItemList
-	assert_not_null(empty_facts)
-	var empty_lines := PackedStringArray()
-	for i in empty_facts.item_count:
-		empty_lines.append(empty_facts.get_item_text(i))
+	var empty_lines := _summary_lines(empty)
 	assert_true(empty_lines.has("slot ferry — ferry master — none — empty"), "\n".join(empty_lines))
 	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
 	assert_not_null(empty_journal)
@@ -126,6 +116,78 @@ func test_unset_season_shows_absent() -> void:
 	var storm := _fact_lines(ui)
 	assert_true(storm.has("world world.season = storm"), "\n".join(storm))
 	await wait_process_frames(1)
+
+
+func test_fact_filter_hides_other_rows() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	var filter := ui.find_child("FactFilter", true, false) as LineEdit
+	assert_not_null(filter)
+	filter.text = "season"
+	filter.text_changed.emit(filter.text)
+	var lines := _fact_lines(ui)
+	assert_eq(lines.size(), 1, "\n".join(lines))
+	assert_true(lines[0].contains("world.season"), lines[0])
+	var state := ui.inspector_state()
+	var facts: Dictionary = state["facts"]
+	assert_true(facts.has("player.coins"), "filter must not drop facts from the state record")
+	assert_true(facts.has("world.season"))
+	filter.text = ""
+	filter.text_changed.emit("")
+	assert_gt(_fact_lines(ui).size(), 1)
+	await wait_process_frames(1)
+
+
+func test_changed_fact_is_highlighted() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	_set_toggle(ui, "storm", true)
+	var facts := ui.find_child("FactList", true, false) as ItemList
+	assert_not_null(facts)
+	var highlighted := 0
+	var season_on := false
+	for i in facts.item_count:
+		var text := facts.get_item_text(i)
+		var marked := facts.get_item_custom_bg_color(i).a > 0.5
+		if text.contains("world.season"):
+			season_on = marked
+			assert_true(text.contains("storm"), text)
+		if marked:
+			highlighted += 1
+	assert_true(season_on, "season row was not highlighted")
+	assert_eq(highlighted, 1, "only the season row should be highlighted")
+	await wait_process_frames(1)
+
+
+func test_quest_summary_stays_outside_the_fact_scroll() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	var summary := ui.find_child("QuestSummary", true, false) as Label
+	var scroll := ui.find_child("FactScroll", true, false) as ScrollContainer
+	assert_not_null(summary)
+	assert_not_null(scroll)
+	assert_false(scroll.is_ancestor_of(summary))
+	var lines := _summary_lines(ui)
+	assert_true(lines.has("quest The Ferry Toll"), "\n".join(lines))
+	assert_true(lines.has("status active"), "\n".join(lines))
+	assert_true(lines.has("outcome crossing = absent"), "\n".join(lines))
+	assert_true(lines.has("slot ferry — ferry master — Bram — default"), "\n".join(lines))
+	scroll.scroll_vertical = 100000
+	await wait_process_frames(1)
+	assert_false(scroll.is_ancestor_of(summary))
+	assert_true(summary.text.contains("status active"))
+	assert_true(summary.text.contains("slot ferry — ferry master — Bram — default"))
+
+
+func _summary_lines(ui: Node) -> PackedStringArray:
+	var summary := ui.find_child("QuestSummary", true, false) as Label
+	assert_not_null(summary)
+	var lines := PackedStringArray()
+	for line in summary.text.split("\n"):
+		var text := line.strip_edges()
+		if not text.is_empty():
+			lines.append(text)
+	return lines
 
 
 func _fact_lines(ui: Node) -> PackedStringArray:
