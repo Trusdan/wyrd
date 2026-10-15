@@ -41,6 +41,7 @@ const _BUILTINS: PackedStringArray = [
 	"holder(slot_or_role:symbol)->entity",
 	"filled(slot_or_role:symbol)->bool",
 	"slot_state(slot:symbol)->symbol",
+	"outcome(quest:symbol, branch:symbol)->symbol",
 	"known(agent:entity, key:fact_key)->bool",
 	"quest(id:symbol)->symbol",
 	"stage(id:symbol)->symbol",

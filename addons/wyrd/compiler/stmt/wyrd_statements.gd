@@ -640,8 +640,12 @@ func _variant(node: WyrdNode, stage: WyrdStageDef) -> void:
 			return
 		var span := _span_text(items, i + 1, close)
 		variant.condition_text = span["text"]
-		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", variant.reads)
+		var bindings := {}
+		if state == "unwilling":
+			bindings["$h"] = WyrdSignatures.T_ENTITY
+		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", variant.reads, bindings)
 		variant.condition = compiled["compiled"]
+		_warn_slot_const(state, compiled["ast"], int(span["line"]), int(span["col"]))
 		i = close + 1
 	elif _BARE_STATES.has(state):
 		if i < items.size() and items[i].kind == &"lparen":
@@ -1235,6 +1239,22 @@ func _pure_path(items: Array[WyrdToken], start: int, end: int) -> bool:
 	return not want_ident
 
 
+func _warn_slot_const(state: String, ast: WyrdExprNode, line: int, col: int) -> void:
+	var folded: Variant = WyrdCondition.const_bool(ast)
+	if folded == null:
+		return
+	var code := WyrdDiagnostic.W_SLOT_COND_ALWAYS if bool(folded) else WyrdDiagnostic.W_SLOT_COND_NEVER
+	var how := "always true" if bool(folded) else "never true"
+	_diagnostics.add(
+		code,
+		"%s condition is %s" % [state, how],
+		_path,
+		line,
+		col,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
+
+
 func _expr(
 	text: String,
 	line: int,
@@ -1242,14 +1262,27 @@ func _expr(
 	context: StringName,
 	require_bool: bool,
 	expected: StringName,
-	into: Array[StringName]
+	into: Array[StringName],
+	bindings: Dictionary = {}
 ) -> Dictionary:
 	if text.strip_edges().is_empty():
 		_error(WyrdDiagnostic.E_EXPR_SYNTAX, "expected an expression", line, col)
 		return {"ast": null, "compiled": null}
 	var compiler := WyrdCondition.new()
 	var compiled := compiler.compile(
-		text, _schema, _diagnostics, _path, line, col, context, WyrdCondition.MINUTES_PER_DAY, _signatures, require_bool, expected, _event_fields
+		text,
+		_schema,
+		_diagnostics,
+		_path,
+		line,
+		col,
+		context,
+		WyrdCondition.MINUTES_PER_DAY,
+		_signatures,
+		require_bool,
+		expected,
+		_event_fields,
+		bindings
 	)
 	WyrdStmtSpan.add_reads(into, compiled.reads)
 	return {"ast": compiler.ast, "compiled": compiled}

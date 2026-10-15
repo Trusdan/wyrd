@@ -65,6 +65,34 @@ func compile(
 	return compiled
 
 
+## True, false, or null when the value is not a constant.
+## Only bool literals and [code]and[/code] / [code]or[/code] / [code]not[/code] fold.
+static func const_bool(node: WyrdExprNode) -> Variant:
+	if node == null:
+		return null
+	if node.kind == &"bool":
+		return bool(node.value)
+	if node.kind == &"unary" and node.text == "not":
+		var inner: Variant = const_bool(node.a)
+		if inner == null:
+			return null
+		return not bool(inner)
+	if node.kind == &"binary" and (node.text == "and" or node.text == "or"):
+		var left: Variant = const_bool(node.a)
+		var right: Variant = const_bool(node.b)
+		if node.text == "and":
+			if left == false or right == false:
+				return false
+			if left == true and right == true:
+				return true
+			return null
+		if left == true or right == true:
+			return true
+		if left == false and right == false:
+			return false
+	return null
+
+
 static func specificity(node: WyrdExprNode) -> int:
 	if node == null or node.kind == &"error":
 		return 0

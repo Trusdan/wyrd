@@ -194,8 +194,12 @@ language 1
 quest gate "Gate"
   slot keeper = dock_keeper mode: live
   stage arrive
+    scene room with keeper
     -> done
   stage done
+scene room
+  narrator: Waiting. #line:room
+  -> end
 """
 
 

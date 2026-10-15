@@ -161,20 +161,34 @@ func _quests(units: Array, pack: WyrdLinkedPack) -> void:
 			for stage in quest.stages:
 				_quest_stage(quest, stage, stages, path, pack)
 			_warn_empty(quest, path)
+			_warn_routes(quest, path)
 
 
 func _warn_empty(quest: WyrdQuestDef, path: String) -> void:
-	if not quest.on_empty.is_empty():
-		return
-	var covered := {}
-	for stage in quest.stages:
-		_mark_empty(stage, covered)
+	var reachable := _reachable(quest)
+	var used := {}
+	var empty_covered := {}
+	var gone_covered := {}
+	for stage in reachable:
+		_mark_coverage(stage, used, empty_covered, gone_covered)
+	if quest.on_empty.is_empty():
+		for slot in quest.slots:
+			if slot.name.is_empty() or not used.has(slot.name) or empty_covered.has(slot.name):
+				continue
+			_diagnostics.add(
+				WyrdDiagnostic.W_EMPTY_UNCOVERED,
+				"slot \"%s\" can become empty and has no empty variant or on_empty" % slot.name,
+				path,
+				slot.line,
+				slot.col,
+				WyrdDiagnostic.SEVERITY_WARNING
+			)
 	for slot in quest.slots:
-		if slot.name.is_empty() or covered.has(slot.name):
+		if slot.mode != &"locked_at" or slot.name.is_empty() or gone_covered.has(slot.name):
 			continue
 		_diagnostics.add(
-			WyrdDiagnostic.W_EMPTY_UNCOVERED,
-			"slot \"%s\" can become empty and has no empty variant or on_empty" % slot.name,
+			WyrdDiagnostic.W_LOCKED_GONE_UNCOVERED,
+			"locked_at slot \"%s\" has no locked_gone variant" % slot.name,
 			path,
 			slot.line,
 			slot.col,
@@ -182,15 +196,103 @@ func _warn_empty(quest: WyrdQuestDef, path: String) -> void:
 		)
 
 
-func _mark_empty(stage: WyrdStageDef, covered: Dictionary) -> void:
+func _warn_routes(quest: WyrdQuestDef, path: String) -> void:
+	var branches := {}
+	for stage in _reachable(quest):
+		_mark_routes(stage, branches)
+	var names: Array = branches.keys()
+	names.sort()
+	for branch in names:
+		var row: Dictionary = branches[branch]
+		if int(row["closed"]) == 0 or int(row["other"]) > 0:
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.W_ROUTE_CLOSED,
+			"every route of branch \"%s\" closes" % String(branch),
+			path,
+			int(row["line"]),
+			int(row["col"]),
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _reachable(quest: WyrdQuestDef) -> Array:
+	var found: Array = []
+	if quest.stages.is_empty():
+		return found
+	var by_id := {}
+	for stage in quest.stages:
+		if not stage.id.is_empty():
+			by_id[stage.id] = stage
+	var seen := {}
+	var queue: Array = [quest.stages[0]]
+	while not queue.is_empty():
+		var stage: WyrdStageDef = queue.pop_front()
+		if stage == null:
+			continue
+		var token := stage.id if not stage.id.is_empty() else str(stage.get_instance_id())
+		if seen.has(token):
+			continue
+		seen[token] = true
+		if not stage.id.is_empty():
+			found.append(stage)
+		_enqueue_targets(stage, by_id, queue)
+	return found
+
+
+func _enqueue_targets(stage: WyrdStageDef, by_id: Dictionary, queue: Array) -> void:
+	if stage == null:
+		return
+	for row in stage.transitions:
+		var target := str(row.get("target", ""))
+		if by_id.has(target):
+			queue.append(by_id[target])
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_enqueue_targets(variant.body, by_id, queue)
+
+
+func _mark_coverage(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictionary, gone_covered: Dictionary) -> void:
+	if stage == null:
+		return
+	for ref in stage.scenes:
+		for entry in ref.get("with", []):
+			var name := str(entry.get("name", ""))
+			if not name.is_empty():
+				used[name] = true
 	for item in stage.variants:
 		var variant := item as WyrdVariantDef
 		if variant == null:
 			continue
+		if not variant.slot.is_empty():
+			used[variant.slot] = true
 		if variant.state == &"empty":
-			covered[variant.slot] = true
+			empty_covered[variant.slot] = true
+		elif variant.state == &"locked_gone":
+			gone_covered[variant.slot] = true
 		if variant.body != null:
-			_mark_empty(variant.body, covered)
+			_mark_coverage(variant.body, used, empty_covered, gone_covered)
+
+
+func _mark_routes(stage: WyrdStageDef, branches: Dictionary) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		if effect.kind != &"outcome" or effect.branch.is_empty():
+			continue
+		if not branches.has(effect.branch):
+			branches[effect.branch] = {"closed": 0, "col": effect.col, "line": effect.line, "other": 0}
+		var row: Dictionary = branches[effect.branch]
+		if effect.outcome == "route_closed":
+			row["closed"] = int(row["closed"]) + 1
+		else:
+			row["other"] = int(row["other"]) + 1
+		branches[effect.branch] = row
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_mark_routes(variant.body, branches)
 
 
 func _quest_stage(quest: WyrdQuestDef, stage: WyrdStageDef, stages: Dictionary, path: String, pack: WyrdLinkedPack) -> void:

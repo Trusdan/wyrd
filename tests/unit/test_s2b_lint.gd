@@ -10,11 +10,18 @@ language 1
 quest gate "Gate"
   slot keeper = dock_keeper mode: live
   slot clerk = dock_clerk mode: live
+  slot spare = dock_spare mode: live
   stage arrive
+    scene room with clerk
     variant keeper.empty:
       -> done
     -> done
+  stage side
+    scene room with spare
   stage done
+scene room
+  narrator: Room. #line:room
+  -> end
 """)
 	file.close()
 	WyrdPack.compile(PackedStringArray([path]), "sample", 1, null, diagnostics, path, true)

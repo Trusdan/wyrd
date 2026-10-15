@@ -42,6 +42,7 @@ var _emit_seq: int = 0
 var _collecting: bool = false
 var _collected: Dictionary = {}
 var _locals: Dictionary = {}
+var _slot_traced: Dictionary = {}
 
 
 func _init() -> void:
@@ -86,6 +87,7 @@ func _init() -> void:
 	effects.bind(self)
 	quests = WyrdQuestRunner.new()
 	quests.bind(self)
+	roles.stage_of = Callable(quests, &"stage")
 	dialogue = WyrdSceneRunner.new()
 	dialogue.bind(self)
 	effects.outcome_changed.connect(quests.note_outcome)
@@ -352,11 +354,48 @@ func eval_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> bool:
 
 
 func _trace_role(kind: String, fields: Dictionary) -> void:
+	if kind == "slot_state":
+		_trace_slot(fields)
+		return
 	trace_add(kind, fields)
 	if trace == null or not trace.enabled:
 		return
 	var flag := "true" if bool(fields.get("ok", false)) else "false"
 	print("wyrd %s role=%s entity=%s ok=%s" % [kind, str(fields.get("role", "")), str(fields.get("entity", "")), flag])
+
+
+func _trace_slot(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	var key := "%s\t%s" % [str(fields.get("quest", "")), str(fields.get("slot", ""))]
+	var token := "%s\t%s" % [str(fields.get("state", "")), str(fields.get("reason", ""))]
+	if str(_slot_traced.get(key, "")) == token:
+		return
+	_slot_traced[key] = token
+	trace_add("slot_state", fields)
+	print(
+		"wyrd slot_state quest=%s role=%s slot=%s state=%s reason=%s"
+		% [
+			str(fields.get("quest", "")),
+			str(fields.get("role", "")),
+			str(fields.get("slot", "")),
+			str(fields.get("state", "")),
+			str(fields.get("reason", "")),
+		]
+	)
+
+
+func _trace_allows(fields: Dictionary) -> bool:
+	if trace == null or trace.prefix.is_empty():
+		return true
+	var prefix := trace.prefix
+	for name in ["quest", "role", "slot"]:
+		var value := str(fields.get(name, ""))
+		if value == prefix or value.begins_with(prefix):
+			return true
+	return false
 
 
 func condition_dirty(index: int) -> bool:
@@ -419,6 +458,7 @@ func trace_log() -> Array[Dictionary]:
 
 
 func _reset_play() -> void:
+	_slot_traced.clear()
 	if effects != null:
 		effects.clear()
 	if dialogue != null:

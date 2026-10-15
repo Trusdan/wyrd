@@ -94,11 +94,11 @@ func test_slot_modes_and_states() -> void:
 	runtime.roles.enter_stage("gate", "pay")
 	runtime.roles.vacate(&"ferry_master", &"died")
 	assert_eq(runtime.roles.slot_holder("gate", &"ferry"), &"ada")
-	assert_eq(runtime.roles.slot_state(&"ferry", "gate"), &"default")
+	assert_eq(runtime.roles.slot_state(&"ferry", "gate"), &"locked_gone")
 	assert_eq(runtime.roles.holder(&"ferry_master"), &"bea")
 	runtime.config().hostile_threshold = 20
 	runtime.social.set_baseline(&"ada", &"player", &"affinity", -80.0)
-	assert_eq(runtime.roles.slot_state(&"ferry", "gate"), &"hostile")
+	assert_eq(runtime.roles.slot_state(&"ferry", "gate"), &"locked_gone")
 	runtime.roles.enter_stage("gate", "pay")
 	assert_eq(runtime.roles.slot_holder("gate", &"ferry"), &"ada")
 	runtime.roles.begin_quest("gate")

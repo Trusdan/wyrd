@@ -358,6 +358,8 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 	# become a constant name before the binding table is consulted.
 	if not dynamic and _bound_name(node):
 		return
+	if not dynamic and _unbound_dollar(node):
+		return
 	if not force_fact and not dynamic and (expected == WyrdSignatures.T_SYMBOL or expected == WyrdSignatures.T_ENTITY):
 		_as_name(node, expected)
 		return
@@ -437,6 +439,25 @@ func _as_name(node: WyrdExprNode, type_name: StringName) -> void:
 	node.text = ".".join(parts)
 	node.type_name = type_name
 	node.kids.clear()
+
+
+func _unbound_dollar(node: WyrdExprNode) -> bool:
+	var key := _bare_key(node)
+	if not key.begins_with("$") or bindings.has(key):
+		return false
+	_error(WyrdDiagnostic.E_EXPR_UNEXPECTED, "\"%s\" is only valid in an unwilling condition" % key, node)
+	node.kind = &"error"
+	node.type_name = &"error"
+	node.kids.clear()
+	return true
+
+
+func _bare_key(node: WyrdExprNode) -> String:
+	if node.kind == &"name" and node.text != "":
+		return node.text
+	if node.kids.size() == 1:
+		return _static_text(node.kids[0])
+	return ""
 
 
 func _bound_name(node: WyrdExprNode) -> bool:

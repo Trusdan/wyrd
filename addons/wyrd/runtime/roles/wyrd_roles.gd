@@ -15,6 +15,11 @@ extends RefCounted
 ## [method enter_stage]. [code]cast[/code] freezes in [method begin_quest] to
 ## the current holder; casting proper is M4. Slot state [code]hostile[/code]
 ## means disposition toward [code]player[/code] is below the threshold.
+## Precedence is [code]locked_gone[/code] / [code]empty[/code], then
+## [code]barred[/code], [code]hostile[/code], [code]unwilling[/code],
+## [code]successor[/code], and [code]default[/code]. The first of those with a
+## declared variant on the current stage wins. [code]locked_gone[/code] is a
+## frozen [code]locked_at[/code] holder who was vacated or is not alive.
 ## A secret holder's key [code]role.<id>.holder[/code] is in [code]known/[/code]
 ## only for agents passed to [method tell].
 
@@ -26,6 +31,12 @@ const EMPTY: StringName = &"empty"
 const DEFAULT: StringName = &"default"
 const SUCCESSOR: StringName = &"successor"
 const HOSTILE: StringName = &"hostile"
+const LOCKED_GONE: StringName = &"locked_gone"
+const BARRED: StringName = &"barred"
+const UNWILLING: StringName = &"unwilling"
+const _STATE_ORDER: PackedStringArray = [
+	"locked_gone", "empty", "barred", "hostile", "unwilling", "successor", "default",
+]
 
 var social: WyrdSocial
 var deeds: WyrdDeedLog
@@ -36,8 +47,10 @@ var content_of: Callable = Callable()
 var world_of: Callable = Callable()
 ## [code]eval_with(condition, locals)[/code] evaluates one eligibility condition.
 var eval_with: Callable = Callable()
-## [code]trace_of(kind, fields)[/code] records one eligibility line. Optional.
+## [code]trace_of(kind, fields)[/code] records one eligibility or slot-state line. Optional.
 var trace_of: Callable = Callable()
+## [code]stage_of(quest_id)[/code] returns the quest's current stage id. Optional.
+var stage_of: Callable = Callable()
 
 var _slots: Dictionary = {}
 var _from_content: Dictionary = {}
@@ -425,16 +438,53 @@ func slot_holder(quest_id: String, slot_name: StringName) -> StringName:
 
 func slot_state(slot_name: StringName, quest_id: String = "") -> StringName:
 	var quest := quest_id if not quest_id.is_empty() else _primary(String(slot_name))
-	var resolved: Dictionary = _resolved(quest, String(slot_name))
+	return resolve_slot(quest, slot_name, false)["state"]
+
+
+## Resolves one slot. [param trace_it] asks the runtime to log one line when the
+## state or reason changed. The returned [code]variant[/code] is the first
+## declared match, or null when the stage does not cover the winning state.
+func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = false) -> Dictionary:
+	var resolved: Dictionary = _resolved(quest_id, String(slot_name))
 	var who: StringName = resolved["holder"]
 	var status: StringName = resolved["status"]
-	if who == &"" or status == EMPTY:
-		return EMPTY
-	if _hostile(resolved["role"], who):
-		return HOSTILE
-	if status == SUCCESSOR:
-		return SUCCESSOR
-	return DEFAULT
+	var role: StringName = resolved["role"]
+	var variants := _stage_variants(quest_id, String(slot_name))
+	var gone := _gone_reason(quest_id, String(slot_name), who)
+	var higher := false
+	var winner_state := EMPTY
+	var winner_reason := "no_holder"
+	var winner: WyrdVariantDef = null
+	var saw := false
+	for state_name in _STATE_ORDER:
+		if not _state_applies(state_name, who, status, role, gone, variants):
+			continue
+		if not saw:
+			winner_state = StringName(state_name)
+			winner_reason = _state_reason(state_name, gone)
+			saw = true
+		var match := _match_variant(state_name, variants, who)
+		if match == null:
+			higher = true
+			continue
+		winner = match
+		winner_state = StringName(state_name)
+		winner_reason = "fallthrough" if higher else _state_reason(state_name, gone)
+		break
+	if trace_it and trace_of.is_valid():
+		trace_of.call("slot_state", {
+			"quest": quest_id,
+			"reason": winner_reason,
+			"role": String(role),
+			"slot": String(slot_name),
+			"state": String(winner_state),
+		})
+	return {
+		"reason": winner_reason,
+		"role": role,
+		"state": winner_state,
+		"variant": winner,
+	}
 
 
 func binding_status(role: StringName) -> StringName:
@@ -514,6 +564,119 @@ func _successor(role: StringName, old: StringName) -> StringName:
 			if _alive(id) and eligible(role, id):
 				return id
 	return &""
+
+
+func _stage_variants(quest_id: String, slot_name: String) -> Array:
+	var rows: Array = []
+	var stage := _stage_def(quest_id)
+	if stage == null:
+		return rows
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null and variant.slot == slot_name:
+			rows.append(variant)
+	return rows
+
+
+func _stage_def(quest_id: String) -> WyrdStageDef:
+	if quest_id.is_empty() or not stage_of.is_valid():
+		return null
+	var stage_id := str(stage_of.call(quest_id))
+	if stage_id.is_empty():
+		return null
+	var quest := _quest(quest_id)
+	if quest == null:
+		return null
+	for stage in quest.stages:
+		if stage.id == stage_id:
+			return stage
+	return null
+
+
+func _gone_reason(quest_id: String, slot_name: String, who: StringName) -> String:
+	var row := _slot_row(quest_id, slot_name)
+	if row.get("mode", &"") != &"locked_at":
+		return ""
+	var key := _freeze_key(quest_id, slot_name)
+	if not _frozen.has(key):
+		return ""
+	var snap: Dictionary = _frozen[key]
+	var frozen := StringName(snap.get("holder", &""))
+	if frozen == &"":
+		return ""
+	if not _alive(frozen):
+		return "frozen_dead"
+	if _binding(StringName(row.get("role", &"")))["holder"] != frozen:
+		return "frozen_vacated"
+	return ""
+
+
+func _state_applies(
+	state_name: String,
+	who: StringName,
+	status: StringName,
+	role: StringName,
+	gone: String,
+	variants: Array
+) -> bool:
+	var present := gone.is_empty() and who != &"" and status != EMPTY
+	match state_name:
+		"locked_gone":
+			return not gone.is_empty()
+		"empty":
+			return gone.is_empty() and (who == &"" or status == EMPTY)
+		"barred":
+			return present and _match_variant("barred", variants, who) != null
+		"hostile":
+			return present and _hostile(role, who)
+		"unwilling":
+			return present and _match_variant("unwilling", variants, who) != null
+		"successor":
+			return present and status == SUCCESSOR
+		"default":
+			return present
+		_:
+			return false
+
+
+func _state_reason(state_name: String, gone: String) -> String:
+	match state_name:
+		"locked_gone":
+			return gone if not gone.is_empty() else "frozen_vacated"
+		"empty":
+			return "no_holder"
+		"barred":
+			return "barred"
+		"hostile":
+			return "disposition"
+		"unwilling":
+			return "unwilling"
+		"successor":
+			return "status"
+		_:
+			return "holder"
+
+
+func _match_variant(state_name: String, variants: Array, who: StringName) -> WyrdVariantDef:
+	for entry in variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null or String(variant.state) != state_name:
+			continue
+		if state_name == "barred" or state_name == "unwilling":
+			if _variant_cond(variant, who, state_name == "unwilling"):
+				return variant
+			continue
+		return variant
+	return null
+
+
+func _variant_cond(variant: WyrdVariantDef, who: StringName, bind_holder: bool) -> bool:
+	if variant.condition == null or not eval_with.is_valid():
+		return false
+	var locals := {}
+	if bind_holder:
+		locals["$h"] = who
+	return bool(eval_with.call(variant.condition, locals))
 
 
 func _hostile(role: StringName, who: StringName) -> bool:
