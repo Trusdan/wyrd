@@ -63,6 +63,37 @@ func test_set_without_a_read_is_never_read_and_deed_is_not_a_write() -> void:
 	assert_eq((coins["readers"] as Array).size(), 0)
 
 
+func test_interpolation_before_a_write_warns() -> void:
+	var early := WyrdDiagnostics.new()
+	_compile(early, """
+		language 1
+		facts
+		  ferry.toll_coins : int stored
+		quest gate "Gate"
+		  stage arrive
+		    journal: Wants {ferry.toll_coins}. #line:j1
+		    ~ inc ferry.toll_coins by 2
+		    ~ outcome route = done
+		scene dock
+		  narrator: Toll {ferry.toll_coins}. #line:d1
+		  -> end
+		""")
+	assert_true(early.format().contains("warning[W_INTERP_UNSET]"))
+	assert_true(early.format().contains("ferry.toll_coins"))
+	var late := WyrdDiagnostics.new()
+	_compile(late, """
+		language 1
+		facts
+		  ferry.toll_coins : int stored
+		quest gate "Gate"
+		  stage arrive
+		    ~ inc ferry.toll_coins by 2
+		    journal: Wants {ferry.toll_coins}. #line:j1
+		    ~ outcome route = done
+		""")
+	assert_false(late.format().contains("W_INTERP_UNSET"))
+
+
 func _compile(diagnostics: WyrdDiagnostics, body: String) -> WyrdLinkedPack:
 	var path := "user://wyrd_xref_%d.wyrd" % Time.get_ticks_usec()
 	var file := FileAccess.open(path, FileAccess.WRITE)

@@ -144,6 +144,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
 | `W_FACT_UNUSED` | A fact is never read or written |
+| `W_INTERP_UNSET` | Prose interpolates a stored fact that no earlier `set` or `inc` writes |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 
 Resolved facts are never "never set". `record deed` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.

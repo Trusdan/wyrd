@@ -57,7 +57,7 @@ The status line says "Press New game." You will see:
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
 - A journal. Each line starts with a game time such as `day 1, 00:00`.
-- A list of facts, the quest stage, and who holds each role.
+- A list of facts, the quest title, the stage, the status, and who holds each role.
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
@@ -76,9 +76,9 @@ Leave the toggles as they are for the first walk. Ferry master alive, Lodging av
 
 On the right:
 
-- The journal has one line dated `day 1, 00:00`. It names the ferry master and a coin count. That sentence stays as it was written.
+- The journal has one line dated `day 1, 00:00`: "ferry master at the dock wants 2 coins before the crossing." That sentence stays as it was written. "ferry master" is the name the play host gave that person.
 - The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`.
-- The quest `ferry_toll` is active, stage `pay_toll`, waiting on a time check.
+- The quest row says `The Ferry Toll`. The stage row says `pay_toll`. The status row says `active`. A waiting row shows the time check.
 
 Press **Advance time**. The status line shows `day 1, 01:00`. The stage becomes `cross`. The fact `world.storm_heard` becomes `true`. The dock conversation opens again: "Two coins, and the boat will cross." then "The boat leaves the dock." Continue through both. The quest status becomes `completed`.
 
@@ -93,7 +93,7 @@ Press **Reset** or **New game** between routes. Set the toggles before you press
 | **Lodging available** off before Take the room | After Take the room the innkeeper says "No room left tonight." and "The board lists the price as {two coins}}." The second line really does show a single `{` and an extra `}`. Coins stay 4. The stage is `pay_toll`. |
 | **Notice succeeds** off before Take the room | The room conversation plays as in section 5, then the tavern conversation is offered again and the stage is `gossip`. The journal already has the ferry-master line. |
 | **Ferry master alive** off before Take the room (before or after New game is fine) | Take the room as usual. The journal says "The dock is empty, so the crossing waits." dated `day 1, 00:00`. The stage returns to `gossip` and then waits with no new scene. The fact list shows the ferry master is not alive. |
-| **Apprentice ready** on before New game, then **Ferry master alive** off before Take the room | The journal names the apprentice. Advance time reaches `cross`. The dock speaker is **apprentice**, and the quest completes. |
+| **Apprentice ready** on before New game, then **Ferry master alive** off before Take the room | The journal says "apprentice at the dock wants 2 coins before the crossing." Advance time reaches `cross`. The dock speaker is **apprentice**, and the quest completes. |
 | **Season storm** on before New game, or before you continue past "The ferry master is on the dock." | An extra line appears before the bell: narrator, "The season smells like rain." |
 | **Abort scene** while the first lines are up | The conversation stops. The status says you can save. The stage stays `gossip` and the tavern scene is offered again. The last line stays visible. |
 | **Short on coins** on before the choices appear | "Take the room (short on coins)" is grey and cannot be pressed. |

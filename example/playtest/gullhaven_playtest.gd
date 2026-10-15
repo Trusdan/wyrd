@@ -329,11 +329,7 @@ func _refresh() -> void:
 	for entity_id in ["player", "ferry_master", "tavern_owner", "dock_apprentice"]:
 		var key := "npc.%s.alive" % entity_id
 		_facts.add_item("world %s = %s" % [key, _shown(_runtime.facts.get(StringName(key)))])
-	_facts.add_item("quest %s | %s | %s" % [
-		String(_runtime.quests.status("ferry_toll")),
-		_runtime.quests.stage("ferry_toll"),
-		_runtime.quests.waiting_reason("ferry_toll"),
-	])
+	_append_quest(_facts)
 	_facts.add_item("outcome crossing = %s" % _runtime.quests.outcome("ferry_toll", "crossing"))
 	for slot_name in ["tavern", "ferry", "lookout"]:
 		_facts.add_item("slot %s = %s (%s)" % [
@@ -341,6 +337,23 @@ func _refresh() -> void:
 			String(_runtime.roles.slot_holder("ferry_toll", StringName(slot_name))),
 			String(_runtime.roles.slot_state(StringName(slot_name), "ferry_toll")),
 		])
+
+
+func _append_quest(list: ItemList) -> void:
+	# pay_toll is the stage. The quest id is ferry_toll; the panel shows the title.
+	var quest_id := "ferry_toll"
+	var title := quest_id
+	var content := _runtime.content()
+	if content != null:
+		var quest := content.quests.get(quest_id) as WyrdQuestDef
+		if quest != null and not quest.title.is_empty():
+			title = quest.title
+	list.add_item("quest %s" % title)
+	list.add_item("stage %s" % _runtime.quests.stage(quest_id))
+	list.add_item("status %s" % String(_runtime.quests.status(quest_id)))
+	var waiting := _runtime.quests.waiting_reason(quest_id)
+	if not waiting.is_empty():
+		list.add_item("waiting %s" % waiting)
 
 
 func _shown(value: Variant) -> String:

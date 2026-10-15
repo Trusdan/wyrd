@@ -63,6 +63,26 @@ func test_toolbar_and_toggles_do_not_error() -> void:
 	await wait_process_frames(1)
 
 
+func test_quest_panel_labels_title_and_stage() -> void:
+	var ui := _spawn()
+	_press(ui, "New game")
+	_drive_until_choice(ui, "Take the room", "quest-panel")
+	var facts := ui.find_child("FactList", true, false) as ItemList
+	assert_not_null(facts)
+	var lines := PackedStringArray()
+	for i in facts.item_count:
+		lines.append(facts.get_item_text(i))
+	assert_true(lines.has("quest The Ferry Toll"), "\n".join(lines))
+	assert_true(lines.has("stage pay_toll"), "\n".join(lines))
+	assert_true(lines.has("status active"), "\n".join(lines))
+	assert_false(lines.has("quest pay_toll"))
+	assert_eq(ui.quest_stage(), "pay_toll")
+	var journal := ui.find_child("JournalList", true, false) as ItemList
+	assert_not_null(journal)
+	assert_eq(journal.get_item_text(0), "day 1, 00:00  ferry master at the dock wants 2 coins before the crossing.")
+	await wait_process_frames(1)
+
+
 func test_panels_fit_at_1280_and_1920() -> void:
 	var window := get_tree().root
 	var saved_size := window.size

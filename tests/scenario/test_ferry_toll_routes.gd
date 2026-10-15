@@ -26,12 +26,22 @@ func test_route_take_the_room() -> void:
 	assert_true(runtime.quests.waiting_reason("ferry_toll").begins_with("waits_until:"))
 	var entry: Dictionary = runtime.quests.journal("ferry_toll")[0]
 	assert_eq(entry["id"], "j_ft_01")
-	assert_string_contains(entry["text"], "ferry master")
-	assert_string_contains(entry["text"], "coins")
+	assert_eq(String(entry["text"]), "ferry master at the dock wants 2 coins before the crossing.")
 	assert_eq(runtime.facts.get(&"ferry.toll_coins"), 2)
 	runtime.facts.set(&"ferry.toll_coins", 9)
-	assert_string_contains(runtime.quests.journal("ferry_toll")[0]["text"], "ferry master")
-	assert_false(String(runtime.quests.journal("ferry_toll")[0]["text"]).contains("9"))
+	assert_eq(String(runtime.quests.journal("ferry_toll")[0]["text"]), "ferry master at the dock wants 2 coins before the crossing.")
+
+
+func test_journal_uses_the_holder_display_name() -> void:
+	var opened := _boot(false)
+	var runtime: WyrdRuntime = opened["runtime"]
+	var host: WyrdFakeHost = opened["host"]
+	host.world.add_entity(&"ferry_master", &"person", "Bram", PackedStringArray(), true)
+	_finish_room(runtime)
+	assert_eq(runtime.roles.holder(&"ferry"), &"ferry_master")
+	assert_eq(host.world.display_name(&"ferry_master"), "Bram")
+	var entry: Dictionary = runtime.quests.journal("ferry_toll")[0]
+	assert_eq(String(entry["text"]), "Bram at the dock wants 2 coins before the crossing.")
 
 
 func test_route_local_place() -> void:
@@ -139,7 +149,7 @@ func test_route_ferry_empty_waits() -> void:
 	for entry in runtime.quests.journal("ferry_toll"):
 		if String(entry["id"]) == "j_ft_empty":
 			found = true
-			assert_string_contains(String(entry["text"]), "The dock is empty, so the crossing waits.")
+			assert_eq(String(entry["text"]), "The dock is empty, so the crossing waits.")
 			assert_eq(String(entry["date"]), "day 1, 00:00")
 	assert_true(found)
 	assert_ne(runtime.quests.outcome("ferry_toll", "crossing"), "done")
