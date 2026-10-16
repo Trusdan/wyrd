@@ -13,13 +13,14 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]why-not[/code] explains one storylet for a scope and speaker.
 ## [code]storylets[/code] lists storylets. [code]cooldowns[/code] lists clocks.
 ## [code]choices[/code] lists stored-fact writes from the provenance map.
+## [code]coverage[/code] lists storylets, variants, and line ids that were never hit.
 ## [code]voice-check[/code] reports variable text per speaker.
 ## [code]script-export[/code] writes one speaker's lines for a recording pass.
 ## [code]unvoiced-report[/code] lists line ids with no audio for each locale.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage"]
 
 
 static func version_line() -> String:
@@ -41,6 +42,7 @@ static func command_lines() -> PackedStringArray:
 		"storylets: list storylets for a scope and speaker",
 		"cooldowns: list storylet rows and speaker clocks",
 		"choices: list fact writes by scene, choice, prefix, or time",
+		"coverage: list storylets, variants, and lines that were never hit",
 	])
 
 
@@ -75,6 +77,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _cooldowns(args)
 	if command == "choices":
 		return _choices(args)
+	if command == "coverage":
+		return _coverage(args)
 	if command == "voice-check":
 		return _voice_check(args)
 	if command == "script-export":
@@ -251,6 +255,43 @@ static func _choices(args: PackedStringArray) -> Dictionary:
 	if bool(parsed["to_set"]):
 		query["to"] = int(parsed["to_minute"])
 	var table := runtime.facts.render_choice_summary(query)
+	var lines := PackedStringArray()
+	if not table.is_empty():
+		lines.append(table.trim_suffix("\n"))
+	var formatted := diagnostics.format()
+	if not formatted.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append(formatted.trim_suffix("\n"))
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 0, "output": output}
+
+
+static func _coverage(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var runtime: WyrdRuntime = _Runtime.new()
+	var report := runtime.load_content(_manifest(parsed))
+	if not report.ok:
+		return {"exit_code": 1, "output": report.diagnostics.format()}
+	var file_path := WyrdCoverage.DEFAULT_PATH
+	if bool(parsed["file_set"]):
+		file_path = str(parsed["file"])
+	var resolved := _resolve(file_path)
+	var read := WyrdCoverage.read_file(resolved)
+	if not bool(read["ok"]):
+		return {"exit_code": 1, "output": "wyrd: coverage file is not a JSON object\n"}
+	var counts: Dictionary = read["counts"]
+	var table := runtime.coverage.render(counts)
 	var lines := PackedStringArray()
 	if not table.is_empty():
 		lines.append(table.trim_suffix("\n"))
@@ -767,6 +808,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var from_set := false
 	var to_minute := 0
 	var to_set := false
+	var file_path := ""
+	var file_set := false
 	var positionals: PackedStringArray = PackedStringArray()
 	var listed := command == "why-not" or command == "storylets" or command == "cooldowns"
 	var i := 1
@@ -849,6 +892,12 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --from needs a whole number of minutes\n")
 			from_minute = int(args[i])
 			from_set = true
+		elif command == "coverage" and arg == "--file":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --file needs a path\n")
+			file_path = args[i].strip_edges()
+			file_set = true
 		elif command == "choices" and arg == "--to":
 			i += 1
 			if i >= args.size() or not args[i].is_valid_int():
@@ -940,6 +989,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"scope_id": scope_id,
 		"scope_id_set": scope_id_set,
 		"scope_set": scope_set,
+		"file": file_path,
+		"file_set": file_set,
 		"choice": choice,
 		"choice_set": choice_set,
 		"filter": filter,

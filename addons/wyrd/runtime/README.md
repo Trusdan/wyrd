@@ -20,6 +20,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 - `quests` — status, stage, outcome, journal, `abandon`, `request_host_step`, `complete_host_step`, `register_date_formatter`. Signals: `quest_state_changed`, `stage_changed`, `journal_entry_added`, `content_unavailable`, `host_step_requested`.
 - `dialogue` — `open_scene`, `advance`, `choose`, `abort`, `register_line_audio`, `can_save`. Signals: `line_ready`, `choices_ready`, `scene_ended`.
 - `debug` — `snapshot(sections, prefix, offset, limit)` reads live facts, roles, quests, the dirty queue, deeds, social axes, group precedence, and provenance. The document is not saved. One `debug_snapshot` line is logged when tracing is on. See `runtime/debug/README.md`.
+- `coverage` — hit counts for storylets, slot variants, and line ids. Recording is off until `enabled` is set. Counts are not saved. `merge` adds them to `user://wyrd_coverage.json`. `wyrd coverage` lists the ids that were never hit. See `runtime/debug/README.md`.
 
 `save_state()` returns a JSON-safe dictionary. `load_state(data)` returns a `WyrdLoadReport`. Both refuse while a scene is open (`E_SAVE_OPEN`). `rng_stream(name)` returns a named PCG32 stream seeded from the game seed. `draw_u32(name)` draws from that stream. `trace` is a `WyrdTrace`; turn `enabled` on to record. `start_new_game` clears streams and the trace log. It does not write a save.
 

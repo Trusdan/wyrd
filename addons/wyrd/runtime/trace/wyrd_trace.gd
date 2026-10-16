@@ -29,6 +29,9 @@ var enabled: bool = false
 ## A choice_summary line is one provenance read. key is the key prefix.
 ## path is the scene filter. A choice_compact line is one provenance drop.
 ## Its path is the dropped keys, joined by commas. Replay skips both.
+## A coverage line is one recorded hit. hit is storylet, line, or variant.
+## key is the id. path is the source file.
+## A coverage_report line is one never-hit read. Replay skips both.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

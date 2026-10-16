@@ -5,6 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## [method draw] does not record a selection. [method note_selected] does.
+## A known draw notifies [member on_coverage] with the storylet id and the line id.
 ## A [param visible] callback can skip a line. The cursor moves past a skip.
 ## A [code]line[/code] body and a [code]scene[/code] body write no draw row.
 ## A [code]set[/code] shuffles with [method WyrdRng.for_decision] on the
@@ -17,6 +18,8 @@ extends RefCounted
 
 const STREAM: StringName = &"storylet_lines"
 
+## [code](storylet_id, line_id)[/code] after a known storylet is drawn.
+var on_coverage: Callable = Callable()
 var _content: WyrdContent
 var _seed: int = 0
 var _rows: Dictionary = {}
@@ -343,6 +346,8 @@ func _export_row(row: Dictionary) -> Dictionary:
 
 
 func _drawn(story: WyrdStoryletDef, line_id: String, cycle: int) -> Dictionary:
+	if on_coverage.is_valid():
+		on_coverage.call(story.id, line_id)
 	return {
 		"body": String(story.body_kind),
 		"cycle": cycle,

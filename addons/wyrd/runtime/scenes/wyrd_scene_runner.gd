@@ -269,6 +269,8 @@ func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	else:
 		shown_text = _text.render(line_def.prose, line_def.line_id)
 	view.id = shown_id
+	if runtime != null and runtime.coverage != null:
+		runtime.coverage.hit("line", shown_id)
 	var who := _who(line_def.speaker, frame.quest_id)
 	view.speaker = who["id"]
 	view.display_name = String(who["name"])
@@ -299,6 +301,8 @@ func _present(frame: Frame, group: Array[WyrdSceneItem]) -> Array[WyrdChoiceView
 		view.enabled = not disabled
 		view.reason = choice.disabled_reason if disabled else ""
 		view.tags = choice.tags.duplicate()
+		if runtime != null and runtime.coverage != null:
+			runtime.coverage.hit("line", view.id)
 		views.append(view)
 		_pending.append(choice)
 	return views

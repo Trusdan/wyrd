@@ -59,6 +59,24 @@ jobs:
             --iterations 2000 --out res://tests/bench/out/ci.json
           cat tests/bench/out/ci.json
 
+      - name: Stage coverage file
+        if: always()
+        run: |
+          set -euo pipefail
+          src="${HOME}/.local/share/godot/app_userdata/Wyrd/wyrd_coverage.json"
+          mkdir -p coverage-artifact
+          if [[ -f "$src" ]]; then
+            cp "$src" coverage-artifact/wyrd_coverage.json
+          fi
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wyrd-coverage
+          path: coverage-artifact/wyrd_coverage.json
+          if-no-files-found: ignore
+
       - name: Content hygiene
         if: always()
         env:

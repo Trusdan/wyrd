@@ -12,6 +12,8 @@ extends WyrdStmtSpan
 ## is set on a variant line. [member scene_id] is empty on a journal entry.
 
 var line_id: String = ""
+## Source file. Stamped when the pack is loaded. Not a save field.
+var source_path: String = ""
 var speaker: String = ""
 var kind: StringName = &"spoken"
 var prose: WyrdExprNode = null

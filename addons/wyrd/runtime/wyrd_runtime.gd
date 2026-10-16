@@ -30,6 +30,7 @@ var sequences: WyrdSequences
 var director: WyrdDirector
 var trace: WyrdTrace
 var debug: WyrdDebug
+var coverage: WyrdCoverage
 
 var _config: WyrdConfig
 ## Unknown secrecy names already reported. Not saved.
@@ -66,6 +67,7 @@ func _init() -> void:
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
 	storylets = WyrdStoryletDeck.new()
+	storylets.on_coverage = Callable(self, &"_cover_draw")
 	sequences = WyrdSequences.new()
 	director = WyrdDirector.new()
 	director.bind(self)
@@ -126,6 +128,9 @@ func _init() -> void:
 	trace = WyrdTrace.new()
 	debug = WyrdDebug.new()
 	debug.bind(self)
+	coverage = WyrdCoverage.new()
+	coverage.on_hit = Callable(self, &"trace_coverage")
+	coverage.on_report = Callable(self, &"trace_coverage_report")
 
 
 func get_version() -> String:
@@ -332,6 +337,8 @@ func now_minutes() -> int:
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	var report := WyrdLoadReport.new()
 	_content = null
+	if coverage != null:
+		coverage.bind(null)
 	if storylets != null:
 		storylets.bind(null)
 	if sequences != null:
@@ -373,6 +380,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	if report.diagnostics.has_errors():
 		return report
 	_content = WyrdContent.from_pack(pack)
+	if coverage != null:
+		coverage.bind(_content)
 	if storylets != null:
 		storylets.bind(_content)
 		storylets.set_seed(_seed)
@@ -1057,6 +1066,47 @@ func fact_is_recap(key: String) -> bool:
 
 
 ## One line for a choice-summary read. Logged only when tracing is on.
+func _cover_draw(storylet_id: String, line_id: String) -> void:
+	if coverage == null:
+		return
+	coverage.hit("storylet", storylet_id)
+	if not line_id.is_empty():
+		coverage.hit("line", line_id)
+
+
+## One line for a coverage hit. Logged only when tracing is on.
+func trace_coverage(kind: String, id: String, total: int, path: String, line_no: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"count": total,
+		"hit": kind,
+		"key": id,
+		"line": line_no,
+		"path": path,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("coverage", fields)
+	var shown := path if not path.is_empty() else "-"
+	print("wyrd coverage kind=%s id=%s count=%d path=%s line=%d" % [kind, id, total, shown, line_no])
+
+
+## One line for a never-hit report. Logged only when tracing is on.
+func trace_coverage_report(missed: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"key": "",
+		"missed": missed,
+		"path": "",
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("coverage_report", fields)
+	print("wyrd coverage report missed=%d" % missed)
+
+
 func trace_choice_summary(fields: Dictionary, line: String) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -1720,6 +1770,8 @@ func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
 		view.text = str(picked["text"])
 		if dialogue != null:
 			view.audio = dialogue.audio_for(view.id)
+	if coverage != null and not view.id.is_empty() and view.id != line_id:
+		coverage.hit("line", view.id)
 	bark_ready.emit(view)
 
 

@@ -12,6 +12,8 @@ extends WyrdStmtSpan
 ## [member priority] is stored and does not change [member specificity].
 
 var id: String = ""
+## Source file. Stamped when the pack is loaded. Not a save field.
+var source_path: String = ""
 var scope_kind: StringName = &""
 var scope_id: String = ""
 var speaker: String = ""
