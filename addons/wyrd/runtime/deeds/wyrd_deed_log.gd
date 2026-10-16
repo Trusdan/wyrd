@@ -1,7 +1,7 @@
 class_name WyrdDeedLog
 extends RefCounted
 
-## Append-only deed log with hour-bucketed decay. No compaction.
+## Deed log with hour-bucketed decay. [method compact] merges interchangeable rows.
 ##
 ## @experimental
 ## Rows are parallel packed arrays. Indexes are by actor, target, and verb.
@@ -23,6 +23,8 @@ var config_of: Callable = Callable()
 var spatial_of: Callable = Callable()
 ## Called once per stored witness: [code](agent, mode, verb)[/code]. Not saved.
 var on_perceived: Callable = Callable()
+## Called after [method compact]: [code]{before, after, merged, dropped}[/code]. Not saved.
+var on_compact: Callable = Callable()
 
 var _next: int = 1
 var _id: PackedInt32Array = PackedInt32Array()
@@ -70,36 +72,145 @@ func export_state() -> Dictionary:
 func import_state(data: Dictionary) -> void:
 	clear()
 	for item in data.get("rows", []):
-		if not (item is Dictionary):
-			continue
-		var row: Dictionary = item
-		var tags := _packed(row.get("tags", []))
-		var witnesses := _packed(row.get("witnesses", []))
-		var perception := _align_modes(witnesses, _packed(row.get("perception", [])))
-		var index := _id.size()
-		_id.append(int(row.get("id", 0)))
-		_t.append(int(row.get("t", 0)))
-		_verb.append(String(row.get("verb", "")))
-		_actor.append(String(row.get("actor", "")))
-		_target.append(String(row.get("target", "")))
-		_place.append(String(row.get("place", "")))
-		_magnitude.append(float(row.get("magnitude", 1.0)))
-		_visibility.append(String(row.get("visibility", "public")))
-		_memorable.append(1 if bool(row.get("memorable", false)) else 0)
-		_tag_at.append(_tags.size())
-		_tag_n.append(tags.size())
-		for tag in tags:
-			_tags.append(tag)
-		_wit_at.append(_witnesses.size())
-		_wit_n.append(witnesses.size())
-		for i in witnesses.size():
-			_witnesses.append(witnesses[i])
-			_modes.append(perception[i])
-		_index(_by_actor, StringName(_actor[index]), index)
-		_index(_by_target, StringName(_target[index]), index)
-		_index(_by_verb, StringName(_verb[index]), index)
+		if item is Dictionary:
+			_append_stored(item)
 	var next := int(data.get("next", 1))
 	_next = next if next > 0 else 1
+
+
+## Merges rows that still count the same, and drops weight that has rounded to zero.
+## Rows keep their minute, so a [code]within[/code] window does not grow. The newest id in a
+## merged group is kept. [code]_next[/code] does not go backwards. Perception callbacks do not run.
+func compact() -> int:
+	var before := size()
+	var plan := _compact_plan()
+	var merged := int(plan["merged"])
+	var dropped := int(plan["dropped"])
+	if merged > 0 or dropped > 0:
+		var next := _next
+		var rows: Array = plan["rows"]
+		clear()
+		_next = next if next > 0 else 1
+		for row in rows:
+			_append_stored(row)
+	var after := size()
+	if on_compact.is_valid():
+		on_compact.call({"after": after, "before": before, "dropped": dropped, "merged": merged})
+	return after
+
+
+func _append_stored(row: Dictionary) -> void:
+	var tags := _packed(row.get("tags", []))
+	var witnesses := _packed(row.get("witnesses", []))
+	var perception := _align_modes(witnesses, _packed(row.get("perception", [])))
+	var index := _id.size()
+	_id.append(int(row.get("id", 0)))
+	_t.append(int(row.get("t", 0)))
+	_verb.append(String(row.get("verb", "")))
+	_actor.append(String(row.get("actor", "")))
+	_target.append(String(row.get("target", "")))
+	_place.append(String(row.get("place", "")))
+	_magnitude.append(float(row.get("magnitude", 1.0)))
+	_visibility.append(String(row.get("visibility", "public")))
+	_memorable.append(1 if bool(row.get("memorable", false)) else 0)
+	_tag_at.append(_tags.size())
+	_tag_n.append(tags.size())
+	for tag in tags:
+		_tags.append(tag)
+	_wit_at.append(_witnesses.size())
+	_wit_n.append(witnesses.size())
+	for i in witnesses.size():
+		_witnesses.append(witnesses[i])
+		_modes.append(perception[i])
+	_index(_by_actor, StringName(_actor[index]), index)
+	_index(_by_target, StringName(_target[index]), index)
+	_index(_by_verb, StringName(_verb[index]), index)
+
+
+func _compact_plan() -> Dictionary:
+	var count := size()
+	var latest := {}
+	for i in count:
+		var verb := String(_verb[i])
+		var at := int(_wit_at[i])
+		for offset in int(_wit_n[i]):
+			latest["%s\t%s" % [_witnesses[at + offset], verb]] = i
+	var drop := {}
+	var tiny := 0.0
+	var tiny_rows: Array = []
+	for i in count:
+		if round_sum(weight_at(i)) != 0.0:
+			continue
+		if _protects_mode(i, latest):
+			continue
+		tiny += weight_at(i)
+		tiny_rows.append(i)
+	if round_sum(tiny) == 0.0:
+		for i in tiny_rows:
+			drop[int(i)] = true
+	var groups := {}
+	for i in count:
+		if drop.has(i):
+			continue
+		var key := _compact_key(i)
+		var bucket: Array = groups.get(key, [])
+		bucket.append(i)
+		groups[key] = bucket
+	var rows: Array = []
+	var merged := 0
+	for i in count:
+		if drop.has(i):
+			continue
+		var bucket: Array = groups[_compact_key(i)]
+		var last := int(bucket[bucket.size() - 1])
+		if last != i:
+			continue
+		if bucket.size() == 1:
+			rows.append(row_at(i))
+			continue
+		var combined := row_at(i)
+		var magnitude := 0.0
+		var kept_id := 0
+		for member in bucket:
+			var index := int(member)
+			magnitude += float(_magnitude[index])
+			kept_id = maxi(kept_id, int(_id[index]))
+		combined["magnitude"] = round_sum(magnitude)
+		combined["id"] = kept_id
+		rows.append(combined)
+		merged += bucket.size() - 1
+	return {"dropped": drop.size(), "merged": merged, "rows": rows}
+
+
+func _protects_mode(index: int, latest: Dictionary) -> bool:
+	var verb := String(_verb[index])
+	var at := int(_wit_at[index])
+	for offset in int(_wit_n[index]):
+		var key := "%s\t%s" % [_witnesses[at + offset], verb]
+		if int(latest.get(key, -1)) == index:
+			return true
+	return false
+
+
+func _compact_key(index: int) -> String:
+	var tags := _slice(_tags, int(_tag_at[index]), int(_tag_n[index]))
+	var wit := ""
+	var at := int(_wit_at[index])
+	for offset in int(_wit_n[index]):
+		if offset > 0:
+			wit += ","
+		wit += "%s=%s" % [_witnesses[at + offset], _modes[at + offset]]
+	return "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%s" % [
+		_verb[index],
+		_actor[index],
+		_target[index],
+		_place[index],
+		_visibility[index],
+		int(_memorable[index]),
+		int(_t[index]),
+		",".join(tags),
+		wit,
+	]
 
 
 func _string_list(value: Variant) -> Array:
@@ -114,6 +225,8 @@ func _string_list(value: Variant) -> Array:
 
 
 func _packed(value: Variant) -> PackedStringArray:
+	if value is PackedStringArray:
+		return value
 	var rows := PackedStringArray()
 	if value is Array:
 		for item in value:

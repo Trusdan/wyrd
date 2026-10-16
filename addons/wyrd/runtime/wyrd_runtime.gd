@@ -79,6 +79,7 @@ func _init() -> void:
 	deeds.clock = Callable(self, &"now_minutes")
 	deeds.config_of = Callable(self, &"config")
 	deeds.spatial_of = Callable(self, &"_spatial")
+	deeds.on_compact = Callable(self, &"_on_compact")
 	social.deeds = deeds
 	social.config_of = Callable(self, &"config")
 	social.members_of = Callable(self, &"_members")
@@ -363,6 +364,8 @@ func tick(game_minutes: int) -> void:
 		return
 	trace_add("tick", {"minutes": game_minutes})
 	_minutes += game_minutes
+	if _config != null and _config.compact_after > 0 and deeds.size() >= _config.compact_after:
+		deeds.compact()
 	facts.refresh_poll(now_minutes())
 	if game_minutes > 0:
 		_mark_calls(_DEED_CALLS)
@@ -583,6 +586,26 @@ func trace_credibility(
 			fields["score"],
 			fields["accepted"],
 		]
+	)
+
+
+func _on_compact(info: Dictionary) -> void:
+	if int(info.get("before", 0)) != int(info.get("after", 0)):
+		_mark_calls(_DEED_CALLS)
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"after": int(info.get("after", 0)),
+		"before": int(info.get("before", 0)),
+		"dropped": int(info.get("dropped", 0)),
+		"merged": int(info.get("merged", 0)),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("compact", fields)
+	print(
+		"wyrd compact before=%s after=%s merged=%s dropped=%s"
+		% [str(fields["before"]), str(fields["after"]), str(fields["merged"]), str(fields["dropped"])]
 	)
 
 

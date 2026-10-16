@@ -10,6 +10,7 @@
 - A deed witness stores a perception mode, `saw`, `heard`, or `inferred`, from `WyrdSpatialAdapter.perceive`. The default is `saw`. `reveals` and `claim` write that stored fact for each witness: `saw` learns it, and `heard` or `inferred` believes it. Other agents are not copied. `perceived(agent, verb)` returns the latest mode. One `perception` line is logged per witness.
 - `statement: true` on `record deed` is a statement deed. Perception modes are still stored, and the mode does not write the fact. Each witness is a listener. The default score is `disposition(listener, speaker) / 100`, and the listener accepts when that score is at least `credibility_threshold` (default 0.5). `register_credibility` replaces the score and is not saved. Acceptance writes `believed/<listener>` only. One `credibility` line is logged per listener, including a rejection.
 - A kind the observer holds toward the subject multiplies that axis's deed delta by `WyrdConfig.kind_scale`. Several kinds multiply. The baseline is not scaled. `reputation(subject, group)` is the mean disposition of the group's members toward the subject. The subject is excluded. The value is derived, not saved. One `reputation` line is logged per call.
+- `deeds.compact` merges rows that share a minute and the same witnesses, and drops weight that has rounded to zero without moving `perceived`. Scores stay within that rounding. `deed_count` may fall. `compact_after` of 0 does not compact on tick. One `compact` line is logged per call.
 
 ## 0.2.0-m4 - 2026-10-15
 
