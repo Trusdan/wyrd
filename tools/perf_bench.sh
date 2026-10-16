@@ -103,8 +103,27 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# A fresh checkout has no global class cache. Import before any -s script so
+# class_name types such as WyrdScalePack resolve.
+import_project() {
+	local path="$1"
+	local log="$2"
+	if [[ -f "$path/.godot/global_script_class_cache.cfg" ]]; then
+		return 0
+	fi
+	echo "perf: importing ${path}"
+	if ! godot --headless --path "$path" --import >"$log" 2>&1; then
+		cat "$log" >&2 || true
+		exit 1
+	fi
+}
+
 echo "perf: generating ${profile} pack"
-godot --headless --path "$head_dir" -s res://bench/scale_pack_cli.gd -- --profile "$profile" --out "$pack" >"$work/generate.log"
+import_project "$head_dir" "$work/import-head.log"
+if ! godot --headless --path "$head_dir" -s res://bench/scale_pack_cli.gd -- --profile "$profile" --out "$pack" >"$work/generate.log" 2>&1; then
+	cat "$work/generate.log" >&2 || true
+	exit 1
+fi
 tail -n 5 "$work/generate.log"
 
 start_worker() {
@@ -112,9 +131,7 @@ start_worker() {
 	local path="$2"
 	local box="$work/$name"
 	mkdir -p "$box"
-	if [[ ! -f "$path/.godot/global_script_class_cache.cfg" ]]; then
-		godot --headless --path "$path" --import >"$box/import.log" 2>&1
-	fi
+	import_project "$path" "$box/import.log"
 	godot --headless --path "$path" -s res://bench/perf_worker.gd -- \
 		--mailbox "$box" --pack "$pack" --profile "$profile" >"$box/godot.log" 2>&1 &
 	pids+=("$!")
