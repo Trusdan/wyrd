@@ -3,7 +3,9 @@ extends RefCounted
 
 ## JSON-safe snapshot of one runtime. Schema 2 fills belief bags on older saves.
 ## Evidence deadlines, when any exist, ride in [code]facts.evidence[/code].
-## Line-set draw state, when any set has been drawn, rides in [code]storylets[/code].
+## Line-set draw state and director [code]seen[/code] / [code]last_minute[/code],
+## when any of that exists, ride in [code]storylets[/code]. An unknown storylet
+## id is kept in that bag and ignored.
 ## An older loader ignores those keys. Schema stays 2.
 ##
 ## @experimental

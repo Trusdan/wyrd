@@ -24,6 +24,7 @@ var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
+var director: WyrdDirector
 var trace: WyrdTrace
 
 var _config: WyrdConfig
@@ -59,6 +60,8 @@ func _init() -> void:
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
 	storylets = WyrdStoryletDeck.new()
+	director = WyrdDirector.new()
+	director.bind(self)
 	deeds = WyrdDeedLog.new()
 	social = WyrdSocial.new()
 	_config = WyrdConfig.new()
@@ -428,6 +431,21 @@ func eval_bool(cond: WyrdCompiledCondition) -> bool:
 	return eval_value(cond) == true
 
 
+## Storylet [code]when[/code] is not in the tick queue, so [code]chance[/code] would
+## otherwise roll on an empty record. The site is [code]when[/code].
+func eval_storylet(cond: WyrdCompiledCondition, storylet_id: String) -> bool:
+	if cond == null:
+		return true
+	var saved_id := _ctx.record_id
+	var saved_site := _ctx.site
+	_ctx.record_id = storylet_id
+	_ctx.site = "when"
+	var result: Variant = _rpn.eval(cond, {}, _ctx.funcs())
+	_ctx.record_id = saved_id
+	_ctx.site = saved_site
+	return result == true
+
+
 func eval_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> bool:
 	var saved := _locals.duplicate()
 	_locals = locals.duplicate()
@@ -703,7 +721,7 @@ func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot", "who", "key"]:
+	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true
@@ -771,6 +789,30 @@ func trace_add(kind: String, fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
 	trace.add(kind, fields)
+
+
+func trace_director(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("director", fields)
+	var winner := str(fields.get("winner", ""))
+	if winner.is_empty():
+		winner = "-"
+	var speaker := str(fields.get("speaker", ""))
+	if speaker.is_empty():
+		speaker = "-"
+	print(
+		"wyrd director scope=%s speaker=%s candidates=%s winner=%s score=%s"
+		% [
+			str(fields.get("scope", "")),
+			speaker,
+			str(fields.get("candidates", 0)),
+			winner,
+			str(fields.get("score", "-")),
+		]
+	)
 
 
 func _on_resolved(key: String, value: Variant) -> void:

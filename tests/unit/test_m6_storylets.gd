@@ -325,11 +325,12 @@ func test_new_game_and_a_save_without_the_key_clear_draws() -> void:
 	assert_false(runtime.save_state().has("storylets"))
 
 
-func test_import_drops_missing_line_ids_and_appends_new_ones() -> void:
+func test_import_keeps_unknown_rows_and_migrates_lines() -> void:
 	var runtime := _boot(_SET)
 	runtime.storylets.import_state({
 		"harbor.rumor": {"cycle": 1.0, "cursor": 1.0, "order": ["a", "gone", "b"]},
 		"missing.rumor": {"cycle": 0, "cursor": 0, "order": ["a"]},
+		"harbor.rumor_note": "no",
 	})
 	var kept := runtime.storylets.draw("harbor.rumor")
 	var appended := runtime.storylets.draw("harbor.rumor")
@@ -338,7 +339,10 @@ func test_import_drops_missing_line_ids_and_appends_new_ones() -> void:
 	assert_eq(int(kept["cycle"]), 1)
 	assert_eq(int(appended["cycle"]), 1)
 	var saved: Dictionary = runtime.save_state()["storylets"]
-	assert_false(saved.has("missing.rumor"))
+	assert_true(saved.has("missing.rumor"))
+	var unknown: Dictionary = saved["missing.rumor"]
+	assert_eq(str(unknown["order"][0]), "a")
+	assert_false(saved.has("harbor.rumor_note"))
 
 
 func _cycle(runtime: WyrdRuntime) -> PackedStringArray:

@@ -1,13 +1,13 @@
 class_name WyrdStoryletDef
 extends WyrdStmtSpan
 
-## One compiled storylet. Ranking is a later slice.
+## One compiled storylet. [WyrdDirector] ranks these at runtime.
 ##
 ## @experimental
 ## [member generic] is true when [code]when[/code] was omitted.
 ## [member specificity] counts top-level [code]and[/code] clauses.
 ## [member body_kind] is [code]line[/code], [code]set[/code], or [code]scene[/code].
-## [member cooldown_minutes] is stored and not enforced here.
+## [member cooldown_minutes] is stored here. The director enforces it.
 ## [member priority] is stored and does not change [member specificity].
 
 var id: String = ""
