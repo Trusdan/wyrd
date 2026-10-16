@@ -176,8 +176,10 @@ doc = json.load(open(sys.argv[1], encoding="utf-8"))
 if not doc.get("ok"):
     sys.stderr.write(doc.get("error", "prepare failed") + "\n")
     sys.exit(1)
-print("perf: prepared %s quests=%s facts=%s npcs=%s deeds=%s" % (
-    doc.get("profile"), doc["scale"]["quests"], doc["scale"]["facts"], doc["scale"]["npcs"], doc["scale"]["deeds"]))
+scale = doc["scale"]
+print("perf: prepared %s quests=%s facts=%s npcs=%s deeds=%s storylets=%s topics=%s speakers=%s" % (
+    doc.get("profile"), scale["quests"], scale["facts"], scale["npcs"], scale["deeds"],
+    scale.get("storylets", 0), scale.get("topics", 0), scale.get("speakers", 0)))
 PY
 
 base_box=""
@@ -224,25 +226,43 @@ fi
 warmups="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["warmups"])' "$prepare")"
 samples_n="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["samples"])' "$prepare")"
 
+base_skipped=" "
 record() {
 	local build="$1"
 	local phase="$2"
 	local box="$3"
 	local metric="$4"
 	local line
+	local code=0
 	line="$(send "$box" "sample ${metric}")"
+	set +e
 	python3 - "$samples" "$build" "$phase" "$line" <<'PY'
 import json, sys
 path, build, phase, raw = sys.argv[1:]
 row = json.loads(raw)
 if not row.get("ok"):
-    sys.stderr.write(row.get("error", raw) + "\n")
+    err = str(row.get("error", raw))
+    if build == "base" and err.startswith("unknown metric"):
+        sys.exit(2)
+    sys.stderr.write(err + "\n")
     sys.exit(1)
 row["build"] = build
 row["phase"] = phase
 with open(path, "a", encoding="utf-8") as handle:
     handle.write(json.dumps(row, separators=(",", ":")) + "\n")
 PY
+	code=$?
+	set -e
+	if [[ "$code" -eq 2 ]]; then
+		if [[ "${base_skipped}" != *" ${metric} "* ]]; then
+			echo "perf: base has no ${metric}; recording head only"
+			base_skipped="${base_skipped} ${metric} "
+		fi
+		return 0
+	fi
+	if [[ "$code" -ne 0 ]]; then
+		exit "$code"
+	fi
 }
 
 for metric in "${metrics[@]}"; do

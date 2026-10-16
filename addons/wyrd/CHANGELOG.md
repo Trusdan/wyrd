@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The scale bench times director query, why-not, and storylet tie-lint. Budgets warn.
+
 ## 0.4.0-m6 - 2026-10-16
 
 M6 director and reactivity. `VERSION` is `0.4.0-m6`. Corey cuts the tag `v0.4.0-m6`. Save schema is 2.
