@@ -64,3 +64,52 @@ jobs:
         env:
           WYRD_HYGIENE_DENYLIST: ${{ secrets.WYRD_HYGIENE_DENYLIST }}
         run: tools/content_hygiene.sh "origin/${{ github.base_ref || 'main' }}"
+
+  perf-smoke:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@v4
+        with:
+          path: head
+
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - name: Install pinned Godot
+        working-directory: head
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source tools/pins.env
+          mkdir -p "$HOME/.local/bin" /tmp/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q -o /tmp/godot.zip -d /tmp/godot-bin
+          install -m 0755 "/tmp/godot-bin/Godot_v${GODOT_TAG}_linux.x86_64" "$HOME/.local/bin/godot"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          godot --version
+
+      - name: PR smoke bench
+        working-directory: head
+        continue-on-error: true
+        run: |
+          tools/perf_bench.sh \
+            --profile smoke \
+            --head . \
+            --base "${GITHUB_WORKSPACE}/base" \
+            --mode warn \
+            --out "${RUNNER_TEMP}/perf-smoke.json" \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload smoke results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-smoke
+          path: ${{ runner.temp }}/perf-smoke.json
