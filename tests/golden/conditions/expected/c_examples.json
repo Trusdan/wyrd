@@ -665,7 +665,16 @@
         "text": "known",
         "type": "bool"
       },
-      "diagnostics": [],
+      "diagnostics": [
+        {
+          "code": "W_KNOWN_DEPRECATED",
+          "col": 10,
+          "line": 18,
+          "message": "known is deprecated; use knows",
+          "path": "res://tests/golden/conditions/c_examples.wyrd",
+          "severity": "warning"
+        }
+      ],
       "expr": "known(player, secret.missing_toll)",
       "kind": "when",
       "line": 18

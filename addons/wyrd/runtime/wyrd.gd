@@ -51,6 +51,14 @@ func register_function(name: StringName, fn: Callable, arg_types: Array, return_
 	return _runtime.register_function(name, fn, arg_types, return_type)
 
 
+func register_group_precedence(fn: Callable) -> void:
+	_runtime.register_group_precedence(fn)
+
+
+func invalidate_groups() -> void:
+	_runtime.invalidate_groups()
+
+
 func start_new_game(seed_value: int) -> void:
 	_runtime.start_new_game(seed_value)
 

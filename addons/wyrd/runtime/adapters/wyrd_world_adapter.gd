@@ -42,6 +42,14 @@ func members(faction: StringName) -> PackedStringArray:
 	return PackedStringArray()
 
 
+## Groups this agent belongs to, in precedence order. The default is empty and
+## does not [code]push_error[/code]: a host with no factions has no group beliefs.
+## A membership change is not seen until the host emits [code]groups_changed[/code]
+## or calls [method WyrdRuntime.invalidate_groups].
+func groups_of(_agent: StringName) -> PackedStringArray:
+	return PackedStringArray()
+
+
 ## Entity ids that match [param filter]. An empty kind and tag means every entity
 ## the host is willing to offer. Order is not significant. Object and item
 ## casting is not a separate path.

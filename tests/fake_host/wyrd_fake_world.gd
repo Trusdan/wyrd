@@ -13,6 +13,7 @@ class EntityRecord extends RefCounted:
 
 var _entities: Dictionary = {}
 var _members: Dictionary = {}
+var _groups: Dictionary = {}
 
 
 func add_entity(
@@ -84,6 +85,26 @@ func add_member(faction: StringName, entity: StringName) -> void:
 	if not _members.has(faction):
 		_members[faction] = {}
 	(_members[faction] as Dictionary)[entity] = true
+
+
+## Precedence order for [param agent]. [method members] is the other direction and sorts.
+func set_groups(agent: StringName, groups: PackedStringArray) -> void:
+	if agent == &"":
+		push_error("WyrdFakeWorld.set_groups: missing agent")
+		return
+	var rows: Array = []
+	for id in groups:
+		rows.append(String(id))
+	_groups[agent] = rows
+
+
+func groups_of(agent: StringName) -> PackedStringArray:
+	var rows := PackedStringArray()
+	if not _groups.has(agent):
+		return rows
+	for id in _groups[agent]:
+		rows.append(String(id))
+	return rows
 
 
 func members(faction: StringName) -> PackedStringArray:

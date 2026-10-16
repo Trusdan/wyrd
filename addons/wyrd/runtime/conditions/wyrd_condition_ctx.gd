@@ -7,16 +7,17 @@ extends RefCounted
 ## [code]holder[/code], [code]deed_count[/code], [code]deed_score[/code],
 ## [code]known[/code], and the social reads use the runtime. [code]chance[/code]
 ## draws [method WyrdRng.for_decision] on stream [code]chance[/code] with key
-## [code]<record>:<site>[/code]. [code]knows[/code], [code]believes[/code], and
-## [code]held[/code] report M5 and return false. A compiled [code]known[/code]
-## argument loads the fact; the key is the latest load in this evaluation.
+## [code]<record>:<site>[/code]. [code]knows[/code] and [code]known[/code] read a
+## role reveal or [code]known/<agent>[/code]. [code]believes[/code] is truthy of
+## the resolved belief. [code]belief[/code] returns that value. [code]held[/code]
+## reads one group's bag. A compiled key argument loads the fact; the key is the
+## latest load in this evaluation.
 
 var record_id: String = ""
 var site: String = ""
 
 var _runtime: WyrdRuntime
 var _builtins: Dictionary = {}
-var _m5: Dictionary = {}
 
 
 func bind(runtime: WyrdRuntime) -> void:
@@ -25,6 +26,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"affinity": Callable(self, &"_affinity"),
 		&"alive": Callable(self, &"_alive"),
 		&"axis": Callable(self, &"_axis"),
+		&"belief": Callable(self, &"_belief"),
 		&"believes": Callable(self, &"_believes"),
 		&"chance": Callable(self, &"_chance"),
 		&"deed_count": Callable(self, &"_deed_count"),
@@ -223,28 +225,66 @@ func _chance(args: Array) -> bool:
 	return hit
 
 
-func _knows(_args: Array) -> bool:
-	_report(&"knows")
-	return false
+func _knows(args: Array) -> bool:
+	return _known(args)
 
 
-func _believes(_args: Array) -> bool:
-	_report(&"believes")
-	return false
+func _belief(args: Array) -> Variant:
+	return _resolve_belief(args)["value"]
 
 
-func _held(_args: Array) -> bool:
-	_report(&"held")
-	return false
+func _believes(args: Array) -> bool:
+	return _truthy(_belief(args))
 
 
-func _report(name: StringName) -> void:
-	if _m5.has(name):
-		return
-	_m5[name] = true
-	push_error("belief function \"%s\" is M5" % String(name))
-	if _runtime != null:
-		_runtime.note({"detail": "M5", "key": String(name), "kind": "m5"})
+func _held(args: Array) -> bool:
+	if args.size() < 2 or args[0] == null or _runtime == null:
+		return false
+	var key := _known_key(args[1])
+	if key == &"":
+		return false
+	var group := StringName(str(args[0]))
+	return _truthy(_runtime.facts.get_in(key, StringName("held/%s" % String(group))))
+
+
+## Own [code]believed/[/code], then [code]held/[/code] of each group in precedence
+## order. A present value, including explicit false, stops the walk. Null is no
+## opinion. [code]known/[/code] and [code]world[/code] are not read.
+func _resolve_belief(args: Array) -> Dictionary:
+	if args.size() < 2 or args[0] == null or _runtime == null:
+		return {"source": "none", "value": null}
+	var agent := StringName(str(args[0]))
+	var key := _known_key(args[1])
+	if key == &"":
+		_runtime.trace_belief_lookup(agent, key, null, "none")
+		return {"source": "none", "value": null}
+	var own: Variant = _runtime.facts.get_in(key, StringName("believed/%s" % String(agent)))
+	if own != null:
+		_runtime.trace_belief_lookup(agent, key, own, "own")
+		return {"source": "own", "value": own}
+	for group in _runtime.group_precedence(agent):
+		var held: Variant = _runtime.facts.get_in(key, StringName("held/%s" % String(group)))
+		if held == null:
+			continue
+		var source := "group %s" % String(group)
+		_runtime.trace_belief_lookup(agent, key, held, source)
+		return {"source": source, "value": held}
+	_runtime.trace_belief_lookup(agent, key, null, "none")
+	return {"source": "none", "value": null}
+
+
+func _truthy(value: Variant) -> bool:
+	if value == null:
+		return false
+	if value is bool:
+		return value
+	if value is int:
+		return value != 0
+	if value is float:
+		return value != 0.0
+	if value is String or value is StringName:
+		return not String(value).is_empty()
+	return true
 
 
 func _world() -> WyrdWorldAdapter:

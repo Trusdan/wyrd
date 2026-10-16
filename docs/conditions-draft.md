@@ -8,7 +8,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 2. A day is 1440 minutes until a calendar resource exists. Callers can pass a different `minutes_per_day`.
 3. The 10k-fact / 5k-condition benchmark records numbers only. It is not a CI gate.
 4. Conditions have no string literals. Text comparisons use symbols.
-5. `knows`, `believes`, and `held` are registered signatures marked `M5`.
+5. `knows(agent, key)` reads a role reveal or `known/<agent>`. `known(agent, key)` is the same function and warns `W_KNOWN_DEPRECATED`. `believes(agent, key)` is true when the resolved belief is truthy. `belief(agent, key)` and a comparison `believes(agent, key) == v` read the value. `held(group, key)` reads that group's bag only. Lookup is the agent's `believed:` value, then `held:` of `groups_of(agent)` in precedence order, then null. A present value, including explicit false, stops the walk. Null is no opinion and is not equal to false. There is no fallback to `known:` or `world:`. A belief write marks the fact's dependents the same way a fact write does. Group membership is a synthetic read `group.membership`, dropped by `invalidate_groups` or by emitting `groups_changed`.
 6. A set literal is `[a, b]`.
 7. A computed key segment (`npc.{holder(ferry)}.alive`) is allowed outside prose. Inside a prose span, grammar v1 closes `{...}` at the first `}`, so the same read is `fact(npc, holder(ferry), alive)`.
 

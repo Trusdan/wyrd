@@ -10,7 +10,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 
 ## Facade
 
-`configure`, `register_adapter`, `register_function`, `start_new_game`, `load_content`, and `tick` forward to the runtime. Sub-objects:
+`configure`, `register_adapter`, `register_function`, `register_group_precedence`, `invalidate_groups`, `start_new_game`, `load_content`, and `tick` forward to the runtime. Sub-objects:
 
 - `facts` — `set(key, value)` and `get(key)` for the world perspective, `set_in` / `get_in` for `known/<agent>`, `believed/<agent>`, and `held/<group>`, `clear_in` for a believed or held key, `invalidate(prefix)`, `subscribe(prefix)`, signal `fact_changed(key, old_value, new_value)`. Godot's `Object.set` and `Object.get` already own those names, so the store implements them with `_set` and `_get`. A perspective argument cannot be added, and `set` cannot return a bool.
 - `events` — `emit(name, payload)`, `begin_batch`, and `end_batch`. The payload is checked against the pack's `events` block. A bad payload is `push_error`, a trace row `emit_rejected`, and no cache drop. A good emit drops `on_event` caches, including every concrete key of a pattern, re-checks only the dirty dependents in index order, and returns after that re-check. `begin_batch` / `end_batch` run handlers on each emit and re-check once on the outermost `end_batch`. An open scene is not aborted. `waits_until` and `start when` wake from the re-check. A stage `on` handler runs at most once per emit and does not cascade into the next stage. The last 32 emits sit in a ring buffer for `debug_dump`. They are not saved. See `docs/events-draft.md`.
@@ -22,7 +22,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 
 `save_state()` returns a JSON-safe dictionary. `load_state(data)` returns a `WyrdLoadReport`. Both refuse while a scene is open (`E_SAVE_OPEN`). `rng_stream(name)` returns a named PCG32 stream seeded from the game seed. `draw_u32(name)` draws from that stream. `trace` is a `WyrdTrace`; turn `enabled` on to record. `start_new_game` clears streams and the trace log. It does not write a save.
 
-`believed/<agent>` and `held/<group>` store schema facts. A write there does not change `world` or `known`. `knows`, `believes`, and `held` stay false. A belief change logs one `belief` line when tracing is on.
+`believed/<agent>` and `held/<group>` store schema facts. A write there does not change `world` or `known`. `knows` reads a role reveal or `known/<agent>` (`known` is the same read and warns `W_KNOWN_DEPRECATED`). `believes` is truthy of the agent's own belief, then `held` of `groups_of` in precedence order. An explicit false stops that walk. There is no fallback to `known` or `world`. `belief` and `believes(...) == v` read the value. `held(group, key)` reads that group only. `register_group_precedence` replaces the list order. Membership is cached until `invalidate_groups` or an emit of `groups_changed`, which also marks the synthetic read `group.membership`. A belief change logs one `belief` line when the value changes. A lookup logs one `belief_lookup` line. Both are filterable by agent or key.
 
 ## Text
 
