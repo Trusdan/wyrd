@@ -23,6 +23,9 @@ var enabled: bool = false
 ## A voice line's key is the name-free line id, and its who is the holder.
 ## A secrecy line's key is the storylet id, or the line id when there is no storylet.
 ## Its path is the line id. The prefix matches either.
+## A debug_snapshot line is one inspector read. key is the caller prefix.
+## path is the section list, or * when every section was requested.
+## The prefix matches key or path. Load does not log one. Replay skips it.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

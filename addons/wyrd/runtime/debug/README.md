@@ -1,0 +1,11 @@
+# debug
+
+`WyrdDebug.snapshot(sections, prefix, offset, limit)` builds an inspector document from the live runtime. `Wyrd.debug` is that object. The call is on demand. Nothing stores the document, and load does not log it.
+
+An empty `sections` list returns `facts`, `roles`, `quests`, `dirty`, `deeds`, `social`, `precedence`, and `provenance`, in that order. An unknown name is `push_error` and is omitted. A repeated name is kept once.
+
+`prefix` keeps a row when `key` begins with that text. A fact row also matches when `fact` begins with it, so `harbor` matches `world/harbor.coins`. `offset` below 0 is 0. `limit` of 0 returns every remaining filtered row. Each section is `{rows, total, offset, limit}`. `total` counts the filtered rows before the page. Rows are ordered by `key`, then by `id` or `index` when the key repeats.
+
+`facts` rows are `world/<fact>` or `<layer>/<owner>/<fact>` with `fact`, `layer`, `owner`, and `value`. A world row includes `until` when an evidence deadline is set. `roles` rows carry `holder`, `since`, `status`, `strategy`, and `history`. `quests` rows carry `stage`, `status`, `waiting`, `variant`, and `regions` (`{}` when the stage is flat). `dirty` rows are the conditions whose tick-queue flag is set: `index`, `record`, and `site`. That queue is not saved. `deeds` rows use `actor/verb/target` and include the stored `magnitude` and the decayed `weight`. `social` rows are `source/target` for baselines, kinds, and deed observers (the target and each witness, toward the actor). Each row has `disposition` and `axes` (`affinity` plus `WyrdConfig.axis_names`, sorted). `precedence` rows are agents that already appear as a known or believed owner, a role holder, or a deed actor, target, or witness. `groups` is `group_precedence`. An agent that exists only on the host is omitted. `provenance` rows are `scene`, `choice`, and `time` for facts written by `set` or `inc`.
+
+When tracing is on, one line is logged: `wyrd debug snapshot sections=%s prefix=%s offset=%d limit=%d rows=%d`. An empty section list prints `*`. An empty prefix prints `-`. `rows` is the page size, summed across sections. `key` is the caller prefix. `path` is the section list. A trace prefix matches `key` or the start of `path`, so `facts,deeds` matches `facts` and does not match `deeds`.

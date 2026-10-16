@@ -19,6 +19,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 - `roles` — `assign`, `vacate`, `define`, `tell`, `begin_quest`, `enter_stage`, `holder`, and `slot_state`.
 - `quests` — status, stage, outcome, journal, `abandon`, `request_host_step`, `complete_host_step`, `register_date_formatter`. Signals: `quest_state_changed`, `stage_changed`, `journal_entry_added`, `content_unavailable`, `host_step_requested`.
 - `dialogue` — `open_scene`, `advance`, `choose`, `abort`, `register_line_audio`, `can_save`. Signals: `line_ready`, `choices_ready`, `scene_ended`.
+- `debug` — `snapshot(sections, prefix, offset, limit)` reads live facts, roles, quests, the dirty queue, deeds, social axes, group precedence, and provenance. The document is not saved. One `debug_snapshot` line is logged when tracing is on. See `runtime/debug/README.md`.
 
 `save_state()` returns a JSON-safe dictionary. `load_state(data)` returns a `WyrdLoadReport`. Both refuse while a scene is open (`E_SAVE_OPEN`). `rng_stream(name)` returns a named PCG32 stream seeded from the game seed. `draw_u32(name)` draws from that stream. `trace` is a `WyrdTrace`; turn `enabled` on to record. `start_new_game` clears streams and the trace log. It does not write a save.
 
@@ -40,4 +41,4 @@ Journal text is interpolated once and stored with the game time. The default dat
 
 ## Save
 
-`runtime/save` writes schema version 1: content pack id and manifest hash, facts, deeds, social baselines and kinds, roles, quests (including frozen journal text), effect provenance, game minutes, the game seed, and every named RNG stream. 64-bit integers are 16 hex digits. The migration table is empty. A manifest hash that does not match warns in a debug build and is silent in a release. See `runtime/save/README.md` and `runtime/trace/README.md`.
+`runtime/save` writes schema version 1: content pack id and manifest hash, facts, deeds, social baselines and kinds, roles, quests (including frozen journal text), effect provenance, game minutes, the game seed, and every named RNG stream. 64-bit integers are 16 hex digits. The migration table is empty. A manifest hash that does not match warns in a debug build and is silent in a release. The inspector snapshot is not a save key. See `runtime/save/README.md`, `runtime/debug/README.md`, and `runtime/trace/README.md`.
