@@ -597,8 +597,11 @@ func _offer(state: QuestState, scene: Dictionary) -> void:
 
 
 func _write_journal(quest_id: String, state: QuestState, line: WyrdLineDef) -> void:
+	if not runtime.secrecy_allows(line.secrecy):
+		runtime.trace_secrecy("", line.line_id, line.secrecy, runtime.secrecy_unlocked_name(), "", "")
+		return
 	var minutes := runtime.now_minutes()
-	var shown := runtime.resolve_line(line)
+	var shown := runtime.apply_variant_secrecy(line, runtime.resolve_line(line))
 	var entry := {
 		"date": format_date(minutes),
 		"id": str(shown["id"]),

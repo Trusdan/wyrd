@@ -262,7 +262,7 @@ func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	var shown_text := ""
 	var shown_tags := line_def.tags
 	if runtime != null:
-		var shown := runtime.resolve_line(line_def)
+		var shown := runtime.apply_variant_secrecy(line_def, runtime.resolve_line(line_def))
 		shown_id = str(shown["id"])
 		shown_text = str(shown["text"])
 		shown_tags = shown["tags"] as PackedStringArray
@@ -398,15 +398,26 @@ func _finish(status: StringName, reason: StringName) -> void:
 
 
 func _line_ok(line_def: WyrdLineDef) -> bool:
+	if not _secrecy_ok(line_def.secrecy, line_def.line_id, line_def.speaker):
+		return false
 	if line_def.condition == null:
 		return true
 	return runtime.eval_bool(line_def.condition)
 
 
 func _choice_ok(choice: WyrdChoiceDef) -> bool:
+	if not _secrecy_ok(choice.secrecy, choice.line_id, ""):
+		return false
 	if choice.condition == null:
 		return true
 	return runtime.eval_bool(choice.condition)
+
+
+func _secrecy_ok(name: String, line_id: String, speaker: String) -> bool:
+	if runtime == null or runtime.secrecy_allows(name):
+		return true
+	runtime.trace_secrecy("", line_id, name, runtime.secrecy_unlocked_name(), "", speaker)
+	return false
 
 
 func _is_disabled(choice: WyrdChoiceDef) -> bool:

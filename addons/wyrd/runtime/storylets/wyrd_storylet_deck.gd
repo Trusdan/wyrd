@@ -5,6 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## [method draw] does not record a selection. [method note_selected] does.
+## A [param visible] callback can skip a line. The cursor moves past a skip.
 ## A [code]line[/code] body and a [code]scene[/code] body write no draw row.
 ## A [code]set[/code] shuffles with [method WyrdRng.for_decision] on the
 ## [constant STREAM] stream, the storylet id, and the cycle number.
@@ -51,7 +52,7 @@ func set_seed(seed_value: int) -> void:
 	_seed = seed_value
 
 
-func draw(id: String) -> Dictionary:
+func draw(id: String, visible: Callable = Callable()) -> Dictionary:
 	var story := _story(id)
 	if story == null:
 		if _content == null:
@@ -63,6 +64,8 @@ func draw(id: String) -> Dictionary:
 		if story.lines.is_empty():
 			push_error("Wyrd.storylets.draw: storylet \"%s\" has no line" % id)
 			return {}
+		if visible.is_valid() and not visible.call(story.lines[0]):
+			return _drawn(story, "", 0)
 		return _drawn(story, story.lines[0].line_id, 0)
 	if story.body_kind == &"scene":
 		return _drawn(story, "", 0)
@@ -75,9 +78,15 @@ func draw(id: String) -> Dictionary:
 	var row := _ensure(story)
 	var order: PackedStringArray = row["order"]
 	var cursor := int(row["cursor"])
-	var line_id := String(order[cursor])
-	row["cursor"] = cursor + 1
-	return _drawn(story, line_id, int(row["cycle"]))
+	while cursor < order.size():
+		var line_id := String(order[cursor])
+		cursor += 1
+		row["cursor"] = cursor
+		var line := _line_by_id(story, line_id)
+		if line != null and visible.is_valid() and not visible.call(line):
+			continue
+		return _drawn(story, line_id, int(row["cycle"]))
+	return _drawn(story, "", int(row.get("cycle", 0)))
 
 
 func seen_of(id: String) -> int:
@@ -246,6 +255,13 @@ func import_state(data: Dictionary) -> void:
 			"order": order,
 			"seen": seen,
 		}
+
+
+func _line_by_id(story: WyrdStoryletDef, line_id: String) -> WyrdLineDef:
+	for line in story.lines:
+		if line.line_id == line_id:
+			return line
+	return null
 
 
 func _story(id: String) -> WyrdStoryletDef:

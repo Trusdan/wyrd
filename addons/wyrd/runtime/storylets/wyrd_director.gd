@@ -9,7 +9,11 @@ extends RefCounted
 ## matches every storylet in the scope. [code]Any[/code] is not the wildcard.
 ## Exact speaker is a filter, not a rank key.
 ##
-## Filters are scope, speaker, [code]when[/code], then cooldown. Cooldown is
+## Filters are scope, speaker, secrecy, [code]when[/code], then cooldown.
+## A storylet whose secrecy name sits above the unlocked tier is dropped
+## before ranking. An empty secrecy name stays visible. Each dropped
+## candidate logs one [code]secrecy[/code] line when tracing is on.
+## Cooldown is
 ## hard: a storylet is eligible when it has never been selected, its cooldown
 ## is 0, or the minutes since [code]last_minute[/code] are at least
 ## [member WyrdStoryletDef.cooldown_minutes]. If every match is cooling, the
@@ -66,7 +70,7 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 		var minute := _runtime.now_minutes()
 		_runtime.storylets.note_selected(winner.id, minute)
 		_note_speaker(winner, speaker, minute)
-		drawn = _runtime.storylets.draw(winner.id)
+		drawn = _runtime.storylets.draw(winner.id, _allow_for(winner))
 		if kind == &"bark":
 			_runtime.present_bark(winner, drawn)
 	return _finish(scope_text, speaker, matched, winner, drawn, seen_before)
@@ -142,6 +146,8 @@ func why_not(storylet_id: String, scope_kind: String, scope_id: String = "", spe
 		return _finish_why(storylet_id, scope_text, speaker, false, "scope", "", score, story.cooldown_minutes, remaining, "")
 	if not _speaker_matches(story.speaker, speaker):
 		return _finish_why(storylet_id, scope_text, speaker, false, "speaker", "", score, story.cooldown_minutes, remaining, "")
+	if _blocked(story):
+		return _finish_why(storylet_id, scope_text, speaker, false, "secrecy", "", score, story.cooldown_minutes, remaining, "")
 	var clause := _failing_clause(story)
 	if not clause.is_empty():
 		return _finish_why(storylet_id, scope_text, speaker, false, "when", clause, score, story.cooldown_minutes, remaining, "")
@@ -171,7 +177,7 @@ static func format_why_not(row: Dictionary) -> String:
 	if winner.is_empty():
 		winner = "-"
 	var eligible := "true" if bool(row.get("eligible", false)) else "false"
-	return "wyrd why_not storylet=%s scope=%s speaker=%s eligible=%s reason=%s clause=\"%s\" score=%s cooldown=%s remaining=%s winner=%s" % [
+	return "wyrd why_not storylet=%s scope=%s speaker=%s eligible=%s reason=%s clause=\"%s\" score=%s cooldown=%s remaining=%s winner=%s tier=%s unlocked=%s" % [
 		str(row.get("storylet", "")),
 		str(row.get("scope", "")),
 		spoken,
@@ -182,6 +188,8 @@ static func format_why_not(row: Dictionary) -> String:
 		str(row.get("cooldown", 0)),
 		str(row.get("remaining", 0)),
 		winner,
+		_dash(row, "tier"),
+		_dash(row, "unlocked"),
 	]
 
 
@@ -208,6 +216,8 @@ func _finish_why(
 		"score": score,
 		"speaker": speaker,
 		"storylet": storylet_id,
+		"tier": _tier_text(storylet_id),
+		"unlocked": _unlocked_text(),
 		"winner": winner,
 	}
 	if _runtime != null:
@@ -229,6 +239,9 @@ func _eligible(kind: StringName, scope_id: String, speaker: String) -> Array:
 		if not _scope_matches(story, kind, scope_id):
 			continue
 		if not _speaker_matches(story.speaker, speaker):
+			continue
+		if _blocked(story):
+			_trace_blocked(story)
 			continue
 		if not _when_passes(story):
 			continue
@@ -380,6 +393,86 @@ func _scope_text(kind: StringName, scope_id: String) -> String:
 	if kind == &"bark":
 		return "bark"
 	return "%s %s" % [String(kind), scope_id]
+
+
+func _allow_for(story: WyrdStoryletDef) -> Callable:
+	return func(line: WyrdLineDef) -> bool:
+		return _line_visible(story, line)
+
+
+func _line_visible(story: WyrdStoryletDef, line: WyrdLineDef) -> bool:
+	var tier := _line_tier(story, line)
+	if _runtime.secrecy_allows(tier):
+		return true
+	_runtime.trace_secrecy(story.id, line.line_id, tier, _runtime.secrecy_unlocked_name(), story.scope_text(), story.speaker)
+	return false
+
+
+func _blocked(story: WyrdStoryletDef) -> bool:
+	if not _runtime.secrecy_allows(story.secrecy):
+		return true
+	if story.lines.is_empty():
+		return false
+	for line in story.lines:
+		if _runtime.secrecy_allows(_line_tier(story, line)):
+			return false
+	return true
+
+
+func _trace_blocked(story: WyrdStoryletDef) -> void:
+	var tier := story.secrecy
+	if tier.is_empty():
+		for line in story.lines:
+			var name := _line_tier(story, line)
+			if not name.is_empty() and not _runtime.secrecy_allows(name):
+				tier = name
+				break
+	_runtime.trace_secrecy(story.id, "", tier, _runtime.secrecy_unlocked_name(), story.scope_text(), story.speaker)
+
+
+func _line_tier(story: WyrdStoryletDef, line: WyrdLineDef) -> String:
+	if line != null and not line.secrecy.is_empty():
+		return line.secrecy
+	return story.secrecy
+
+
+func _tier_text(storylet_id: String) -> String:
+	if _runtime == null or _runtime.content() == null:
+		return "-"
+	var found: Variant = _runtime.content().storylets.get(storylet_id, null)
+	if not (found is WyrdStoryletDef):
+		return "-"
+	var story := found as WyrdStoryletDef
+	if not story.secrecy.is_empty():
+		return story.secrecy
+	var labeled := ""
+	var any_open := story.lines.is_empty()
+	for line in story.lines:
+		var name := _line_tier(story, line)
+		if name.is_empty() or _runtime.secrecy_allows(name):
+			any_open = true
+			break
+		if labeled.is_empty():
+			labeled = name
+	if any_open or labeled.is_empty():
+		return "-"
+	return labeled
+
+
+func _unlocked_text() -> String:
+	if _runtime == null:
+		return "-"
+	var name := _runtime.secrecy_unlocked_name()
+	if name.is_empty():
+		return "-"
+	return name
+
+
+static func _dash(row: Dictionary, key: String) -> String:
+	var text := str(row.get(key, ""))
+	if text.is_empty():
+		return "-"
+	return text
 
 
 func _scope_id_of(scope_text: String) -> String:

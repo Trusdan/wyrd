@@ -212,7 +212,7 @@ func test_why_not_trace_and_cli() -> void:
 	var runtime := _runtime_from(compiled)
 	runtime.trace.enabled = true
 	var row := runtime.director.why_not("harbor_gossip.tavern", "topic", "rumor.ferry_toll", "tavern")
-	assert_eq(WyrdDirector.format_why_not(row), "wyrd why_not storylet=harbor_gossip.tavern scope=topic rumor.ferry_toll speaker=tavern eligible=false reason=when clause=\"knows(player, harbor.toll_fate)\" score=0/2/2/0 cooldown=60 remaining=0 winner=-")
+	assert_eq(WyrdDirector.format_why_not(row), "wyrd why_not storylet=harbor_gossip.tavern scope=topic rumor.ferry_toll speaker=tavern eligible=false reason=when clause=\"knows(player, harbor.toll_fate)\" score=0/2/2/0 cooldown=60 remaining=0 winner=- tier=- unlocked=-")
 	var found := false
 	for item in runtime.trace.snapshot():
 		if str(item["kind"]) != "why_not":

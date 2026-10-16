@@ -316,7 +316,7 @@ static func _storylets(pack: WyrdLinkedPack) -> Array:
 			var line_ids: Array = []
 			for line_def in story.lines:
 				line_ids.append(line_def.line_id)
-			rows.append({
+			var row := {
 				"body": String(story.body_kind),
 				"cooldown": story.cooldown_minutes,
 				"file": str(unit["path"]),
@@ -331,7 +331,10 @@ static func _storylets(pack: WyrdLinkedPack) -> Array:
 				"specificity": story.specificity,
 				"weight": story.weight,
 				"when": story.when_text,
-			})
+			}
+			if not story.secrecy.is_empty():
+				row["secrecy"] = story.secrecy
+			rows.append(row)
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
 	return rows
 
@@ -347,20 +350,20 @@ static func _lines(pack: WyrdLinkedPack) -> Array:
 		for scene in file.scenes:
 			for item in scene.items:
 				if item.line_def != null:
-					rows.append(_line_row(item.line_def.line_id, "spoken", path, pack.pack_id, scene.id, item.line_def.speaker, item.line_def.condition, item.line_def.tags))
+					rows.append(_line_row(item.line_def.line_id, "spoken", path, pack.pack_id, scene.id, item.line_def.speaker, item.line_def.condition, item.line_def.tags, item.line_def.secrecy))
 					_append_variants(rows, item.line_def, path, pack.pack_id, scene.id)
 				if item.choice != null and not item.choice.line_id.is_empty():
-					rows.append(_line_row(item.choice.line_id, "choice", path, pack.pack_id, scene.id, "", item.choice.condition, item.choice.tags))
+					rows.append(_line_row(item.choice.line_id, "choice", path, pack.pack_id, scene.id, "", item.choice.condition, item.choice.tags, item.choice.secrecy))
 		for story in file.storylets:
 			for line_def in story.lines:
-				rows.append(_line_row(line_def.line_id, "storylet", path, pack.pack_id, "", line_def.speaker, null, line_def.tags))
+				rows.append(_line_row(line_def.line_id, "storylet", path, pack.pack_id, "", line_def.speaker, null, line_def.tags, line_def.secrecy))
 				_append_variants(rows, line_def, path, pack.pack_id, "")
 	return rows
 
 
 static func _line_stage(rows: Array, stage: WyrdStageDef, path: String, pack_id: String) -> void:
 	for journal in stage.journals:
-		rows.append(_line_row(journal.line_id, "journal", path, pack_id, "", "", journal.condition, journal.tags))
+		rows.append(_line_row(journal.line_id, "journal", path, pack_id, "", "", journal.condition, journal.tags, journal.secrecy))
 		_append_variants(rows, journal, path, pack_id, "")
 	for variant in stage.variants:
 		if variant.body != null:
@@ -380,7 +383,7 @@ static func _append_variants(rows: Array, line: WyrdLineDef, path: String, pack_
 		var variant := item as WyrdLineDef
 		if variant == null:
 			continue
-		var row := _line_row(variant.line_id, "variant", path, pack_id, scene_id, variant.speaker, null, variant.tags)
+		var row := _line_row(variant.line_id, "variant", path, pack_id, scene_id, variant.speaker, null, variant.tags, variant.secrecy)
 		row["holder"] = variant.holder
 		rows.append(row)
 
@@ -393,9 +396,10 @@ static func _line_row(
 	scene_id: String,
 	speaker: String,
 	condition: WyrdCompiledCondition,
-	tags: PackedStringArray
+	tags: PackedStringArray,
+	secrecy: String = ""
 ) -> Dictionary:
-	return {
+	var row := {
 		"condition": _cond(condition),
 		"file": path,
 		"id": "%s/%s" % [pack_id, local_id],
@@ -404,6 +408,9 @@ static func _line_row(
 		"speaker": speaker,
 		"tags": _strings(tags),
 	}
+	if not secrecy.is_empty():
+		row["secrecy"] = secrecy
+	return row
 
 
 static func _effects(effects: Array) -> Array:

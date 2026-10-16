@@ -434,6 +434,17 @@ func _node_from_line(line: Array[WyrdToken]) -> WyrdNode:
 				)
 			else:
 				tags.append(token.text)
+		elif token.kind == &"secrecy":
+			if not node.secrecy.is_empty():
+				_diagnostics.add(
+					WyrdDiagnostic.E_LINE_TAG_FORMAT,
+					"duplicate secrecy \"%s\"" % token.text,
+					_source.path,
+					token.line,
+					token.col
+				)
+			else:
+				node.secrecy = token.text
 		else:
 			head.append(token)
 	node.tags = tags

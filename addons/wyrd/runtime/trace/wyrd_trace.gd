@@ -20,6 +20,8 @@ var enabled: bool = false
 ## A director line and a why_not line use scope, speaker, and key. Key is the scope id.
 ## A region line uses quest and path. A sequence line's key is the sequence id.
 ## A voice line's key is the name-free line id, and its who is the holder.
+## A secrecy line's key is the storylet id, or the line id when there is no storylet.
+## Its path is the line id. The prefix matches either.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

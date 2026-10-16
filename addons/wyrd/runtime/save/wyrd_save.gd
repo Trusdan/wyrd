@@ -11,7 +11,8 @@ extends RefCounted
 ## Sequence progress, when any exists, rides in [code]sequences[/code]. An unknown
 ## sequence id is kept. A missing [code]sequences[/code] key clears that bag only.
 ## Quest region leaves ride inside the quest row and are omitted when empty.
-## An older loader ignores those keys. Schema stays 2.
+## An older loader ignores those keys. The unlocked secrecy name is an ordinary
+## world fact. Schema stays 2 and the document has no secrecy key.
 ##
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills

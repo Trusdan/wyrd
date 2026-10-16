@@ -36,3 +36,26 @@ storylet dock_voice_crossing
   - The crossing stays open. {holder(ferry_master)|variants} #tag:voiced #line:dock_voice
     variant ferry_master: The ferry master keeps the crossing open. #tag:voiced #line:dock_voice_master
     variant net_mender: The net mender keeps the crossing open. #tag:voiced #line:dock_voice_mender
+
+// Host secrecy names, lowest first: open, then sealed.
+// The unlocked name is the stored fact player.clearance.
+quest harbor_ledger "The Dock Ledger"
+  start when false
+  stage note
+    ~ set player.clearance = open
+    journal: The dock ledger stays on the bench. #line:j_ledger
+
+storylet harbor_ledger.open
+  scope: topic rumor.ledger
+  speaker: any
+  lines:
+    - The dock ledger is open on the bench. #line:lg01
+    - A later page stays shut. #secrecy:sealed #line:lg02
+
+storylet harbor_ledger.sealed
+  scope: topic rumor.ledger
+  speaker: any
+  secrecy: sealed
+  priority: 1
+  when: player.clearance == sealed
+  - The sealed page names the late cargo. #line:lg03
