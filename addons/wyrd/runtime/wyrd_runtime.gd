@@ -731,7 +731,7 @@ func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker"]:
+	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true
@@ -808,6 +808,42 @@ func trace_why_not(fields: Dictionary) -> void:
 		return
 	trace_add("why_not", fields)
 	print(WyrdDirector.format_why_not(fields))
+
+
+## One line when a region's active stage changes. [param path] is the region id,
+## or parent ids joined by [code]/[/code]. Empty [param from_stage] is the first leaf.
+func trace_region(quest_id: String, path: String, from_stage: String, to_stage: String) -> void:
+	if trace == null or not trace.enabled or from_stage == to_stage:
+		return
+	var fields := {
+		"from": from_stage,
+		"path": path,
+		"quest": quest_id,
+		"to": to_stage,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("region", fields)
+	print("wyrd region quest=%s path=%s from=%s to=%s" % [quest_id, path, from_stage, to_stage])
+
+
+## One line when a sequence counts a step, finishes, resets, or expires.
+## [param reason] is [code]step[/code], [code]done[/code], [code]reset[/code], or [code]expire[/code].
+func trace_sequence(sequence_id: String, count: int, done: bool, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var flag := "true" if done else "false"
+	var fields := {
+		"count": count,
+		"done": flag,
+		"id": sequence_id,
+		"key": sequence_id,
+		"reason": reason,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("sequence", fields)
+	print("wyrd sequence id=%s count=%s done=%s reason=%s" % [sequence_id, str(count), flag, reason])
 
 
 func trace_director(fields: Dictionary) -> void:

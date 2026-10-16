@@ -66,11 +66,17 @@ func on_tick() -> void:
 		var before := _sig(row)
 		if not bool(row.get("done", false)):
 			_expire(def, row)
+		if _sig(row) != before:
+			changed = true
+			_store(String(id), row)
+			_trace(String(id), row, "expire")
+			before = _sig(row)
 		if def.reset_cond != null and runtime.eval_bool(def.reset_cond):
 			_clear_row(row)
 		if _sig(row) != before:
 			changed = true
 			_store(String(id), row)
+			_trace(String(id), row, "reset")
 		elif had:
 			_store(String(id), row)
 	if changed:
@@ -151,19 +157,23 @@ func _on_one(id: String, def: WyrdSequenceDef, event_name: String, locals: Dicti
 	if had:
 		row = (_rows[id] as Dictionary).duplicate(true)
 	var before := _sig(row)
+	var moved := false
 	if not bool(row.get("done", false)):
 		_expire(def, row)
+	if _sig(row) != before:
+		_store(id, row)
+		_trace(id, row, "expire")
+		before = _sig(row)
+		moved = true
 	if def.reset_event != "" and def.reset_event == event_name:
 		_clear_row(row)
 		if _sig(row) != before:
 			_store(id, row)
+			_trace(id, row, "reset")
 			return true
-		return false
+		return moved
 	if bool(row.get("done", false)):
-		if _sig(row) != before:
-			_store(id, row)
-			return true
-		return false
+		return moved
 	if def.mode == &"any" and def.steps.size() == 1:
 		_match_repeat(def, row, event_name, locals)
 	elif def.mode == &"any":
@@ -171,9 +181,17 @@ func _on_one(id: String, def: WyrdSequenceDef, event_name: String, locals: Dicti
 	else:
 		_match_ordered(def, row, event_name, locals)
 	if _sig(row) == before:
-		return false
+		return moved
 	_store(id, row)
+	var reason := "done" if bool(row.get("done", false)) else "step"
+	_trace(id, row, reason)
 	return true
+
+
+func _trace(id: String, row: Dictionary, reason: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_sequence(id, int(row.get("count", 0)), bool(row.get("done", false)), reason)
 
 
 func _match_ordered(def: WyrdSequenceDef, row: Dictionary, event_name: String, locals: Dictionary) -> void:

@@ -318,6 +318,156 @@ func test_gullhaven_bell_repair_and_signal() -> void:
 	runtime.set_meta("host", host)
 
 
+func test_region_trace_logs_each_leaf_change() -> void:
+	var runtime := _boot(_REPAIR)
+	runtime.trace.enabled = true
+	runtime.tick(0)
+	var opened := _trace_rows(runtime, "region")
+	assert_eq(opened.size(), 2)
+	assert_eq(str(opened[0]["quest"]), "bell_repair")
+	assert_eq(str(opened[0]["path"]), "rope")
+	assert_eq(str(opened[0]["from"]), "")
+	assert_eq(str(opened[0]["to"]), "frayed")
+	assert_eq(str(opened[1]["path"]), "tongue")
+	assert_eq(str(opened[1]["from"]), "")
+	assert_eq(str(opened[1]["to"]), "loose")
+	var held := opened.size()
+	runtime.tick(0)
+	assert_eq(_trace_rows(runtime, "region").size(), held)
+	_strike(runtime, "harbor_rope", "spliced")
+	var moved := _trace_rows(runtime, "region")
+	assert_eq(moved.size(), held + 1)
+	var last: Dictionary = moved[moved.size() - 1]
+	assert_eq(str(last["path"]), "rope")
+	assert_eq(str(last["from"]), "frayed")
+	assert_eq(str(last["to"]), "spliced")
+	var saved := runtime.save_state()
+	var loaded := _boot(_REPAIR)
+	loaded.trace.enabled = true
+	assert_true(loaded.load_state(saved).ok)
+	loaded.tick(0)
+	assert_eq(str(loaded.quests.regions_of("bell_repair")["rope"]["stage"]), "spliced")
+	assert_eq(_trace_rows(loaded, "region").size(), 0)
+	runtime.trace.clear()
+	runtime.trace.prefix = "tongue"
+	runtime.facts.set(&"harbor.tongue_seated", true)
+	runtime.tick(0)
+	var tongue := _trace_rows(runtime, "region")
+	assert_eq(tongue.size(), 1)
+	assert_eq(str(tongue[0]["path"]), "tongue")
+	assert_eq(str(tongue[0]["from"]), "loose")
+	assert_eq(str(tongue[0]["to"]), "seated")
+	runtime.trace.prefix = ""
+	runtime.trace.clear()
+	runtime.facts.set(&"harbor.release", true)
+	runtime.tick(0)
+	assert_eq(runtime.quests.stage("bell_repair"), "done")
+	assert_eq(_trace_rows(runtime, "region").size(), 0)
+
+
+func test_region_trace_path_is_nested_and_tracing_can_stay_off() -> void:
+	var quiet := _boot(_DEEP)
+	quiet.tick(0)
+	assert_eq(quiet.trace.events.size(), 0)
+	var runtime := _boot(_DEEP)
+	runtime.trace.enabled = true
+	runtime.tick(0)
+	var lines := _trace_rows(runtime, "region")
+	assert_eq(lines.size(), 2)
+	assert_eq(str(lines[0]["path"]), "mid")
+	assert_eq(str(lines[0]["to"]), "inner")
+	assert_eq(str(lines[1]["path"]), "mid/deep")
+	assert_eq(str(lines[1]["from"]), "")
+	assert_eq(str(lines[1]["to"]), "leaf")
+	var nested := _boot(_DEEP)
+	nested.trace.prefix = "mid/deep"
+	nested.trace.enabled = true
+	nested.tick(0)
+	var only := _trace_rows(nested, "region")
+	assert_eq(only.size(), 1)
+	assert_eq(str(only[0]["path"]), "mid/deep")
+	var broad := _boot(_DEEP)
+	broad.trace.prefix = "mid"
+	broad.trace.enabled = true
+	broad.tick(0)
+	assert_eq(_trace_rows(broad, "region").size(), 2)
+	var missed := _boot(_DEEP)
+	missed.trace.prefix = "leaf"
+	missed.trace.enabled = true
+	missed.tick(0)
+	assert_eq(_trace_rows(missed, "region").size(), 0)
+
+
+func test_sequence_trace_logs_step_finish_reset_and_expiry() -> void:
+	var runtime := _boot(_REPEAT)
+	runtime.trace.enabled = true
+	runtime.tick(0)
+	assert_eq(_trace_rows(runtime, "sequence").size(), 0)
+	_strike(runtime, "harbor_bell", "rung")
+	var step := _trace_rows(runtime, "sequence")
+	assert_eq(step.size(), 1)
+	assert_eq(str(step[0]["id"]), "harbor.bells")
+	assert_eq(str(step[0]["key"]), "harbor.bells")
+	assert_eq(int(step[0]["count"]), 1)
+	assert_eq(str(step[0]["done"]), "false")
+	assert_eq(str(step[0]["reason"]), "step")
+	_strike(runtime, "harbor_bell", "rung")
+	_strike(runtime, "harbor_bell", "rung")
+	var finished := _trace_rows(runtime, "sequence")
+	assert_eq(finished.size(), 3)
+	assert_eq(str(finished[1]["reason"]), "step")
+	assert_eq(str(finished[2]["reason"]), "done")
+	assert_eq(int(finished[2]["count"]), 3)
+	assert_eq(str(finished[2]["done"]), "true")
+	var kept := finished.size()
+	runtime.tick(61)
+	assert_eq(_trace_rows(runtime, "sequence").size(), kept)
+	var window := _boot(_REPEAT)
+	window.trace.enabled = true
+	_strike(window, "harbor_bell", "rung")
+	window.tick(61)
+	var expired := _trace_rows(window, "sequence")
+	assert_eq(expired.size(), 2)
+	assert_eq(str(expired[1]["reason"]), "expire")
+	assert_eq(int(expired[1]["count"]), 0)
+	assert_eq(str(expired[1]["done"]), "false")
+	var reset := _boot(_RESET_EVENT)
+	reset.trace.enabled = true
+	_strike(reset, "harbor_bell", "rung")
+	reset.events.emit(&"season_changed", {})
+	var cleared := _trace_rows(reset, "sequence")
+	assert_eq(str(cleared[cleared.size() - 1]["reason"]), "reset")
+	assert_eq(int(cleared[cleared.size() - 1]["count"]), 0)
+	assert_eq(str(cleared[cleared.size() - 1]["done"]), "false")
+	var cond := _boot(_RESET_COND)
+	cond.trace.enabled = true
+	_strike(cond, "harbor_bell", "rung")
+	cond.facts.set(&"harbor.rope_done", true)
+	cond.tick(0)
+	var watched := _trace_rows(cond, "sequence")
+	assert_eq(str(watched[watched.size() - 1]["reason"]), "reset")
+	var filtered := _boot(_REPEAT)
+	filtered.trace.prefix = "other"
+	filtered.trace.enabled = true
+	_strike(filtered, "harbor_bell", "rung")
+	assert_eq(_trace_rows(filtered, "sequence").size(), 0)
+	filtered.trace.prefix = "harbor"
+	filtered.trace.clear()
+	_strike(filtered, "harbor_bell", "rung")
+	assert_eq(_trace_rows(filtered, "sequence").size(), 1)
+	var quiet := _boot(_REPEAT)
+	_strike(quiet, "harbor_bell", "rung")
+	assert_eq(quiet.trace.events.size(), 0)
+
+
+func _trace_rows(runtime: WyrdRuntime, kind: String) -> Array:
+	var rows: Array = []
+	for item in runtime.trace.events:
+		if item is Dictionary and String((item as Dictionary).get("kind", "")) == kind:
+			rows.append(item)
+	return rows
+
+
 func _strike(runtime: WyrdRuntime, object: String, state_name: String) -> void:
 	runtime.events.emit(&"mechanism_state", {
 		"actor": &"player",

@@ -48,7 +48,7 @@ Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling
 
 A stage may contain `region <id>` blocks. Each region holds its own `stage` list. Regions of one parent run together. One region still runs one stage at a time. A `->` inside a region names a sibling stage in that region. The parent `->` still names a stage of the quest. The parent leaves when its own `waits_until` or `-> when` says so. Regions do not join automatically.
 
-The quest stage is depth 1. A stage inside its region is depth 2. A stage nested further warns `W_SUBSTATE_DEPTH` and still runs. Active leaves are saved on the quest row under `regions` (`stage`, `entered`, `step_at`, and nested `regions`). The key is omitted when the stage has no regions. Entry effects do not run again when `entered` is true and `step_at` is past them. A region `scene` or `await_host` uses the quest's one open scene or host slot. If that slot is busy, the region step stays put.
+The quest stage is depth 1. A stage inside its region is depth 2. A stage nested further warns `W_SUBSTATE_DEPTH` and still runs. Active leaves are saved on the quest row under `regions` (`stage`, `entered`, `step_at`, and nested `regions`). The key is omitted when the stage has no regions. Entry effects do not run again when `entered` is true and `step_at` is past them. A region `scene` or `await_host` uses the quest's one open scene or host slot. If that slot is busy, the region step stays put. With tracing on, each leaf change logs `wyrd region quest=%s path=%s from=%s to=%s`. `path` is the region id, or parent ids joined by `/`.
 
 ```wyrd
 stage repair
@@ -70,7 +70,7 @@ sequence bell_signal any(3 of 3) within 60m reset on season_changed
   on mechanism_state where event.object == harbor_bell and event.state == rung
 ```
 
-`ordered` matches steps in source order and does not skip. `any(<n> of <m>)` with one step counts that step up to `m` and finishes at `n`. `any(<n> of <m>)` with several steps needs `m` steps and counts each step once. The window includes its last minute. The next minute clears partial progress and leaves a finished sequence until reset. A reset event is handled before a step on that emit, so it does not also count. A reset condition is checked on each tick. `progress(id)` and `done(id)` read the sequence. An unknown id is an error and yields 0 or false. Partial progress is saved under `sequences` on schema 2 and omitted when nothing has started. Gullhaven's bell repair uses two regions, and `bell_signal` is three rings of `harbor_bell` within an hour.
+`ordered` matches steps in source order and does not skip. `any(<n> of <m>)` with one step counts that step up to `m` and finishes at `n`. `any(<n> of <m>)` with several steps needs `m` steps and counts each step once. The window includes its last minute. The next minute clears partial progress and leaves a finished sequence until reset. A reset event is handled before a step on that emit, so it does not also count. A reset condition is checked on each tick. `progress(id)` and `done(id)` read the sequence. With tracing on, a step, finish, reset, or expiry logs `wyrd sequence id=%s count=%s done=%s reason=%s`. An unknown id is an error and yields 0 or false. Partial progress is saved under `sequences` on schema 2 and omitted when nothing has started. Gullhaven's bell repair uses two regions, and `bell_signal` is three rings of `harbor_bell` within an hour.
 
 | Code | When |
 |---|---|

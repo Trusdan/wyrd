@@ -483,7 +483,7 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 	if state.step_at < _entry_steps(body).size():
 		_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 		return
-	_advance_region_map(quest_id, quest, state, body, state.regions, hops)
+	_advance_region_map(quest_id, quest, state, body, state.regions, hops, "")
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -516,7 +516,7 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 		state.waiting = "on_empty"
 		return
 	var body := pick["body"] as WyrdStageDef
-	state.regions = _fresh_regions(body)
+	state.regions = _fresh_regions(quest_id, body, "")
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 
 
@@ -530,7 +530,7 @@ func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body
 	if state.offered != "":
 		state.waiting = "scene:%s" % state.offered
 		return
-	_advance_region_map(quest_id, quest, state, body, state.regions, hops)
+	_advance_region_map(quest_id, quest, state, body, state.regions, hops, "")
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -700,7 +700,7 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 		state.waiting = "on_empty"
 		return true
 	var body := pick["body"] as WyrdStageDef
-	state.regions = _fresh_regions(body)
+	state.regions = _fresh_regions(quest_id, body, "")
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 	return true
 
@@ -770,7 +770,7 @@ func _cond_ready(cond: WyrdCompiledCondition) -> bool:
 	return runtime.eval_bool(cond)
 
 
-func _fresh_regions(stage: WyrdStageDef) -> Dictionary:
+func _fresh_regions(quest_id: String, stage: WyrdStageDef, path: String) -> Dictionary:
 	var out := {}
 	if stage == null:
 		return out
@@ -778,7 +778,11 @@ func _fresh_regions(stage: WyrdStageDef) -> Dictionary:
 		var region := item as WyrdRegionDef
 		if region == null or region.id.is_empty():
 			continue
-		out[region.id] = _blank_region(region)
+		var row := _blank_region(region)
+		out[region.id] = row
+		var stage_id := String(row.get("stage", ""))
+		if stage_id != "":
+			runtime.trace_region(quest_id, path + region.id, "", stage_id)
 	return out
 
 
@@ -810,7 +814,7 @@ func _region_waiting(stage: WyrdStageDef) -> bool:
 	return not _cond_ready(stage.waits_until)
 
 
-func _advance_region_map(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, rows: Dictionary, hops: int) -> void:
+func _advance_region_map(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, rows: Dictionary, hops: int, path: String) -> void:
 	if body == null or hops > _HOP_LIMIT:
 		if hops > _HOP_LIMIT:
 			push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
@@ -819,12 +823,17 @@ func _advance_region_map(quest_id: String, quest: WyrdQuestDef, state: QuestStat
 		var region := item as WyrdRegionDef
 		if region == null or region.id.is_empty():
 			continue
+		var leaf := path + region.id
 		if not rows.has(region.id) or not (rows[region.id] is Dictionary):
-			rows[region.id] = _blank_region(region)
-		_advance_region(quest_id, quest, state, region, rows[region.id], hops)
+			var blank := _blank_region(region)
+			rows[region.id] = blank
+			var stage_id := String(blank.get("stage", ""))
+			if stage_id != "":
+				runtime.trace_region(quest_id, leaf, "", stage_id)
+		_advance_region(quest_id, quest, state, region, rows[region.id], hops, leaf)
 
 
-func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, hops: int) -> void:
+func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, hops: int, path: String) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
@@ -832,44 +841,44 @@ func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, r
 	if stage == null:
 		return
 	if not bool(row.get("entered", false)):
-		_enter_region(quest_id, quest, state, region, row, stage, hops)
+		_enter_region(quest_id, quest, state, region, row, stage, hops, path)
 		return
 	if _region_blocked(state):
 		return
 	if int(row.get("step_at", 0)) < _entry_steps(stage).size():
 		var ran := _run_region_steps(quest_id, state, stage, row)
 		if str(ran.get("divert", "")) != "":
-			_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1)
+			_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1, path)
 			return
 		if bool(ran.get("blocked", false)) or _region_blocked(state):
 			return
 	var nested: Dictionary = row.get("regions", {})
-	_advance_region_map(quest_id, quest, state, stage, nested, hops)
+	_advance_region_map(quest_id, quest, state, stage, nested, hops, path + "/")
 	row["regions"] = nested
 	if _region_blocked(state) or _region_waiting(stage):
 		return
-	_take_region_transition(quest_id, quest, state, region, row, stage, hops)
+	_take_region_transition(quest_id, quest, state, region, row, stage, hops, path)
 
 
-func _enter_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int) -> void:
+func _enter_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int, path: String) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
 	row["entered"] = true
 	row["step_at"] = 0
-	row["regions"] = _fresh_regions(stage)
+	row["regions"] = _fresh_regions(quest_id, stage, path + "/")
 	var ran := _run_region_steps(quest_id, state, stage, row)
 	if str(ran.get("divert", "")) != "":
-		_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1)
+		_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1, path)
 		return
 	if bool(ran.get("blocked", false)) or _region_blocked(state):
 		return
 	var nested: Dictionary = row.get("regions", {})
-	_advance_region_map(quest_id, quest, state, stage, nested, hops)
+	_advance_region_map(quest_id, quest, state, stage, nested, hops, path + "/")
 	row["regions"] = nested
 	if _region_blocked(state) or _region_waiting(stage):
 		return
-	_take_region_transition(quest_id, quest, state, region, row, stage, hops)
+	_take_region_transition(quest_id, quest, state, region, row, stage, hops, path)
 
 
 func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef, row: Dictionary) -> Dictionary:
@@ -901,7 +910,7 @@ func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef,
 	return {"blocked": false, "divert": ""}
 
 
-func _region_goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, target: String, hops: int) -> void:
+func _region_goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, target: String, hops: int, path: String) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
@@ -909,19 +918,21 @@ func _region_goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, regi
 	if stage == null:
 		push_error("WyrdQuestRunner: unknown stage \"%s\"" % target)
 		return
+	var previous := String(row.get("stage", ""))
 	row["stage"] = target
 	row["entered"] = false
 	row["step_at"] = 0
 	row["regions"] = {}
-	_enter_region(quest_id, quest, state, region, row, stage, hops)
+	runtime.trace_region(quest_id, path, previous, target)
+	_enter_region(quest_id, quest, state, region, row, stage, hops, path)
 
 
-func _take_region_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int) -> bool:
+func _take_region_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int, path: String) -> bool:
 	for edge in stage.transitions:
 		var when: Variant = edge.get("when", null)
 		if when is WyrdCompiledCondition and not runtime.eval_bool(when):
 			continue
-		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), hops + 1)
+		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), hops + 1, path)
 		return true
 	return false
 
@@ -948,7 +959,7 @@ func _dispatch_regions(quest_id: String, quest: WyrdQuestDef, state: QuestState,
 				_fired[token] = true
 				_arm_effects(quest_id)
 				runtime.effects.run_all(handler.effects)
-				if _take_region_handler(quest_id, quest, state, region, row, handler):
+				if _take_region_handler(quest_id, quest, state, region, row, handler, path + region.id):
 					moved = true
 				break
 		if moved:
@@ -958,12 +969,12 @@ func _dispatch_regions(quest_id: String, quest: WyrdQuestDef, state: QuestState,
 		row["regions"] = nested
 
 
-func _take_region_handler(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, handler: WyrdOnEventDef) -> bool:
+func _take_region_handler(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, handler: WyrdOnEventDef, path: String) -> bool:
 	for edge in handler.transitions:
 		var when: Variant = edge.get("when", null)
 		if when is WyrdCompiledCondition and not runtime.eval_bool(when):
 			continue
-		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), 1)
+		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), 1, path)
 		return true
 	return false
 
