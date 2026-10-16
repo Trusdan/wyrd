@@ -25,7 +25,11 @@ var conditions: Array[WyrdCompiledCondition] = []
 var records: PackedStringArray = PackedStringArray()
 var sites: PackedStringArray = PackedStringArray()
 var deps: WyrdDepIndex
+## 1 when the condition has no call and no computed key. Not saved.
+var pure: PackedByteArray = PackedByteArray()
 var _by_cond: Dictionary = {}
+## Call name to condition indexes. Built for the names the tick queue watches.
+var _calls: Dictionary = {}
 
 
 static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
@@ -58,6 +62,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			content.roles[role.id] = role
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
+	content._mark_pure()
 	return content
 
 
@@ -122,6 +127,78 @@ func _item(scene_id: String, item: WyrdSceneItem) -> void:
 			lines[choice.line_id] = choice
 		var record := choice.line_id if not choice.line_id.is_empty() else scene_id
 		_add(choice.condition, record, "choice")
+
+
+func is_pure(index: int) -> bool:
+	return index >= 0 and index < pure.size() and pure[index] != 0
+
+
+## [param names] are the call spellings [method WyrdRuntime] marks dirty.
+func index_calls(names: PackedStringArray) -> void:
+	_calls.clear()
+	var want := {}
+	for name in names:
+		want[String(name)] = true
+	if want.is_empty():
+		return
+	for i in conditions.size():
+		var cond := conditions[i]
+		if cond == null:
+			continue
+		var found := {}
+		for item in cond.consts:
+			if not (item is StringName):
+				continue
+			var text := String(item)
+			if not want.has(text) or found.has(text):
+				continue
+			found[text] = true
+			var rows := PackedInt32Array()
+			if _calls.has(text):
+				rows = _calls[text]
+			rows.append(i)
+			_calls[text] = rows
+
+
+## Condition indexes that name one of [param names], in first-seen order.
+func indexes_for_calls(names: PackedStringArray) -> PackedInt32Array:
+	var seen := {}
+	var hits := PackedInt32Array()
+	for name in names:
+		var key := String(name)
+		if not _calls.has(key):
+			continue
+		var rows: PackedInt32Array = _calls[key]
+		for index in rows:
+			var at := int(index)
+			if seen.has(at):
+				continue
+			seen[at] = true
+			hits.append(at)
+	return hits
+
+
+func _mark_pure() -> void:
+	pure = PackedByteArray()
+	pure.resize(conditions.size())
+	for i in conditions.size():
+		pure[i] = 1 if _condition_pure(conditions[i]) else 0
+
+
+func _condition_pure(cond: WyrdCompiledCondition) -> bool:
+	if cond == null or cond.uses_chance:
+		return false
+	var code := cond.code
+	var ip := 0
+	while ip < code.size():
+		var op := int(code[ip])
+		if op == WyrdOpcodes.CALL or op == WyrdOpcodes.LOAD_KEY:
+			return false
+		if op == WyrdOpcodes.PUSH_CONST or op == WyrdOpcodes.LOAD_FACT or op == WyrdOpcodes.IN_SET or op == WyrdOpcodes.JUMP or op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
+			ip += 2
+		else:
+			ip += 1
+	return true
 
 
 func index_of(cond: WyrdCompiledCondition) -> int:

@@ -20,6 +20,13 @@ var record_id: String = ""
 var site: String = ""
 
 var _runtime: WyrdRuntime
+var _belief_hot_ok: bool = false
+var _belief_hot_agent: StringName = &""
+var _belief_hot_key: StringName = &""
+var _belief_hot_left: Variant = null
+var _belief_hot_right: Variant = null
+var _belief_hot: Dictionary = {}
+var _belief_cache: Dictionary = {}
 var _builtins: Dictionary = {}
 
 
@@ -314,14 +321,57 @@ func _held(args: Array) -> bool:
 	return _truthy(_runtime.facts.get_in(key, StringName("held/%s" % String(group))))
 
 
+func clear_belief_cache() -> void:
+	_belief_hot_ok = false
+	_belief_hot_agent = &""
+	_belief_hot_key = &""
+	_belief_hot_left = null
+	_belief_hot_right = null
+	_belief_hot = {}
+	_belief_cache.clear()
+
+
 ## Own [code]believed/[/code], then [code]held/[/code] of each group in precedence
 ## order. A present value, including explicit false, stops the walk. Null is no
 ## opinion. [code]known/[/code] and [code]world[/code] are not read.
+## Repeated lookups are cached while tracing is off. A belief write or
+## [method WyrdRuntime.invalidate_groups] drops the cache.
 func _resolve_belief(args: Array) -> Dictionary:
 	if args.size() < 2 or args[0] == null or _runtime == null:
 		return {"source": "none", "value": null}
+	var traced := _runtime.trace != null and _runtime.trace.enabled
+	if not traced and _belief_hot_ok and _belief_hot_left == args[0] and _belief_hot_right == args[1]:
+		return _belief_hot
 	var agent := StringName(str(args[0]))
 	var key := _known_key(args[1])
+	if not traced and _belief_hot_ok and _belief_hot_agent == agent and _belief_hot_key == key:
+		_belief_hot_left = args[0]
+		_belief_hot_right = args[1]
+		return _belief_hot
+	var token := ""
+	if not traced:
+		token = "%s\t%s" % [String(agent), String(key)]
+	if not traced and _belief_cache.has(token):
+		_belief_hot_ok = true
+		_belief_hot_agent = agent
+		_belief_hot_key = key
+		_belief_hot_left = args[0]
+		_belief_hot_right = args[1]
+		_belief_hot = _belief_cache[token]
+		return _belief_hot
+	var resolved := _walk_belief(agent, key)
+	if not traced:
+		_belief_cache[token] = resolved
+		_belief_hot_ok = true
+		_belief_hot_agent = agent
+		_belief_hot_key = key
+		_belief_hot_left = args[0]
+		_belief_hot_right = args[1]
+		_belief_hot = resolved
+	return resolved
+
+
+func _walk_belief(agent: StringName, key: StringName) -> Dictionary:
 	if key == &"":
 		_runtime.trace_belief_lookup(agent, key, null, "none")
 		return {"source": "none", "value": null}

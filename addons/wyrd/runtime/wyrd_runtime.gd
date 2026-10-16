@@ -204,6 +204,9 @@ func credibility_threshold() -> float:
 ## Drops the membership cache and wakes conditions that read [code]group.membership[/code].
 func invalidate_groups() -> void:
 	_group_cache.clear()
+	_clear_belief_cache()
+	if social != null:
+		social.invalidate_members()
 	_mark_keys(PackedStringArray([&"group.membership"]))
 	_mark_calls(PackedStringArray(["reputation"]))
 
@@ -237,6 +240,7 @@ func start_new_game(seed_value: int) -> void:
 		trace.events.clear()
 	facts.clear_values()
 	_group_cache.clear()
+	_clear_belief_cache()
 	deeds.clear()
 	social.clear_state()
 	roles.clear()
@@ -497,6 +501,7 @@ func _trace_succession(fields: Dictionary) -> void:
 
 
 func _trace_belief(fields: Dictionary) -> void:
+	_clear_belief_cache()
 	if trace == null or not trace.enabled:
 		return
 	if not _trace_allows(fields):
@@ -699,6 +704,16 @@ func condition_dirty(index: int) -> bool:
 	return _queue.is_dirty(index)
 
 
+func condition_flag(index: int) -> int:
+	if index < 0 or index >= _flags.size():
+		return 0
+	return int(_flags[index])
+
+
+func locals_empty() -> bool:
+	return _locals.is_empty()
+
+
 func can_save() -> bool:
 	return dialogue == null or dialogue.can_save()
 
@@ -716,9 +731,11 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 		var refused := WyrdLoadReport.new()
 		refused.diagnostics.add(WyrdDiagnostic.E_SAVE_OPEN, "a scene is open", "", 1, 1)
 		return refused
+	_clear_belief_cache()
 	var report := WyrdSave.apply(self, data)
 	if report.ok:
 		_reset_event_memory()
+		_clear_belief_cache()
 	return report
 
 
@@ -766,6 +783,8 @@ func _recheck(index: int) -> void:
 	var value := _eval_at(index)
 	if index >= 0 and index < _flags.size():
 		_flags[index] = 1 if value else 0
+	if value and quests != null:
+		quests.note_ready(index)
 
 
 func _eval_at(index: int) -> bool:
@@ -785,6 +804,7 @@ func _arm_queue() -> void:
 		return
 	_flags = PackedByteArray()
 	_flags.resize(_content.conditions.size())
+	_content.index_calls(_tracked_calls())
 	for i in _content.conditions.size():
 		_queue.watch(i)
 		if _reads_per_query(_content.conditions[i]):
@@ -1085,17 +1105,22 @@ func _as_groups(value: Variant) -> PackedStringArray:
 func _mark_calls(names: PackedStringArray) -> void:
 	if _content == null or names.is_empty():
 		return
-	var hits := PackedInt32Array()
-	for i in _content.conditions.size():
-		var cond := _content.conditions[i]
-		if cond == null:
-			continue
-		for item in cond.consts:
-			if item is StringName and names.has(String(item)):
-				hits.append(i)
-				break
+	var hits := _content.indexes_for_calls(names)
 	if not hits.is_empty():
 		_queue.mark(hits)
+
+
+func _tracked_calls() -> PackedStringArray:
+	var names := _DEED_CALLS.duplicate()
+	for name in _ROLE_CALLS:
+		if not names.has(name):
+			names.append(name)
+	return names
+
+
+func _clear_belief_cache() -> void:
+	if _ctx != null:
+		_ctx.clear_belief_cache()
 
 
 func _spatial() -> WyrdSpatialAdapter:

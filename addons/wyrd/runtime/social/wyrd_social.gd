@@ -20,12 +20,32 @@ var config_of: Callable = Callable()
 var formula: Callable = Callable()
 var on_changed: Callable = Callable()
 ## [code](group) -> PackedStringArray[/code]. Not saved.
-var members_of: Callable = Callable()
+## Replacing the callable drops the reputation cache.
+var members_of: Callable = Callable():
+	set(value):
+		members_of = value
+		if _booted:
+			_members_gen += 1
+			_drop_reputation()
 ## [code](subject, group, value, members)[/code]. Not saved.
 var on_reputation: Callable = Callable()
 
 var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
+var _rev: int = 1
+var _members_gen: int = 1
+var _rep_token: int = 0
+var _rep_cache: Dictionary = {}
+var _rep_hot_ok: bool = false
+var _rep_hot_subject: StringName = &""
+var _rep_hot_group: StringName = &""
+var _rep_hot_value: float = 0.0
+var _rep_hot_count: int = 0
+var _booted: bool = false
+
+
+func _init() -> void:
+	_booted = true
 
 
 func export_state() -> Dictionary:
@@ -78,6 +98,8 @@ func import_state(data: Dictionary) -> void:
 func clear_state() -> void:
 	_kinds.clear()
 	_baseline.clear()
+	_rev += 1
+	_drop_reputation()
 
 
 func register_formula(fn: Callable) -> void:
@@ -150,9 +172,24 @@ func clear_baseline(source: StringName, target: StringName, axis_name: StringNam
 	_touch()
 
 
+## Drops the reputation cache. Hosts call this when membership changes.
+## [method WyrdRuntime.invalidate_groups] does that.
+func invalidate_members() -> void:
+	_members_gen += 1
+	_drop_reputation()
+
+
 func _touch() -> void:
+	_rev += 1
+	_drop_reputation()
 	if on_changed.is_valid():
 		on_changed.call()
+
+
+func _drop_reputation() -> void:
+	_rep_cache.clear()
+	_rep_hot_ok = false
+	_rep_token = 0
 
 
 func axis(source: StringName, target: StringName, axis_name: StringName) -> float:
@@ -160,23 +197,40 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 	if deeds != null and source != &"" and target != &"":
 		var cfg := _config()
 		var scale := _kind_scale(source, target, axis_name)
-		for i in deeds.size():
-			if deeds.actor_at(i) != target:
-				continue
-			if deeds.target_at(i) != source and not deeds.witnessed(i, source):
+		for index in deeds.actor_indexes(target):
+			var row := int(index)
+			if deeds.target_at(row) != source and not deeds.witnessed(row, source):
 				continue
 			var delta := 0.0
 			if cfg != null:
-				delta = cfg.axis_delta(deeds.verb_at(i), axis_name)
-			total += delta * deeds.weight_at(i) * scale
+				delta = cfg.axis_delta(deeds.verb_at(row), axis_name)
+			total += delta * deeds.weight_at(row) * scale
 	return WyrdDeedLog.round_sum(total)
 
 
 ## Mean disposition of [param group]'s members toward [param subject].
 ## The subject is skipped. Duplicate members count once. No members returns 0.
+## The mean is cached until deeds, decay, baselines, kinds, the formula, the
+## config that scales them, [member members_of], or [method invalidate_members]
+## change. Membership inside a host is read again only after that signal.
+## [member WyrdRuntime.invalidate_groups] is the host signal.
 func reputation(subject: StringName, group: StringName) -> float:
 	if subject == &"" or group == &"":
 		return 0.0
+	var token := _rep_stamp()
+	if token != _rep_token:
+		_rep_cache.clear()
+		_rep_hot_ok = false
+		_rep_token = token
+	if _rep_hot_ok and _rep_hot_subject == subject and _rep_hot_group == group:
+		_emit_reputation(subject, group, _rep_hot_value, _rep_hot_count)
+		return _rep_hot_value
+	var cache_key := "%s\t%s" % [String(subject), String(group)]
+	if _rep_cache.has(cache_key):
+		var hit: Dictionary = _rep_cache[cache_key]
+		_remember_reputation(subject, group, float(hit["v"]), int(hit["n"]))
+		_emit_reputation(subject, group, _rep_hot_value, _rep_hot_count)
+		return _rep_hot_value
 	var listed := PackedStringArray()
 	if members_of.is_valid():
 		var raw: Variant = members_of.call(group)
@@ -197,9 +251,62 @@ func reputation(subject: StringName, group: StringName) -> float:
 		total += float(disposition(who, subject))
 		count += 1
 	var value := 0.0 if count == 0 else WyrdDeedLog.round_sum(total / float(count))
+	_rep_cache[cache_key] = {"n": count, "v": value}
+	_remember_reputation(subject, group, value, count)
+	_emit_reputation(subject, group, value, count)
+	return value
+
+
+func _rep_stamp() -> int:
+	var stamp := 0
+	if deeds != null:
+		stamp = deeds.weight_stamp()
+	stamp = WyrdHash.combine(stamp, _rev)
+	stamp = WyrdHash.combine(stamp, _members_gen)
+	return WyrdHash.combine(stamp, _config_stamp())
+
+
+func _config_stamp() -> int:
+	var cfg := _config()
+	if cfg == null:
+		return 0
+	var mixed := WyrdHash.of_int(cfg.disposition_default)
+	mixed = WyrdHash.combine(mixed, cfg.hour_bucket_minutes)
+	mixed = _mix_strings(mixed, cfg.half_life_verbs)
+	mixed = _mix_floats(mixed, cfg.half_life_minutes)
+	mixed = _mix_strings(mixed, cfg.axis_verbs)
+	mixed = _mix_strings(mixed, cfg.axis_names)
+	mixed = _mix_floats(mixed, cfg.axis_deltas)
+	mixed = _mix_strings(mixed, cfg.kind_scale_kinds)
+	mixed = _mix_strings(mixed, cfg.kind_scale_axes)
+	return _mix_floats(mixed, cfg.kind_scale_values)
+
+
+func _mix_strings(mixed: int, values: PackedStringArray) -> int:
+	mixed = WyrdHash.combine(mixed, values.size())
+	for value in values:
+		mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(StringName(value)))
+	return mixed
+
+
+func _mix_floats(mixed: int, values: PackedFloat64Array) -> int:
+	mixed = WyrdHash.combine(mixed, values.size())
+	for value in values:
+		mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(StringName("%.8f" % value)))
+	return mixed
+
+
+func _remember_reputation(subject: StringName, group: StringName, value: float, count: int) -> void:
+	_rep_hot_ok = true
+	_rep_hot_subject = subject
+	_rep_hot_group = group
+	_rep_hot_value = value
+	_rep_hot_count = count
+
+
+func _emit_reputation(subject: StringName, group: StringName, value: float, count: int) -> void:
 	if on_reputation.is_valid():
 		on_reputation.call(subject, group, value, count)
-	return value
 
 
 func affinity(source: StringName, target: StringName) -> float:
