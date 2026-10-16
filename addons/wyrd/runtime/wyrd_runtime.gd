@@ -12,7 +12,8 @@ extends RefCounted
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
 const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "slot_state"]
-const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "slot_state", "disposition"]
+const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "knows", "slot_state", "disposition"]
+const _GROUPS_CHANGED: StringName = &"groups_changed"
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -43,6 +44,9 @@ var _collecting: bool = false
 var _collected: Dictionary = {}
 var _locals: Dictionary = {}
 var _slot_traced: Dictionary = {}
+## Agent to precedence list. Not saved. Dropped by [method invalidate_groups].
+var _group_cache: Dictionary = {}
+var _group_order: Callable = Callable()
 
 
 func _init() -> void:
@@ -131,6 +135,8 @@ func register_adapter(base: Script, adapter: RefCounted) -> void:
 		push_error("WyrdRuntime.register_adapter: adapter is not a %s" % base.resource_path)
 		return
 	_adapters[base.resource_path] = adapter
+	if base == WyrdWorldAdapter:
+		invalidate_groups()
 
 
 func adapter(base: Script) -> RefCounted:
@@ -160,6 +166,31 @@ func register_function(name: StringName, fn: Callable, arg_types: Array, return_
 	return true
 
 
+## [param fn] receives [code](agent, groups)[/code] and returns the precedence list.
+## The default list is [method WyrdWorldAdapter.groups_of]. Not saved.
+func register_group_precedence(fn: Callable) -> void:
+	_group_order = fn
+	invalidate_groups()
+
+
+## Drops the membership cache and wakes conditions that read [code]group.membership[/code].
+func invalidate_groups() -> void:
+	_group_cache.clear()
+	_mark_keys(PackedStringArray([&"group.membership"]))
+
+
+## Cached precedence for [param agent]. An explicit belief still wins before this runs.
+func group_precedence(agent: StringName) -> PackedStringArray:
+	if _group_cache.has(agent):
+		return _group_cache[agent] as PackedStringArray
+	var listed := _adapter_groups(agent)
+	var ordered := listed
+	if _group_order.is_valid():
+		ordered = _as_groups(_group_order.call(agent, listed))
+	_group_cache[agent] = ordered
+	return ordered
+
+
 func host_functions() -> Dictionary:
 	return _functions
 
@@ -176,6 +207,7 @@ func start_new_game(seed_value: int) -> void:
 	if trace != null:
 		trace.events.clear()
 	facts.clear_values()
+	_group_cache.clear()
 	deeds.clear()
 	social.clear_state()
 	roles.clear()
@@ -455,6 +487,26 @@ func _trace_belief(fields: Dictionary) -> void:
 	)
 
 
+func trace_belief_lookup(agent: StringName, key: StringName, value: Variant, source: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := "" if value == null else str(value)
+	var fields := {
+		"agent": String(agent),
+		"key": String(key),
+		"source": source,
+		"value": shown,
+		"who": String(agent),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("belief_lookup", fields)
+	print(
+		"wyrd belief_lookup agent=%s key=%s value=%s source=%s"
+		% [fields["agent"], fields["key"], fields["value"], fields["source"]]
+	)
+
+
 func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
@@ -642,6 +694,8 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 	if owned:
 		_collecting = true
 		_collected.clear()
+	if event_name == _GROUPS_CHANGED:
+		invalidate_groups()
 	var keys := facts.invalidate_event(event_name)
 	if events != null:
 		events.last_keys = keys
@@ -803,6 +857,24 @@ func _on_role_vacant(_role: StringName) -> void:
 
 func _on_social() -> void:
 	_mark_calls(_DEED_CALLS)
+
+
+func _adapter_groups(agent: StringName) -> PackedStringArray:
+	var world := adapter(WyrdWorldAdapter)
+	if world is WyrdWorldAdapter:
+		return (world as WyrdWorldAdapter).groups_of(agent)
+	return PackedStringArray()
+
+
+func _as_groups(value: Variant) -> PackedStringArray:
+	if value is PackedStringArray:
+		return value
+	var rows := PackedStringArray()
+	if value is Array:
+		for item in value:
+			if item != null:
+				rows.append(String(item))
+	return rows
 
 
 func _mark_calls(names: PackedStringArray) -> void:

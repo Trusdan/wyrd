@@ -6,7 +6,10 @@ extends RefCounted
 ## @experimental
 ## [method register] matches the compiler side of [code]Wyrd.register_function[/code]:
 ## a name, positional parameters, and a return type. There is no callable here.
-## Belief-layer names are registered now and marked [code]M5[/code].
+## [code]knows[/code] reads what an agent knows. [code]known[/code] is the same
+## function and warns [code]W_KNOWN_DEPRECATED[/code]. [code]believes[/code] is the
+## truthy belief. [code]belief[/code] reads the value; its declared return is only
+## the fallback for a dynamic key, and the checker uses the fact's type.
 
 const T_BOOL: StringName = &"bool"
 const T_INT: StringName = &"int"
@@ -43,13 +46,14 @@ const _BUILTINS: PackedStringArray = [
 	"slot_state(slot:symbol)->symbol",
 	"outcome(quest:symbol, branch:symbol)->symbol",
 	"known(agent:entity, key:fact_key)->bool",
+	"knows(agent:entity, key:fact_key)->bool",
+	"believes(agent:entity, key:fact_key)->bool",
+	"belief(agent:entity, key:fact_key)->symbol",
+	"held(group:entity, key:fact_key)->bool",
 	"quest(id:symbol)->symbol",
 	"stage(id:symbol)->symbol",
 	"seen(storylet:symbol)->bool",
 	"chance(p:float)->bool",
-	"knows(agent:entity, key:fact_key)->bool@M5",
-	"believes(agent:entity, key:fact_key)->bool@M5",
-	"held(group:entity, key:fact_key)->bool@M5",
 ]
 
 var _funs: Dictionary = {}

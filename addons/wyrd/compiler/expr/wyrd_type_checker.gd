@@ -9,6 +9,8 @@ extends RefCounted
 ## metres only when that parameter expects a duration or a distance.
 
 const _WAIT: StringName = &"wait_trigger_or_eligibility"
+## Synthetic read. [method WyrdRuntime.invalidate_groups] marks this key.
+const _MEMBERSHIP_READ: StringName = &"group.membership"
 
 var schema: WyrdFactSchema
 var signatures: WyrdSignatures
@@ -139,6 +141,8 @@ func _binary(node: WyrdExprNode) -> void:
 
 
 func _check_cmp(node: WyrdExprNode, ordered: bool) -> void:
+	_as_belief_value(node.a)
+	_as_belief_value(node.b)
 	node.type_name = WyrdSignatures.T_BOOL
 	var left_t := _infer(node.a)
 	var right_t := _infer(node.b)
@@ -159,6 +163,7 @@ func _check_cmp(node: WyrdExprNode, ordered: bool) -> void:
 
 
 func _check_in(node: WyrdExprNode) -> void:
+	_as_belief_value(node.a)
 	node.type_name = WyrdSignatures.T_BOOL
 	var right := node.b
 	if right.kind == &"range":
@@ -258,6 +263,8 @@ func _call(node: WyrdExprNode) -> void:
 			if arg.a != null:
 				_check(arg.a, &"")
 		return
+	if node.text == "known":
+		_warn(WyrdDiagnostic.W_KNOWN_DEPRECATED, "known is deprecated; use knows", node)
 	if node.text == "chance":
 		uses_chance = true
 		if context == _WAIT:
@@ -329,6 +336,11 @@ func _call(node: WyrdExprNode) -> void:
 		slots.append(arg.a)
 	node.payload = slots
 	node.type_name = sig["return"]
+	if node.text == "belief":
+		node.type_name = _belief_type(slots)
+	if node.text == "belief" or node.text == "believes":
+		if not reads.has(_MEMBERSHIP_READ):
+			reads.append(_MEMBERSHIP_READ)
 
 
 func _field(node: WyrdExprNode) -> void:
@@ -630,6 +642,28 @@ func _op2(node: WyrdExprNode) -> void:
 		"operator \"%s\" does not accept %s and %s" % [node.text, node.a.type_name, node.b.type_name],
 		node
 	)
+
+
+## A comparison reads the stored value. The bool form stays [code]believes[/code].
+func _as_belief_value(node: WyrdExprNode) -> void:
+	if node != null and node.kind == &"call" and node.text == "believes":
+		node.text = "belief"
+
+
+func _belief_type(slots: Array) -> StringName:
+	if schema == null or slots.size() < 2 or not (slots[1] is WyrdExprNode):
+		return WyrdSignatures.T_SYMBOL
+	var key_node := slots[1] as WyrdExprNode
+	if key_node.kind != &"fact" or key_node.text.contains("{") or not key_node.kids.is_empty():
+		return WyrdSignatures.T_SYMBOL
+	var fact := schema.lookup(String(key_node.text).split("."))
+	if fact == null:
+		return WyrdSignatures.T_SYMBOL
+	return fact.type_name
+
+
+func _warn(code: StringName, message: String, node: WyrdExprNode) -> void:
+	diagnostics.add(code, message, path, node.line, node.col, WyrdDiagnostic.SEVERITY_WARNING)
 
 
 func _error(code: StringName, message: String, node: WyrdExprNode) -> void:

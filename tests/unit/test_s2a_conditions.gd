@@ -81,20 +81,16 @@ func test_holder_chance_and_belief() -> void:
 	host.world.add_entity(&"clerk", &"person", "dock_clerk", PackedStringArray([&"local"]), true)
 	runtime.roles.assign(&"ferry", &"clerk")
 	runtime.tick(0)
-	assert_push_error("is M5")
 	assert_eq(_flag(runtime, "named", "when"), 1)
 	assert_eq(_flag(runtime, "tagged", "when"), 1)
 	assert_eq(_flag(runtime, "living", "when"), 1)
 	assert_eq(_flag(runtime, "sure", "when"), 1)
 	assert_eq(_flag(runtime, "never", "when"), 0)
 	assert_eq(_flag(runtime, "belief", "when"), 0)
-	assert_eq(_m5_count(runtime), 1)
 	runtime.eval_condition(_at(runtime, "belief", "when"))
-	assert_eq(_m5_count(runtime), 1)
 	var other := _pack(_BUILTINS)
 	var second: WyrdRuntime = other["runtime"]
 	second.tick(0)
-	assert_push_error("is M5")
 	assert_eq(_flag(second, "half", "when"), _flag(runtime, "half", "when"))
 	second.start_new_game(99)
 	second.tick(0)
@@ -104,7 +100,6 @@ func test_holder_chance_and_belief() -> void:
 		var sampled: WyrdRuntime = probe["runtime"]
 		sampled.start_new_game(seed_value)
 		sampled.tick(0)
-		assert_push_error("is M5")
 		if _flag(sampled, "half", "when") != _flag(runtime, "half", "when"):
 			flipped = true
 			break
@@ -178,9 +173,3 @@ func _assert_matches_scan(runtime: WyrdRuntime) -> void:
 		assert_eq(int(flags[i]), live, "%s:%s" % [where.get("record", ""), where.get("site", "")])
 
 
-func _m5_count(runtime: WyrdRuntime) -> int:
-	var count := 0
-	for row in runtime.trace_log():
-		if str(row["kind"]) == "m5":
-			count += 1
-	return count

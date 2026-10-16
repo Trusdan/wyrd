@@ -1,11 +1,13 @@
 extends GutTest
 
 
-func test_signatures_include_m5_and_reject_duplicates() -> void:
+func test_signatures_register_beliefs_and_reject_duplicates() -> void:
 	var signatures := WyrdSignatures.new()
-	assert_eq(signatures.milestone(&"knows"), "M5")
-	assert_eq(signatures.milestone(&"believes"), "M5")
-	assert_eq(signatures.milestone(&"held"), "M5")
+	assert_eq(signatures.milestone(&"knows"), "")
+	assert_eq(signatures.milestone(&"believes"), "")
+	assert_eq(signatures.milestone(&"belief"), "")
+	assert_eq(signatures.milestone(&"held"), "")
+	assert_false(signatures.signature(&"belief").is_empty())
 	assert_eq(signatures.milestone(&"has"), "")
 	assert_false(signatures.signature(&"nearby").is_empty())
 	assert_false(signatures.register(&"has", [], &"bool"))
