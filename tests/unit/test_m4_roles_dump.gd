@@ -58,7 +58,7 @@ func test_roles_command_prints_the_gullhaven_table() -> void:
 	assert_eq(int(listed["exit_code"]), 0, str(listed["output"]))
 	var names := _ids(str(listed["output"]))
 	assert_eq(names, PackedStringArray([
-		"ferry_master", "harbor_factor", "harbor_reeve", "storm_watcher", "tavern_owner",
+		"council_member", "ferry_master", "harbor_factor", "harbor_reeve", "storm_watcher", "tavern_owner",
 	]))
 	assert_true(_line(str(listed["output"]), "harbor_factor").contains("net_mender"))
 	assert_true(_line(str(listed["output"]), "harbor_reeve").contains("tide_clerk"))
@@ -93,6 +93,8 @@ func _ids(table: String) -> PackedStringArray:
 	for raw in table.split("\n"):
 		var line := String(raw).strip_edges()
 		if line.is_empty() or line.begins_with("role "):
+			continue
+		if line.contains("warning[") or line.contains("error[") or line.contains("info["):
 			continue
 		names.append(line.split("  ")[0].strip_edges())
 	return names

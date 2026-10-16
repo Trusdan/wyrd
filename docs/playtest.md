@@ -67,6 +67,8 @@ New game sets `world.storm_heard` before the quest starts. The lookout is `cast(
 
 The pack also contains The Harbor Guild. It stays dormant on this walk. It starts after a deed `asked_guild` at Gullhaven. That quest is the guild-assigned factor, the elected reeve, the barred visitor, and the unwilling factor. The ferry lock has a `locked_gone` variant for the master who held it.
 
+The Toll Tale stays dormant too. It starts after a deed `asked_council` at Gullhaven. The harbor council has declared the toll lost at sea. A fisher believes it was stolen. `dock_hand` inherits the council line and will not sit while that is the official line. The player believing it was stolen bars the hearing. One witness can hear the tale through a wall, and one statement fails when the listener does not trust the fisher.
+
 ## 5. Walk one route
 
 1. Press **New game**.

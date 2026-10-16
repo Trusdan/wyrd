@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.0-m5 - 2026-10-16
+
+M5 deeds and social. `VERSION` is `0.3.0-m5`. Corey cuts the tag. Save schema is 2.
+
+- Gullhaven's toll tale: the harbor council declares the toll lost at sea, a fisher believes it was stolen, and `dock_hand` inherits that council line. The council member is unwilling while that belief is the official line, and barred while the player believes it was stolen. One witness hears the tale through a wall. One statement fails credibility. The role × belief matrix writes and retracts each of those conditions.
+- `W_STALE_BELIEF` warns when a scene `learn` writes `known/<agent>` and that agent still has a contradicting `believed/` value that no `unbelieve` clears.
+- Player-visible text may interpolate `belief`, `believes`, and `held`. That interpolation warns `W_CLAIM`. Interpolating a stored fact's world value while a gate reads that fact from the world, and the gate does not also `knows` it, is `E_FACT_LEAK`.
 - Save schema is 2. A schema 1 save gains empty `facts.believed` and `facts.held` bags. New saves write those bags sparse, one map per agent or group.
 - `~ believe <agent> <fact> = <expr>`, `~ unbelieve <agent> <fact>`, `~ declare <group> <fact> = <expr>`, and `~ retract <group> <fact>` write schema stored facts. A resolved fact is `E_WRITE_RESOLVED`. A type mismatch is `E_WRITE_TYPE`. A belief write does not change `world` or `known`. One `belief` trace line is logged when a value changes.
 - `knows(agent, key)` reads a role reveal or `known/<agent>`. `known` is the same read and warns `W_KNOWN_DEPRECATED`. `believes(agent, key)` is truthy of the agent's belief, then each group's `held` value in `groups_of` order. An explicit false stops the walk. `belief(agent, key)` and `believes(...) == v` read the value. `held(group, key)` reads that group only. None of them fall back to `known` or `world`. `register_group_precedence` replaces the membership order. `invalidate_groups`, or emitting `groups_changed`, drops the cache and wakes conditions that read `group.membership`. A lookup logs one `belief_lookup` line. `unwilling`, `barred`, eligibility, and `cast` may call these, and a belief write re-checks slot state on the next tick.
