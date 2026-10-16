@@ -32,6 +32,9 @@ var enabled: bool = false
 ## A coverage line is one recorded hit. hit is storylet, line, or variant.
 ## key is the id. path is the source file.
 ## A coverage_report line is one never-hit read. Replay skips both.
+## A console line is one playtest command. path is console. key is the target.
+## role is set for kill, vacate, and replace. source is console.
+## Replay skips it. Load does not log one.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 
@@ -81,6 +84,8 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(int(row.get("minutes", 0)))
+			"console":
+				pass
 			_:
 				pass
 
