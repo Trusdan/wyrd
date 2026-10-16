@@ -10,6 +10,7 @@ scene toll.offer_room
   lookout: The headland bell rang twice before the rain. #line:a_look
   when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
   when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
+  when harbor.deck_wet: narrator: The deck is still wet from the bucket. #line:a_wet
   // "the ferry master" is prose. A role has no title field.
   // filled() is the slot, not the cached npc.ferry_master.alive fact.
   when filled(ferry): lookout: {holder(ferry).name}, the ferry master, is on the dock. #line:a_alive

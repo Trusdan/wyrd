@@ -47,6 +47,7 @@ static func compile(
 			fact_paths[fact] = path
 	var events := _merge_events(parsed, diagnostics)
 	_lint_resolvers(merged, events, fact_paths, diagnostics)
+	_lint_leaves(merged, events, diagnostics)
 	var units: Array = []
 	for row in parsed:
 		var tree: WyrdNode = row["tree"]
@@ -132,6 +133,7 @@ static func _merge_events(parsed: Array, diagnostics: WyrdDiagnostics) -> Dictio
 					)
 					continue
 				where[event.name] = {"col": event.col, "line": event.line, "path": path}
+				event.source_path = path
 				events[event.name] = event
 	return events
 
@@ -164,6 +166,69 @@ static func _lint_resolvers(
 				fact.line,
 				fact.col
 			)
+
+
+static func _lint_leaves(
+	schema: WyrdFactSchema,
+	events: Dictionary,
+	diagnostics: WyrdDiagnostics
+) -> void:
+	if schema == null:
+		return
+	var names: Array = events.keys()
+	names.sort()
+	for name in names:
+		var event := events[name] as WyrdEventDef
+		if event == null or event.leaves_key.is_empty():
+			continue
+		var segments := PackedStringArray()
+		for part in event.leaves_key.split("."):
+			segments.append(String(part))
+		var fact := schema.lookup(segments)
+		var path := event.source_path
+		var line := event.leaves_line if event.leaves_line > 0 else event.line
+		var col := event.leaves_col if event.leaves_col > 0 else event.col
+		if fact == null:
+			diagnostics.add(
+				WyrdDiagnostic.E_UNKNOWN_FACT,
+				"unknown fact \"%s\"" % event.leaves_key,
+				path,
+				line,
+				col
+			)
+			continue
+		if fact.is_pattern():
+			diagnostics.add(
+				WyrdDiagnostic.E_EVENT_ARG,
+				"evidence fact \"%s\" must be a concrete key" % event.leaves_key,
+				path,
+				line,
+				col
+			)
+			continue
+		if fact.origin != &"stored":
+			diagnostics.add(
+				WyrdDiagnostic.E_WRITE_RESOLVED,
+				"cannot write resolved fact \"%s\"" % fact.key,
+				path,
+				line,
+				col
+			)
+			continue
+		if not _leaves_fits(event.leaves_kind, fact.type_name):
+			diagnostics.add(
+				WyrdDiagnostic.E_WRITE_TYPE,
+				"cannot write %s to %s fact \"%s\"" % [event.leaves_kind, fact.type_name, fact.key],
+				path,
+				line,
+				col
+			)
+
+
+static func _leaves_fits(have: StringName, want: StringName) -> bool:
+	if have == want:
+		return true
+	return have == &"int" and want == &"float"
 
 
 static func _redeclare(prior: WyrdFact, fact: WyrdFact, prior_path: String) -> String:

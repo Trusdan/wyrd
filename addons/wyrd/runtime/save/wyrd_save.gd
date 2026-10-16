@@ -2,6 +2,8 @@ class_name WyrdSave
 extends RefCounted
 
 ## JSON-safe snapshot of one runtime. Schema 2 fills belief bags on older saves.
+## Evidence deadlines, when any exist, ride in [code]facts.evidence[/code].
+## An older loader ignores that key. Schema stays 2.
 ##
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills

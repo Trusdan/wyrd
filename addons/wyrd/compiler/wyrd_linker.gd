@@ -50,7 +50,10 @@ func link(
 func finish_xref(pack: WyrdLinkedPack, fact_paths: Dictionary) -> void:
 	if pack.xref == null:
 		pack.xref = WyrdFactXref.new()
-	pack.xref.build(pack.schema, pack.units, fact_paths, _diagnostics)
+	var declared: Dictionary = {}
+	if pack.events != null:
+		declared = pack.events
+	pack.xref.build(pack.schema, pack.units, fact_paths, _diagnostics, declared)
 
 
 func _index_symbols(units: Array) -> void:
