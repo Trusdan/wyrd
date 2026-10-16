@@ -41,6 +41,12 @@ var _declared: Dictionary = {}
 var _fired: Dictionary = {}
 var _formatter: Callable = Callable()
 var _text: WyrdText
+## Quest ids visited every tick: active, or a start that is not a pure fact compare.
+var _watch: Dictionary = {}
+## Pure start-condition index to quest ids. Those stay dormant until the flag is true.
+var _by_cond: Dictionary = {}
+var _pure_start: Dictionary = {}
+var _wake: Dictionary = {}
 
 
 class QuestState extends RefCounted:
@@ -71,6 +77,10 @@ func reset() -> void:
 	_states.clear()
 	_declared.clear()
 	_fired.clear()
+	_watch.clear()
+	_wake.clear()
+	_by_cond.clear()
+	_pure_start.clear()
 	if runtime == null or runtime.content() == null:
 		return
 	var content := runtime.content()
@@ -82,9 +92,12 @@ func reset() -> void:
 		var key := String(quest_id)
 		_states[key] = state
 		_declared[key] = _collect(quest)
+		_index_start(key, quest)
 		if not _requires_ok(quest, content.pack_id):
 			_set_status(key, state, UNAVAILABLE)
 			content_unavailable.emit(key, _missing_pack(quest, content.pack_id))
+		else:
+			_sync_watch(key, state)
 
 
 func register_date_formatter(fn: Callable) -> void:
@@ -100,8 +113,27 @@ func format_date(minutes: int) -> String:
 	return WyrdText.game_date(minutes)
 
 
+func note_ready(index: int) -> void:
+	if not _by_cond.has(index):
+		return
+	for quest_id in _by_cond[index]:
+		_wake[String(quest_id)] = true
+
+
 func on_tick() -> void:
-	var ids: Array = _states.keys()
+	var ids: Array = []
+	if runtime != null and not runtime.locals_empty():
+		ids = _states.keys()
+		_wake.clear()
+	else:
+		var seen := {}
+		for quest_id in _watch.keys():
+			seen[quest_id] = true
+			ids.append(quest_id)
+		for quest_id in _wake.keys():
+			if not seen.has(quest_id):
+				ids.append(quest_id)
+		_wake.clear()
 	ids.sort()
 	for quest_id in ids:
 		var state := _states[quest_id] as QuestState
@@ -320,6 +352,7 @@ func import_state(data: Dictionary) -> void:
 		for field in item.get("host_fields", []):
 			fields.append(String(field))
 		state.host_fields = fields
+	_retrack()
 
 
 func abandon(quest_id: String) -> void:
@@ -755,7 +788,50 @@ func _set_status(quest_id: String, state: QuestState, next: StringName) -> void:
 	if state.status == next:
 		return
 	state.status = next
+	_sync_watch(quest_id, state)
 	quest_state_changed.emit(quest_id, next)
+
+
+func _index_start(quest_id: String, quest: WyrdQuestDef) -> void:
+	if quest == null or quest.start_when == null or runtime == null or runtime.content() == null:
+		return
+	var index := runtime.content().index_of(quest.start_when)
+	if index < 0 or not runtime.content().is_pure(index):
+		return
+	_pure_start[quest_id] = index
+	var bucket: Array = _by_cond.get(index, [])
+	bucket.append(quest_id)
+	_by_cond[index] = bucket
+
+
+func _sync_watch(quest_id: String, state: QuestState) -> void:
+	var follow := state.status == ACTIVE
+	if not follow and (state.status == DORMANT or state.status == AVAILABLE) and not _pure_start.has(quest_id):
+		follow = true
+	if follow:
+		_watch[quest_id] = true
+	else:
+		_watch.erase(quest_id)
+
+
+func _retrack() -> void:
+	_watch.clear()
+	for quest_id in _states.keys():
+		var state := _states[quest_id] as QuestState
+		if state != null:
+			_sync_watch(String(quest_id), state)
+	_catch_up()
+
+
+func _catch_up() -> void:
+	if runtime == null:
+		return
+	for index in _by_cond.keys():
+		var at := int(index)
+		if runtime.condition_dirty(at) or runtime.condition_flag(at) != 1:
+			continue
+		for quest_id in _by_cond[index]:
+			_wake[String(quest_id)] = true
 
 
 func _quest(quest_id: String) -> WyrdQuestDef:

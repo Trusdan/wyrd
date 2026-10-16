@@ -13,8 +13,6 @@ var _runtime: WyrdRuntime
 var _world: WyrdFakeWorld
 var _spatial: WyrdFakeSpatial
 var _host: WyrdFakeHost
-var _deeds: Dictionary = {}
-var _saved: Dictionary = {}
 var _saved_bytes := 0
 var _peak := 0
 var _ready := false
@@ -79,7 +77,6 @@ func _prepare() -> Dictionary:
 	_npcs = int(info.get("npcs", "0"))
 	if _facts < 1 or _npcs < 2:
 		return {"error": "pack needs facts and at least two npcs", "ok": false}
-	_deeds = WyrdScalePack.load_deeds(_pack)
 	_runtime = WyrdRuntime.new()
 	_runtime.trace.enabled = false
 	var config := WyrdConfig.new()
@@ -299,8 +296,10 @@ func _sample_save(timed: bool) -> Dictionary:
 	var data := _runtime.save_state()
 	var text := JSON.stringify(data)
 	var elapsed := Time.get_ticks_usec() - started
-	_saved = data
 	_saved_bytes = text.to_utf8_buffer().size()
+	_write_text(_save_path(), text)
+	data = {}
+	text = ""
 	if timed:
 		return {
 			"checksum": "%s:%s" % [_runtime.deeds.size(), _saved_bytes],
@@ -315,11 +314,14 @@ func _sample_save(timed: bool) -> Dictionary:
 
 
 func _sample_load() -> Dictionary:
-	if _saved.is_empty():
+	if not FileAccess.file_exists(_save_path()):
 		_sample_save(true)
+	var parsed: Variant = JSON.parse_string(_read_text(_save_path()))
+	var data: Dictionary = parsed if parsed is Dictionary else {}
 	var started := Time.get_ticks_usec()
-	var report := _runtime.load_state(_saved)
+	var report := _runtime.load_state(data)
 	var elapsed := Time.get_ticks_usec() - started
+	data = {}
 	return {
 		"checksum": "%s:%s" % [1 if report.ok else 0, _runtime.deeds.size()],
 		"extra": {"ok": report.ok},
@@ -354,7 +356,12 @@ func _arm_beliefs() -> void:
 
 
 func _import_deeds() -> void:
-	_runtime.deeds.import_state(_deeds)
+	var fixture := WyrdScalePack.load_deeds(_pack)
+	_runtime.deeds.import_state(fixture)
+
+
+func _save_path() -> String:
+	return _box.path_join("save.json")
 
 
 func _dirty_count() -> int:

@@ -46,27 +46,28 @@ var _modes: PackedStringArray = PackedStringArray()
 var _by_actor: Dictionary = {}
 var _by_target: Dictionary = {}
 var _by_verb: Dictionary = {}
+## Bumps when the rows change. Combined with the decay bucket for relationship caches.
+var _gen: int = 1
 
 
 func export_state() -> Dictionary:
 	var rows: Array = []
 	for i in size():
-		var row := row_at(i)
-		rows.append({
-			"actor": String(row["actor"]),
-			"id": int(row["id"]),
-			"magnitude": float(row["magnitude"]),
-			"memorable": bool(row["memorable"]),
-			"place": String(row["place"]),
-			"t": int(row["t"]),
-			"tags": _string_list(row["tags"]),
-			"target": String(row["target"]),
-			"verb": String(row["verb"]),
-			"perception": _string_list(row["perception"]),
-			"visibility": String(row["visibility"]),
-			"witnesses": _string_list(row["witnesses"]),
-		})
+		rows.append(_export_row(i))
 	return {"next": _next, "rows": rows}
+
+
+## Rows for [param actor], in log order. The array is the live index: do not mutate it.
+func actor_indexes(actor: StringName) -> PackedInt32Array:
+	var text := String(actor)
+	if not _by_actor.has(text):
+		return PackedInt32Array()
+	return _by_actor[text]
+
+
+## Changes when a row is added, replaced, or dropped, or when decay can move.
+func weight_stamp() -> int:
+	return WyrdHash.combine(_gen, _bucketed(_now()))
 
 
 func import_state(data: Dictionary) -> void:
@@ -97,6 +98,49 @@ func compact() -> int:
 	if on_compact.is_valid():
 		on_compact.call({"after": after, "before": before, "dropped": dropped, "merged": merged})
 	return after
+
+
+## Defaults match [method _append_stored]: magnitude 1, memorable false, visibility
+## public, minute 0, empty place and target, empty tags, and saw for every witness.
+## Older saves that still write those fields load unchanged. Schema stays 2.
+func _export_row(index: int) -> Dictionary:
+	var row := {
+		"actor": String(_actor[index]),
+		"id": int(_id[index]),
+		"verb": String(_verb[index]),
+	}
+	var magnitude := float(_magnitude[index])
+	if magnitude != 1.0:
+		row["magnitude"] = magnitude
+	if _memorable[index] != 0:
+		row["memorable"] = true
+	var place := String(_place[index])
+	if not place.is_empty():
+		row["place"] = place
+	var minute := int(_t[index])
+	if minute != 0:
+		row["t"] = minute
+	var tag_n := int(_tag_n[index])
+	if tag_n > 0:
+		row["tags"] = _string_list(_slice(_tags, int(_tag_at[index]), tag_n))
+	var target := String(_target[index])
+	if not target.is_empty():
+		row["target"] = target
+	var wit_n := int(_wit_n[index])
+	if wit_n > 0:
+		var modes := _slice(_modes, int(_wit_at[index]), wit_n)
+		var all_saw := true
+		for mode in modes:
+			if mode != "saw":
+				all_saw = false
+				break
+		if not all_saw:
+			row["perception"] = _string_list(modes)
+		row["witnesses"] = _string_list(_slice(_witnesses, int(_wit_at[index]), wit_n))
+	var visibility := String(_visibility[index])
+	if visibility != "public":
+		row["visibility"] = visibility
+	return row
 
 
 func _append_stored(row: Dictionary) -> void:
@@ -255,6 +299,7 @@ func clear() -> void:
 	_by_actor.clear()
 	_by_target.clear()
 	_by_verb.clear()
+	_gen += 1
 
 
 func size() -> int:
@@ -313,6 +358,7 @@ func record(
 	_index(_by_actor, actor, row)
 	_index(_by_target, target, row)
 	_index(_by_verb, verb, row)
+	_gen += 1
 	var deed := row_at(row)
 	deed_recorded.emit(deed)
 	return int(deed["id"])
