@@ -1,0 +1,401 @@
+{
+  "absolute_budgets": "warn",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "metrics": [
+    {
+      "budget": 20.0,
+      "checksum": "0:0:0",
+      "delta": null,
+      "median": 119.055261,
+      "name": "compile.strict",
+      "p95": 160.653164,
+      "reasons": [
+        "no-base",
+        "budget"
+      ],
+      "samples": [
+        109.71492,
+        118.950191,
+        118.959031,
+        119.055261,
+        135.345752,
+        138.123559,
+        160.653164
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.002,
+      "checksum": "636603848841227167",
+      "delta": null,
+      "dirty_median": 16,
+      "median": 0.000372,
+      "name": "tick.recheck",
+      "p95": 0.000392,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.000365,
+        0.000366,
+        0.000369,
+        0.000372,
+        0.000381,
+        0.000388,
+        0.000392
+      ],
+      "stat": "p95",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 5e-06,
+      "checksum": "10000",
+      "delta": null,
+      "median": 1.2744e-06,
+      "name": "believes.own",
+      "p95": 1.298e-06,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        1.2581e-06,
+        1.2633e-06,
+        1.2636e-06,
+        1.2744e-06,
+        1.2752e-06,
+        1.2861e-06,
+        1.298e-06
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 5e-06,
+      "checksum": "10000",
+      "delta": null,
+      "median": 1.2782e-06,
+      "name": "believes.group",
+      "p95": 1.3044e-06,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        1.2603e-06,
+        1.2661e-06,
+        1.2695e-06,
+        1.2782e-06,
+        1.2825e-06,
+        1.2964e-06,
+        1.3044e-06
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 5e-05,
+      "checksum": "-6210825799748525371",
+      "delta": null,
+      "median": 0.0001605,
+      "name": "perceive.credibility",
+      "p95": 0.00016071875,
+      "reasons": [
+        "no-base",
+        "budget"
+      ],
+      "samples": [
+        0.00015915625,
+        0.000159375,
+        0.0001601875,
+        0.0001605,
+        0.00016053125,
+        0.0001605625,
+        0.00016071875
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.0001,
+      "checksum": "50.000000",
+      "delta": null,
+      "median": 4.5e-05,
+      "name": "reputation.cached",
+      "p95": 5.1e-05,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        3.7e-05,
+        4.3e-05,
+        4.4e-05,
+        4.5e-05,
+        4.7e-05,
+        4.9e-05,
+        5.1e-05
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.02,
+      "checksum": "50.000000",
+      "delta": null,
+      "median": 0.013476,
+      "name": "reputation.cold",
+      "p95": 0.014244,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.012648,
+        0.012773,
+        0.013008,
+        0.013476,
+        0.013725,
+        0.01386,
+        0.014244
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.5,
+      "checksum": "50000:7779560",
+      "delta": null,
+      "median": 0.646132,
+      "name": "save.time",
+      "p95": 0.649737,
+      "reasons": [
+        "no-base",
+        "budget"
+      ],
+      "samples": [
+        0.635069,
+        0.64254,
+        0.645885,
+        0.646132,
+        0.646172,
+        0.647005,
+        0.649737
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 10485760.0,
+      "checksum": "7779560",
+      "delta": null,
+      "median": 7779560.0,
+      "name": "save.bytes",
+      "p95": 7779560.0,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        7779560.0,
+        7779560.0,
+        7779560.0,
+        7779560.0,
+        7779560.0,
+        7779560.0,
+        7779560.0
+      ],
+      "stat": "median",
+      "unit": "B",
+      "verdict": "warn"
+    },
+    {
+      "budget": 1.0,
+      "checksum": "1:50000",
+      "delta": null,
+      "median": 0.750134,
+      "name": "load.time",
+      "p95": 0.795534,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.740459,
+        0.74912,
+        0.749378,
+        0.750134,
+        0.751614,
+        0.752441,
+        0.795534
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 2.0,
+      "checksum": "50000:10032",
+      "delta": null,
+      "median": 0.853458,
+      "name": "compact.time",
+      "p95": 0.867091,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.834214,
+        0.841672,
+        0.851179,
+        0.853458,
+        0.861615,
+        0.866835,
+        0.867091
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 268435456.0,
+      "checksum": "memory.static",
+      "delta": null,
+      "median": 262120624.0,
+      "name": "memory.peak",
+      "p95": 262120624.0,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        262120624.0,
+        262120624.0,
+        262120624.0,
+        262120624.0,
+        262120624.0,
+        262120624.0,
+        262120624.0
+      ],
+      "stat": "median",
+      "unit": "B",
+      "verdict": "warn"
+    },
+    {
+      "budget": 268435456.0,
+      "checksum": "memory.static",
+      "delta": null,
+      "median": 231827155.0,
+      "name": "memory.steady",
+      "p95": 231839443.0,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        231814867.0,
+        231818963.0,
+        231823059.0,
+        231827155.0,
+        231831251.0,
+        231835347.0,
+        231839443.0
+      ],
+      "stat": "median",
+      "unit": "B",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.02,
+      "checksum": "-653338066074872381",
+      "delta": null,
+      "median": 0.00450046875,
+      "name": "director.query",
+      "p95": 0.00481621875,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.00448540625,
+        0.00448665625,
+        0.00449353125,
+        0.00450046875,
+        0.00450196875,
+        0.00452471875,
+        0.00481621875
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 0.05,
+      "checksum": "-7549467455797964667",
+      "delta": null,
+      "median": 0.01301490625,
+      "name": "director.why_not",
+      "p95": 0.01518171875,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        0.01186853125,
+        0.01205859375,
+        0.0121905625,
+        0.01301490625,
+        0.0131734375,
+        0.01420740625,
+        0.01518171875
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    },
+    {
+      "budget": 40.0,
+      "checksum": "0:0:0",
+      "delta": null,
+      "median": 15.015607,
+      "name": "compile.tie_lint",
+      "p95": 15.744436,
+      "reasons": [
+        "no-base"
+      ],
+      "samples": [
+        14.524833,
+        14.832367,
+        14.943824,
+        15.015607,
+        15.041712,
+        15.430167,
+        15.744436
+      ],
+      "stat": "median",
+      "unit": "s",
+      "verdict": "warn"
+    }
+  ],
+  "mode": "gate",
+  "profile": "full",
+  "runner": {
+    "cpu": "x86_64",
+    "github_run_id": "38963868105",
+    "github_runner": "GitHub Actions 1000000228",
+    "os": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "samples": 7,
+  "scale": {
+    "deeds": 50000,
+    "facts": 10000,
+    "npcs": 500,
+    "quests": 700,
+    "speakers": 20,
+    "storylets": 4000,
+    "topics": 80
+  },
+  "seed": 1465471556,
+  "tag": "v0.4.0-m6",
+  "warmups": 2,
+  "wyrd": "0.4.0-m6"
+}
