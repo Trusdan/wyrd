@@ -48,6 +48,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"deed_count": Callable(self, &"_deed_count"),
 		&"deed_score": Callable(self, &"_deed_score"),
 		&"disposition": Callable(self, &"_disposition"),
+		&"done": Callable(self, &"_done"),
 		&"display_name": Callable(self, &"_display_name"),
 		&"filled": Callable(self, &"_filled"),
 		&"has": Callable(self, &"_has"),
@@ -57,6 +58,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"known": Callable(self, &"_known"),
 		&"nearby": Callable(self, &"_nearby"),
 		&"outcome": Callable(self, &"_outcome"),
+		&"progress": Callable(self, &"_progress"),
 		&"perceived": Callable(self, &"_perceived"),
 		&"knows": Callable(self, &"_knows"),
 		&"rel": Callable(self, &"_rel"),
@@ -217,6 +219,18 @@ func _reputation(args: Array) -> float:
 
 func _filled(args: Array) -> bool:
 	return _holder(args) != null
+
+
+func _progress(args: Array) -> int:
+	if args.is_empty() or args[0] == null or _runtime == null or _runtime.sequences == null:
+		return 0
+	return _runtime.sequences.progress(str(args[0]))
+
+
+func _done(args: Array) -> bool:
+	if args.is_empty() or args[0] == null or _runtime == null or _runtime.sequences == null:
+		return false
+	return _runtime.sequences.done(str(args[0]))
 
 
 func _outcome(args: Array) -> Variant:

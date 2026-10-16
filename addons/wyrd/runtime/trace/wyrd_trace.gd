@@ -13,11 +13,12 @@ extends RefCounted
 ## answer shows up there.
 
 var enabled: bool = false
-## When set, a line is kept when its quest, role, slot, who, key, scope, or
-## speaker equals this text or begins with it. Empty keeps every line. Belief,
-## knowledge, credibility, event witness, and evidence lines use who and key.
+## When set, a line is kept when its quest, role, slot, who, key, scope,
+## speaker, or path equals this text or begins with it. Empty keeps every line.
+## Belief, knowledge, credibility, event witness, and evidence lines use who and key.
 ## A credibility line's who is the listener. An evidence line's who is empty.
 ## A director line and a why_not line use scope, speaker, and key. Key is the scope id.
+## A region line uses quest and path. A sequence line's key is the sequence id.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

@@ -22,6 +22,8 @@ var scenes: Dictionary = {}
 var roles: Dictionary = {}
 ## Storylet id to [WyrdStoryletDef]. Compiled with the pack. Not a save document.
 var storylets: Dictionary = {}
+## Sequence id to [WyrdSequenceDef]. Compiled with the pack. Not a save document.
+var sequences: Dictionary = {}
 var lines: Dictionary = {}
 var files: Array = []
 var conditions: Array[WyrdCompiledCondition] = []
@@ -72,6 +74,10 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			for line_def in storylet.lines:
 				if not line_def.line_id.is_empty():
 					content.lines[line_def.line_id] = line_def
+		for sequence in file.sequences:
+			if sequence.id.is_empty():
+				continue
+			content.sequences[sequence.id] = sequence
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()
@@ -130,6 +136,12 @@ func _stage(quest_id: String, stage: WyrdStageDef) -> void:
 			_add(variant.condition, "%s.%s" % [prefix, variant.slot], "variant." + String(variant.state))
 		if variant.body != null:
 			_stage(quest_id, variant.body)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_stage(quest_id, child)
 
 
 func _item(scene_id: String, item: WyrdSceneItem) -> void:

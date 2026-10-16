@@ -61,6 +61,7 @@ func _index_symbols(units: Array) -> void:
 	var quests := {}
 	var roles := {}
 	var storylets := {}
+	var sequences := {}
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
@@ -70,6 +71,8 @@ func _index_symbols(units: Array) -> void:
 			_claim(roles, role.id, path, role.line, role.col, WyrdDiagnostic.E_ROLE_DUPLICATE, "role")
 		for storylet in file.storylets:
 			_claim(storylets, storylet.id, path, storylet.line, storylet.col, WyrdDiagnostic.E_STORYLET_DUPLICATE, "storylet")
+		for sequence in file.sequences:
+			_claim(sequences, sequence.id, path, sequence.line, sequence.col, WyrdDiagnostic.E_SEQUENCE_DUPLICATE, "sequence")
 		for scene in file.scenes:
 			if scene.id.is_empty():
 				continue
@@ -133,12 +136,35 @@ func _lines(units: Array) -> void:
 				_take_line(seen, line_def.line_id, path, line_def.line, line_def.col)
 
 
+func _line_regions(stage: WyrdStageDef, path: String, seen: Dictionary) -> void:
+	if stage == null:
+		return
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_line_stage(child, path, seen)
+
+
+func _cover_regions(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictionary, gone_covered: Dictionary) -> void:
+	if stage == null:
+		return
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_mark_coverage(child, used, empty_covered, gone_covered)
+
+
 func _line_stage(stage: WyrdStageDef, path: String, seen: Dictionary) -> void:
 	for journal in stage.journals:
 		_take_line(seen, journal.line_id, path, journal.line, journal.col)
 	for variant in stage.variants:
 		if variant.body != null:
 			_line_stage(variant.body, path, seen)
+	_line_regions(stage, path, seen)
 
 
 func _take_line(seen: Dictionary, id: String, path: String, line: int, col: int) -> void:
@@ -296,6 +322,7 @@ func _mark_coverage(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictio
 			gone_covered[variant.slot] = true
 		if variant.body != null:
 			_mark_coverage(variant.body, used, empty_covered, gone_covered)
+	_cover_regions(stage, used, empty_covered, gone_covered)
 
 
 func _mark_routes(stage: WyrdStageDef, branches: Dictionary) -> void:
@@ -316,6 +343,12 @@ func _mark_routes(stage: WyrdStageDef, branches: Dictionary) -> void:
 		var variant := item as WyrdVariantDef
 		if variant != null and variant.body != null:
 			_mark_routes(variant.body, branches)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_mark_routes(child, branches)
 
 
 func _quest_stage(quest: WyrdQuestDef, stage: WyrdStageDef, stages: Dictionary, path: String, pack: WyrdLinkedPack) -> void:
@@ -344,6 +377,16 @@ func _quest_stage(quest: WyrdQuestDef, stage: WyrdStageDef, stages: Dictionary, 
 	for variant in stage.variants:
 		if variant.body != null:
 			_quest_stage(quest, variant.body, stages, path, pack)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		var names := {}
+		for child in region.stages:
+			if not child.id.is_empty():
+				names[child.id] = true
+		for child in region.stages:
+			_quest_stage(quest, child, names, path, pack)
 
 
 func _bind(quest: WyrdQuestDef, ref: Dictionary, path: String) -> void:
@@ -444,6 +487,12 @@ func _mark_runs(stage: WyrdStageDef, run: Dictionary) -> void:
 	for variant in stage.variants:
 		if variant.body != null:
 			_mark_runs(variant.body, run)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_mark_runs(child, run)
 
 
 func _commands_of(units: Array) -> void:
@@ -487,6 +536,13 @@ func _command_stage(stage: WyrdStageDef, path: String) -> bool:
 	for variant in stage.variants:
 		if variant.body != null and _command_stage(variant.body, path):
 			saw = true
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			if _command_stage(child, path):
+				saw = true
 	return saw
 
 
@@ -575,6 +631,12 @@ func _holder_stage(
 		else:
 			child = excluded.duplicate()
 		_holder_stage(variant.body, child, slots, path, sites)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for nested in region.stages:
+			_holder_stage(nested, excluded, slots, path, sites)
 
 
 func _holder_scene(scene_id: String, site_map: Dictionary) -> void:
@@ -848,3 +910,9 @@ func _host_stage(stage: WyrdStageDef, path: String) -> void:
 		var variant := entry as WyrdVariantDef
 		if variant != null and variant.body != null:
 			_host_stage(variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_host_stage(child, path)

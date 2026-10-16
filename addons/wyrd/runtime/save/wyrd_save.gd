@@ -8,6 +8,9 @@ extends RefCounted
 ## id is kept in that bag and ignored. Bark speaker clocks, when any exist,
 ## ride in [code]bark_speakers[/code]. An unknown speaker id is kept. A missing
 ## [code]bark_speakers[/code] key clears those clocks and leaves storylet rows.
+## Sequence progress, when any exists, rides in [code]sequences[/code]. An unknown
+## sequence id is kept. A missing [code]sequences[/code] key clears that bag only.
+## Quest region leaves ride inside the quest row and are omitted when empty.
 ## An older loader ignores those keys. Schema stays 2.
 ##
 ## @experimental
@@ -66,6 +69,10 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 		var speakers := runtime.storylets.export_speakers()
 		if not speakers.is_empty():
 			data["bark_speakers"] = speakers
+	if runtime.sequences != null:
+		var sequences := runtime.sequences.export_state()
+		if not sequences.is_empty():
+			data["sequences"] = sequences
 	return data
 
 
@@ -142,6 +149,11 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.storylets.import_speakers(_dict(working.get("bark_speakers", {})))
 		else:
 			runtime.storylets.clear_speakers()
+	if runtime.sequences != null:
+		if working.has("sequences"):
+			runtime.sequences.import_state(_dict(working.get("sequences", {})))
+		else:
+			runtime.sequences.clear()
 	report.ok = true
 	report.manifest_hash = content.manifest_hash
 	return report

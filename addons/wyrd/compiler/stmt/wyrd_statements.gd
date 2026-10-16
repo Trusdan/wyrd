@@ -65,6 +65,7 @@ func compile(
 	file.take_span(tree)
 	var seen_roles := {}
 	var seen_storylets := {}
+	var seen_sequences := {}
 	for child in tree.children:
 		if child.keyword == "quest":
 			var quest := _quest(child)
@@ -94,6 +95,16 @@ func compile(
 			seen_storylets[storylet.id] = true
 			file.storylets.append(storylet)
 			WyrdStmtSpan.add_reads(file.reads, storylet.reads)
+		elif child.keyword == "sequence":
+			var sequence := _sequence(child)
+			if sequence.id.is_empty():
+				continue
+			if seen_sequences.has(sequence.id):
+				_error(WyrdDiagnostic.E_SEQUENCE_DUPLICATE, "duplicate sequence \"%s\"" % sequence.id, sequence.line, sequence.col)
+				continue
+			seen_sequences[sequence.id] = true
+			file.sequences.append(sequence)
+			WyrdStmtSpan.add_reads(file.reads, sequence.reads)
 	return file
 
 
@@ -233,10 +244,10 @@ func _finish_quest(quest: WyrdQuestDef) -> void:
 				slot.col
 			)
 	for stage in quest.stages:
-		_finish_body(stage, stage_names, slot_names)
+		_finish_body(stage, stage_names, slot_names, 1)
 
 
-func _finish_body(stage: WyrdStageDef, stage_names: Dictionary, slot_names: Dictionary) -> void:
+func _finish_body(stage: WyrdStageDef, stage_names: Dictionary, slot_names: Dictionary, depth: int) -> void:
 	for row in stage.transitions:
 		var target := String(row["target"])
 		if not stage_names.has(target):
@@ -256,7 +267,32 @@ func _finish_body(stage: WyrdStageDef, stage_names: Dictionary, slot_names: Dict
 		if not slot_names.has(slot_name):
 			_error(WyrdDiagnostic.E_SLOT_UNKNOWN, "unknown slot \"%s\"" % slot_name, variant.line, variant.col)
 		if variant.body != null:
-			_finish_body(variant.body, stage_names, slot_names)
+			_finish_body(variant.body, stage_names, slot_names, depth)
+	_finish_regions(stage, slot_names, depth)
+
+
+func _finish_regions(stage: WyrdStageDef, slot_names: Dictionary, depth: int) -> void:
+	if stage == null:
+		return
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		var names := {}
+		for child in region.stages:
+			if not child.id.is_empty():
+				names[child.id] = true
+		for child in region.stages:
+			if depth + 1 > 2 and not child.id.is_empty():
+				_diagnostics.add(
+					WyrdDiagnostic.W_SUBSTATE_DEPTH,
+					"sub-state \"%s\" is nested past depth 2" % child.id,
+					_path,
+					child.line,
+					child.col,
+					WyrdDiagnostic.SEVERITY_WARNING
+				)
+			_finish_body(child, names, slot_names, depth + 1)
 
 
 func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
@@ -417,6 +453,214 @@ func _stage_head(node: WyrdNode) -> WyrdStageDef:
 	return stage
 
 
+func _region(node: WyrdNode, stage: WyrdStageDef) -> void:
+	_line_id(node, false)
+	var region := WyrdRegionDef.new()
+	region.take_span(node)
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "a line tag is not allowed on a region", node.start_line, node.start_col)
+	if not node.title.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "a region has no title", node.start_line, node.start_col)
+	if node.head.size() != 1 or node.head[0].kind != &"ident":
+		_unknown_msg(node, "region needs an id")
+		return
+	region.id = node.head[0].text
+	for prior in stage.regions:
+		var earlier := prior as WyrdRegionDef
+		if earlier != null and earlier.id == region.id:
+			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "duplicate region \"%s\"" % region.id, node.start_line, node.start_col)
+	if node.children.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "region \"%s\" needs a stage" % region.id, node.start_line, node.start_col)
+	for child in node.children:
+		if child.keyword != "stage":
+			_unknown(child)
+			continue
+		var nested := _stage_head(child)
+		if nested.id.is_empty():
+			continue
+		for prior_stage in region.stages:
+			if prior_stage.id == nested.id:
+				_error(WyrdDiagnostic.E_STAGE_DUPLICATE, "duplicate stage \"%s\"" % nested.id, child.start_line, child.start_col)
+		for stmt in child.children:
+			_stage_stmt(stmt, nested)
+		_spatial_wait(nested)
+		region.stages.append(nested)
+		WyrdStmtSpan.add_reads(region.reads, nested.reads)
+	stage.regions.append(region)
+	WyrdStmtSpan.add_reads(stage.reads, region.reads)
+
+
+func _sequence(node: WyrdNode) -> WyrdSequenceDef:
+	var sequence := WyrdSequenceDef.new()
+	sequence.take_span(node)
+	_line_id(node, false)
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "a line tag is not allowed on a sequence", node.start_line, node.start_col)
+	if not node.title.is_empty():
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "a sequence has no title", node.start_line, node.start_col)
+	var ident := _dotted_at(node.head, 0)
+	sequence.id = String(ident["name"])
+	var i := int(ident["next"])
+	if sequence.id.is_empty():
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence needs an id", node.start_line, node.start_col)
+		sequence.id = ""
+		return sequence
+	if i >= node.head.size() or node.head[i].kind != &"ident":
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence needs ordered or any(<n> of <m>)", node.start_line, node.start_col)
+		sequence.id = ""
+		return sequence
+	var items := node.head
+	if items[i].text == "ordered":
+		sequence.mode = &"ordered"
+		i += 1
+	elif items[i].text == "any":
+		sequence.mode = &"any"
+		i = _sequence_any(items, i, sequence)
+		if i < 0:
+			sequence.id = ""
+			return sequence
+	else:
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence needs ordered or any(<n> of <m>)", items[i].line, items[i].col)
+		sequence.id = ""
+		return sequence
+	if i >= items.size() or items[i].text != "within":
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence needs within <duration>", node.start_line, node.start_col)
+		sequence.id = ""
+		return sequence
+	i += 1
+	var minutes := _sequence_duration(items, i)
+	if minutes < 0:
+		sequence.id = ""
+		return sequence
+	sequence.within_minutes = minutes
+	i += 2
+	if i < items.size():
+		if items[i].text != "reset" or i + 1 >= items.size() or items[i + 1].text != "on":
+			_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence reset needs reset on <event or condition>", items[i].line, items[i].col)
+			return sequence
+		i += 2
+		if i >= items.size():
+			_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence reset needs an event or a condition", items[i - 1].line, items[i - 1].col)
+			return sequence
+		_sequence_reset(sequence, items, i)
+	for child in node.children:
+		_sequence_step(child, sequence)
+	if sequence.steps.is_empty():
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence \"%s\" needs a step" % sequence.id, node.start_line, node.start_col)
+	if sequence.mode == &"any":
+		if sequence.need < 1 or sequence.total < 1 or sequence.need > sequence.total:
+			_error(
+				WyrdDiagnostic.E_SEQUENCE_SYNTAX,
+				"any(%d of %d) needs a count from 1 to %d" % [sequence.need, sequence.total, sequence.total],
+				node.start_line,
+				node.start_col
+			)
+		elif sequence.steps.size() > 1 and sequence.steps.size() != sequence.total:
+			_error(
+				WyrdDiagnostic.E_SEQUENCE_SYNTAX,
+				"any of %d needs %d steps" % [sequence.total, sequence.total],
+				node.start_line,
+				node.start_col
+			)
+	else:
+		sequence.need = sequence.steps.size()
+		sequence.total = sequence.steps.size()
+	return sequence
+
+
+func _sequence_any(items: Array[WyrdToken], i: int, sequence: WyrdSequenceDef) -> int:
+	if i + 5 >= items.size() or items[i + 1].kind != &"lparen" or items[i + 2].kind != &"int" or items[i + 3].text != "of" or items[i + 4].kind != &"int" or items[i + 5].kind != &"rparen":
+		var line := items[i].line
+		var col := items[i].col
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "any needs (<n> of <m>)", line, col)
+		return -1
+	sequence.need = int(items[i + 2].text)
+	sequence.total = int(items[i + 4].text)
+	return i + 6
+
+
+func _sequence_duration(items: Array[WyrdToken], i: int) -> int:
+	if i >= items.size():
+		var line := 1
+		var col := 1
+		if i > 0:
+			line = items[i - 1].line
+			col = items[i - 1].col
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "within needs a duration", line, col)
+		return -1
+	if items[i].kind == &"minus":
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "within cannot be negative", items[i].line, items[i].col)
+		return -1
+	if i + 1 >= items.size() or items[i].kind != &"int" or items[i + 1].kind != &"ident":
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "within needs a duration", items[i].line, items[i].col)
+		return -1
+	var scale := 0
+	match items[i + 1].text:
+		"m":
+			scale = 1
+		"h":
+			scale = 60
+		"d":
+			scale = WyrdCondition.MINUTES_PER_DAY
+		_:
+			_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "within unit must be m, h, or d", items[i + 1].line, items[i + 1].col)
+			return -1
+	return int(items[i].text) * scale
+
+
+func _sequence_reset(sequence: WyrdSequenceDef, items: Array[WyrdToken], i: int) -> void:
+	if i + 1 == items.size() and items[i].kind == &"ident":
+		var name := items[i].text
+		var event: WyrdEventDef = _events.get(name) as WyrdEventDef
+		if event == null:
+			_error(WyrdDiagnostic.E_EVENT_UNKNOWN, "unknown event \"%s\"" % name, items[i].line, items[i].col)
+			return
+		sequence.reset_event = name
+		sequence.reset_text = name
+		return
+	var span := _span_text(items, i, items.size())
+	sequence.reset_text = span["text"]
+	if sequence.reset_text.is_empty():
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "sequence reset needs an event or a condition", int(span["line"]), int(span["col"]))
+		return
+	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", sequence.reads, {}, false)
+	sequence.reset_cond = compiled["compiled"]
+
+
+func _sequence_step(node: WyrdNode, sequence: WyrdSequenceDef) -> void:
+	if node.keyword != "on":
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "a sequence step is on <event> where <condition>", node.start_line, node.start_col)
+		return
+	for child in node.children:
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "a sequence step is only a match", child.start_line, child.start_col)
+	var items := node.head
+	var limit := items.size()
+	if limit > 0 and items[limit - 1].kind == &"colon":
+		limit -= 1
+	var shape := limit >= 3 and items[0].kind == &"ident" and items[1].text == "where"
+	if not shape:
+		_error(WyrdDiagnostic.E_SEQUENCE_SYNTAX, "a sequence step needs on <event> where <condition>", node.start_line, node.start_col)
+		return
+	var step := WyrdOnEventDef.new()
+	step.take_span(node)
+	step.event_name = items[0].text
+	var event: WyrdEventDef = _events.get(step.event_name) as WyrdEventDef
+	if event == null:
+		_error(WyrdDiagnostic.E_EVENT_UNKNOWN, "unknown event \"%s\"" % step.event_name, items[0].line, items[0].col)
+	var span := _span_text(items, 2, limit)
+	step.where_text = span["text"]
+	var saved := _event_fields.duplicate()
+	_event_fields = {}
+	if event != null:
+		for field in event.fields:
+			_event_fields[str(field["name"])] = StringName(str(field["type"]))
+	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", step.reads, {}, false)
+	step.where_cond = compiled["compiled"]
+	_event_fields = saved
+	sequence.steps.append(step)
+	WyrdStmtSpan.add_reads(sequence.reads, step.reads)
+
+
 func _stage_stmt(node: WyrdNode, stage: WyrdStageDef) -> void:
 	match node.keyword:
 		"waits_until":
@@ -435,6 +679,8 @@ func _stage_stmt(node: WyrdNode, stage: WyrdStageDef) -> void:
 			_await_host(node, stage)
 		"on":
 			_on_event(node, stage)
+		"region":
+			_region(node, stage)
 		"redirect":
 			_unknown_msg(node, "redirect beat is only valid in a variant")
 		_:

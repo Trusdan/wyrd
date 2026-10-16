@@ -167,6 +167,12 @@ func _warn_stage(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, writ
 	for variant in stage.variants:
 		if variant.body != null:
 			_warn_stage(schema, variant.body, path, writers, diagnostics)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_warn_stage(schema, child, path, writers, diagnostics)
 
 
 func _warn_prose(
@@ -271,6 +277,12 @@ func _note_belief_stage(stage: WyrdStageDef, believed: Dictionary, cleared: Dict
 	for variant in stage.variants:
 		if variant.body != null:
 			_note_belief_stage(variant.body, believed, cleared)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_note_belief_stage(child, believed, cleared)
 
 
 func _note_belief_rows(effects: Array, believed: Dictionary, cleared: Dictionary) -> void:
@@ -441,6 +453,11 @@ func _readers(units: Array) -> Array:
 			_push(rows, _cond_reads(storylet.condition), "storylet", storylet.id, path, storylet.line, storylet.col)
 			for line_def in storylet.lines:
 				_push(rows, line_def.reads, "line", line_def.line_id, path, line_def.line, line_def.col)
+		for sequence in file.sequences:
+			_push(rows, _cond_reads(sequence.reset_cond), "sequence", sequence.id, path, sequence.line, sequence.col)
+			for step in sequence.steps:
+				if step.where_cond != null:
+					_push(rows, step.where_cond.reads, "sequence", sequence.id, path, step.line, step.col)
 	return rows
 
 
@@ -470,6 +487,12 @@ func _handler_stage(stage: WyrdStageDef, path: String) -> void:
 	for variant in stage.variants:
 		if variant.body != null:
 			_handler_stage(variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_handler_stage(child, path)
 
 
 func _stage_readers(rows: Array, stage: WyrdStageDef, id: String, path: String) -> void:
@@ -494,6 +517,12 @@ func _stage_readers(rows: Array, stage: WyrdStageDef, id: String, path: String) 
 		_push(rows, _cond_reads(variant.condition), "variant", variant_id, path, variant.line, variant.col)
 		if variant.body != null:
 			_stage_readers(rows, variant.body, variant_id, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_stage_readers(rows, child, "%s.%s.%s" % [id, region.id, child.id], path)
 
 
 func _scene_readers(rows: Array, scene: WyrdSceneDef, path: String) -> void:
@@ -570,6 +599,12 @@ func _stage_writers(rows: Array, stage: WyrdStageDef, id: String, path: String) 
 			continue
 		var variant_id := "%s.%s.%s" % [id, variant.slot, String(variant.state)]
 		_stage_writers(rows, variant.body, variant_id, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_stage_writers(rows, child, "%s.%s.%s" % [id, region.id, child.id], path)
 
 
 func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:

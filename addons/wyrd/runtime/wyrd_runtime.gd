@@ -26,6 +26,7 @@ var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
+var sequences: WyrdSequences
 var director: WyrdDirector
 var trace: WyrdTrace
 
@@ -62,6 +63,7 @@ func _init() -> void:
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
 	storylets = WyrdStoryletDeck.new()
+	sequences = WyrdSequences.new()
 	director = WyrdDirector.new()
 	director.bind(self)
 	deeds = WyrdDeedLog.new()
@@ -324,6 +326,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_content = null
 	if storylets != null:
 		storylets.bind(null)
+	if sequences != null:
+		sequences.bind(null)
 	_flags = PackedByteArray()
 	_always = PackedInt32Array()
 	_queue.clear()
@@ -364,6 +368,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	if storylets != null:
 		storylets.bind(_content)
 		storylets.set_seed(_seed)
+	if sequences != null:
+		sequences.bind(self)
 	report.ok = true
 	report.manifest_hash = _content.manifest_hash
 	facts.bind_schema(_content.schema)
@@ -392,6 +398,8 @@ func tick(game_minutes: int) -> void:
 		_mark_calls(_DEED_CALLS)
 	if not _always.is_empty():
 		_queue.mark(_always)
+	if sequences != null:
+		sequences.on_tick()
 	var budget := _config.scheduler_work_per_tick if _config != null else 0
 	_queue.tick(budget, _recheck)
 	if quests != null:
@@ -723,7 +731,7 @@ func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker"]:
+	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true
@@ -802,6 +810,42 @@ func trace_why_not(fields: Dictionary) -> void:
 	print(WyrdDirector.format_why_not(fields))
 
 
+## One line when a region's active stage changes. [param path] is the region id,
+## or parent ids joined by [code]/[/code]. Empty [param from_stage] is the first leaf.
+func trace_region(quest_id: String, path: String, from_stage: String, to_stage: String) -> void:
+	if trace == null or not trace.enabled or from_stage == to_stage:
+		return
+	var fields := {
+		"from": from_stage,
+		"path": path,
+		"quest": quest_id,
+		"to": to_stage,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("region", fields)
+	print("wyrd region quest=%s path=%s from=%s to=%s" % [quest_id, path, from_stage, to_stage])
+
+
+## One line when a sequence counts a step, finishes, resets, or expires.
+## [param reason] is [code]step[/code], [code]done[/code], [code]reset[/code], or [code]expire[/code].
+func trace_sequence(sequence_id: String, count: int, done: bool, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var flag := "true" if done else "false"
+	var fields := {
+		"count": count,
+		"done": flag,
+		"id": sequence_id,
+		"key": sequence_id,
+		"reason": reason,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("sequence", fields)
+	print("wyrd sequence id=%s count=%s done=%s reason=%s" % [sequence_id, str(count), flag, reason])
+
+
 func trace_director(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -838,6 +882,8 @@ func _reset_play() -> void:
 	_slot_traced.clear()
 	if storylets != null:
 		storylets.clear()
+	if sequences != null:
+		sequences.clear()
 	if effects != null:
 		effects.clear()
 	if dialogue != null:
@@ -969,6 +1015,8 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 			"time": now_minutes(),
 		})
 	_apply_event_act(event_name, payload, normalized)
+	if sequences != null:
+		sequences.on_emit(event_name, normalized)
 	if quests != null:
 		quests.on_world_event(emit_id, event_name, normalized)
 	_wake_spatial(event_name)
@@ -1408,11 +1456,27 @@ func _mark_calls(names: PackedStringArray) -> void:
 		_queue.mark(hits)
 
 
+func note_sequence_change() -> void:
+	if _content == null:
+		return
+	var hits := _content.indexes_for_calls(PackedStringArray(["done", "progress"]))
+	if hits.is_empty():
+		return
+	_queue.mark(hits)
+	if _collecting:
+		for index in hits:
+			_collected[int(index)] = true
+
+
 func _tracked_calls() -> PackedStringArray:
 	var names := _DEED_CALLS.duplicate()
 	for name in _ROLE_CALLS:
 		if not names.has(name):
 			names.append(name)
+	if not names.has("progress"):
+		names.append("progress")
+	if not names.has("done"):
+		names.append("done")
 	return names
 
 
