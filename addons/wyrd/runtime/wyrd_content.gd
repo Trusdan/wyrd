@@ -25,6 +25,8 @@ var storylets: Dictionary = {}
 ## Sequence id to [WyrdSequenceDef]. Compiled with the pack. Not a save document.
 var sequences: Dictionary = {}
 var lines: Dictionary = {}
+## Catalog rows for coverage: [code]kind[/code], [code]id[/code], [code]path[/code], [code]line[/code].
+var coverage_sites: Array = []
 var files: Array = []
 var conditions: Array[WyrdCompiledCondition] = []
 var records: PackedStringArray = PackedStringArray()
@@ -73,6 +75,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			content.storylets[storylet.id] = storylet
 			for line_def in storylet.lines:
 				content._remember(line_def)
+		content._index_coverage(file, str(unit["path"]))
 		for sequence in file.sequences:
 			if sequence.id.is_empty():
 				continue
@@ -163,6 +166,68 @@ func _remember(line: WyrdLineDef) -> void:
 	for item in line.variants:
 		var variant := item as WyrdLineDef
 		_remember(variant)
+
+
+func _index_coverage(file: WyrdFileDef, path: String) -> void:
+	var seen := {}
+	for storylet in file.storylets:
+		storylet.source_path = path
+		if not storylet.id.is_empty():
+			_add_site(seen, "storylet", storylet.id, path, storylet.line)
+		for line_def in storylet.lines:
+			_index_line(seen, line_def, path)
+	for scene in file.scenes:
+		for item in scene.items:
+			if item.line_def != null:
+				_index_line(seen, item.line_def, path)
+			if item.choice != null:
+				item.choice.source_path = path
+				if not item.choice.line_id.is_empty():
+					_add_site(seen, "line", item.choice.line_id, path, item.choice.line)
+	for quest in file.quests:
+		for stage in quest.stages:
+			_index_stage(seen, quest.id, stage, path)
+
+
+func _index_stage(seen: Dictionary, quest_id: String, stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	for journal in stage.journals:
+		_index_line(seen, journal, path)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null:
+			continue
+		variant.source_path = path
+		var id := "%s.%s.%s.%s" % [quest_id, stage.id, variant.slot, String(variant.state)]
+		_add_site(seen, "variant", id, path, variant.line)
+		_index_stage(seen, quest_id, variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_index_stage(seen, quest_id, child, path)
+
+
+func _index_line(seen: Dictionary, line: WyrdLineDef, path: String) -> void:
+	if line == null:
+		return
+	line.source_path = path
+	if not line.line_id.is_empty():
+		_add_site(seen, "line", line.line_id, path, line.line)
+	for item in line.variants:
+		_index_line(seen, item as WyrdLineDef, path)
+
+
+func _add_site(seen: Dictionary, kind: String, id: String, path: String, line_no: int) -> void:
+	if id.is_empty():
+		return
+	var key := "%s\t%s" % [kind, id]
+	if seen.has(key):
+		return
+	seen[key] = true
+	coverage_sites.append({"id": id, "kind": kind, "line": line_no, "path": path})
 
 
 func is_pure(index: int) -> bool:

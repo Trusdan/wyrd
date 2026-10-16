@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `Wyrd.coverage` counts storylet draws, slot-variant entries, and shown line ids. Recording is off until `enabled` is set, including in a release build. Counts stay out of saves. `merge` adds them to `user://wyrd_coverage.json`. `wyrd coverage` lists never-hit ids by file:line. One `coverage` line is logged per hit when tracing is on, and one `coverage_report` line per report.
+
 - `Wyrd.facts.choice_summary` lists stored-fact writes from the provenance map. It filters by scene, choice, key prefix, and an inclusive time range. `wyrd choices` prints that table. A concrete stored fact may say `recap: true`. Deed compaction drops other provenance and keeps those rows. One `choice_summary` line is logged for a read when tracing is on, and one `choice_compact` line when compaction drops rows.
 
 - `Wyrd.debug.snapshot(sections)` reads live facts, role bindings and history, quest stages with waiting reasons, the dirty condition set, deeds with decayed weights, social axes and disposition, belief and group precedence, and fact provenance. The document is built on demand and is not saved. A prefix and a page window filter each section. One `wyrd debug snapshot` line is logged when tracing is on. Load does not log it.

@@ -10,6 +10,8 @@ extends WyrdStmtSpan
 ## recording tag.
 
 var line_id: String = ""
+## Source file. Stamped when the pack is loaded. Not a save field.
+var source_path: String = ""
 var label: WyrdExprNode = null
 var condition: WyrdCompiledCondition = null
 var condition_text: String = ""

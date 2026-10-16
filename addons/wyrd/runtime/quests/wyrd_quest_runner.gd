@@ -503,6 +503,7 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	runtime.roles.enter_stage(quest_id, state.stage_id)
 	var pick := _pick(quest, stage)
 	state.variant = String(pick["key"])
+	_note_variant(quest_id, state.stage_id, state.variant)
 	state.entered = true
 	state.step_at = 0
 	state.offered = ""
@@ -602,6 +603,8 @@ func _write_journal(quest_id: String, state: QuestState, line: WyrdLineDef) -> v
 		return
 	var minutes := runtime.now_minutes()
 	var shown := runtime.apply_variant_secrecy(line, runtime.resolve_line(line))
+	if runtime.coverage != null:
+		runtime.coverage.hit("line", str(shown["id"]))
 	var entry := {
 		"date": format_date(minutes),
 		"id": str(shown["id"]),
@@ -693,6 +696,7 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 	if key == state.variant and hold == state.held_empty:
 		return false
 	state.variant = key
+	_note_variant(quest_id, state.stage_id, key)
 	state.step_at = 0
 	state.offered = ""
 	state.slots = PackedStringArray()
@@ -707,6 +711,12 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 	state.regions = _fresh_regions(quest_id, body, "")
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 	return true
+
+
+func _note_variant(quest_id: String, stage_id: String, key: String) -> void:
+	if key.is_empty() or runtime == null or runtime.coverage == null:
+		return
+	runtime.coverage.hit("variant", "%s.%s.%s" % [quest_id, stage_id, key])
 
 
 func _pick(quest: WyrdQuestDef, stage: WyrdStageDef) -> Dictionary:

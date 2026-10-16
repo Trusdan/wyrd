@@ -14,6 +14,8 @@ godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- facts <file-or
 
 `choices` prints fact writes from a save's provenance map: key, scene, choice, time, and recap. `--scene`, `--choice`, `--prefix`, `--from`, and `--to` filter it. `--from` and `--to` are inclusive game minutes. With no save the table is only the header.
 
+`coverage` prints storylets, slot variants, and line ids that have no count in the merge file. Columns are kind, id, and `path:line`. `--file` selects that JSON file. The default is `user://wyrd_coverage.json`. A missing file treats every id as never hit. The command does not record hits and does not turn tracing on.
+
 `tag-lines` appends a missing `#line:` id and does not change an existing one. `--dry-run` prints `path:line: + #line:<id>` and does not write. `export-json` writes the debug pack document. `facts` prints the cross-reference table; `--json` prints the `xref` object. `test` prints `not implemented`.
 
 `voice-check` prints one `speaker=<id> lines=<n> voiced=<n> variable=<n>` row per speaker, then one indented `<id> <context>` row for each line that interpolates variable text. It exits 1 when any line does. `script-export --speaker <id>` writes `id= text= tags= scene= context=` for that speaker, including holder variants of those lines, sorted by id. `unvoiced-report` lists every line id that has no audio. `--locale` may be repeated and defaults to `en`. `--audio <file.json>` is `{ "<locale>": ["<line-id>", ...] }` of ids that do have audio.
