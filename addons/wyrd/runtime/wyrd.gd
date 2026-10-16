@@ -55,6 +55,10 @@ func register_group_precedence(fn: Callable) -> void:
 	_runtime.register_group_precedence(fn)
 
 
+func register_credibility(fn: Callable) -> void:
+	_runtime.register_credibility(fn)
+
+
 func invalidate_groups() -> void:
 	_runtime.invalidate_groups()
 

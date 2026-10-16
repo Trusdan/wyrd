@@ -14,7 +14,8 @@ extends RefCounted
 
 var enabled: bool = false
 ## When set, a line is kept when its quest, role, slot, who, or key equals
-## this text or begins with it. Empty keeps every line. Belief writes use who and key.
+## this text or begins with it. Empty keeps every line. Belief, knowledge, and
+## credibility lines use who and key. A credibility line's who is the listener.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

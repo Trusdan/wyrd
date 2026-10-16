@@ -49,6 +49,8 @@ var _slot_traced: Dictionary = {}
 ## Agent to precedence list. Not saved. Dropped by [method invalidate_groups].
 var _group_cache: Dictionary = {}
 var _group_order: Callable = Callable()
+## Replaces the statement score. Not saved. The game seed is not an input.
+var _credibility: Callable = Callable()
 
 
 func _init() -> void:
@@ -175,6 +177,25 @@ func register_function(name: StringName, fn: Callable, arg_types: Array, return_
 func register_group_precedence(fn: Callable) -> void:
 	_group_order = fn
 	invalidate_groups()
+
+
+## [param fn] receives [code](listener, speaker)[/code] and returns the score.
+## It replaces [method credibility_score]. Not saved.
+func register_credibility(fn: Callable) -> void:
+	_credibility = fn
+
+
+## Default is [code]disposition(listener, speaker) / 100[/code]. An override is used raw.
+func credibility_score(listener: StringName, speaker: StringName) -> float:
+	if _credibility.is_valid():
+		return float(_credibility.call(listener, speaker))
+	return float(social.disposition(listener, speaker)) / 100.0
+
+
+func credibility_threshold() -> float:
+	if _config == null:
+		return 0.5
+	return _config.credibility_threshold
 
 
 ## Drops the membership cache and wakes conditions that read [code]group.membership[/code].
@@ -522,6 +543,46 @@ func clear_perception_claim() -> void:
 	_perception_value = null
 
 
+## One line per listener, including a rejection. [param who] is the listener.
+func trace_credibility(
+	listener: StringName,
+	speaker: StringName,
+	verb: StringName,
+	key: String,
+	value: Variant,
+	score: float,
+	accepted: bool
+) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := "" if value == null else str(value)
+	var fields := {
+		"accepted": "true" if accepted else "false",
+		"key": key,
+		"listener": String(listener),
+		"score": _score_text(score),
+		"speaker": String(speaker),
+		"value": shown,
+		"verb": String(verb),
+		"who": String(listener),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("credibility", fields)
+	print(
+		"wyrd credibility listener=%s speaker=%s verb=%s key=%s value=%s score=%s accepted=%s"
+		% [
+			fields["listener"],
+			fields["speaker"],
+			fields["verb"],
+			fields["key"],
+			fields["value"],
+			fields["score"],
+			fields["accepted"],
+		]
+	)
+
+
 func trace_belief_lookup(agent: StringName, key: StringName, value: Variant, source: String) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -569,6 +630,10 @@ func trace_conflict(
 		"wyrd conflict agent=%s key=%s conflicted=%s source=%s value=%s against=%s"
 		% [fields["agent"], fields["key"], fields["conflicted"], fields["source"], fields["value"], fields["against"]]
 	)
+
+
+func _score_text(score: float) -> String:
+	return "%.4f" % score
 
 
 func _trace_allows(fields: Dictionary) -> bool:
