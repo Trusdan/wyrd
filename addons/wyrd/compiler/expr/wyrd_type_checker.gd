@@ -338,7 +338,7 @@ func _call(node: WyrdExprNode) -> void:
 	node.type_name = sig["return"]
 	if node.text == "belief":
 		node.type_name = _belief_type(slots)
-	if node.text == "belief" or node.text == "believes":
+	if node.text == "belief" or node.text == "believes" or node.text == "conflicted":
 		if not reads.has(_MEMBERSHIP_READ):
 			reads.append(_MEMBERSHIP_READ)
 

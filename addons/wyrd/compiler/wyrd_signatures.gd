@@ -10,6 +10,8 @@ extends RefCounted
 ## function and warns [code]W_KNOWN_DEPRECATED[/code]. [code]believes[/code] is the
 ## truthy belief. [code]belief[/code] reads the value; its declared return is only
 ## the fallback for a dynamic key, and the checker uses the fact's type.
+## [code]conflicted[/code] is the WFR9 group-position check. The M4 slot state
+## stays [code]contested[/code].
 
 const T_BOOL: StringName = &"bool"
 const T_INT: StringName = &"int"
@@ -49,6 +51,7 @@ const _BUILTINS: PackedStringArray = [
 	"knows(agent:entity, key:fact_key)->bool",
 	"believes(agent:entity, key:fact_key)->bool",
 	"belief(agent:entity, key:fact_key)->symbol",
+	"conflicted(agent:entity, key:fact_key)->bool",
 	"held(group:entity, key:fact_key)->bool",
 	"quest(id:symbol)->symbol",
 	"stage(id:symbol)->symbol",

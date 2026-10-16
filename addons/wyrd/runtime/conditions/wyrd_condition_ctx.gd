@@ -10,7 +10,8 @@ extends RefCounted
 ## [code]<record>:<site>[/code]. [code]knows[/code] and [code]known[/code] read a
 ## role reveal or [code]known/<agent>[/code]. [code]believes[/code] is truthy of
 ## the resolved belief. [code]belief[/code] returns that value. [code]held[/code]
-## reads one group's bag. A compiled key argument loads the fact; the key is the
+## reads one group's bag. [code]conflicted[/code] is true when the agent's groups
+## hold different values for one key. A compiled key argument loads the fact; the key is the
 ## latest load in this evaluation.
 
 var record_id: String = ""
@@ -28,6 +29,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"axis": Callable(self, &"_axis"),
 		&"belief": Callable(self, &"_belief"),
 		&"believes": Callable(self, &"_believes"),
+		&"conflicted": Callable(self, &"_conflicted"),
 		&"chance": Callable(self, &"_chance"),
 		&"deed_count": Callable(self, &"_deed_count"),
 		&"deed_score": Callable(self, &"_deed_score"),
@@ -235,6 +237,52 @@ func _belief(args: Array) -> Variant:
 
 func _believes(args: Array) -> bool:
 	return _truthy(_belief(args))
+
+
+## True when two member groups hold different present values. The agent's own
+## belief, [code]known/[/code], and [code]world[/code] are not positions. Absence
+## is not a position. Explicit false is.
+func _conflicted(args: Array) -> bool:
+	if args.size() < 2 or args[0] == null or _runtime == null:
+		return false
+	var agent := StringName(str(args[0]))
+	var key := _known_key(args[1])
+	if key == &"":
+		_runtime.trace_conflict(agent, key, false, "none", null, "")
+		return false
+	var winner_group := ""
+	var winner: Variant = null
+	var against := PackedStringArray()
+	for group in _runtime.group_precedence(agent):
+		var held: Variant = _runtime.facts.get_in(key, StringName("held/%s" % String(group)))
+		if held == null:
+			continue
+		if winner_group.is_empty():
+			winner_group = String(group)
+			winner = held
+			continue
+		if not _same_value(winner, held):
+			against.append(String(group))
+	var hit := not against.is_empty()
+	var source := "none" if winner_group.is_empty() else "group %s" % winner_group
+	_runtime.trace_conflict(agent, key, hit, source, winner if not winner_group.is_empty() else null, ",".join(against))
+	return hit
+
+
+func _same_value(left: Variant, right: Variant) -> bool:
+	var left_text := left is String or left is StringName
+	var right_text := right is String or right is StringName
+	if left_text and right_text:
+		return String(left) == String(right)
+	var left_num := left is int or left is float
+	var right_num := right is int or right is float
+	if left_num and right_num:
+		if left is float or right is float:
+			return is_equal_approx(float(left), float(right))
+		return left == right
+	if typeof(left) != typeof(right):
+		return false
+	return left == right
 
 
 func _held(args: Array) -> bool:

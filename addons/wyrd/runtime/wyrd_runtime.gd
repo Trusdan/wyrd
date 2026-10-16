@@ -507,6 +507,35 @@ func trace_belief_lookup(agent: StringName, key: StringName, value: Variant, sou
 	)
 
 
+func trace_conflict(
+	agent: StringName,
+	key: StringName,
+	hit: bool,
+	source: String,
+	value: Variant,
+	against: String
+) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := "" if value == null else str(value)
+	var fields := {
+		"against": against,
+		"agent": String(agent),
+		"conflicted": "true" if hit else "false",
+		"key": String(key),
+		"source": source,
+		"value": shown,
+		"who": String(agent),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("conflict", fields)
+	print(
+		"wyrd conflict agent=%s key=%s conflicted=%s source=%s value=%s against=%s"
+		% [fields["agent"], fields["key"], fields["conflicted"], fields["source"], fields["value"], fields["against"]]
+	)
+
+
 func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
