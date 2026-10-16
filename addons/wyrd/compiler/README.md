@@ -4,7 +4,7 @@ Lexer, block parser, fact-schema check, condition compiler, and statement compil
 
 Pipeline for one file:
 
-1. **Lex.** `WyrdLexer` tokenizes one UTF-8 source: two-space indent, `//` comments, `#line:` tags, quoted titles, and prose escapes.
+1. **Lex.** `WyrdLexer` tokenizes one UTF-8 source: two-space indent, `//` comments, `#line:` ids, `#tag:` names, quoted titles, and prose escapes. `variant <holder>:` is prose after the colon.
 2. **Block parse.** `WyrdParser` builds a file node, top-level `facts`, `events`, `role`, `quest`, `scene`, `storylet`, and `sequence` blocks, and a generic statement-line tree. A `role` block is code, like `facts`. Its fields are compiled by `WyrdStatements` into a `WyrdRoleDef`. A `storylet` block is code except for dash prose lines, and compiles to a `WyrdStoryletDef`. `wyrd check` prints each storylet's specificity as `info[I_STORYLET_SCORE]`. Ranking is runtime. A `sequence` block compiles to a `WyrdSequenceDef`. A stage `region` compiles to a `WyrdRegionDef`, and nesting past depth 2 warns `W_SUBSTATE_DEPTH`.
 3. **Facts check.** Each `facts` entry becomes a `WyrdFact` on a `WyrdFactSchema`: type, stored or resolved, optional invalidation, and an optional trailing `doc` string. `lookup` finds a concrete key first, then a `{id}` pattern.
 4. **Conditions.** `WyrdCondition` lexes, parses, type-checks, and emits one expression to a `WyrdCompiledCondition` (a flat instruction array, constants, reads, and specificity). `nearby`, `can_perceive`, and `can_reach` are `E_SPATIAL_CONTEXT` in a wait unless the caller allows them. The draft language is `docs/conditions-draft.md`. It is not frozen. `WyrdInterp` compiles the raw `{...}` spans the block lexer already kept.

@@ -6,16 +6,25 @@ extends RefCounted
 ## @experimental
 ## Interpolation runs at display time. A missing value renders as
 ## [code]{?<expr>}[/code], not an empty string. [code]0[/code] stays [code]0[/code].
+## A [code]{holder(name)|variants}[/code] span is removed here. The runtime
+## picks the variant line before render, or leaves this name-free text.
 ## The whole line then goes through [method TranslationServer.translate]
 ## with the line id as context.
 ## The default date is [code]day N, HH:MM[/code] from game minutes, day 1 at
 ## minute 0, 1440 minutes per day. A host formatter replaces it for new text.
 
 var runtime: WyrdRuntime
+var _collapsed: bool = false
 
 
 func render(node: WyrdExprNode, line_id: String) -> String:
-	return _translate(_walk(node), line_id)
+	_collapsed = false
+	var message := _walk(node)
+	if _collapsed:
+		while message.contains("  "):
+			message = message.replace("  ", " ")
+		message = message.strip_edges()
+	return _translate(message, line_id)
 
 
 static func game_date(minutes: int) -> String:
@@ -35,7 +44,10 @@ func _walk(node: WyrdExprNode) -> String:
 		for kid in node.kids:
 			built += _walk(kid)
 		return built
-	if node.kind == &"value" or node.kind == &"variants":
+	if node.kind == &"variants":
+		_collapsed = true
+		return ""
+	if node.kind == &"value":
 		return _insert(_eval(node.payload), node.payload)
 	if node.kind == &"if":
 		if _eval(node.payload) == true:

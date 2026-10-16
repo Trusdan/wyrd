@@ -38,6 +38,8 @@ func display() -> String:
 			return "\"%s\"" % text
 		&"line_tag":
 			return "#line:%s" % text
+		&"tag":
+			return "#tag:%s" % text
 		&"dot":
 			return "."
 		&"colon":

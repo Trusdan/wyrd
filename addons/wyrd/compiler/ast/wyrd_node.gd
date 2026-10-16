@@ -13,6 +13,7 @@ var keyword: String = ""
 var head: Array[WyrdToken] = []
 var title: String = ""
 var line_tag: String = ""
+var tags: PackedStringArray = PackedStringArray()
 var children: Array[WyrdNode] = []
 var entries: Array[WyrdFact] = []
 var events: Array[WyrdEventDef] = []

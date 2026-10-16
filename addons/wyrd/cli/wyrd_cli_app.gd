@@ -11,10 +11,13 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## the debug pack document. [code]facts[/code] prints the cross-reference.
 ## [code]roles[/code] prints a sorted table of role holders.
 ## [code]why-not[/code] explains one storylet for a scope and speaker.
+## [code]voice-check[/code] reports variable text per speaker.
+## [code]script-export[/code] writes one speaker's lines for a recording pass.
+## [code]unvoiced-report[/code] lists line ids with no audio for each locale.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report"]
 
 
 static func version_line() -> String:
@@ -30,6 +33,9 @@ static func command_lines() -> PackedStringArray:
 		"facts: print the fact cross-reference",
 		"roles: print a sorted table of role holders",
 		"why-not: explain one storylet for a scope and speaker",
+		"voice-check: report variable text per speaker",
+		"script-export: write one speaker's lines for a recording pass",
+		"unvoiced-report: list line ids with no audio for each locale",
 	])
 
 
@@ -58,6 +64,12 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _roles(args)
 	if command == "why-not":
 		return _why_not(args)
+	if command == "voice-check":
+		return _voice_check(args)
+	if command == "script-export":
+		return _script_export(args)
+	if command == "unvoiced-report":
+		return _unvoiced_report(args)
 	return {"exit_code": 1, "output": "wyrd: unknown command \"%s\"\n" % command}
 
 
@@ -227,6 +239,224 @@ static func _why_not(args: PackedStringArray) -> Dictionary:
 	return {"exit_code": 0, "output": WyrdDirector.format_why_not(row) + "\n"}
 
 
+static func _voice_check(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var rows := _voice_rows(loaded["pack"])
+	var groups := {}
+	for row in rows:
+		var speaker := str(row["speaker"])
+		if not groups.has(speaker):
+			groups[speaker] = {"details": [], "lines": 0, "variable": 0, "voiced": 0}
+		var group: Dictionary = groups[speaker]
+		group["lines"] = int(group["lines"]) + 1
+		if bool(row["voiced"]):
+			group["voiced"] = int(group["voiced"]) + 1
+		if bool(row["variable"]):
+			group["variable"] = int(group["variable"]) + 1
+			(group["details"] as Array).append(row)
+	var names: Array = groups.keys()
+	names.sort()
+	var lines := PackedStringArray()
+	var any_variable := false
+	for name in names:
+		var group: Dictionary = groups[name]
+		lines.append("speaker=%s lines=%d voiced=%d variable=%d" % [name, int(group["lines"]), int(group["voiced"]), int(group["variable"])])
+		var details: Array = group["details"]
+		details.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
+		for detail in details:
+			any_variable = true
+			lines.append("  %s %s" % [str(detail["id"]), str(detail["context"])])
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 1 if any_variable else 0, "output": output}
+
+
+static func _script_export(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var speaker := str(parsed["speaker"])
+	var rows := _voice_rows(loaded["pack"])
+	var kept: Array = []
+	for row in rows:
+		if str(row["speaker"]) == speaker:
+			kept.append(row)
+	kept.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
+	var lines := PackedStringArray()
+	for row in kept:
+		lines.append("id=%s text=%s tags=%s scene=%s context=%s" % [str(row["id"]), str(row["text"]), str(row["tags"]), str(row["scene"]), str(row["context"])])
+	var body := ""
+	if not lines.is_empty():
+		body = "\n".join(lines) + "\n"
+	var out := str(parsed["out"])
+	if out.is_empty():
+		return {"exit_code": 0, "output": body}
+	var path := out if out.begins_with("res://") or out.begins_with("user://") or out.begins_with("/") else "res://" + out
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return {"exit_code": 1, "output": "wyrd: could not write %s\n" % out}
+	file.store_string(body)
+	return {"exit_code": 0, "output": ""}
+
+
+static func _unvoiced_report(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var heard := _audio_map(str(parsed["audio"]))
+	if not str(heard["error"]).is_empty():
+		return {"exit_code": 1, "output": str(heard["error"])}
+	var audio: Dictionary = heard["map"]
+	var ids := PackedStringArray()
+	var seen := {}
+	for row in _voice_rows(loaded["pack"]):
+		var id := str(row["id"])
+		if id.is_empty() or seen.has(id):
+			continue
+		seen[id] = true
+		ids.append(id)
+	ids.sort()
+	var locales: PackedStringArray = parsed["locales"]
+	if locales.is_empty():
+		locales = PackedStringArray(["en"])
+	var ordered: Array = []
+	for locale in locales:
+		ordered.append(locale)
+	ordered.sort()
+	var lines := PackedStringArray()
+	for locale in ordered:
+		var have: Dictionary = audio.get(String(locale), {})
+		lines.append("locale=%s" % String(locale))
+		for id in ids:
+			if not have.has(id):
+				lines.append(id)
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 0, "output": output}
+
+
+static func _audio_map(path: String) -> Dictionary:
+	if path.is_empty():
+		return {"error": "", "map": {}}
+	var resolved := _resolve(path)
+	if not FileAccess.file_exists(resolved):
+		return {"error": "wyrd: no such file: %s\n" % path, "map": {}}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(resolved))
+	if not (data is Dictionary):
+		return {"error": "wyrd: audio file is not a JSON object\n", "map": {}}
+	var mapped := {}
+	for locale in (data as Dictionary).keys():
+		var listed: Variant = (data as Dictionary)[locale]
+		if not (listed is Array):
+			return {"error": "wyrd: audio locale \"%s\" needs a list of line ids\n" % String(locale), "map": {}}
+		var have := {}
+		for id in listed:
+			have[str(id)] = true
+		mapped[String(locale)] = have
+	return {"error": "", "map": mapped}
+
+
+static func _voice_rows(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_voice_stage(rows, quest.id, stage)
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.line_def != null:
+					_voice_line(rows, item.line_def, item.line_def.speaker, "scene:%s" % scene.id, scene.id)
+				if item.choice != null and not item.choice.line_id.is_empty():
+					_voice_choice(rows, item.choice, scene.id)
+		for story in file.storylets:
+			for line_def in story.lines:
+				var who := line_def.speaker if not line_def.speaker.is_empty() else story.speaker
+				_voice_line(rows, line_def, who, "storylet:%s" % story.id, "")
+	return rows
+
+
+static func _voice_stage(rows: Array, quest_id: String, stage: WyrdStageDef) -> void:
+	if stage == null:
+		return
+	for journal in stage.journals:
+		_voice_line(rows, journal, journal.speaker, "journal:%s" % quest_id, "")
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_voice_stage(rows, quest_id, variant.body)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_voice_stage(rows, quest_id, child)
+
+
+static func _voice_line(rows: Array, line: WyrdLineDef, speaker: String, context: String, scene_id: String) -> void:
+	if line == null or line.line_id.is_empty():
+		return
+	rows.append(_voice_row(line.line_id, speaker, context, scene_id, line.tags, line.prose))
+	for item in line.variants:
+		var variant := item as WyrdLineDef
+		if variant == null:
+			continue
+		var variant_context := "variant:%s %s" % [variant.holder, context]
+		_voice_line(rows, variant, speaker, variant_context, scene_id)
+
+
+static func _voice_choice(rows: Array, choice: WyrdChoiceDef, scene_id: String) -> void:
+	rows.append(_voice_row(choice.line_id, "", "choice:%s" % scene_id, scene_id, choice.tags, choice.label))
+
+
+static func _voice_row(
+	line_id: String,
+	speaker: String,
+	context: String,
+	scene_id: String,
+	tags: PackedStringArray,
+	prose: WyrdExprNode
+) -> Dictionary:
+	var names := PackedStringArray()
+	for tag in tags:
+		names.append(tag)
+	names.sort()
+	return {
+		"context": context,
+		"id": line_id,
+		"scene": scene_id,
+		"speaker": speaker if not speaker.is_empty() else "-",
+		"tags": ",".join(names),
+		"text": WyrdLineDef.source_of(prose),
+		"variable": WyrdLineDef.has_variable_text(prose),
+		"voiced": tags.has("voiced"),
+	}
+
+
 static func _manifest(parsed: Dictionary) -> WyrdContentManifest:
 	var path := str(parsed["manifest"])
 	if not path.is_empty():
@@ -277,6 +507,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var scope_set := false
 	var scope_id_set := false
 	var speaker_set := false
+	var audio := ""
+	var locales := PackedStringArray()
 	var positionals: PackedStringArray = PackedStringArray()
 	var i := 1
 	while i < args.size():
@@ -319,17 +551,29 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --scope-id needs an id\n")
 			scope_id = args[i]
 			scope_id_set = true
-		elif command == "why-not" and arg == "--speaker":
+		elif (command == "why-not" or command == "script-export") and arg == "--speaker":
 			i += 1
 			if i >= args.size():
 				return _fail("wyrd: --speaker needs an id\n")
 			speaker = args[i]
 			speaker_set = true
+		elif command == "unvoiced-report" and arg == "--locale":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --locale needs a locale\n")
+			locales.append(args[i])
+		elif command == "unvoiced-report" and arg == "--audio":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --audio needs a path\n")
+			audio = args[i]
 		elif arg.begins_with("-"):
 			return _fail("wyrd: unknown option \"%s\"\n" % arg)
 		else:
 			positionals.append(arg)
 		i += 1
+	if command == "script-export" and not speaker_set:
+		return _fail("wyrd: script-export needs --speaker\n")
 	if command == "why-not":
 		if manifest.is_empty():
 			return _fail("wyrd: why-not needs --manifest\n")
@@ -369,12 +613,14 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		note_path = path
 	return {
 		"as_json": as_json,
+		"audio": audio,
 		"command": command,
 		"commands_path": commands_path,
 		"dry_run": dry_run,
 		"error": "",
 		"files": files,
 		"language_version": language_version,
+		"locales": locales,
 		"manifest": manifest_path if not manifest.is_empty() else "",
 		"note_path": note_path,
 		"out": out,

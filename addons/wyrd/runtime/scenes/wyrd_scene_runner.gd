@@ -258,14 +258,24 @@ func _pump() -> void:
 
 func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	var view := WyrdLineView.new()
-	view.id = line_def.line_id
+	var shown_id := line_def.line_id
+	var shown_text := ""
+	var shown_tags := line_def.tags
+	if runtime != null:
+		var shown := runtime.resolve_line(line_def)
+		shown_id = str(shown["id"])
+		shown_text = str(shown["text"])
+		shown_tags = shown["tags"] as PackedStringArray
+	else:
+		shown_text = _text.render(line_def.prose, line_def.line_id)
+	view.id = shown_id
 	var who := _who(line_def.speaker, frame.quest_id)
 	view.speaker = who["id"]
 	view.display_name = String(who["name"])
 	view.roles = _roles_held(who["id"], frame)
-	view.text = _text.render(line_def.prose, line_def.line_id)
-	view.tags = line_def.tags.duplicate()
-	view.audio = _audio(line_def.line_id)
+	view.text = shown_text
+	view.tags = shown_tags.duplicate()
+	view.audio = _audio(shown_id)
 	if runtime != null:
 		runtime.trace_add("line_audio", {"id": view.id, "present": view.audio != null})
 		runtime.trace_add("line", {"id": view.id, "text": view.text})

@@ -827,6 +827,51 @@ func trace_region(quest_id: String, path: String, from_stage: String, to_stage: 
 	print("wyrd region quest=%s path=%s from=%s to=%s" % [quest_id, path, from_stage, to_stage])
 
 
+## One line when a holder-variant line is shown.
+## [param line_id] is the name-free line. [param chosen_id] is the variant, or the same line.
+func trace_voice(line_id: String, holder_id: String, chosen_id: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"chosen": chosen_id,
+		"holder": holder_id,
+		"key": line_id,
+		"who": holder_id,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("voice", fields)
+	print("wyrd voice line=%s holder=%s chosen=%s" % [line_id, holder_id, chosen_id])
+
+
+## Picks a holder variant at display time. The choice is not saved.
+## A line with no [code]{holder|variants}[/code] span is rendered as written.
+func resolve_line(line_def: WyrdLineDef) -> Dictionary:
+	var chosen := line_def
+	var holder_id := ""
+	if line_def != null and not line_def.variant_slot.is_empty():
+		if roles != null:
+			var found := roles.holder(StringName(line_def.variant_slot))
+			if found != &"":
+				holder_id = String(found)
+		if not holder_id.is_empty():
+			for item in line_def.variants:
+				var variant := item as WyrdLineDef
+				if variant != null and variant.holder == holder_id:
+					chosen = variant
+					break
+		trace_voice(line_def.line_id, holder_id, chosen.line_id if chosen != null else "")
+	var text := ""
+	var tags := PackedStringArray()
+	var id := ""
+	if chosen != null:
+		id = chosen.line_id
+		tags = chosen.tags
+		if dialogue != null:
+			text = dialogue.render_prose(chosen.prose, chosen.line_id)
+	return {"holder": holder_id, "id": id, "tags": tags, "text": text}
+
+
 ## One line when a sequence counts a step, finishes, resets, or expires.
 ## [param reason] is [code]step[/code], [code]done[/code], [code]reset[/code], or [code]expire[/code].
 func trace_sequence(sequence_id: String, count: int, done: bool, reason: String) -> void:
@@ -1508,10 +1553,12 @@ func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
 	if _content != null and not line_id.is_empty():
 		line_def = _content.lines.get(line_id) as WyrdLineDef
 	if line_def != null:
-		view.tags = line_def.tags.duplicate()
+		var picked := resolve_line(line_def)
+		view.id = str(picked["id"])
+		view.tags = (picked["tags"] as PackedStringArray).duplicate()
+		view.text = str(picked["text"])
 		if dialogue != null:
-			view.text = dialogue.render_prose(line_def.prose, line_id)
-			view.audio = dialogue.audio_for(line_id)
+			view.audio = dialogue.audio_for(view.id)
 	bark_ready.emit(view)
 
 

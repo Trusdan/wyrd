@@ -72,8 +72,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 				continue
 			content.storylets[storylet.id] = storylet
 			for line_def in storylet.lines:
-				if not line_def.line_id.is_empty():
-					content.lines[line_def.line_id] = line_def
+				content._remember(line_def)
 		for sequence in file.sequences:
 			if sequence.id.is_empty():
 				continue
@@ -126,8 +125,7 @@ func _stage(quest_id: String, stage: WyrdStageDef) -> void:
 		if when is WyrdCompiledCondition:
 			_add(when, prefix, "transition." + str(row.get("target", "")))
 	for journal in stage.journals:
-		if not journal.line_id.is_empty():
-			lines[journal.line_id] = journal
+		_remember(journal)
 	for entry in stage.variants:
 		var variant := entry as WyrdVariantDef
 		if variant == null:
@@ -147,8 +145,7 @@ func _stage(quest_id: String, stage: WyrdStageDef) -> void:
 func _item(scene_id: String, item: WyrdSceneItem) -> void:
 	if item.line_def != null:
 		var line := item.line_def
-		if not line.line_id.is_empty():
-			lines[line.line_id] = line
+		_remember(line)
 		_add(line.condition, line.line_id if not line.line_id.is_empty() else scene_id, "when")
 	if item.choice != null:
 		var choice := item.choice
@@ -156,6 +153,16 @@ func _item(scene_id: String, item: WyrdSceneItem) -> void:
 			lines[choice.line_id] = choice
 		var record := choice.line_id if not choice.line_id.is_empty() else scene_id
 		_add(choice.condition, record, "choice")
+
+
+func _remember(line: WyrdLineDef) -> void:
+	if line == null:
+		return
+	if not line.line_id.is_empty():
+		lines[line.line_id] = line
+	for item in line.variants:
+		var variant := item as WyrdLineDef
+		_remember(variant)
 
 
 func is_pure(index: int) -> bool:

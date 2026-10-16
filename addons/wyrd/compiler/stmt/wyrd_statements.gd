@@ -820,10 +820,11 @@ func _journal(node: WyrdNode, stage: WyrdStageDef) -> void:
 	line_def.kind = &"journal"
 	line_def.line_id = _line_id(node, true)
 	var tokens := _tail(node.head, 1)
+	line_def.tags = node.tags.duplicate()
 	line_def.prose = _interp(tokens, line_def.reads)
+	_take_variants(node, line_def)
 	stage.journals.append(line_def)
 	WyrdStmtSpan.add_reads(stage.reads, line_def.reads)
-	_no_block(node)
 
 
 func _scene_ref(node: WyrdNode, stage: WyrdStageDef) -> void:
@@ -1033,7 +1034,9 @@ func _spoken(node: WyrdNode, scene: WyrdSceneDef, speaker: String, colon: int, c
 		var col := node.start_col if at == null else at.col
 		var compiled := _expr(condition_text, line, col, _STORY, true, &"", line_def.reads)
 		line_def.condition = compiled["compiled"]
+	line_def.tags = node.tags.duplicate()
 	line_def.prose = _interp(_tail(node.head, colon + 1), line_def.reads)
+	_take_variants(node, line_def)
 	var item := WyrdSceneItem.new()
 	item.kind = &"line"
 	item.line_def = line_def
@@ -1041,7 +1044,6 @@ func _spoken(node: WyrdNode, scene: WyrdSceneDef, speaker: String, colon: int, c
 	WyrdStmtSpan.add_reads(item.reads, line_def.reads)
 	scene.items.append(item)
 	WyrdStmtSpan.add_reads(scene.reads, line_def.reads)
-	_no_block(node)
 
 
 func _when_line(node: WyrdNode, scene: WyrdSceneDef) -> void:
@@ -1113,6 +1115,8 @@ func _choice(node: WyrdNode, scene: WyrdSceneDef) -> void:
 		return
 	choice.target = String(target["name"])
 	choice.line_id = _line_id(node, label_at >= 0)
+	choice.tags = node.tags.duplicate()
+	_lint_voiced(choice.label, choice.tags, choice.line, choice.col)
 	_note_label(choice.target, items[i + 1].line, items[i + 1].col)
 	for child in node.children:
 		_keep_effect(child, choice.effects, choice.reads)
@@ -1698,6 +1702,108 @@ func _gather(node: WyrdExprNode, into: Array[StringName]) -> void:
 		_gather(kid, into)
 
 
+func _take_variants(node: WyrdNode, line_def: WyrdLineDef, story: bool = false) -> void:
+	var seen := {}
+	for child in node.children:
+		if child.keyword != "variant":
+			if story:
+				_story_error(child, "a storylet line cannot contain a block")
+				_no_story_block(child)
+			else:
+				_unknown(child)
+			continue
+		var variant := _variant_line(child, line_def)
+		if variant == null:
+			continue
+		if seen.has(variant.holder):
+			_error(
+				WyrdDiagnostic.E_VARIANT_SYNTAX,
+				"duplicate variant for \"%s\"" % variant.holder,
+				child.start_line,
+				child.start_col
+			)
+			continue
+		seen[variant.holder] = true
+		line_def.variants.append(variant)
+		WyrdStmtSpan.add_reads(line_def.reads, variant.reads)
+	_bind_slot(line_def)
+	_lint_voiced(line_def.prose, line_def.tags, line_def.line, line_def.col)
+	for item in line_def.variants:
+		var variant := item as WyrdLineDef
+		if variant == null:
+			continue
+		_lint_voiced(variant.prose, variant.tags, variant.line, variant.col)
+
+
+func _variant_line(node: WyrdNode, parent: WyrdLineDef) -> WyrdLineDef:
+	var items := node.head
+	if items.size() < 2 or items[0].kind != &"ident" or items[1].kind != &"colon":
+		_error(WyrdDiagnostic.E_VARIANT_SYNTAX, "variant needs <holder>: <prose>", node.start_line, node.start_col)
+		_no_block(node)
+		return null
+	if items.size() == 2:
+		_error(WyrdDiagnostic.E_VARIANT_SYNTAX, "variant needs <holder>: <prose>", node.start_line, node.start_col)
+		_no_block(node)
+		return null
+	var variant := WyrdLineDef.new()
+	variant.take_span(node)
+	variant.kind = &"variant"
+	variant.holder = items[0].text
+	variant.speaker = parent.speaker
+	variant.scene_id = parent.scene_id
+	variant.line_id = _line_id(node, true)
+	variant.tags = node.tags.duplicate()
+	variant.prose = _interp(_tail(items, 2), variant.reads)
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_VARIANT_SYNTAX, "a variant line cannot contain a block", node.start_line, node.start_col)
+		_no_block(node)
+	return variant
+
+
+func _bind_slot(line_def: WyrdLineDef) -> void:
+	var spans: Array = []
+	WyrdLineDef.collect_variants(line_def.prose, spans)
+	if spans.size() > 1:
+		var extra := spans[1] as WyrdExprNode
+		_error(
+			WyrdDiagnostic.E_VARIANT_SYNTAX,
+			"a line holds one {holder|variants} span",
+			extra.line if extra != null else line_def.line,
+			extra.col if extra != null else line_def.col
+		)
+	if not spans.is_empty():
+		var first := spans[0] as WyrdExprNode
+		var slot := WyrdLineDef.holder_slot(first)
+		if slot.is_empty():
+			_error(
+				WyrdDiagnostic.E_VARIANT_SYNTAX,
+				"variants need holder(<name>)",
+				first.line if first != null else line_def.line,
+				first.col if first != null else line_def.col
+			)
+		else:
+			line_def.variant_slot = slot
+	if not line_def.variants.is_empty() and line_def.variant_slot.is_empty():
+		_error(
+			WyrdDiagnostic.E_VARIANT_SYNTAX,
+			"variant lines need {holder(<name>)|variants} on the line",
+			line_def.line,
+			line_def.col
+		)
+
+
+func _lint_voiced(prose: WyrdExprNode, tags: PackedStringArray, line: int, col: int) -> void:
+	if not tags.has("voiced"):
+		return
+	if WyrdLineDef.has_variable_text(prose):
+		_error(
+			WyrdDiagnostic.E_VOICED_VARIABLE,
+			"a voiced line cannot interpolate variable text",
+			line,
+			col
+		)
+
+
 func _line_id(node: WyrdNode, required: bool) -> String:
 	if node.line_tag.is_empty():
 		if required:
@@ -1930,6 +2036,10 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 		_story_error(node, "a storylet needs a line, a lines set, or -> scene <id>")
 	for line_def in story.lines:
 		line_def.speaker = story.speaker
+		for item in line_def.variants:
+			var variant := item as WyrdLineDef
+			if variant != null:
+				variant.speaker = story.speaker
 	if not story.id.is_empty():
 		var flag := "true" if story.generic else "false"
 		_diagnostics.add(
@@ -2116,22 +2226,23 @@ func _storylet_set(node: WyrdNode, story: WyrdStoryletDef) -> void:
 
 
 func _storylet_line(node: WyrdNode, story: WyrdStoryletDef) -> void:
-	if not node.children.is_empty():
-		_story_error(node, "a storylet line cannot contain a block")
-		for child in node.children:
-			_no_story_block(child)
 	if not node.head.is_empty() and node.head[0].kind == &"lparen":
 		_story_error(node, "a storylet line is prose, not a label")
+		for child in node.children:
+			_no_story_block(child)
 		return
 	var line_def := WyrdLineDef.new()
 	line_def.take_span(node)
 	line_def.kind = &"storylet"
+	line_def.speaker = story.speaker
 	line_def.line_id = _line_id(node, true)
+	line_def.tags = node.tags.duplicate()
 	if node.head.is_empty():
 		_story_error(node, "a storylet line needs prose")
 	else:
 		line_def.prose = _interp(node.head, line_def.reads)
-		WyrdStmtSpan.add_reads(story.reads, line_def.reads)
+	_take_variants(node, line_def, true)
+	WyrdStmtSpan.add_reads(story.reads, line_def.reads)
 	story.lines.append(line_def)
 
 

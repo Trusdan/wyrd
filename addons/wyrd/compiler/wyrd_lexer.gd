@@ -17,6 +17,8 @@ extends RefCounted
 ## colon. A [code]when <cond>: <speaker>:[/code] line keeps the condition in code
 ## and the spoken text in prose. The first depth-zero [code]: <speaker> :[/code]
 ## ends that condition, so a ternary colon in it needs parentheses.
+## [code]variant <holder>:[/code] is prose after the colon.
+## [code]#tag:<name>[/code] may sit before [code]#line:[/code].
 
 const _RESERVED: PackedStringArray = [
 	"document",
@@ -104,6 +106,8 @@ func _lex_line(line: String, line_no: int) -> void:
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
 	if story_parent and _dash_prose(content):
 		first_ident = _lex_dash_prose(content, line_no, origin)
+	elif not code_block and _variant_colon(content) >= 0:
+		first_ident = _lex_variant_line(content, line_no, origin)
 	elif not code_block and not code_colon and _speaker_colon(content) >= 0:
 		first_ident = _lex_speaker_line(content, line_no, origin)
 	elif not code_block and _when_speaker_colon(content) >= 0:
@@ -277,6 +281,9 @@ func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host
 			continue
 		if ch == "/" and index + 1 < content.length() and content[index + 1] == "/":
 			break
+		if content.substr(index, 5) == "#tag:":
+			index = _read_named_tag(content, index, line_no, origin)
+			continue
 		if content.substr(index, 6) == "#line:":
 			var tag_at := index
 			index = _read_line_tag(content, index, line_no, origin)
@@ -346,7 +353,7 @@ func _read_prose(content: String, start: int, line_no: int, origin: int, stop_at
 	var buf := ""
 	var buf_at := start
 	while index < content.length():
-		if content.substr(index, 2) == "//" or content.substr(index, 6) == "#line:":
+		if content.substr(index, 2) == "//" or content.substr(index, 6) == "#line:" or content.substr(index, 5) == "#tag:":
 			break
 		if stop_at_bracket and content[index] == "]":
 			break
@@ -391,48 +398,102 @@ func _flush_prose(buf: String, line_no: int, origin: int, start: int, end: int) 
 
 func _finish_suffix(content: String, index: int, line_no: int, origin: int, tag_at: int = -1) -> void:
 	var cursor := index
-	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
-		if content[cursor] == "\t":
-			_error(WyrdDiagnostic.E_TAB_INDENT, "tab indentation is not allowed", line_no, origin + cursor)
-		cursor += 1
-	if tag_at >= 0:
-		if cursor < content.length() and content.substr(cursor, 2) != "//":
+	var marked := tag_at
+	while true:
+		while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+			if content[cursor] == "\t":
+				_error(WyrdDiagnostic.E_TAB_INDENT, "tab indentation is not allowed", line_no, origin + cursor)
+			cursor += 1
+		if cursor >= content.length() or content.substr(cursor, 2) == "//":
+			return
+		if marked >= 0:
 			_error(
 				WyrdDiagnostic.E_LINE_TAG_POSITION,
 				"line tag must be the last token on the line",
 				line_no,
-				origin + tag_at
+				origin + marked
 			)
+			return
+		if content.substr(cursor, 5) == "#tag:":
+			cursor = _read_named_tag(content, cursor, line_no, origin)
+			continue
+		if content.substr(cursor, 6) == "#line:":
+			marked = cursor
+			cursor = _read_line_tag(content, cursor, line_no, origin)
+			continue
+		_error(WyrdDiagnostic.E_LINE_TAG_POSITION, "line tag must be the last token on the line", line_no, origin + cursor)
 		return
-	if cursor >= content.length() or content.substr(cursor, 2) == "//":
-		return
-	if content.substr(cursor, 6) == "#line:":
-		var mark := cursor
-		cursor = _read_line_tag(content, cursor, line_no, origin)
-		_finish_suffix(content, cursor, line_no, origin, mark)
-		return
-	_error(WyrdDiagnostic.E_LINE_TAG_POSITION, "line tag must be the last token on the line", line_no, origin + cursor)
 
 
 func _read_line_tag(content: String, index: int, line_no: int, origin: int) -> int:
-	var cursor := index + 6
+	return _read_hash_tag(content, index, 6, &"line_tag", "line tag id must match [A-Za-z0-9_]+", line_no, origin)
+
+
+func _read_named_tag(content: String, index: int, line_no: int, origin: int) -> int:
+	return _read_hash_tag(content, index, 5, &"tag", "line tag name must match [A-Za-z0-9_]+", line_no, origin)
+
+
+func _read_hash_tag(
+	content: String,
+	index: int,
+	prefix: int,
+	kind: StringName,
+	message: String,
+	line_no: int,
+	origin: int
+) -> int:
+	var cursor := index + prefix
 	var id_start := cursor
 	while cursor < content.length() and _is_tag_char(content[cursor]):
 		cursor += 1
 	var ident := content.substr(id_start, cursor - id_start)
 	var ended := cursor >= content.length() or content[cursor] == " " or content[cursor] == "\t" or content.substr(cursor, 2) == "//"
 	if ident.is_empty() or not ended:
-		_error(
-			WyrdDiagnostic.E_LINE_TAG_FORMAT,
-			"line tag id must match [A-Za-z0-9_]+",
-			line_no,
-			origin + index
-		)
+		_error(WyrdDiagnostic.E_LINE_TAG_FORMAT, message, line_no, origin + index)
 		while cursor < content.length() and content[cursor] != " " and content[cursor] != "\t" and content.substr(cursor, 2) != "//":
 			cursor += 1
 		ident = content.substr(id_start, cursor - id_start)
-	_emit_span(&"line_tag", ident, line_no, origin, index, cursor)
+	_emit_span(kind, ident, line_no, origin, index, cursor)
 	return cursor
+
+
+func _variant_colon(content: String) -> int:
+	if not content.begins_with("variant"):
+		return -1
+	var index := 7
+	if index >= content.length() or (content[index] != " " and content[index] != "\t"):
+		return -1
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index >= content.length() or not _is_ident_start(content[index]):
+		return -1
+	index = _ident_end(content, index)
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index < content.length() and content[index] == ":":
+		return index
+	return -1
+
+
+func _lex_variant_line(content: String, line_no: int, origin: int) -> String:
+	var index := 0
+	var end := _ident_end(content, index)
+	_emit_span(&"ident", content.substr(index, end - index), line_no, origin, index, end)
+	index = end
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	end = _ident_end(content, index)
+	_emit_span(&"ident", content.substr(index, end - index), line_no, origin, index, end)
+	index = end
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	_emit_span(&"colon", ":", line_no, origin, index, index + 1)
+	var cursor := index + 1
+	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+		cursor += 1
+	cursor = _read_prose(content, cursor, line_no, origin, false)
+	_finish_suffix(content, cursor, line_no, origin)
+	return "variant"
 
 
 func _read_string(content: String, index: int, line_no: int, origin: int) -> int:

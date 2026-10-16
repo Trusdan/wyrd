@@ -26,7 +26,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 
 ## Text
 
-Dialogue text is always shown, whether or not a line is voiced. `line_audio` may return null. Audio never hides a line and never advances it. `advance()` is the only way on.
+Dialogue text is always shown, whether or not a line is voiced. `line_audio` may return null. Audio never hides a line and never advances it. `advance()` is the only way on. A `{holder(name)|variants}` span picks a variant line for the current holder, or the name-free line. That pick logs one `voice` line when tracing is on and is not saved. A journal stores the chosen text and line id.
 
 ## Quests
 
