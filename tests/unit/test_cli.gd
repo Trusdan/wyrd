@@ -19,7 +19,8 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("cooldowns: list storylet rows and speaker clocks"))
 	assert_true(text.contains("choices: list fact writes by scene, choice, prefix, or time"))
 	assert_true(text.contains("coverage: list storylets, variants, and lines that were never hit"))
-	assert_eq(WyrdCli.COMMANDS.size(), 14)
+	assert_true(text.contains("console: playtest prompt for facts, roles, time, events, and scenes"))
+	assert_eq(WyrdCli.COMMANDS.size(), 15)
 
 
 func test_execute_without_args_matches_render() -> void:

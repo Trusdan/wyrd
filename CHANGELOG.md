@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `wyrd console <pack>` runs the playtest commands: set a fact, kill or vacate or replace a role holder, advance time, fire an event, and run a scene in a text UI. Every command records source `console` and, when tracing is on, one `wyrd console` line. A direct `set` stores provenance scene `console`. Release exports exclude `addons/wyrd/runtime/console/*`.
+
 - `Wyrd.coverage` counts storylet draws, slot-variant entries, and shown line ids. Recording is off until `enabled` is set, including in a release build. Counts stay out of saves. `merge` adds them to `user://wyrd_coverage.json`. `wyrd coverage` lists never-hit ids by file:line. One `coverage` line is logged per hit when tracing is on, and one `coverage_report` line per report.
 
 - `Wyrd.facts.choice_summary` lists stored-fact writes from the provenance map. It filters by scene, choice, key prefix, and an inclusive time range. `wyrd choices` prints that table. A concrete stored fact may say `recap: true`. Deed compaction drops other provenance and keeps those rows. One `choice_summary` line is logged for a read when tracing is on, and one `choice_compact` line when compaction drops rows.

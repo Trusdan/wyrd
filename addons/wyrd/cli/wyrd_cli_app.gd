@@ -14,13 +14,16 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]storylets[/code] lists storylets. [code]cooldowns[/code] lists clocks.
 ## [code]choices[/code] lists stored-fact writes from the provenance map.
 ## [code]coverage[/code] lists storylets, variants, and line ids that were never hit.
+## [code]console[/code] is the playtest prompt. It is omitted from a release export.
 ## [code]voice-check[/code] reports variable text per speaker.
 ## [code]script-export[/code] writes one speaker's lines for a recording pass.
 ## [code]unvoiced-report[/code] lists line ids with no audio for each locale.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage", "console"]
+const CONSOLE_SCRIPT := "res://addons/wyrd/runtime/console/wyrd_console.gd"
+const CONSOLE_ABSENT := "wyrd: console is not in this build\n"
 
 
 static func version_line() -> String:
@@ -43,6 +46,7 @@ static func command_lines() -> PackedStringArray:
 		"cooldowns: list storylet rows and speaker clocks",
 		"choices: list fact writes by scene, choice, prefix, or time",
 		"coverage: list storylets, variants, and lines that were never hit",
+		"console: playtest prompt for facts, roles, time, events, and scenes",
 	])
 
 
@@ -79,6 +83,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _choices(args)
 	if command == "coverage":
 		return _coverage(args)
+	if command == "console":
+		return _console(args)
 	if command == "voice-check":
 		return _voice_check(args)
 	if command == "script-export":
@@ -267,6 +273,95 @@ static func _choices(args: PackedStringArray) -> Dictionary:
 	if not lines.is_empty():
 		output = "\n".join(lines) + "\n"
 	return {"exit_code": 0, "output": output}
+
+
+static func console_in_build(debug_build: bool) -> bool:
+	if not debug_build:
+		return false
+	return load(CONSOLE_SCRIPT) != null
+
+
+static func _console(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	if not console_in_build(OS.is_debug_build()):
+		return {"exit_code": 1, "output": CONSOLE_ABSENT}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var played := _runtime_from(parsed)
+	if int(played["exit_code"]) != 0:
+		return {"exit_code": 1, "output": str(played["output"])}
+	var tool := _console_tool()
+	if tool == null:
+		return {"exit_code": 1, "output": CONSOLE_ABSENT}
+	var runtime: WyrdRuntime = played["runtime"]
+	tool.call(&"bind", runtime)
+	var commands: PackedStringArray = parsed["cmds"]
+	var interactive := commands.is_empty()
+	var stdin: FileAccess = null
+	if interactive:
+		stdin = FileAccess.open("/dev/stdin", FileAccess.READ)
+		if stdin == null:
+			return {"exit_code": 1, "output": "wyrd: console could not read stdin\n"}
+	var chunks := PackedStringArray()
+	var failed := false
+	var index := 0
+	while true:
+		var line := ""
+		if interactive:
+			if stdin.eof_reached():
+				break
+			print("wyrd>")
+			line = stdin.get_line()
+			if line.is_empty() and stdin.eof_reached():
+				break
+		else:
+			if index >= commands.size():
+				break
+			line = commands[index]
+			index += 1
+		var raw: Variant = tool.call(&"exec", line)
+		if not (raw is Dictionary):
+			failed = true
+			break
+		var step: Dictionary = raw
+		var text := str(step["output"])
+		if interactive:
+			if not text.is_empty():
+				print(text.trim_suffix("\n"))
+		elif not text.is_empty():
+			chunks.append(text.trim_suffix("\n"))
+		if not bool(step["ok"]):
+			failed = true
+		if bool(step["quit"]):
+			break
+	var lines := PackedStringArray()
+	if not chunks.is_empty():
+		lines.append("\n".join(chunks))
+	var formatted := diagnostics.format()
+	if not formatted.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append(formatted.trim_suffix("\n"))
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 1 if failed else 0, "output": output}
+
+
+static func _console_tool() -> RefCounted:
+	var script: Variant = load(CONSOLE_SCRIPT)
+	if not (script is Script):
+		return null
+	var created: Variant = (script as Script).new()
+	if created is RefCounted:
+		return created as RefCounted
+	return null
 
 
 static func _coverage(args: PackedStringArray) -> Dictionary:
@@ -810,6 +905,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var to_set := false
 	var file_path := ""
 	var file_set := false
+	var cmds := PackedStringArray()
 	var positionals: PackedStringArray = PackedStringArray()
 	var listed := command == "why-not" or command == "storylets" or command == "cooldowns"
 	var i := 1
@@ -892,6 +988,11 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --from needs a whole number of minutes\n")
 			from_minute = int(args[i])
 			from_set = true
+		elif command == "console" and arg == "--cmd":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --cmd needs a command\n")
+			cmds.append(args[i])
 		elif command == "coverage" and arg == "--file":
 			i += 1
 			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
@@ -973,6 +1074,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"as_json": as_json,
 		"audio": audio,
 		"command": command,
+		"cmds": cmds,
 		"commands_path": commands_path,
 		"dry_run": dry_run,
 		"error": "",
