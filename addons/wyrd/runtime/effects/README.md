@@ -2,7 +2,7 @@
 
 `WyrdEffects` runs the slice effects: `set`, `inc`, `record deed`, `unlock topic`, `do`, `outcome`, `believe`, `unbelieve`, `declare`, `retract`, `learn`, and `forget`.
 
-`set` and `inc` write stored facts. Provenance keeps `scene`, `choice`, and `time` (game minutes). `inc` of a missing fact starts at 0. A type mismatch is `push_error` and the fact stays.
+`set` and `inc` write stored facts. Provenance keeps `scene`, `choice`, and `time` (game minutes). `deeds.compact` drops that provenance unless the fact is marked `recap: true`. `inc` of a missing fact starts at 0. A type mismatch is `push_error` and the fact stays.
 
 `believe` and `declare` write a stored fact into `believed/<agent>` or `held/<group>`. `unbelieve` and `retract` remove one key. Those writes do not change `world` or `known`, and they do not update provenance. A change logs one `belief` line when tracing is on. The same value again, or clearing a missing key, does not.
 

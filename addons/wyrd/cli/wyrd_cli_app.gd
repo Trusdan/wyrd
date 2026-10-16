@@ -12,13 +12,14 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]roles[/code] prints a sorted table of role holders.
 ## [code]why-not[/code] explains one storylet for a scope and speaker.
 ## [code]storylets[/code] lists storylets. [code]cooldowns[/code] lists clocks.
+## [code]choices[/code] lists stored-fact writes from the provenance map.
 ## [code]voice-check[/code] reports variable text per speaker.
 ## [code]script-export[/code] writes one speaker's lines for a recording pass.
 ## [code]unvoiced-report[/code] lists line ids with no audio for each locale.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices"]
 
 
 static func version_line() -> String:
@@ -39,6 +40,7 @@ static func command_lines() -> PackedStringArray:
 		"unvoiced-report: list line ids with no audio for each locale",
 		"storylets: list storylets for a scope and speaker",
 		"cooldowns: list storylet rows and speaker clocks",
+		"choices: list fact writes by scene, choice, prefix, or time",
 	])
 
 
@@ -71,6 +73,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _storylets(args)
 	if command == "cooldowns":
 		return _cooldowns(args)
+	if command == "choices":
+		return _choices(args)
 	if command == "voice-check":
 		return _voice_check(args)
 	if command == "script-export":
@@ -195,6 +199,58 @@ static func _roles(args: PackedStringArray) -> Dictionary:
 		if not loaded_save.ok:
 			return {"exit_code": 1, "output": loaded_save.diagnostics.format()}
 	var table := runtime.roles.render_table(str(parsed["prefix"]))
+	var lines := PackedStringArray()
+	if not table.is_empty():
+		lines.append(table.trim_suffix("\n"))
+	var formatted := diagnostics.format()
+	if not formatted.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append(formatted.trim_suffix("\n"))
+	var output := ""
+	if not lines.is_empty():
+		output = "\n".join(lines) + "\n"
+	return {"exit_code": 0, "output": output}
+
+
+static func _choices(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var runtime: WyrdRuntime = _Runtime.new()
+	var report := runtime.load_content(_manifest(parsed))
+	if not report.ok:
+		return {"exit_code": 1, "output": report.diagnostics.format()}
+	runtime.start_new_game(1)
+	var save_path := str(parsed["save"])
+	if not save_path.is_empty():
+		var resolved := _resolve(save_path)
+		if not FileAccess.file_exists(resolved):
+			return {"exit_code": 1, "output": "wyrd: no such file: %s\n" % save_path}
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(resolved))
+		if not (data is Dictionary):
+			return {"exit_code": 1, "output": "wyrd: save is not a JSON object\n"}
+		var loaded_save := runtime.load_state(data)
+		if not loaded_save.ok:
+			return {"exit_code": 1, "output": loaded_save.diagnostics.format()}
+	var query := {}
+	if bool(parsed["scene_set"]):
+		query["scene"] = str(parsed["scene"])
+	if bool(parsed["choice_set"]):
+		query["choice"] = str(parsed["choice"])
+	if not str(parsed["prefix"]).is_empty():
+		query["prefix"] = str(parsed["prefix"])
+	if bool(parsed["from_set"]):
+		query["from"] = int(parsed["from_minute"])
+	if bool(parsed["to_set"]):
+		query["to"] = int(parsed["to_minute"])
+	var table := runtime.facts.render_choice_summary(query)
 	var lines := PackedStringArray()
 	if not table.is_empty():
 		lines.append(table.trim_suffix("\n"))
@@ -703,6 +759,14 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var secrecy_fact_set := false
 	var trace_director := false
 	var filter := ""
+	var scene := ""
+	var scene_set := false
+	var choice := ""
+	var choice_set := false
+	var from_minute := 0
+	var from_set := false
+	var to_minute := 0
+	var to_set := false
 	var positionals: PackedStringArray = PackedStringArray()
 	var listed := command == "why-not" or command == "storylets" or command == "cooldowns"
 	var i := 1
@@ -767,6 +831,30 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --secrecy-fact needs a fact\n")
 			secrecy_fact = args[i].strip_edges()
 			secrecy_fact_set = true
+		elif command == "choices" and arg == "--scene":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --scene needs an id\n")
+			scene = args[i].strip_edges()
+			scene_set = true
+		elif command == "choices" and arg == "--choice":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --choice needs an id\n")
+			choice = args[i].strip_edges()
+			choice_set = true
+		elif command == "choices" and arg == "--from":
+			i += 1
+			if i >= args.size() or not args[i].is_valid_int():
+				return _fail("wyrd: --from needs a whole number of minutes\n")
+			from_minute = int(args[i])
+			from_set = true
+		elif command == "choices" and arg == "--to":
+			i += 1
+			if i >= args.size() or not args[i].is_valid_int():
+				return _fail("wyrd: --to needs a whole number of minutes\n")
+			to_minute = int(args[i])
+			to_set = true
 		elif command == "storylets" and arg == "--filter":
 			i += 1
 			if i >= args.size() or args[i].strip_edges().is_empty():
@@ -852,8 +940,16 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"scope_id": scope_id,
 		"scope_id_set": scope_id_set,
 		"scope_set": scope_set,
+		"choice": choice,
+		"choice_set": choice_set,
 		"filter": filter,
+		"from_minute": from_minute,
+		"from_set": from_set,
+		"scene": scene,
+		"scene_set": scene_set,
 		"secrecy_fact": secrecy_fact,
+		"to_minute": to_minute,
+		"to_set": to_set,
 		"secrecy_fact_set": secrecy_fact_set,
 		"speaker": speaker,
 		"speaker_set": speaker_set,

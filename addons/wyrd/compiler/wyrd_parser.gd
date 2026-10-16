@@ -541,6 +541,12 @@ func _read_fact(line: Array[WyrdToken], fallback_line: int, fallback_col: int) -
 	else:
 		_fact_error("expected \"stored\" or \"source\"", cursor, fallback_line, fallback_col)
 		return fact
+	if cursor.text() == "recap":
+		if fact.origin != &"stored" or fact.is_pattern():
+			_fact_error("recap is only for a concrete stored fact", cursor, fallback_line, fallback_col)
+			return fact
+		if not _read_recap(cursor, fact, fallback_line, fallback_col):
+			return fact
 	if cursor.text() == "invalidate":
 		if not _read_invalidate(cursor, fact, fallback_line, fallback_col):
 			return fact
@@ -640,6 +646,20 @@ func _read_invalidate(cursor: _Cursor, fact: WyrdFact, fallback_line: int, fallb
 	if cursor.kind() != &"rparen":
 		_fact_error("expected \")\" in an invalidate clause", cursor, fallback_line, fallback_col)
 		return false
+	cursor.advance()
+	return true
+
+
+func _read_recap(cursor: _Cursor, fact: WyrdFact, fallback_line: int, fallback_col: int) -> bool:
+	cursor.advance()
+	if cursor.kind() != &"colon":
+		_fact_error("expected \":\" after \"recap\"", cursor, fallback_line, fallback_col)
+		return false
+	cursor.advance()
+	if cursor.text() != "true" and cursor.text() != "false":
+		_fact_error("expected true or false after \"recap\"", cursor, fallback_line, fallback_col)
+		return false
+	fact.recap = cursor.text() == "true"
 	cursor.advance()
 	return true
 

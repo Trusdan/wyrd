@@ -27,6 +27,10 @@ var on_knowledge: Callable = Callable()
 var on_resolved: Callable = Callable()
 var clock: Callable = Callable()
 var resolver_of: Callable = Callable()
+## [code]() -> Dictionary[/code] of fact key to scene, choice, and time. Not saved here.
+var provenance_of: Callable = Callable()
+## [code](fields, line)[/code]. Records one choice-summary read when tracing is on.
+var on_choice_summary: Callable = Callable()
 
 var _schema: WyrdFactSchema
 var _world: Dictionary = {}
@@ -47,6 +51,155 @@ var _evidence: Array = []
 func bind_schema(schema: WyrdFactSchema) -> void:
 	_schema = schema
 	clear_values()
+
+
+const _SUMMARY_FILTERS: PackedStringArray = ["choice", "from", "prefix", "scene", "to"]
+
+
+## Rows from the provenance map. [param query] may set [code]scene[/code],
+## [code]choice[/code], [code]prefix[/code], [code]from[/code], and [code]to[/code].
+## An omitted field does not filter. [code]from[/code] and [code]to[/code] are
+## inclusive game minutes. One [code]choice_summary[/code] line is logged when tracing is on.
+func choice_summary(query: Dictionary = {}) -> Array:
+	if not _summary_query(query):
+		return []
+	var exported := {}
+	if provenance_of.is_valid():
+		var raw: Variant = provenance_of.call()
+		if raw is Dictionary:
+			exported = raw
+	var rows: Array = []
+	var keys: Array = exported.keys()
+	keys.sort()
+	for key in keys:
+		var item: Variant = exported[key]
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var name := String(key)
+		if not _summary_keeps(name, row, query):
+			continue
+		rows.append({
+			"choice": String(row.get("choice", "")),
+			"key": name,
+			"recap": _summary_recap(name),
+			"scene": String(row.get("scene", "")),
+			"time": int(row.get("time", 0)),
+		})
+	_summary_trace(query, rows.size())
+	return rows
+
+
+## Sorted table of [method choice_summary]. Columns are key, scene, choice, time, and recap.
+func render_choice_summary(query: Dictionary = {}) -> String:
+	var found := choice_summary(query)
+	var header := PackedStringArray(["key", "scene", "choice", "time", "recap"])
+	var lines: Array = []
+	for item in found:
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		lines.append(PackedStringArray([
+			str(row.get("key", "")),
+			str(row.get("scene", "")),
+			str(row.get("choice", "")),
+			str(int(row.get("time", 0))),
+			"true" if bool(row.get("recap", false)) else "false",
+		]))
+	return _summary_table(header, lines)
+
+
+func _summary_query(query: Dictionary) -> bool:
+	for key in query.keys():
+		var name := String(key)
+		if not _SUMMARY_FILTERS.has(name):
+			push_error("Wyrd.facts.choice_summary: unknown filter \"%s\"" % name)
+			return false
+		if name == "from" or name == "to":
+			var value: Variant = query[key]
+			if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+				push_error("Wyrd.facts.choice_summary: %s must be a number" % name)
+				return false
+			continue
+		if not (query[key] is String):
+			push_error("Wyrd.facts.choice_summary: %s must be text" % name)
+			return false
+	return true
+
+
+func _summary_keeps(key: String, row: Dictionary, query: Dictionary) -> bool:
+	if query.has("scene") and String(row.get("scene", "")) != String(query["scene"]):
+		return false
+	if query.has("choice") and String(row.get("choice", "")) != String(query["choice"]):
+		return false
+	if query.has("prefix") and not key.begins_with(String(query["prefix"])):
+		return false
+	var minute := int(row.get("time", 0))
+	if query.has("from") and minute < int(query["from"]):
+		return false
+	if query.has("to") and minute > int(query["to"]):
+		return false
+	return true
+
+
+func _summary_recap(key: String) -> bool:
+	var runtime: Variant = null
+	if provenance_of.is_valid():
+		runtime = provenance_of.get_object()
+	if runtime is WyrdEffects and (runtime as WyrdEffects).runtime != null:
+		return (runtime as WyrdEffects).runtime.fact_marked_recap(key)
+	return false
+
+
+func _summary_trace(query: Dictionary, rows: int) -> void:
+	if not on_choice_summary.is_valid():
+		return
+	var scene := String(query["scene"]) if query.has("scene") else ""
+	var choice := String(query["choice"]) if query.has("choice") else ""
+	var prefix := String(query["prefix"]) if query.has("prefix") else ""
+	var scene_token := scene if query.has("scene") else "-"
+	var choice_token := choice if query.has("choice") else "-"
+	var prefix_token := prefix if query.has("prefix") else "-"
+	var from_token := str(int(query["from"])) if query.has("from") else "-"
+	var to_token := str(int(query["to"])) if query.has("to") else "-"
+	var fields := {
+		"choice": choice_token,
+		"from": from_token,
+		"key": prefix,
+		"path": scene,
+		"prefix": prefix_token,
+		"rows": rows,
+		"scene": scene_token,
+		"to": to_token,
+	}
+	var line := "wyrd choice_summary scene=%s choice=%s prefix=%s from=%s to=%s rows=%d" % [
+		scene_token, choice_token, prefix_token, from_token, to_token, rows
+	]
+	on_choice_summary.call(fields, line)
+
+
+func _summary_table(header: PackedStringArray, rows: Array) -> String:
+	var width := PackedInt32Array()
+	width.resize(header.size())
+	for i in header.size():
+		width[i] = header[i].length()
+	for item in rows:
+		var cells: PackedStringArray = item
+		for i in header.size():
+			if cells[i].length() > width[i]:
+				width[i] = cells[i].length()
+	var lines := PackedStringArray()
+	lines.append(_summary_line(header, width))
+	for item in rows:
+		lines.append(_summary_line(item, width))
+	return "\n".join(lines) + "\n"
+
+
+func _summary_line(cells: PackedStringArray, width: PackedInt32Array) -> String:
+	var parts := PackedStringArray()
+	for i in cells.size():
+		parts.append(cells[i].rpad(width[i]))
+	return "  ".join(parts)
 
 
 func export_state() -> Dictionary:
