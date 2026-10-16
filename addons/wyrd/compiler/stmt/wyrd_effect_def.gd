@@ -10,7 +10,7 @@ extends WyrdStmtSpan
 ## [code]retract[/code], [code]learn[/code], or [code]forget[/code].
 ## [member agent] is the belief or knowledge agent, or the group id.
 ## A deed with [code]reveals[/code] stores the fact on [member fact_key] and the
-## claim on [member value].
+## claim on [member value]. [code]statement: true[/code] stays in [member args].
 ## [member args] holds named deed or command arguments.
 ## Command names are checked against [code]WyrdCommandSchema[/code] when the linker has one.
 

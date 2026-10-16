@@ -25,6 +25,7 @@ const _DEED_TYPES := {
 	"magnitude": &"float",
 	"memorable": &"bool",
 	"place": &"entity",
+	"statement": &"bool",
 	"tags": &"set",
 	"target": &"entity",
 	"visibility": &"symbol",

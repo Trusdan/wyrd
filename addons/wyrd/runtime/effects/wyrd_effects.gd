@@ -180,11 +180,34 @@ func _deed(effect: WyrdEffectDef) -> void:
 	var row := runtime.deeds.row_at(runtime.deeds.size() - 1)
 	if int(row["id"]) != deed_id:
 		return
-	_reveal(row, effect.fact_key, claim)
+	if _is_statement(args):
+		_credibility(row, actor, StringName(effect.verb), effect.fact_key, claim)
+	else:
+		_reveal(row, effect.fact_key, claim)
+
+
+func _is_statement(args: Dictionary) -> bool:
+	return args.has("statement") and _value(args, "statement") == true
+
+
+## Each witness is a listener. Acceptance writes [code]believed/<listener>[/code] only.
+## A rejection writes nothing. The speaker is not added. [code]known/[/code], [code]world[/code],
+## and [code]held/[/code] stay unchanged, and the claim is not copied onward.
+func _credibility(row: Dictionary, speaker: StringName, verb: StringName, key: String, claim: Variant) -> void:
+	var witnesses: PackedStringArray = row["witnesses"]
+	var threshold := runtime.credibility_threshold()
+	for listener in witnesses:
+		var who := StringName(String(listener))
+		var score := runtime.credibility_score(who, speaker)
+		var accepted := score >= threshold
+		runtime.trace_credibility(who, speaker, verb, key, claim, score, accepted)
+		if accepted:
+			runtime.facts.set_in(StringName(key), claim, StringName("believed/%s" % String(who)))
 
 
 ## [code]saw[/code] writes [code]known/[/code]. [code]heard[/code] and [code]inferred[/code]
 ## write [code]believed/[/code]. The actor and other agents are not copied in.
+## A statement deed does not use this path.
 func _reveal(row: Dictionary, key: String, claim: Variant) -> void:
 	var witnesses: PackedStringArray = row["witnesses"]
 	var modes: PackedStringArray = row["perception"]

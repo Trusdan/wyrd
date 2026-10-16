@@ -7,7 +7,8 @@ extends Resource
 ## Field names beyond the design list: [member hour_bucket_minutes],
 ## [member half_life_verbs], [member half_life_minutes], [member disposition_default],
 ## [member hostile_threshold], [member axis_verbs], [member axis_names],
-## [member axis_deltas], and [member scheduler_work_per_tick].
+## [member axis_deltas], [member scheduler_work_per_tick], and
+## [member credibility_threshold].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -19,6 +20,8 @@ extends Resource
 @export var axis_names: PackedStringArray = PackedStringArray()
 @export var axis_deltas: PackedFloat64Array = PackedFloat64Array()
 @export var scheduler_work_per_tick: int = 64
+## Inclusive minimum score for a statement deed. Not saved.
+@export var credibility_threshold: float = 0.5
 
 
 func half_life_for(verb: StringName) -> float:
