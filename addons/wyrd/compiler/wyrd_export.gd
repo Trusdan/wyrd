@@ -348,17 +348,20 @@ static func _lines(pack: WyrdLinkedPack) -> Array:
 			for item in scene.items:
 				if item.line_def != null:
 					rows.append(_line_row(item.line_def.line_id, "spoken", path, pack.pack_id, scene.id, item.line_def.speaker, item.line_def.condition, item.line_def.tags))
+					_append_variants(rows, item.line_def, path, pack.pack_id, scene.id)
 				if item.choice != null and not item.choice.line_id.is_empty():
 					rows.append(_line_row(item.choice.line_id, "choice", path, pack.pack_id, scene.id, "", item.choice.condition, item.choice.tags))
 		for story in file.storylets:
 			for line_def in story.lines:
 				rows.append(_line_row(line_def.line_id, "storylet", path, pack.pack_id, "", line_def.speaker, null, line_def.tags))
+				_append_variants(rows, line_def, path, pack.pack_id, "")
 	return rows
 
 
 static func _line_stage(rows: Array, stage: WyrdStageDef, path: String, pack_id: String) -> void:
 	for journal in stage.journals:
 		rows.append(_line_row(journal.line_id, "journal", path, pack_id, "", "", journal.condition, journal.tags))
+		_append_variants(rows, journal, path, pack_id, "")
 	for variant in stage.variants:
 		if variant.body != null:
 			_line_stage(rows, variant.body, path, pack_id)
@@ -368,6 +371,18 @@ static func _line_stage(rows: Array, stage: WyrdStageDef, path: String, pack_id:
 			continue
 		for child in region.stages:
 			_line_stage(rows, child, path, pack_id)
+
+
+static func _append_variants(rows: Array, line: WyrdLineDef, path: String, pack_id: String, scene_id: String) -> void:
+	if line == null:
+		return
+	for item in line.variants:
+		var variant := item as WyrdLineDef
+		if variant == null:
+			continue
+		var row := _line_row(variant.line_id, "variant", path, pack_id, scene_id, variant.speaker, null, variant.tags)
+		row["holder"] = variant.holder
+		rows.append(row)
 
 
 static func _line_row(

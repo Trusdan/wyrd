@@ -598,11 +598,12 @@ func _offer(state: QuestState, scene: Dictionary) -> void:
 
 func _write_journal(quest_id: String, state: QuestState, line: WyrdLineDef) -> void:
 	var minutes := runtime.now_minutes()
+	var shown := runtime.resolve_line(line)
 	var entry := {
 		"date": format_date(minutes),
-		"id": line.line_id,
+		"id": str(shown["id"]),
 		"minutes": minutes,
-		"text": _text.render(line.prose, line.line_id),
+		"text": str(shown["text"]),
 	}
 	state.journal.append(entry)
 	journal_entry_added.emit(quest_id, line.line_id, String(entry["text"]))

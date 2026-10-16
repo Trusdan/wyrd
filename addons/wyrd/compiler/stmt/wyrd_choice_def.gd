@@ -6,7 +6,8 @@ extends WyrdStmtSpan
 ## @experimental
 ## [member disabled_when] and [member disabled_reason] are parsed only.
 ## The reason is a quoted string and is not interpolated.
-## [member tags] is reserved for the later voiced lint.
+## [member tags] holds names from [code]#tag:[/code]. [code]voiced[/code] is the
+## recording tag.
 
 var line_id: String = ""
 var label: WyrdExprNode = null

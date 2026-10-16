@@ -5,7 +5,8 @@ extends RefCounted
 ##
 ## @experimental
 ## [code]{expr}[/code] is a value. [code]{if}...{else}...{end}[/code] is a conditional
-## fragment and may nest. [code]{holder(x)|variants}[/code] is parsed and not resolved.
+## fragment and may nest. [code]{holder(name)|variants}[/code] marks a holder
+## switch. The runtime picks a variant line, or the name-free line.
 ## [code]else[/code] and [code]end[/code] are reserved only as whole spans.
 
 var _tokens: Array[WyrdToken] = []

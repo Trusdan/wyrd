@@ -103,7 +103,7 @@ func _parse_statement() -> WyrdNode:
 			_advance()
 	if node.keyword == "facts":
 		node.kind = &"facts"
-		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty():
+		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty() or not node.tags.is_empty():
 			_diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
 				"unexpected token \"%s\"" % _shown(node),
@@ -113,7 +113,7 @@ func _parse_statement() -> WyrdNode:
 			)
 	elif node.keyword == "events":
 		node.kind = &"events"
-		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty():
+		if not node.head.is_empty() or not node.title.is_empty() or not node.line_tag.is_empty() or not node.tags.is_empty():
 			_diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
 				"unexpected token \"%s\"" % _shown(node),
@@ -419,11 +419,24 @@ func _node_from_line(line: Array[WyrdToken]) -> WyrdNode:
 	var node := WyrdNode.new()
 	node.kind = &"line"
 	var head: Array[WyrdToken] = []
+	var tags := PackedStringArray()
 	for token in line:
 		if token.kind == &"line_tag":
 			node.line_tag = token.text
+		elif token.kind == &"tag":
+			if tags.has(token.text):
+				_diagnostics.add(
+					WyrdDiagnostic.E_LINE_TAG_FORMAT,
+					"duplicate line tag \"%s\"" % token.text,
+					_source.path,
+					token.line,
+					token.col
+				)
+			else:
+				tags.append(token.text)
 		else:
 			head.append(token)
+	node.tags = tags
 	if not head.is_empty():
 		node.start_line = head[0].line
 		node.start_col = head[0].col
@@ -453,7 +466,7 @@ func _node_from_fact(line: Array[WyrdToken]) -> WyrdNode:
 	node.head = []
 	var content: Array[WyrdToken] = []
 	for token in line:
-		if token.kind == &"line_tag":
+		if token.kind == &"line_tag" or token.kind == &"tag":
 			_diagnostics.add(
 				WyrdDiagnostic.E_FACTS_SYNTAX,
 				"a line tag is not allowed on a fact entry",

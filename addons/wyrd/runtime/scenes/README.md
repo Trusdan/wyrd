@@ -2,7 +2,7 @@
 
 `WyrdSceneRunner` is the facade's `dialogue` object. One conversation is a stack of scene frames.
 
-`line_ready` carries a `WyrdLineView`: `id`, `speaker`, `display_name`, `text`, `tags`, `audio`. Text is interpolated, then passed through `TranslationServer.translate` with the line id. `register_line_audio(line_id, locale)` supplies `audio`, which may be null. The line stays until `advance()`.
+`line_ready` carries a `WyrdLineView`: `id`, `speaker`, `display_name`, `text`, `tags`, `audio`. Text is interpolated, then passed through `TranslationServer.translate` with the line id. A holder variant uses the variant's id for that translation and for `line_audio`. `register_line_audio(line_id, locale)` supplies `audio`, which may be null. The line stays until `advance()`.
 
 `choices_ready` carries `WyrdChoiceView` rows. A false condition hides the choice. `disabled_when` shows it disabled with the quoted reason. `choose(index)` uses the index in that list. A disabled choose logs an error and stays.
 

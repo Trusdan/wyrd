@@ -29,3 +29,10 @@ storylet dock_bark_lantern_carried
   when: has(player, lantern) and nearby(player, 4m, tag: lantern) > 0
   speaker_cooldown: 10m
   - That lantern in your hand is close to the ropes. #line:sg05
+
+storylet dock_voice_crossing
+  scope: topic rumor.crossing
+  speaker: narrator
+  - The crossing stays open. {holder(ferry_master)|variants} #tag:voiced #line:dock_voice
+    variant ferry_master: The ferry master keeps the crossing open. #tag:voiced #line:dock_voice_master
+    variant net_mender: The net mender keeps the crossing open. #tag:voiced #line:dock_voice_mender

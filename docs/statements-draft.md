@@ -97,6 +97,23 @@ scene <id>
 
 A speaker is a slot name, an entity id (`name` or `name.name`), or `narrator`. The linker checks slot speakers against every quest stage that runs the scene. A slot speaker that stage does not pass is `E_SPEAKER_UNBOUND`. A scene no quest runs is `W_SCENE_UNUSED`, and its speakers are not checked.
 
+`#tag:<name>` may sit before `#line:`. `voiced` is the recording tag. A voiced line may not interpolate a value or a conditional fragment (`E_VOICED_VARIABLE`). `{holder(name)|variants}` is allowed. Untagged lines may still interpolate. `voice-check` reports that rule for every line, per speaker, and exits 1 when any line would fail it.
+
+A holder switch is one span on the line. Nested lines name the holder and supply the pre-written text:
+
+```wyrd
+narrator: The crossing stays open. {holder(ferry_master)|variants} #tag:voiced #line:dock_voice
+  variant ferry_master: The ferry master keeps the crossing open. #tag:voiced #line:dock_voice_master
+  variant net_mender: The net mender keeps the crossing open. #tag:voiced #line:dock_voice_mender
+```
+
+Each variant has its own line id. The parent line is the name-free fallback. An empty slot, or a holder with no variant, shows that line with the span removed. The same form works on a journal line and on a storylet line. A storylet line uses the storylet speaker. `{holder|variants}` does not warn `W_HOLDER_UNGUARDED`, because the name-free line is the fallback.
+
+| Code | When |
+|---|---|
+| `E_VOICED_VARIABLE` | A line tagged `voiced` interpolates variable text |
+| `E_VARIANT_SYNTAX` | A variant line, holder span, or duplicate holder is the wrong shape |
+
 Line conditions and choice conditions use `storylet_or_choice`. The first depth-zero `: <speaker> :` ends a line condition, so a ternary colon inside that condition needs parentheses: `when (a ? b : c): ferry: ...`.
 
 `disabled_when` stores the condition text and the quoted reason. The reason is not interpolated. `on_fail -> <target>` may sit on a `do` effect or on the following line. Inside a scene, that target is a label or `end`. A stage-level `on_fail` target must name a stage of that quest, or the linker reports `E_STAGE_UNKNOWN`.
