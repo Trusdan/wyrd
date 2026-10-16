@@ -12,6 +12,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 6. A set literal is `[a, b]`.
 7. A computed key segment (`npc.{holder(ferry)}.alive`) is allowed outside prose. Inside a prose span, grammar v1 closes `{...}` at the first `}`, so the same read is `fact(npc, holder(ferry), alive)`.
 8. Design amendment: the WFR9 condition is `conflicted(agent, key)`, not `contested(agent, key)`. `contested` remains the M4 slot state. `conflicted` is true when two of the agent's groups hold different present values for the key. Absence is not a position. Explicit false is. The agent's own belief, `known:`, and `world:` are not positions. `believes` still returns the first present group value in precedence order.
+9. Design amendment: `perceived(agent, verb)` returns the latest witness mode `saw`, `heard`, or `inferred`, or null. `saw` writes `known/<agent>`. `heard` and `inferred` write `believed/<agent>`. Knowledge does not clear a belief. Beliefs are not copied to anyone who did not witness the deed.
 
 ## Precedence
 

@@ -41,3 +41,15 @@ func can_reach(agent: StringName, place: StringName) -> bool:
 ## Entities that perceived a deed at [param place]. Empty when the host has no list.
 func witnesses_of(_actor: StringName, _target: StringName, _place: StringName) -> PackedStringArray:
 	return PackedStringArray()
+
+
+## How [param observer] perceived a deed. [code]saw[/code], [code]heard[/code],
+## [code]inferred[/code], or empty when they did not perceive it. The default is
+## [code]saw[/code] and does not [code]push_error[/code].
+func perceive(
+	_observer: StringName,
+	_actor: StringName,
+	_target: StringName,
+	_place: StringName
+) -> StringName:
+	return &"saw"

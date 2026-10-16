@@ -10,6 +10,9 @@ extends RefCounted
 ## Sums are rounded to 6 decimal places before they are returned.
 ## Witnesses [code]auto[/code] ask [method WyrdSpatialAdapter.witnesses_of].
 ## An explicit list is stored as given, sorted by id.
+## Each witness stores a perception mode from [method WyrdSpatialAdapter.perceive]:
+## [code]saw[/code], [code]heard[/code], or [code]inferred[/code]. An empty mode
+## drops that witness. There is no rumour spread.
 
 signal deed_recorded(deed: Dictionary)
 
@@ -18,6 +21,8 @@ const ROUND_SCALE: float = 1000000.0
 var clock: Callable = Callable()
 var config_of: Callable = Callable()
 var spatial_of: Callable = Callable()
+## Called once per stored witness: [code](agent, mode, verb)[/code]. Not saved.
+var on_perceived: Callable = Callable()
 
 var _next: int = 1
 var _id: PackedInt32Array = PackedInt32Array()
@@ -35,6 +40,7 @@ var _wit_at: PackedInt32Array = PackedInt32Array()
 var _wit_n: PackedInt32Array = PackedInt32Array()
 var _tags: PackedStringArray = PackedStringArray()
 var _witnesses: PackedStringArray = PackedStringArray()
+var _modes: PackedStringArray = PackedStringArray()
 var _by_actor: Dictionary = {}
 var _by_target: Dictionary = {}
 var _by_verb: Dictionary = {}
@@ -54,6 +60,7 @@ func export_state() -> Dictionary:
 			"tags": _string_list(row["tags"]),
 			"target": String(row["target"]),
 			"verb": String(row["verb"]),
+			"perception": _string_list(row["perception"]),
 			"visibility": String(row["visibility"]),
 			"witnesses": _string_list(row["witnesses"]),
 		})
@@ -68,6 +75,7 @@ func import_state(data: Dictionary) -> void:
 		var row: Dictionary = item
 		var tags := _packed(row.get("tags", []))
 		var witnesses := _packed(row.get("witnesses", []))
+		var perception := _align_modes(witnesses, _packed(row.get("perception", [])))
 		var index := _id.size()
 		_id.append(int(row.get("id", 0)))
 		_t.append(int(row.get("t", 0)))
@@ -84,8 +92,9 @@ func import_state(data: Dictionary) -> void:
 			_tags.append(tag)
 		_wit_at.append(_witnesses.size())
 		_wit_n.append(witnesses.size())
-		for wit in witnesses:
-			_witnesses.append(wit)
+		for i in witnesses.size():
+			_witnesses.append(witnesses[i])
+			_modes.append(perception[i])
 		_index(_by_actor, StringName(_actor[index]), index)
 		_index(_by_target, StringName(_target[index]), index)
 		_index(_by_verb, StringName(_verb[index]), index)
@@ -129,6 +138,7 @@ func clear() -> void:
 	_wit_n = PackedInt32Array()
 	_tags = PackedStringArray()
 	_witnesses = PackedStringArray()
+	_modes = PackedStringArray()
 	_by_actor.clear()
 	_by_target.clear()
 	_by_verb.clear()
@@ -163,7 +173,9 @@ func record(
 	var stamp := _now()
 	var shown := visibility if visibility != &"" else &"public"
 	var tag_rows := _sorted(tags)
-	var wit_rows := _witness_list(actor, target, place, witnesses)
+	var perceived := _perceived(actor, target, place, witnesses)
+	var wit_rows: PackedStringArray = perceived["witnesses"]
+	var mode_rows: PackedStringArray = perceived["modes"]
 	_id.append(_next)
 	_next += 1
 	_t.append(stamp)
@@ -180,8 +192,11 @@ func record(
 		_tags.append(tag)
 	_wit_at.append(_witnesses.size())
 	_wit_n.append(wit_rows.size())
-	for wit in wit_rows:
-		_witnesses.append(wit)
+	for i in wit_rows.size():
+		_witnesses.append(wit_rows[i])
+		_modes.append(mode_rows[i])
+		if on_perceived.is_valid():
+			on_perceived.call(StringName(wit_rows[i]), StringName(mode_rows[i]), verb)
 	_index(_by_actor, actor, row)
 	_index(_by_target, target, row)
 	_index(_by_verb, verb, row)
@@ -251,9 +266,25 @@ func row_at(index: int) -> Dictionary:
 		"tags": _slice(_tags, _tag_at[index], _tag_n[index]),
 		"target": StringName(_target[index]),
 		"verb": StringName(_verb[index]),
+		"perception": _slice(_modes, _wit_at[index], _wit_n[index]),
 		"visibility": StringName(_visibility[index]),
 		"witnesses": _slice(_witnesses, _wit_at[index], _wit_n[index]),
 	}
+
+
+## Latest mode for [param agent] on [param verb], or empty when they never perceived it.
+func mode_of(agent: StringName, verb: StringName) -> StringName:
+	if agent == &"" or verb == &"":
+		return &""
+	var who := String(agent)
+	for index in range(size() - 1, -1, -1):
+		if StringName(_verb[index]) != verb:
+			continue
+		var at := int(_wit_at[index])
+		for offset in int(_wit_n[index]):
+			if _witnesses[at + offset] == who:
+				return StringName(_modes[at + offset])
+	return &""
 
 
 static func round_sum(value: float) -> float:
@@ -335,6 +366,41 @@ func _candidates(actor: StringName, verb: StringName, target: StringName) -> Pac
 	for i in _id.size():
 		best[i] = i
 	return best
+
+
+func _perceived(actor: StringName, target: StringName, place: StringName, witnesses: Variant) -> Dictionary:
+	var ids := _witness_list(actor, target, place, witnesses)
+	var kept := PackedStringArray()
+	var modes := PackedStringArray()
+	var spatial := _spatial()
+	for id in ids:
+		var mode := &"saw"
+		if spatial != null:
+			mode = _perception_mode(spatial.perceive(StringName(id), actor, target, place))
+		if mode == &"":
+			continue
+		kept.append(String(id))
+		modes.append(String(mode))
+	return {"modes": modes, "witnesses": kept}
+
+
+func _perception_mode(raw: StringName) -> StringName:
+	var text := String(raw)
+	if text == "saw" or text == "heard" or text == "inferred":
+		return StringName(text)
+	if text.is_empty():
+		return &""
+	push_error("WyrdDeedLog.record: perception \"%s\" is not saw, heard, or inferred" % text)
+	return &"saw"
+
+
+func _align_modes(witnesses: PackedStringArray, perception: PackedStringArray) -> PackedStringArray:
+	var modes := perception.duplicate()
+	while modes.size() < witnesses.size():
+		modes.append("saw")
+	if modes.size() > witnesses.size():
+		modes.resize(witnesses.size())
+	return modes
 
 
 func _witness_list(actor: StringName, target: StringName, place: StringName, witnesses: Variant) -> PackedStringArray:

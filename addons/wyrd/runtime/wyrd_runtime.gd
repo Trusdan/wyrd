@@ -11,7 +11,7 @@ extends RefCounted
 ## Callables stay in the registries.
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
-const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "slot_state"]
+const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "perceived", "slot_state"]
 const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "knows", "slot_state", "disposition"]
 const _GROUPS_CHANGED: StringName = &"groups_changed"
 
@@ -38,6 +38,8 @@ var _always: PackedInt32Array = PackedInt32Array()
 var _trace: Array[Dictionary] = []
 var _streams: Dictionary = {}
 var _seed: int = 0
+var _perception_key: String = ""
+var _perception_value: Variant = null
 var _minutes: int = 0
 var _emit_seq: int = 0
 var _collecting: bool = false
@@ -64,6 +66,8 @@ func _init() -> void:
 	facts.on_keys = Callable(self, &"_mark_keys")
 	facts.tracer = Callable(self, &"note")
 	facts.on_belief = Callable(self, &"_trace_belief")
+	facts.on_knowledge = Callable(self, &"_trace_knowledge")
+	deeds.on_perceived = Callable(self, &"_on_perceived")
 	facts.on_resolved = Callable(self, &"_on_resolved")
 	facts.clock = Callable(self, &"now_minutes")
 	facts.resolver_of = Callable(self, &"_resolver")
@@ -487,6 +491,37 @@ func _trace_belief(fields: Dictionary) -> void:
 	)
 
 
+func _trace_knowledge(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	var shown := "" if fields.get("value") == null else str(fields.get("value"))
+	var row := {
+		"key": str(fields.get("key", "")),
+		"op": str(fields.get("op", "")),
+		"perspective": "known",
+		"value": shown,
+		"who": str(fields.get("who", "")),
+	}
+	trace_add("knowledge", row)
+	print(
+		"wyrd knowledge op=%s perspective=%s who=%s key=%s value=%s"
+		% [row["op"], row["perspective"], row["who"], row["key"], row["value"]]
+	)
+
+
+## Remembers the fact a deed is about to reveal, so each perception line can name it.
+func perception_claim(key: String, value: Variant) -> void:
+	_perception_key = key
+	_perception_value = value
+
+
+func clear_perception_claim() -> void:
+	_perception_key = ""
+	_perception_value = null
+
+
 func trace_belief_lookup(agent: StringName, key: StringName, value: Variant, source: String) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -874,6 +909,29 @@ func loaded_fact_key() -> String:
 
 func _on_deed(_deed: Dictionary) -> void:
 	_mark_calls(_DEED_CALLS)
+
+
+func _on_perceived(agent: StringName, mode: StringName, verb: StringName) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := ""
+	if not _perception_key.is_empty() and _perception_value != null:
+		shown = str(_perception_value)
+	var fields := {
+		"agent": String(agent),
+		"key": _perception_key,
+		"mode": String(mode),
+		"value": shown,
+		"verb": String(verb),
+		"who": String(agent),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("perception", fields)
+	print(
+		"wyrd perception agent=%s mode=%s verb=%s key=%s value=%s"
+		% [fields["agent"], fields["mode"], fields["verb"], fields["key"], fields["value"]]
+	)
 
 
 func _on_role(_role: StringName, _old_holder: StringName, _new_holder: StringName) -> void:

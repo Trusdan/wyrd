@@ -10,7 +10,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
 5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
 6. `record deed` also accepts `visibility:` and `memorable:`.
-7. The six slice effects plus `believe`, `unbelieve`, `declare`, and `retract` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
+7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, and `forget` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
 9. The separate S1b-perf pass is not part of this draft. It landed as its own change before linking.
 
@@ -75,18 +75,22 @@ Line conditions and choice conditions use `storylet_or_choice`. The first depth-
 |---|---|
 | `~ set <fact> = <expr>` | The fact must be stored. `{id}` patterns use `WyrdFactSchema.lookup`. |
 | `~ inc <fact> by <expr>` | The fact and the value are `int` or `float`. `int` widens to `float`. |
-| `~ record deed <verb>(...)` | Named arguments. `actor` is required. Optional: `target`, `place`, `tags`, `magnitude`, `witnesses`, `visibility`, `memorable`. |
+| `~ record deed <verb>(...)` | Named arguments. `actor` is required. Optional: `target`, `place`, `tags`, `magnitude`, `witnesses`, `visibility`, `memorable`, `reveals`, `claim`. |
 | `~ unlock topic <id>` | Parsed and stored. |
 | `~ do <command>(...)` | Arguments are type-checked. The linker checks the name against `wyrd_commands.json` beside the manifest. A missing file skips that check with `I_COMMANDS_SKIPPED` when a `do` exists. |
 | `~ outcome <branch> = route_closed \| done \| failed` | Also accepted without the `~` inside a stage. |
 | `~ believe <agent> <fact> = <expr>` | Stored schema fact only. `<agent>` is a dotted id. |
 | `~ unbelieve <agent> <fact>` | Removes that agent's belief. A missing belief is a no-op. |
+| `~ learn <agent> <fact> = <expr>` | Writes `known/<agent>`. Does not change `world`, `believed`, or `held`. |
+| `~ forget <agent> <fact>` | Removes that agent's knowledge. A missing key is a no-op. |
 | `~ declare <group> <fact> = <expr>` | Stored schema fact only. `<group>` is a dotted id. |
 | `~ retract <group> <fact>` | Removes that group's held fact. A missing fact is a no-op. |
 
 `witnesses` is `auto` or a set. A `do` argument that is only a name path is an entity id when lookup misses, and a fact read when lookup hits. Any other argument is an expression.
 
-`believe`, `declare`, and `retract` are reserved words. They are legal only as the effect verb immediately after `~`. As an identifier they stay `E_RESERVED_WORD`. `unbelieve` is not reserved.
+`believe`, `declare`, `retract`, `learn`, and `forget` are reserved words. They are legal only as the effect verb immediately after `~`. As an identifier they stay `E_RESERVED_WORD`. `unbelieve` is not reserved.
+
+`reveals` names a stored fact and `claim` is the value. A witness in mode `saw` learns it (`known/`). `heard` and `inferred` believe it (`believed/`). Nobody else receives it. There is no rumour spread. A missing witness list writes nothing. `perceived(agent, verb)` reads the latest mode.
 
 `lock topic`, `start quest`, `advance`, `assign role`, `vacate role`, `adjust baseline`, and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
@@ -160,7 +164,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_HOLDER_UNGUARDED` | Prose interpolates `holder(slot)` where that slot can be empty. A guard is a `when` that requires `filled(slot)`, or an `empty` variant that replaces the branch |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 
-Resolved facts are never "never set". `record deed` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.
+Resolved facts are never "never set". A `record deed` without `reveals` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.
 
 ## Stage `on`
 

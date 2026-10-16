@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## Readers and writers reuse [WyrdDepIndex] pattern rules. [code]record deed[/code]
-## is not a fact write. Resolved facts are never "never set". Fact defaults are not
+## is a fact write only when it has [code]reveals[/code]. Resolved facts are never "never set". Fact defaults are not
 ## in the grammar yet, so a stored fact that is read and not written has no default.
 ## [member events] records [code]on_event[/code] names ([code]role[/code] [code]invalidate[/code])
 ## and [code]on <event>[/code] handlers ([code]role[/code] [code]emit[/code]).
@@ -293,7 +293,7 @@ func _scene_readers(rows: Array, scene: WyrdSceneDef, path: String) -> void:
 
 
 func _effect_reader(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:
-	if effect.kind == &"set" or effect.kind == &"inc" or effect.kind == &"believe" or effect.kind == &"declare":
+	if effect.kind == &"set" or effect.kind == &"inc" or effect.kind == &"believe" or effect.kind == &"declare" or effect.kind == &"learn":
 		_push(rows, _cond_reads(effect.value), "effect", id, path, effect.line, effect.col)
 		return
 	if effect.kind == &"unbelieve" or effect.kind == &"retract":
@@ -335,7 +335,7 @@ func _stage_writers(rows: Array, stage: WyrdStageDef, id: String, path: String) 
 
 
 func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:
-	if effect.kind != &"set" and effect.kind != &"inc" and effect.kind != &"believe" and effect.kind != &"declare":
+	if effect.kind != &"set" and effect.kind != &"inc" and effect.kind != &"believe" and effect.kind != &"declare" and effect.kind != &"learn" and effect.kind != &"record_deed":
 		return
 	if effect.fact_key.is_empty():
 		return

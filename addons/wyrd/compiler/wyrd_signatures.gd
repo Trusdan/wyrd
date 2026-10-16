@@ -11,7 +11,8 @@ extends RefCounted
 ## truthy belief. [code]belief[/code] reads the value; its declared return is only
 ## the fallback for a dynamic key, and the checker uses the fact's type.
 ## [code]conflicted[/code] is the WFR9 group-position check. The M4 slot state
-## stays [code]contested[/code].
+## stays [code]contested[/code]. [code]perceived[/code] returns the latest
+## [code]saw[/code], [code]heard[/code], or [code]inferred[/code] mode, or null.
 
 const T_BOOL: StringName = &"bool"
 const T_INT: StringName = &"int"
@@ -42,6 +43,7 @@ const _BUILTINS: PackedStringArray = [
 	"reputation(subject:entity, group:entity)->float",
 	"deed_score(actor:entity, verb:symbol?, against:entity?, place:entity?, within:duration?, tags:set?)->float",
 	"deed_count(actor:entity, verb:symbol?, against:entity?, place:entity?, within:duration?, tags:set?)->int",
+	"perceived(agent:entity, verb:symbol)->symbol",
 	"role(id:entity)->symbol",
 	"holder(slot_or_role:symbol)->entity",
 	"filled(slot_or_role:symbol)->bool",

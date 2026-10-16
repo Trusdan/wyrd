@@ -1,10 +1,12 @@
 # effects
 
-`WyrdEffects` runs the slice effects: `set`, `inc`, `record deed`, `unlock topic`, `do`, `outcome`, `believe`, `unbelieve`, `declare`, and `retract`.
+`WyrdEffects` runs the slice effects: `set`, `inc`, `record deed`, `unlock topic`, `do`, `outcome`, `believe`, `unbelieve`, `declare`, `retract`, `learn`, and `forget`.
 
 `set` and `inc` write stored facts. Provenance keeps `scene`, `choice`, and `time` (game minutes). `inc` of a missing fact starts at 0. A type mismatch is `push_error` and the fact stays.
 
 `believe` and `declare` write a stored fact into `believed/<agent>` or `held/<group>`. `unbelieve` and `retract` remove one key. Those writes do not change `world` or `known`, and they do not update provenance. A change logs one `belief` line when tracing is on. The same value again, or clearing a missing key, does not.
+
+`learn` writes `known/<agent>`. `forget` removes one key. Neither changes `world`, `believed`, or `held`, and learning does not clear a belief. A change logs one `knowledge` line. A deed with `reveals` and `claim` writes that fact for each witness: `saw` learns it, and `heard` or `inferred` believes it. Other agents are left alone.
 
 `record deed` calls the deed log. Set literals in arguments are read from the argument's source text, because the expression emitter does not push a set value.
 
