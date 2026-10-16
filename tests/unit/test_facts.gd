@@ -37,6 +37,31 @@ func test_stored_resolved_poll_and_doc() -> void:
 	assert_eq(weather.resolver, "world.weather")
 
 
+func test_recap_is_only_a_concrete_stored_flag() -> void:
+	var parsed := _parse(_text("""
+	language 1
+	facts
+	  harbor.coins : int stored recap: true doc: "Toll coins."
+	  harbor.tide : int stored recap: false
+	"""))
+	assert_eq(parsed.diagnostics.format(), "")
+	assert_true(parsed.schema.entries[0].recap)
+	assert_eq(parsed.schema.entries[0].doc, "Toll coins.")
+	assert_false(parsed.schema.entries[1].recap)
+	var resolved := _parse(_text("""
+	language 1
+	facts
+	  world.season : symbol source: time.season recap: true invalidate: per_query
+	"""))
+	assert_true(resolved.diagnostics.format().contains("recap is only for a concrete stored fact"))
+	var pattern := _parse(_text("""
+	language 1
+	facts
+	  npc.{id}.alive : bool stored recap: true
+	"""))
+	assert_true(pattern.diagnostics.format().contains("recap is only for a concrete stored fact"))
+
+
 func test_duplicate_key() -> void:
 	var parsed := _parse(_text("""
 	language 1

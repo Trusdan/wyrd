@@ -26,6 +26,9 @@ var enabled: bool = false
 ## A debug_snapshot line is one inspector read. key is the caller prefix.
 ## path is the section list, or * when every section was requested.
 ## The prefix matches key or path. Load does not log one. Replay skips it.
+## A choice_summary line is one provenance read. key is the key prefix.
+## path is the scene filter. A choice_compact line is one provenance drop.
+## Its path is the dropped keys, joined by commas. Replay skips both.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

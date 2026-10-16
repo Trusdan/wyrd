@@ -17,7 +17,8 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("unvoiced-report: list line ids with no audio for each locale"))
 	assert_true(text.contains("storylets: list storylets for a scope and speaker"))
 	assert_true(text.contains("cooldowns: list storylet rows and speaker clocks"))
-	assert_eq(WyrdCli.COMMANDS.size(), 12)
+	assert_true(text.contains("choices: list fact writes by scene, choice, prefix, or time"))
+	assert_eq(WyrdCli.COMMANDS.size(), 13)
 
 
 func test_execute_without_args_matches_render() -> void:

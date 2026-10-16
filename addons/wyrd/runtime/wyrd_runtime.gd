@@ -111,6 +111,8 @@ func _init() -> void:
 	social.on_changed = Callable(self, &"_on_social")
 	effects = WyrdEffects.new()
 	effects.bind(self)
+	facts.provenance_of = Callable(effects, &"export_state")
+	facts.on_choice_summary = Callable(self, &"trace_choice_summary")
 	quests = WyrdQuestRunner.new()
 	quests.bind(self)
 	roles.stage_of = Callable(quests, &"stage")
@@ -643,6 +645,9 @@ func trace_credibility(
 func _on_compact(info: Dictionary) -> void:
 	if int(info.get("before", 0)) != int(info.get("after", 0)):
 		_mark_calls(_DEED_CALLS)
+	if effects != null:
+		var compacted: Dictionary = effects.compact_provenance()
+		_trace_choice_compact(compacted)
 	if trace == null or not trace.enabled:
 		return
 	var fields := {
@@ -1033,6 +1038,50 @@ func _on_resolved(key: String, value: Variant) -> void:
 
 func trace_log() -> Array[Dictionary]:
 	return _trace.duplicate()
+
+
+## True when the loaded schema marks [param key] [code]recap[/code].
+func fact_marked_recap(key: String) -> bool:
+	if _content == null or _content.schema == null:
+		return false
+	var fact := _content.schema.lookup(key.split("."))
+	return fact != null and fact.recap
+
+
+## True when compaction should keep provenance for [param key].
+## A missing schema keeps every row, so compaction does not guess.
+func fact_is_recap(key: String) -> bool:
+	if _content == null or _content.schema == null:
+		return true
+	return fact_marked_recap(key)
+
+
+## One line for a choice-summary read. Logged only when tracing is on.
+func trace_choice_summary(fields: Dictionary, line: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("choice_summary", fields)
+	print(line)
+
+
+func _trace_choice_compact(compacted: Dictionary) -> void:
+	var dropped := int(compacted.get("dropped", 0))
+	if trace == null or not trace.enabled or dropped <= 0:
+		return
+	var names: Array = compacted.get("keys", [])
+	var path := ",".join(names) if not names.is_empty() else "-"
+	var fields := {
+		"dropped": dropped,
+		"kept": int(compacted.get("kept", 0)),
+		"key": "",
+		"path": path,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("choice_compact", fields)
+	print("wyrd choice_summary compact kept=%d dropped=%d" % [int(fields["kept"]), dropped])
 
 
 func _reset_play() -> void:

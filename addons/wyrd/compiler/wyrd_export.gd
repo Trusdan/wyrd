@@ -105,7 +105,7 @@ static func _facts(pack: WyrdLinkedPack) -> Array:
 	if pack.schema == null:
 		return rows
 	for fact in pack.schema.entries:
-		rows.append({
+		var row := {
 			"doc": fact.doc,
 			"invalidate": String(fact.invalidate),
 			"invalidate_arg": fact.invalidate_arg,
@@ -116,7 +116,10 @@ static func _facts(pack: WyrdLinkedPack) -> Array:
 			"resolver": fact.resolver,
 			"source": fact.resolver if fact.origin == &"resolved" else "stored",
 			"type": String(fact.type_name),
-		})
+		}
+		if fact.recap:
+			row["recap"] = true
+		rows.append(row)
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
 	return rows
 

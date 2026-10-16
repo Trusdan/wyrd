@@ -68,6 +68,29 @@ func provenance_of(key: String) -> Dictionary:
 	return (provenance[key] as Dictionary).duplicate()
 
 
+## Drops provenance for facts that are not marked [code]recap[/code].
+## A missing schema keeps every row. Returns kept, dropped, and the dropped keys.
+func compact_provenance() -> Dictionary:
+	var dropped: Array = []
+	var kept := 0
+	var keys: Array = provenance.keys()
+	keys.sort()
+	for key in keys:
+		var name := String(key)
+		if _keeps_provenance(name):
+			kept += 1
+			continue
+		provenance.erase(name)
+		dropped.append(name)
+	return {"dropped": dropped.size(), "kept": kept, "keys": dropped}
+
+
+func _keeps_provenance(key: String) -> bool:
+	if runtime == null:
+		return true
+	return runtime.fact_is_recap(key)
+
+
 func run_all(rows: Array) -> String:
 	for row in rows:
 		var effect := row as WyrdEffectDef

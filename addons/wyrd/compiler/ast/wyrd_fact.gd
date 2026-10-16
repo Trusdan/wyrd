@@ -6,6 +6,7 @@ extends RefCounted
 ## @experimental
 ## [member origin] is [code]stored[/code] or [code]resolved[/code].
 ## [member invalidate] is empty, [code]on_event[/code], [code]poll[/code], or [code]per_query[/code].
+## [member recap] keeps provenance for a concrete stored fact when deeds compact.
 ## Pattern segments are stored as [code]{name}[/code].
 
 var key: String = ""
@@ -15,6 +16,8 @@ var origin: StringName = &""
 var resolver: String = ""
 var invalidate: StringName = &""
 var invalidate_arg: String = ""
+## A stored fact whose provenance survives deed compaction.
+var recap: bool = false
 var doc: String = ""
 var line: int = 1
 var col: int = 1
