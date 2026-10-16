@@ -39,6 +39,9 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	var storylets := _storylets(pack)
 	if not storylets.is_empty():
 		data["storylets"] = storylets
+	var sequences := _sequences(pack)
+	if not sequences.is_empty():
+		data["sequences"] = sequences
 	return data
 
 
@@ -179,6 +182,9 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 	var handlers := _handlers(stage)
 	if not handlers.is_empty():
 		data["handlers"] = handlers
+	var regions := _regions(stage)
+	if not regions.is_empty():
+		data["regions"] = regions
 	if stage.hosts.size() > 0:
 		var hosts: Array = []
 		for host in stage.hosts:
@@ -189,6 +195,47 @@ static func _stage(stage: WyrdStageDef) -> Dictionary:
 			hosts.append({"fields": fields, "screen": String(host.get("screen", ""))})
 		data["hosts"] = hosts
 	return data
+
+
+static func _regions(stage: WyrdStageDef) -> Array:
+	var rows: Array = []
+	if stage == null:
+		return rows
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		var stages: Array = []
+		for child in region.stages:
+			stages.append(_stage(child))
+		rows.append({"id": region.id, "stages": stages})
+	return rows
+
+
+static func _sequences(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for sequence in file.sequences:
+			var steps: Array = []
+			for step in sequence.steps:
+				steps.append({"event": step.event_name, "where": step.where_text})
+			rows.append({
+				"file": str(unit["path"]),
+				"id": sequence.id,
+				"mode": String(sequence.mode),
+				"need": sequence.need,
+				"of": sequence.total,
+				"reset": sequence.reset_text,
+				"steps": steps,
+				"within": sequence.within_minutes,
+			})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
+	return rows
 
 
 static func _roles(pack: WyrdLinkedPack) -> Array:
@@ -315,6 +362,12 @@ static func _line_stage(rows: Array, stage: WyrdStageDef, path: String, pack_id:
 	for variant in stage.variants:
 		if variant.body != null:
 			_line_stage(rows, variant.body, path, pack_id)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_line_stage(rows, child, path, pack_id)
 
 
 static func _line_row(

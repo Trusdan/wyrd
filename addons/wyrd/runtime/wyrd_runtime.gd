@@ -26,6 +26,7 @@ var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
+var sequences: WyrdSequences
 var director: WyrdDirector
 var trace: WyrdTrace
 
@@ -62,6 +63,7 @@ func _init() -> void:
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
 	storylets = WyrdStoryletDeck.new()
+	sequences = WyrdSequences.new()
 	director = WyrdDirector.new()
 	director.bind(self)
 	deeds = WyrdDeedLog.new()
@@ -324,6 +326,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_content = null
 	if storylets != null:
 		storylets.bind(null)
+	if sequences != null:
+		sequences.bind(null)
 	_flags = PackedByteArray()
 	_always = PackedInt32Array()
 	_queue.clear()
@@ -364,6 +368,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	if storylets != null:
 		storylets.bind(_content)
 		storylets.set_seed(_seed)
+	if sequences != null:
+		sequences.bind(self)
 	report.ok = true
 	report.manifest_hash = _content.manifest_hash
 	facts.bind_schema(_content.schema)
@@ -392,6 +398,8 @@ func tick(game_minutes: int) -> void:
 		_mark_calls(_DEED_CALLS)
 	if not _always.is_empty():
 		_queue.mark(_always)
+	if sequences != null:
+		sequences.on_tick()
 	var budget := _config.scheduler_work_per_tick if _config != null else 0
 	_queue.tick(budget, _recheck)
 	if quests != null:
@@ -838,6 +846,8 @@ func _reset_play() -> void:
 	_slot_traced.clear()
 	if storylets != null:
 		storylets.clear()
+	if sequences != null:
+		sequences.clear()
 	if effects != null:
 		effects.clear()
 	if dialogue != null:
@@ -969,6 +979,8 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 			"time": now_minutes(),
 		})
 	_apply_event_act(event_name, payload, normalized)
+	if sequences != null:
+		sequences.on_emit(event_name, normalized)
 	if quests != null:
 		quests.on_world_event(emit_id, event_name, normalized)
 	_wake_spatial(event_name)
@@ -1408,11 +1420,27 @@ func _mark_calls(names: PackedStringArray) -> void:
 		_queue.mark(hits)
 
 
+func note_sequence_change() -> void:
+	if _content == null:
+		return
+	var hits := _content.indexes_for_calls(PackedStringArray(["done", "progress"]))
+	if hits.is_empty():
+		return
+	_queue.mark(hits)
+	if _collecting:
+		for index in hits:
+			_collected[int(index)] = true
+
+
 func _tracked_calls() -> PackedStringArray:
 	var names := _DEED_CALLS.duplicate()
 	for name in _ROLE_CALLS:
 		if not names.has(name):
 			names.append(name)
+	if not names.has("progress"):
+		names.append("progress")
+	if not names.has("done"):
+		names.append("done")
 	return names
 
 

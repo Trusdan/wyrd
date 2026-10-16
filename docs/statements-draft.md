@@ -44,6 +44,40 @@ A role id is a symbol (`ferry_master`). A role and a slot have no title or displ
 
 Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `contested` is the exception: no `contested` variant uses the `empty` variant, and the state stays `contested`. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
 
+## Sub-states
+
+A stage may contain `region <id>` blocks. Each region holds its own `stage` list. Regions of one parent run together. One region still runs one stage at a time. A `->` inside a region names a sibling stage in that region. The parent `->` still names a stage of the quest. The parent leaves when its own `waits_until` or `-> when` says so. Regions do not join automatically.
+
+The quest stage is depth 1. A stage inside its region is depth 2. A stage nested further warns `W_SUBSTATE_DEPTH` and still runs. Active leaves are saved on the quest row under `regions` (`stage`, `entered`, `step_at`, and nested `regions`). The key is omitted when the stage has no regions. Entry effects do not run again when `entered` is true and `step_at` is past them. A region `scene` or `await_host` uses the quest's one open scene or host slot. If that slot is busy, the region step stays put.
+
+```wyrd
+stage repair
+  region rope
+    stage frayed
+      waits_until harbor.rope_spliced
+      -> spliced
+    stage spliced
+      ~ set harbor.rope_done = true
+  -> done when harbor.rope_done
+```
+
+## Sequence
+
+A top-level `sequence` counts events inside a game-minute window. It is not a quest stage. The id is a dotted name, the same shape as a quest id. `within` is required. `reset on` is optional. A bare event name resets on that event. Anything else is a condition. A bare name that is not a declared event is `E_EVENT_UNKNOWN`. `nearby`, `can_perceive`, and `can_reach` in a sequence are `E_SPATIAL_CONTEXT`.
+
+```wyrd
+sequence bell_signal any(3 of 3) within 60m reset on season_changed
+  on mechanism_state where event.object == harbor_bell and event.state == rung
+```
+
+`ordered` matches steps in source order and does not skip. `any(<n> of <m>)` with one step counts that step up to `m` and finishes at `n`. `any(<n> of <m>)` with several steps needs `m` steps and counts each step once. The window includes its last minute. The next minute clears partial progress and leaves a finished sequence until reset. A reset event is handled before a step on that emit, so it does not also count. A reset condition is checked on each tick. `progress(id)` and `done(id)` read the sequence. An unknown id is an error and yields 0 or false. Partial progress is saved under `sequences` on schema 2 and omitted when nothing has started. Gullhaven's bell repair uses two regions, and `bell_signal` is three rings of `harbor_bell` within an hour.
+
+| Code | When |
+|---|---|
+| `W_SUBSTATE_DEPTH` | A sub-state is nested past depth 2 |
+| `E_SEQUENCE_SYNTAX` | A sequence header, count, window, or step is the wrong shape |
+| `E_SEQUENCE_DUPLICATE` | The same sequence id is declared more than once |
+
 ## Scene
 
 ```wyrd

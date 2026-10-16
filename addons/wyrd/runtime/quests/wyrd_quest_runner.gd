@@ -18,7 +18,9 @@ extends RefCounted
 ## slot is empty and no variant matched. Journal text and its date are frozen
 ## at the write. The default date is [code]day N, HH:MM[/code]. An
 ## [code]await_host[/code] step calls [method request_host_step] and pauses
-## the remaining entry steps until [method complete_host_step].
+## the remaining entry steps until [method complete_host_step]. A stage may
+## name parallel [code]region[/code] blocks. Their active leaves are saved on
+## the quest row and omitted when the stage has none.
 
 signal quest_state_changed(quest_id: String, status: StringName)
 signal stage_changed(quest_id: String, stage_id: String)
@@ -65,6 +67,8 @@ class QuestState extends RefCounted:
 	var held_empty: bool = false
 	var waiting: String = ""
 	var step_at: int = 0
+	## Region id to [code]{stage, entered, step_at, regions}[/code]. Not a flat quest.
+	var regions: Dictionary = {}
 
 
 func bind(host: WyrdRuntime) -> void:
@@ -171,23 +175,28 @@ func on_world_event(emit_id: int, event_name: StringName, payload: Dictionary) -
 		if quest == null:
 			continue
 		var body := _body_now(quest, state)
-		if body == null or body.handlers.is_empty():
+		if body == null:
 			continue
-		var token := "%d|%s|%s" % [emit_id, String(quest_id), state.stage_id]
-		if _fired.has(token):
-			continue
-		runtime.bind_locals(locals)
-		for handler in body.handlers:
-			if handler.event_name != String(event_name):
-				continue
-			if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
-				continue
-			_fired[token] = true
-			_arm_effects(String(quest_id))
-			runtime.effects.run_all(handler.effects)
-			_take_handler_transition(String(quest_id), quest, state, handler)
-			break
-		runtime.clear_locals()
+		var before := state.stage_id
+		if not body.handlers.is_empty():
+			var token := "%d|%s|%s" % [emit_id, String(quest_id), state.stage_id]
+			if not _fired.has(token):
+				runtime.bind_locals(locals)
+				for handler in body.handlers:
+					if handler.event_name != String(event_name):
+						continue
+					if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
+						continue
+					_fired[token] = true
+					_arm_effects(String(quest_id))
+					runtime.effects.run_all(handler.effects)
+					_take_handler_transition(String(quest_id), quest, state, handler)
+					break
+				runtime.clear_locals()
+		if state.status == ACTIVE and state.stage_id == before:
+			runtime.bind_locals(locals)
+			_dispatch_regions(String(quest_id), quest, state, body, state.regions, emit_id, String(event_name), "")
+			runtime.clear_locals()
 	runtime.clear_locals()
 
 
@@ -229,6 +238,14 @@ func stage(quest_id: String) -> String:
 	if state == null:
 		return ""
 	return state.stage_id
+
+
+## Active region leaves for [param quest_id], in the save shape. Empty for a flat stage.
+func regions_of(quest_id: String) -> Dictionary:
+	var state := _states.get(quest_id) as QuestState
+	if state == null:
+		return {}
+	return _export_regions(state.regions)
 
 
 func outcome(quest_id: String, branch: String) -> String:
@@ -297,7 +314,7 @@ func export_state() -> Dictionary:
 		var slots: Array = []
 		for slot_name in state.slots:
 			slots.append(String(slot_name))
-		out[String(quest_id)] = {
+		var row := {
 			"entered": state.entered,
 			"held_empty": state.held_empty,
 			"host_fields": fields,
@@ -314,6 +331,10 @@ func export_state() -> Dictionary:
 			"variant": state.variant,
 			"waiting": state.waiting,
 		}
+		var regions := _export_regions(state.regions)
+		if not regions.is_empty():
+			row["regions"] = regions
+		out[String(quest_id)] = row
 	return out
 
 
@@ -352,6 +373,13 @@ func import_state(data: Dictionary) -> void:
 		for field in item.get("host_fields", []):
 			fields.append(String(field))
 		state.host_fields = fields
+		state.regions = {}
+		var quest := _quest(String(quest_id))
+		var packed: Variant = item.get("regions", null)
+		if quest != null and packed is Dictionary:
+			var body := _body_now(quest, state)
+			if body != null:
+				state.regions = _import_regions(body.regions, packed)
 	_retrack()
 
 
@@ -455,6 +483,7 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 	if state.step_at < _entry_steps(body).size():
 		_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 		return
+	_advance_region_map(quest_id, quest, state, body, state.regions, hops)
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -480,12 +509,14 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	state.slots = PackedStringArray()
 	state.scene_done = false
 	state.held_empty = false
+	state.regions = {}
 	stage_changed.emit(quest_id, state.stage_id)
 	if pick["hold"]:
 		state.held_empty = true
 		state.waiting = "on_empty"
 		return
 	var body := pick["body"] as WyrdStageDef
+	state.regions = _fresh_regions(body)
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 
 
@@ -499,6 +530,7 @@ func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body
 	if state.offered != "":
 		state.waiting = "scene:%s" % state.offered
 		return
+	_advance_region_map(quest_id, quest, state, body, state.regions, hops)
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -663,10 +695,12 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 	state.scene_done = false
 	state.held_empty = hold
 	state.waiting = ""
+	state.regions = {}
 	if hold:
 		state.waiting = "on_empty"
 		return true
 	var body := pick["body"] as WyrdStageDef
+	state.regions = _fresh_regions(body)
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
 	return true
 
@@ -736,6 +770,259 @@ func _cond_ready(cond: WyrdCompiledCondition) -> bool:
 	return runtime.eval_bool(cond)
 
 
+func _fresh_regions(stage: WyrdStageDef) -> Dictionary:
+	var out := {}
+	if stage == null:
+		return out
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null or region.id.is_empty():
+			continue
+		out[region.id] = _blank_region(region)
+	return out
+
+
+func _blank_region(region: WyrdRegionDef) -> Dictionary:
+	var stage_id := ""
+	if region != null and not region.stages.is_empty():
+		stage_id = region.stages[0].id
+	return {"entered": false, "regions": {}, "stage": stage_id, "step_at": 0}
+
+
+func _region_stage(region: WyrdRegionDef, stage_id: String) -> WyrdStageDef:
+	if region == null:
+		return null
+	for stage in region.stages:
+		if stage.id == stage_id:
+			return stage
+	return null
+
+
+func _region_blocked(state: QuestState) -> bool:
+	if state.host_screen != "":
+		return true
+	return state.offered != "" and not state.scene_done
+
+
+func _region_waiting(stage: WyrdStageDef) -> bool:
+	if stage == null or stage.waits_until == null:
+		return false
+	return not _cond_ready(stage.waits_until)
+
+
+func _advance_region_map(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, rows: Dictionary, hops: int) -> void:
+	if body == null or hops > _HOP_LIMIT:
+		if hops > _HOP_LIMIT:
+			push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
+	for item in body.regions:
+		var region := item as WyrdRegionDef
+		if region == null or region.id.is_empty():
+			continue
+		if not rows.has(region.id) or not (rows[region.id] is Dictionary):
+			rows[region.id] = _blank_region(region)
+		_advance_region(quest_id, quest, state, region, rows[region.id], hops)
+
+
+func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, hops: int) -> void:
+	if hops > _HOP_LIMIT:
+		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
+	var stage := _region_stage(region, String(row.get("stage", "")))
+	if stage == null:
+		return
+	if not bool(row.get("entered", false)):
+		_enter_region(quest_id, quest, state, region, row, stage, hops)
+		return
+	if _region_blocked(state):
+		return
+	if int(row.get("step_at", 0)) < _entry_steps(stage).size():
+		var ran := _run_region_steps(quest_id, state, stage, row)
+		if str(ran.get("divert", "")) != "":
+			_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1)
+			return
+		if bool(ran.get("blocked", false)) or _region_blocked(state):
+			return
+	var nested: Dictionary = row.get("regions", {})
+	_advance_region_map(quest_id, quest, state, stage, nested, hops)
+	row["regions"] = nested
+	if _region_blocked(state) or _region_waiting(stage):
+		return
+	_take_region_transition(quest_id, quest, state, region, row, stage, hops)
+
+
+func _enter_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int) -> void:
+	if hops > _HOP_LIMIT:
+		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
+	row["entered"] = true
+	row["step_at"] = 0
+	row["regions"] = _fresh_regions(stage)
+	var ran := _run_region_steps(quest_id, state, stage, row)
+	if str(ran.get("divert", "")) != "":
+		_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1)
+		return
+	if bool(ran.get("blocked", false)) or _region_blocked(state):
+		return
+	var nested: Dictionary = row.get("regions", {})
+	_advance_region_map(quest_id, quest, state, stage, nested, hops)
+	row["regions"] = nested
+	if _region_blocked(state) or _region_waiting(stage):
+		return
+	_take_region_transition(quest_id, quest, state, region, row, stage, hops)
+
+
+func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef, row: Dictionary) -> Dictionary:
+	var steps := _entry_steps(stage)
+	while int(row.get("step_at", 0)) < steps.size():
+		var step: Dictionary = steps[int(row["step_at"])]
+		var kind: StringName = step["kind"]
+		if kind == &"scene" and state.offered != "" and not state.scene_done:
+			return {"blocked": true, "divert": ""}
+		if kind == &"host" and state.host_screen != "":
+			return {"blocked": true, "divert": ""}
+		row["step_at"] = int(row["step_at"]) + 1
+		if kind == &"journal":
+			_write_journal(quest_id, state, step["journal"])
+		elif kind == &"effect":
+			_arm_effects(quest_id)
+			var divert := runtime.effects.run_one(step["effect"])
+			if divert != "":
+				return {"blocked": false, "divert": divert}
+		elif kind == &"scene":
+			_offer(state, step["scene"])
+		elif kind == &"host":
+			var fields := PackedStringArray()
+			var raw: Variant = step.get("fields", PackedStringArray())
+			if raw is PackedStringArray:
+				fields = raw
+			request_host_step(quest_id, StringName(str(step.get("screen", ""))), fields)
+			return {"blocked": true, "divert": ""}
+	return {"blocked": false, "divert": ""}
+
+
+func _region_goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, target: String, hops: int) -> void:
+	if hops > _HOP_LIMIT:
+		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
+	var stage := _region_stage(region, target)
+	if stage == null:
+		push_error("WyrdQuestRunner: unknown stage \"%s\"" % target)
+		return
+	row["stage"] = target
+	row["entered"] = false
+	row["step_at"] = 0
+	row["regions"] = {}
+	_enter_region(quest_id, quest, state, region, row, stage, hops)
+
+
+func _take_region_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, stage: WyrdStageDef, hops: int) -> bool:
+	for edge in stage.transitions:
+		var when: Variant = edge.get("when", null)
+		if when is WyrdCompiledCondition and not runtime.eval_bool(when):
+			continue
+		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), hops + 1)
+		return true
+	return false
+
+
+func _dispatch_regions(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, rows: Dictionary, emit_id: int, event_name: String, path: String) -> void:
+	if body == null:
+		return
+	for item in body.regions:
+		var region := item as WyrdRegionDef
+		if region == null or not rows.has(region.id) or not (rows[region.id] is Dictionary):
+			continue
+		var row: Dictionary = rows[region.id]
+		var stage := _region_stage(region, String(row.get("stage", "")))
+		if stage == null:
+			continue
+		var token := "%d|%s|%s%s|%s" % [emit_id, quest_id, path, region.id, String(row.get("stage", ""))]
+		var moved := false
+		if not stage.handlers.is_empty() and not _fired.has(token):
+			for handler in stage.handlers:
+				if handler.event_name != event_name:
+					continue
+				if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
+					continue
+				_fired[token] = true
+				_arm_effects(quest_id)
+				runtime.effects.run_all(handler.effects)
+				if _take_region_handler(quest_id, quest, state, region, row, handler):
+					moved = true
+				break
+		if moved:
+			continue
+		var nested: Dictionary = row.get("regions", {})
+		_dispatch_regions(quest_id, quest, state, stage, nested, emit_id, event_name, path + region.id + "/")
+		row["regions"] = nested
+
+
+func _take_region_handler(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, handler: WyrdOnEventDef) -> bool:
+	for edge in handler.transitions:
+		var when: Variant = edge.get("when", null)
+		if when is WyrdCompiledCondition and not runtime.eval_bool(when):
+			continue
+		_region_goto(quest_id, quest, state, region, row, String(edge.get("target", "")), 1)
+		return true
+	return false
+
+
+func _export_regions(rows: Dictionary) -> Dictionary:
+	var out := {}
+	var ids: Array = rows.keys()
+	ids.sort()
+	for id in ids:
+		var row: Variant = rows[id]
+		if not (row is Dictionary):
+			continue
+		var item: Dictionary = row
+		var copy := {
+			"entered": bool(item.get("entered", false)),
+			"stage": String(item.get("stage", "")),
+			"step_at": int(item.get("step_at", 0)),
+		}
+		var nested: Variant = item.get("regions", {})
+		if nested is Dictionary:
+			var packed := _export_regions(nested)
+			if not packed.is_empty():
+				copy["regions"] = packed
+		out[String(id)] = copy
+	return out
+
+
+func _import_regions(defs: Array, data: Dictionary) -> Dictionary:
+	var by_id := {}
+	for item in defs:
+		var region := item as WyrdRegionDef
+		if region != null and not region.id.is_empty():
+			by_id[region.id] = region
+	var out := {}
+	for key in data.keys():
+		var id := String(key)
+		if not by_id.has(id) or not (data[key] is Dictionary):
+			continue
+		var region: WyrdRegionDef = by_id[id]
+		var item: Dictionary = data[key]
+		var stage_id := String(item.get("stage", ""))
+		var known := _region_stage(region, stage_id)
+		var entered := bool(item.get("entered", false))
+		var step_at := int(item.get("step_at", 0))
+		if known == null:
+			stage_id = ""
+			if not region.stages.is_empty():
+				stage_id = region.stages[0].id
+			known = _region_stage(region, stage_id)
+			entered = false
+			step_at = 0
+		var nested := {}
+		var packed: Variant = item.get("regions", null)
+		if known != null and packed is Dictionary:
+			nested = _import_regions(known.regions, packed)
+		out[id] = {"entered": entered, "regions": nested, "stage": stage_id, "step_at": step_at}
+	return out
+
+
 func _collect(quest: WyrdQuestDef) -> PackedStringArray:
 	var found := {}
 	for stage in quest.stages:
@@ -757,6 +1044,12 @@ func _collect_stage(stage: WyrdStageDef, found: Dictionary) -> void:
 		var variant := entry as WyrdVariantDef
 		if variant != null:
 			_collect_stage(variant.body, found)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_collect_stage(child, found)
 
 
 func _requires_ok(quest: WyrdQuestDef, pack_id: String) -> bool:

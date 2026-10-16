@@ -20,3 +20,5 @@ var effects: Array[WyrdEffectDef] = []
 var hosts: Array = []
 var variants: Array = []
 var handlers: Array[WyrdOnEventDef] = []
+## [WyrdRegionDef] records. Untyped so a stage and a region can name each other.
+var regions: Array = []

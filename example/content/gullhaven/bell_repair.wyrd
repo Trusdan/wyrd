@@ -1,0 +1,28 @@
+// [EXAMPLE CONTENT] Gullhaven bell repair. An invented fishing village, not a host game.
+language 1
+
+quest bell_repair "The Bell Repair"
+  start when true
+  stage repair
+    region rope
+      stage frayed
+        waits_until harbor.rope_spliced
+        on mechanism_state where event.object == harbor_rope and event.state == spliced:
+          ~ set harbor.rope_spliced = true
+          -> spliced
+      stage spliced
+        ~ set harbor.rope_done = true
+    region tongue
+      stage loose
+        waits_until harbor.tongue_seated
+        on mechanism_state where event.object == harbor_tongue and event.state == seated:
+          ~ set harbor.tongue_seated = true
+          -> seated
+      stage seated
+        ~ set harbor.tongue_done = true
+    -> done when harbor.rope_done and harbor.tongue_done
+  stage done
+    ~ outcome repair = done
+
+sequence bell_signal any(3 of 3) within 60m reset on season_changed
+  on mechanism_state where event.object == harbor_bell and event.state == rung
