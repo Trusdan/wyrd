@@ -9,6 +9,9 @@ extends RefCounted
 ## in the grammar yet, so a stored fact that is read and not written has no default.
 ## [member events] records [code]on_event[/code] names ([code]role[/code] [code]invalidate[/code])
 ## and [code]on <event>[/code] handlers ([code]role[/code] [code]emit[/code]).
+## A scene [code]learn[/code] warns [code]W_STALE_BELIEF[/code] when a contradicting belief remains.
+## Prose may interpolate a belief or a held value as [code]W_CLAIM[/code].
+## A world value behind a world gate is [code]E_FACT_LEAK[/code].
 
 var facts: Array = []
 var events: Array = []
@@ -56,6 +59,7 @@ func build(
 		_lint(fact, path, read_rows.size(), write_rows.size(), diagnostics)
 	_handler_events(units)
 	_warn_interps(schema, units, writers, diagnostics)
+	_warn_stale_beliefs(units, diagnostics)
 	facts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
 	events.sort_custom(_event_before)
 
@@ -144,52 +148,259 @@ func _warn_interps(schema: WyrdFactSchema, units: Array, writers: Array, diagnos
 		for scene in file.scenes:
 			for item in scene.items:
 				if item.line_def != null:
-					_warn_prose(schema, item.line_def.prose, path, writers, diagnostics)
+					_warn_prose(schema, item.line_def.prose, path, writers, diagnostics, _gate_list(schema, item.line_def.condition_text))
 				if item.choice != null:
-					_warn_prose(schema, item.choice.label, path, writers, diagnostics)
+					_warn_prose(schema, item.choice.label, path, writers, diagnostics, _gate_list(schema, item.choice.condition_text))
 
 
 func _warn_stage(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
 	if stage == null:
 		return
 	for journal in stage.journals:
-		_warn_prose(schema, journal.prose, path, writers, diagnostics)
+		_warn_prose(schema, journal.prose, path, writers, diagnostics, [])
 	for variant in stage.variants:
 		if variant.body != null:
 			_warn_stage(schema, variant.body, path, writers, diagnostics)
 
 
-func _warn_prose(schema: WyrdFactSchema, node: WyrdExprNode, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
+func _warn_prose(
+	schema: WyrdFactSchema,
+	node: WyrdExprNode,
+	path: String,
+	writers: Array,
+	diagnostics: WyrdDiagnostics,
+	gates: Array
+) -> void:
 	if node == null:
 		return
-	if node.kind == &"value" or node.kind == &"variants":
-		_warn_value(schema, node, path, writers, diagnostics)
-	_warn_prose(schema, node.a, path, writers, diagnostics)
-	_warn_prose(schema, node.b, path, writers, diagnostics)
-	_warn_prose(schema, node.c, path, writers, diagnostics)
-	for kid in node.kids:
-		_warn_prose(schema, kid, path, writers, diagnostics)
-
-
-func _warn_value(schema: WyrdFactSchema, node: WyrdExprNode, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
-	if not (node.payload is WyrdCompiledCondition):
+	if node.kind == &"if":
+		var inner := gates.duplicate()
+		if node.a != null:
+			inner.append(node.a)
+		_warn_prose(schema, node.b, path, writers, diagnostics, inner)
+		_warn_prose(schema, node.c, path, writers, diagnostics, inner)
 		return
-	var compiled := node.payload as WyrdCompiledCondition
-	for key in compiled.reads:
+	if node.kind == &"value" or node.kind == &"variants":
+		_warn_value(schema, node, path, writers, diagnostics, gates)
+	_warn_prose(schema, node.a, path, writers, diagnostics, gates)
+	_warn_prose(schema, node.b, path, writers, diagnostics, gates)
+	_warn_prose(schema, node.c, path, writers, diagnostics, gates)
+	for kid in node.kids:
+		_warn_prose(schema, kid, path, writers, diagnostics, gates)
+
+
+func _warn_value(
+	schema: WyrdFactSchema,
+	node: WyrdExprNode,
+	path: String,
+	writers: Array,
+	diagnostics: WyrdDiagnostics,
+	gates: Array
+) -> void:
+	var found := _perspectives(node.a)
+	for key in found["world"]:
 		var text := String(key)
-		var fact := schema.lookup(PackedStringArray(text.split(".")))
-		if fact == null or fact.origin != &"stored" or fact.is_pattern():
+		if not _stored_concrete(schema, text):
 			continue
-		if _written_before(writers, text, path, node.line, node.col):
+		if not _written_before(writers, text, path, node.line, node.col):
+			diagnostics.add(
+				WyrdDiagnostic.W_INTERP_UNSET,
+				"interpolation reads stored fact \"%s\" before it is set" % text,
+				path,
+				node.line,
+				node.col,
+				WyrdDiagnostic.SEVERITY_WARNING
+			)
+		if _world_gate(schema, gates, text):
+			diagnostics.add(
+				WyrdDiagnostic.E_FACT_LEAK,
+				"player-visible text interpolates \"%s\" gated only by a world read" % text,
+				path,
+				node.line,
+				node.col
+			)
+	for key in found["claim"]:
+		var claim := String(key)
+		if not _stored_concrete(schema, claim):
 			continue
 		diagnostics.add(
-			WyrdDiagnostic.W_INTERP_UNSET,
-			"interpolation reads stored fact \"%s\" before it is set" % text,
+			WyrdDiagnostic.W_CLAIM,
+			"interpolation presents \"%s\" as a claim" % claim,
 			path,
 			node.line,
 			node.col,
 			WyrdDiagnostic.SEVERITY_WARNING
 		)
+
+
+func _warn_stale_beliefs(units: Array, diagnostics: WyrdDiagnostics) -> void:
+	var believed := {}
+	var cleared := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_note_belief_stage(stage, believed, cleared)
+		for scene in file.scenes:
+			_note_belief_rows(scene.on_abort, believed, cleared)
+			for item in scene.items:
+				if item.choice != null:
+					_note_belief_rows(item.choice.effects, believed, cleared)
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for scene in file.scenes:
+			_warn_scene_learns(scene.on_abort, path, believed, cleared, diagnostics)
+			for item in scene.items:
+				if item.choice != null:
+					_warn_scene_learns(item.choice.effects, path, believed, cleared, diagnostics)
+
+
+func _note_belief_stage(stage: WyrdStageDef, believed: Dictionary, cleared: Dictionary) -> void:
+	if stage == null:
+		return
+	_note_belief_rows(stage.effects, believed, cleared)
+	for handler in stage.handlers:
+		_note_belief_rows(handler.effects, believed, cleared)
+	for variant in stage.variants:
+		if variant.body != null:
+			_note_belief_stage(variant.body, believed, cleared)
+
+
+func _note_belief_rows(effects: Array, believed: Dictionary, cleared: Dictionary) -> void:
+	for effect in effects:
+		if effect == null:
+			continue
+		var row := effect as WyrdEffectDef
+		if row.agent.is_empty() or row.fact_key.is_empty():
+			continue
+		var id := "%s\t%s" % [row.agent, row.fact_key]
+		if row.kind == &"unbelieve":
+			cleared[id] = true
+		elif row.kind == &"believe":
+			var values: Array = believed.get(id, [])
+			values.append(row.value_text.strip_edges())
+			believed[id] = values
+
+
+func _warn_scene_learns(
+	effects: Array,
+	path: String,
+	believed: Dictionary,
+	cleared: Dictionary,
+	diagnostics: WyrdDiagnostics
+) -> void:
+	for effect in effects:
+		if effect == null:
+			continue
+		var row := effect as WyrdEffectDef
+		if row.kind != &"learn" or row.agent.is_empty() or row.fact_key.is_empty():
+			continue
+		var id := "%s\t%s" % [row.agent, row.fact_key]
+		if cleared.has(id):
+			continue
+		var learned := row.value_text.strip_edges()
+		var conflict := false
+		for value in believed.get(id, []):
+			if String(value) != learned:
+				conflict = true
+				break
+		if not conflict:
+			continue
+		diagnostics.add(
+			WyrdDiagnostic.W_STALE_BELIEF,
+			"learn writes known \"%s\" for %s while a contradicting belief remains" % [row.fact_key, row.agent],
+			path,
+			row.line,
+			row.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _gate_list(schema: WyrdFactSchema, text: String) -> Array:
+	var gate := _gate_ast(schema, text)
+	if gate == null:
+		return []
+	return [gate]
+
+
+func _gate_ast(schema: WyrdFactSchema, text: String) -> WyrdExprNode:
+	if schema == null or text.strip_edges().is_empty():
+		return null
+	var scratch := WyrdDiagnostics.new()
+	var compiler := WyrdCondition.new()
+	compiler.compile(text, schema, scratch, "", 1, 1)
+	return compiler.ast
+
+
+func _world_gate(schema: WyrdFactSchema, gates: Array, key: String) -> bool:
+	var gated := false
+	var knows := false
+	for gate in gates:
+		if not (gate is WyrdExprNode):
+			continue
+		var found := _perspectives(gate)
+		if found["world"].has(key) and _stored_concrete(schema, key):
+			gated = true
+		if found["knows"].has(key):
+			knows = true
+	return gated and not knows
+
+
+func _stored_concrete(schema: WyrdFactSchema, key: String) -> bool:
+	if schema == null or key.is_empty() or key.contains("{"):
+		return false
+	var fact := schema.lookup(PackedStringArray(key.split(".")))
+	return fact != null and fact.origin == &"stored" and not fact.is_pattern()
+
+
+func _perspectives(node: WyrdExprNode) -> Dictionary:
+	var found := {"claim": {}, "knows": {}, "world": {}}
+	_walk_perspective(node, "", found)
+	return found
+
+
+func _walk_perspective(node: WyrdExprNode, mode: String, found: Dictionary) -> void:
+	if node == null:
+		return
+	if node.kind == &"call":
+		var next := ""
+		if node.text == "belief" or node.text == "believes" or node.text == "held":
+			next = "claim"
+		elif node.text == "knows" or node.text == "known":
+			next = "knows"
+		var slots := _call_slots(node)
+		for i in slots.size():
+			_walk_perspective(slots[i], next if i == 1 else "", found)
+		return
+	if node.kind == &"arg":
+		_walk_perspective(node.a, mode, found)
+		return
+	if node.kind == &"fact":
+		if mode != "" and not node.text.contains("{"):
+			found[mode][node.text] = true
+		elif mode == "" and not node.text.contains("{"):
+			found["world"][node.text] = true
+		return
+	_walk_perspective(node.a, "", found)
+	_walk_perspective(node.b, "", found)
+	_walk_perspective(node.c, "", found)
+	for kid in node.kids:
+		_walk_perspective(kid, "", found)
+
+
+func _call_slots(node: WyrdExprNode) -> Array:
+	var rows: Array = []
+	if node.payload is Array:
+		for item in node.payload:
+			if item is WyrdExprNode:
+				rows.append(item)
+		if not rows.is_empty():
+			return rows
+	for kid in node.kids:
+		if kid.a != null:
+			rows.append(kid.a)
+	return rows
 
 
 func _written_before(writers: Array, key: String, path: String, line: int, col: int) -> bool:

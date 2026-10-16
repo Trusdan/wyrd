@@ -162,8 +162,11 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
 | `W_FACT_UNUSED` | A fact is never read or written |
-| `W_INTERP_UNSET` | Prose interpolates a stored fact that no earlier `set` or `inc` writes |
+| `W_INTERP_UNSET` | Prose interpolates a stored fact's world value that no earlier write sets. A `belief`, `believes`, `held`, `knows`, or `known` key is not that world value |
 | `W_HOLDER_UNGUARDED` | Prose interpolates `holder(slot)` where that slot can be empty. A guard is a `when` that requires `filled(slot)`, or an `empty` variant that replaces the branch |
+| `W_STALE_BELIEF` | A scene `learn` writes `known/<agent>` while a contradicting `believe` of that agent and key remains and no `unbelieve` clears it |
+| `W_CLAIM` | Prose interpolates `belief`, `believes`, or `held`. The value is a claim |
+| `E_FACT_LEAK` | Prose interpolates a stored fact's world value, and a `when` or `{if}` reads that fact from the world without `knows` or `known` |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 
 Resolved facts are never "never set". A `record deed` without `reveals` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.

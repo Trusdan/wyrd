@@ -1,0 +1,43 @@
+// [EXAMPLE CONTENT] Gullhaven toll tale. An invented fishing village, not a host game.
+language 1
+
+role council_member
+  scope: faction(harbor_council)
+  default_holder: dock_hand
+  succession: none
+  vacancy: hold
+
+quest toll_tale "The Toll Tale"
+  slot council = council_member mode: live
+  on_empty: wait
+  requires: [pack.harbor]
+  start when deed_count(player, verb: asked_council, place: gullhaven) > 0
+
+  stage rumour
+    ~ declare harbor_council harbor.toll_fate = lost_at_sea
+    ~ believe line_fisher harbor.toll_fate = stolen
+    // The dock hand is not in the room. The host reports this witness as heard.
+    ~ record deed whispered(actor: line_fisher, place: gullhaven, witnesses: [dock_apprentice], reveals: harbor.toll_fate, claim: stolen)
+    // The ferry master does not trust the fisher, so this statement does not land.
+    ~ record deed told(actor: line_fisher, place: gullhaven, witnesses: [ferry_master], reveals: harbor.toll_fate, claim: stolen, statement: true)
+    -> hearing
+
+  stage hearing
+    variant council.barred(belief(player, harbor.toll_fate) == stolen):
+      journal: The council will not hear a theft tale. #line:j_tale_barred
+      waits_until false
+    variant council.unwilling(belief($h, harbor.toll_fate) == lost_at_sea):
+      journal: The council member will not drop the official line. #line:j_tale_unwilling
+      waits_until false
+    variant council.empty:
+      journal: The council chair is empty. #line:j_tale_empty
+      waits_until false
+    variant council.default:
+      journal: The council member hears the tale. #line:j_tale_open
+      scene toll.tale with council
+      ~ outcome hearing = done
+      waits_until false
+
+scene toll.tale
+  council: A fisher swears the toll was {belief(line_fisher, harbor.toll_fate)}. #line:tale_claim
+  -> end

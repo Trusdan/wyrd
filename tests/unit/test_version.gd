@@ -7,7 +7,7 @@ func test_runtime_version_matches_file() -> void:
 	var file := FileAccess.open("res://addons/wyrd/VERSION", FileAccess.READ)
 	assert_not_null(file)
 	var text := file.get_as_text().strip_edges()
-	assert_eq(text, "0.2.0-m4")
+	assert_eq(text, "0.3.0-m5")
 	var runtime := WyrdRuntime.new()
 	assert_eq(runtime.get_version(), text)
 	assert_eq(WyrdRuntime.read_version(), text)
