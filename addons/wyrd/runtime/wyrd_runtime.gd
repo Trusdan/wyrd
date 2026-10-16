@@ -11,7 +11,7 @@ extends RefCounted
 ## Callables stay in the registries.
 
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
-const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "perceived", "slot_state"]
+const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "reputation", "perceived", "slot_state"]
 const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "knows", "slot_state", "disposition"]
 const _GROUPS_CHANGED: StringName = &"groups_changed"
 
@@ -81,6 +81,8 @@ func _init() -> void:
 	deeds.spatial_of = Callable(self, &"_spatial")
 	social.deeds = deeds
 	social.config_of = Callable(self, &"config")
+	social.members_of = Callable(self, &"_members")
+	social.on_reputation = Callable(self, &"_trace_reputation")
 	roles.social = social
 	roles.deeds = deeds
 	roles.facts = facts
@@ -202,6 +204,7 @@ func credibility_threshold() -> float:
 func invalidate_groups() -> void:
 	_group_cache.clear()
 	_mark_keys(PackedStringArray([&"group.membership"]))
+	_mark_calls(PackedStringArray(["reputation"]))
 
 
 ## Cached precedence for [param agent]. An explicit belief still wins before this runs.
@@ -580,6 +583,26 @@ func trace_credibility(
 			fields["score"],
 			fields["accepted"],
 		]
+	)
+
+
+func _trace_reputation(subject: StringName, group: StringName, value: float, members: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"group": String(group),
+		"key": String(group),
+		"members": members,
+		"subject": String(subject),
+		"value": value,
+		"who": String(subject),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("reputation", fields)
+	print(
+		"wyrd reputation subject=%s group=%s value=%s members=%s"
+		% [fields["subject"], fields["group"], str(fields["value"]), str(fields["members"])]
 	)
 
 
@@ -1009,6 +1032,13 @@ func _on_role_vacant(_role: StringName) -> void:
 
 func _on_social() -> void:
 	_mark_calls(_DEED_CALLS)
+
+
+func _members(group: StringName) -> PackedStringArray:
+	var world := adapter(WyrdWorldAdapter)
+	if world is WyrdWorldAdapter:
+		return (world as WyrdWorldAdapter).members(group)
+	return PackedStringArray()
 
 
 func _adapter_groups(agent: StringName) -> PackedStringArray:

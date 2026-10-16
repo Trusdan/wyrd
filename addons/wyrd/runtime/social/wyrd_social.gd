@@ -7,15 +7,22 @@ extends RefCounted
 ## Kinds and baselines are stored. Axes add a configured verb delta times the
 ## deed's decayed weight. A deed counts for [code]axis(observer, subject)[/code]
 ## when [code]subject[/code] did it and [code]observer[/code] was the target or
-## a witness. The default disposition is [code]disposition_default + affinity / 2[/code],
-## clamped to 0..100. A host may [method register_formula]; the callable receives
-## [code](a, b, axes)[/code] and is not saved. Reputation and kind-scaled deltas
-## are M5.
+## a witness. A kind the observer holds toward the subject multiplies that
+## delta by [method WyrdConfig.kind_scale]. Several matching kinds multiply.
+## The baseline is not scaled. The default disposition is
+## [code]disposition_default + affinity / 2[/code], clamped to 0..100. A host
+## may [method register_formula]; the callable receives [code](a, b, axes)[/code]
+## and is not saved. [method reputation] is the mean disposition of a group's
+## members toward the subject. It is derived, not saved.
 
 var deeds: WyrdDeedLog
 var config_of: Callable = Callable()
 var formula: Callable = Callable()
 var on_changed: Callable = Callable()
+## [code](group) -> PackedStringArray[/code]. Not saved.
+var members_of: Callable = Callable()
+## [code](subject, group, value, members)[/code]. Not saved.
+var on_reputation: Callable = Callable()
 
 var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
@@ -94,6 +101,20 @@ func set_kind(source: StringName, target: StringName, kind: StringName) -> void:
 	_touch()
 
 
+## A missing kind is a no-op.
+func clear_kind(source: StringName, target: StringName, kind: StringName) -> void:
+	if not has_kind(source, target, kind):
+		return
+	var outgoing: Dictionary = _kinds[source]
+	var bag: Dictionary = outgoing[target]
+	bag.erase(kind)
+	if bag.is_empty():
+		outgoing.erase(target)
+	if outgoing.is_empty():
+		_kinds.erase(source)
+	_touch()
+
+
 func has_kind(source: StringName, target: StringName, kind: StringName) -> bool:
 	if not _kinds.has(source):
 		return false
@@ -120,6 +141,15 @@ func set_baseline(source: StringName, target: StringName, axis_name: StringName,
 	_touch()
 
 
+## A missing baseline is a no-op. Absence is the same as a baseline of 0.
+func clear_baseline(source: StringName, target: StringName, axis_name: StringName) -> void:
+	var key := _edge(source, target, axis_name)
+	if not _baseline.has(key):
+		return
+	_baseline.erase(key)
+	_touch()
+
+
 func _touch() -> void:
 	if on_changed.is_valid():
 		on_changed.call()
@@ -129,6 +159,7 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 	var total := _base(source, target, axis_name)
 	if deeds != null and source != &"" and target != &"":
 		var cfg := _config()
+		var scale := _kind_scale(source, target, axis_name)
 		for i in deeds.size():
 			if deeds.actor_at(i) != target:
 				continue
@@ -137,8 +168,38 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 			var delta := 0.0
 			if cfg != null:
 				delta = cfg.axis_delta(deeds.verb_at(i), axis_name)
-			total += delta * deeds.weight_at(i)
+			total += delta * deeds.weight_at(i) * scale
 	return WyrdDeedLog.round_sum(total)
+
+
+## Mean disposition of [param group]'s members toward [param subject].
+## The subject is skipped. Duplicate members count once. No members returns 0.
+func reputation(subject: StringName, group: StringName) -> float:
+	if subject == &"" or group == &"":
+		return 0.0
+	var listed := PackedStringArray()
+	if members_of.is_valid():
+		var raw: Variant = members_of.call(group)
+		if raw is PackedStringArray:
+			listed = raw
+		elif raw is Array:
+			for item in raw:
+				if item != null:
+					listed.append(String(item))
+	var seen := {}
+	var total := 0.0
+	var count := 0
+	for member in listed:
+		var who := StringName(String(member))
+		if who == &"" or who == subject or seen.has(who):
+			continue
+		seen[who] = true
+		total += float(disposition(who, subject))
+		count += 1
+	var value := 0.0 if count == 0 else WyrdDeedLog.round_sum(total / float(count))
+	if on_reputation.is_valid():
+		on_reputation.call(subject, group, value, count)
+	return value
 
 
 func affinity(source: StringName, target: StringName) -> float:
@@ -170,6 +231,18 @@ func _axes(source: StringName, target: StringName) -> Dictionary:
 	for axis_name in names:
 		axes[StringName(axis_name)] = axis(source, target, StringName(axis_name))
 	return axes
+
+
+func _kind_scale(observer: StringName, subject: StringName, axis_name: StringName) -> float:
+	var cfg := _config()
+	if cfg == null:
+		return 1.0
+	var scale := 1.0
+	for row in cfg.scales_for(axis_name):
+		var spec: Dictionary = row
+		if has_kind(observer, subject, spec["kind"]):
+			scale *= float(spec["scale"])
+	return scale
 
 
 func _base(source: StringName, target: StringName, axis_name: StringName) -> float:

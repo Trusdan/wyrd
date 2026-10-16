@@ -7,7 +7,8 @@ extends Resource
 ## Field names beyond the design list: [member hour_bucket_minutes],
 ## [member half_life_verbs], [member half_life_minutes], [member disposition_default],
 ## [member hostile_threshold], [member axis_verbs], [member axis_names],
-## [member axis_deltas], [member scheduler_work_per_tick], and
+## [member axis_deltas], [member kind_scale_kinds], [member kind_scale_axes],
+## [member kind_scale_values], [member scheduler_work_per_tick], and
 ## [member credibility_threshold].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
@@ -19,6 +20,10 @@ extends Resource
 @export var axis_verbs: PackedStringArray = PackedStringArray()
 @export var axis_names: PackedStringArray = PackedStringArray()
 @export var axis_deltas: PackedFloat64Array = PackedFloat64Array()
+## Parallel to [member kind_scale_axes] and [member kind_scale_values]. Not saved.
+@export var kind_scale_kinds: PackedStringArray = PackedStringArray()
+@export var kind_scale_axes: PackedStringArray = PackedStringArray()
+@export var kind_scale_values: PackedFloat64Array = PackedFloat64Array()
 @export var scheduler_work_per_tick: int = 64
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5
@@ -41,6 +46,38 @@ func set_axis_delta(verb: StringName, axis_name: StringName, delta: float) -> vo
 	axis_verbs.append(String(verb))
 	axis_names.append(String(axis_name))
 	axis_deltas.append(delta)
+
+
+## Replaces the factor for one kind and axis. [code]1.0[/code] leaves that kind's deeds unscaled.
+func set_kind_scale(kind: StringName, axis_name: StringName, scale: float) -> void:
+	var count := mini(kind_scale_kinds.size(), mini(kind_scale_axes.size(), kind_scale_values.size()))
+	for i in count:
+		if StringName(kind_scale_kinds[i]) == kind and StringName(kind_scale_axes[i]) == axis_name:
+			kind_scale_values[i] = scale
+			return
+	kind_scale_kinds.append(String(kind))
+	kind_scale_axes.append(String(axis_name))
+	kind_scale_values.append(scale)
+
+
+## [code]1.0[/code] when this kind and axis have no factor.
+func kind_scale(kind: StringName, axis_name: StringName) -> float:
+	var count := mini(kind_scale_kinds.size(), mini(kind_scale_axes.size(), kind_scale_values.size()))
+	for i in count:
+		if StringName(kind_scale_kinds[i]) == kind and StringName(kind_scale_axes[i]) == axis_name:
+			return kind_scale_values[i]
+	return 1.0
+
+
+## Rows of [code]kind[/code] and [code]scale[/code] for one axis.
+func scales_for(axis_name: StringName) -> Array:
+	var rows: Array = []
+	var count := mini(kind_scale_kinds.size(), mini(kind_scale_axes.size(), kind_scale_values.size()))
+	for i in count:
+		if StringName(kind_scale_axes[i]) != axis_name:
+			continue
+		rows.append({"kind": StringName(kind_scale_kinds[i]), "scale": float(kind_scale_values[i])})
+	return rows
 
 
 func axis_delta(verb: StringName, axis_name: StringName) -> float:
