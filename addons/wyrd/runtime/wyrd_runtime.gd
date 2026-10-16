@@ -976,6 +976,20 @@ func apply_variant_secrecy(parent: WyrdLineDef, shown: Dictionary) -> Dictionary
 	return shown
 
 
+## One line per scope-and-speaker match when [member WyrdConfig.trace_director] is set.
+## Logged only while tracing is on. [code]path[/code] is the storylet id.
+## [code]key[/code] is the scope id. Load does not log one.
+func trace_director_candidate(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if _config == null or not _config.trace_director:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("director_candidate", fields)
+	print(WyrdDirector.format_candidate(fields))
+
+
 func trace_director(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return

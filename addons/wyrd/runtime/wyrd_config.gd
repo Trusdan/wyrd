@@ -10,7 +10,7 @@ extends Resource
 ## [member axis_deltas], [member kind_scale_kinds], [member kind_scale_axes],
 ## [member kind_scale_values], [member scheduler_work_per_tick],
 ## [member credibility_threshold], [member compact_after],
-## [member secrecy_tiers], and [member secrecy_fact].
+## [member secrecy_tiers], [member secrecy_fact], and [member trace_director].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -34,6 +34,9 @@ extends Resource
 @export var secrecy_tiers: PackedStringArray = PackedStringArray()
 ## World fact whose symbol is the unlocked secrecy name. Not saved.
 @export var secrecy_fact: String = "player.clearance"
+## When true, a director query logs one line per scope-and-speaker match. Not saved.
+## Tracing must also be on. Load does not log those lines.
+@export var trace_director: bool = false
 
 
 func half_life_for(verb: StringName) -> float:

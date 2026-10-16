@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.4.0-m6 - 2026-10-16
+
+M6 director and reactivity. `VERSION` is `0.4.0-m6`. Corey cuts the tag `v0.4.0-m6`. Save schema is 2.
+
+- Storylet queries, bark clocks, quest regions, sequences, voiced lines, and secrecy tiers.
+- `wyrd why-not` takes `--tiers` and `--secrecy-fact`. `wyrd storylets` lists storylets. `wyrd cooldowns` lists clocks.
+- `WyrdConfig.trace_director` logs one `director_candidate` line per scope-and-speaker match when tracing is on. Load does not log it.
+
 ## 0.3.0-m5 - 2026-10-16
 
 M5 deeds and social. `VERSION` is `0.3.0-m5`. Corey cuts the tag. Save schema is 2.

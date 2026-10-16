@@ -40,7 +40,9 @@ extends RefCounted
 ##
 ## A win records the selection, then draws the body. [method WyrdStoryletDeck.draw]
 ## alone does not record one. Candidates in the trace are the count after the
-## filters.
+## filters. When [member WyrdConfig.trace_director] is true and tracing is on,
+## each scope-and-speaker match logs one [code]director_candidate[/code] line
+## before that summary. The line carries the score and the first failing clause.
 
 const STREAM: StringName = &"storylet_director"
 const WILDCARD := "any"
@@ -61,6 +63,8 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 	if not _known_scope(kind):
 		push_error("Wyrd.director.query: unknown scope \"%s\"" % scope_kind)
 		return _finish(scope_text, speaker, [], null, {}, 0)
+	if _wants_candidate_trace():
+		candidate_rows(scope_kind, scope_id, speaker)
 	var matched := _eligible(kind, scope_id, speaker)
 	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
 	var drawn := {}
@@ -142,6 +146,8 @@ func why_not(storylet_id: String, scope_kind: String, scope_id: String = "", spe
 	if not _known_scope(kind):
 		push_error("Wyrd.director.why_not: unknown scope \"%s\"" % scope_kind)
 		return _finish_why(storylet_id, scope_text, speaker, false, "scope", "", score, story.cooldown_minutes, remaining, "")
+	if _wants_candidate_trace():
+		candidate_rows(scope_kind, scope_id, speaker)
 	if not _scope_matches(story, kind, scope_id):
 		return _finish_why(storylet_id, scope_text, speaker, false, "scope", "", score, story.cooldown_minutes, remaining, "")
 	if not _speaker_matches(story.speaker, speaker):
@@ -191,6 +197,149 @@ static func format_why_not(row: Dictionary) -> String:
 		_dash(row, "tier"),
 		_dash(row, "unlocked"),
 	]
+
+
+## Scope-and-speaker matches, sorted by id. Does not record a selection or roll.
+## Each row is traced when [member WyrdConfig.trace_director] and tracing are on.
+func candidate_rows(scope_kind: String, scope_id: String = "", speaker: String = "") -> Array:
+	var rows: Array = []
+	var kind := StringName(scope_kind)
+	if _runtime == null or _runtime.content() == null or _runtime.storylets == null:
+		return rows
+	if not _known_scope(kind):
+		return rows
+	var scope_text := _scope_text(kind, scope_id)
+	var ids: Array = _runtime.content().storylets.keys()
+	ids.sort()
+	for id in ids:
+		var found: Variant = _runtime.content().storylets[id]
+		if not (found is WyrdStoryletDef):
+			continue
+		var story: WyrdStoryletDef = found
+		if not _scope_matches(story, kind, scope_id):
+			continue
+		if not _speaker_matches(story.speaker, speaker):
+			continue
+		var diagnosed := _diagnose(story, speaker)
+		var row := {
+			"clause": str(diagnosed["clause"]),
+			"eligible": str(diagnosed["eligible"]),
+			"key": _scope_id_of(scope_text),
+			"path": story.id,
+			"scope": scope_text,
+			"score": str(diagnosed["score"]),
+			"speaker": speaker,
+			"storylet": story.id,
+		}
+		rows.append(row)
+		_runtime.trace_director_candidate(row)
+	return rows
+
+
+## First failing filter for one storylet. Does not record a selection or roll.
+## [code]block[/code] is empty when the storylet passes secrecy, [code]when[/code],
+## and cooldown for this speaker. Scope and speaker failures use those names.
+func diagnose(storylet_id: String, scope_kind: String, scope_id: String = "", speaker: String = "") -> Dictionary:
+	var empty := {"block": "missing", "clause": "-", "eligible": "false", "score": "-", "seen": 0}
+	if _runtime == null or _runtime.content() == null or _runtime.storylets == null:
+		return empty
+	var found: Variant = _runtime.content().storylets.get(storylet_id, null)
+	if not (found is WyrdStoryletDef):
+		return empty
+	var story: WyrdStoryletDef = found
+	var kind := StringName(scope_kind)
+	if not _known_scope(kind) or not _scope_matches(story, kind, scope_id):
+		empty["block"] = "scope"
+		empty["score"] = _score_text(story)
+		empty["seen"] = _runtime.storylets.seen_of(story.id)
+		return empty
+	if not _speaker_matches(story.speaker, speaker):
+		empty["block"] = "speaker"
+		empty["score"] = _score_text(story)
+		empty["seen"] = _runtime.storylets.seen_of(story.id)
+		return empty
+	var diagnosed := _diagnose(story, speaker)
+	diagnosed["seen"] = _runtime.storylets.seen_of(story.id)
+	return diagnosed
+
+
+func speaker_matches(story_speaker: String, query_speaker: String) -> bool:
+	return _speaker_matches(story_speaker, query_speaker)
+
+
+static func format_candidate(row: Dictionary) -> String:
+	var spoken := str(row.get("speaker", ""))
+	if spoken.is_empty():
+		spoken = "-"
+	var clause := str(row.get("clause", "-")).replace("\"", "'")
+	if clause.is_empty():
+		clause = "-"
+	return "wyrd director_candidate scope=%s speaker=%s storylet=%s score=%s eligible=%s clause=\"%s\"" % [
+		str(row.get("scope", "")),
+		spoken,
+		str(row.get("storylet", "")),
+		str(row.get("score", "-")),
+		str(row.get("eligible", "false")),
+		clause,
+	]
+
+
+func _wants_candidate_trace() -> bool:
+	return (
+		_runtime != null
+		and _runtime.config() != null
+		and _runtime.config().trace_director
+		and _runtime.trace != null
+		and _runtime.trace.enabled
+	)
+
+
+func _diagnose(story: WyrdStoryletDef, speaker: String) -> Dictionary:
+	var block := ""
+	var clause := ""
+	if _blocked(story):
+		block = "secrecy"
+		clause = _secrecy_clause(story)
+	else:
+		clause = _failing_clause(story)
+		if not clause.is_empty():
+			block = "when"
+		elif _cooling(story):
+			block = "cooldown"
+			clause = "cooldown"
+		elif _speaker_cooling(story, speaker):
+			block = "cooldown"
+			clause = "speaker_cooldown"
+	if block.is_empty():
+		clause = "-"
+	elif clause.is_empty():
+		clause = block
+	return {
+		"block": block,
+		"clause": clause,
+		"eligible": "true" if block.is_empty() else "false",
+		"score": _score_text(story),
+	}
+
+
+func _score_text(story: WyrdStoryletDef) -> String:
+	var seen := 0
+	if _runtime != null and _runtime.storylets != null:
+		seen = _runtime.storylets.seen_of(story.id)
+	return "%d/%d/%d/%d" % [story.priority, story.specificity, story.weight, seen]
+
+
+func _secrecy_clause(story: WyrdStoryletDef) -> String:
+	var tier := story.secrecy
+	if tier.is_empty():
+		for line in story.lines:
+			var name := _line_tier(story, line)
+			if not name.is_empty() and not _runtime.secrecy_allows(name):
+				tier = name
+				break
+	if tier.is_empty():
+		return "secrecy"
+	return "secrecy:%s" % tier
 
 
 func _finish_why(

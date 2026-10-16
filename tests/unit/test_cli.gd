@@ -3,7 +3,7 @@ extends GutTest
 
 func test_render_prints_version_and_command_list() -> void:
 	var text := WyrdCli.render()
-	assert_true(text.begins_with("wyrd 0.3.0-m5\n"))
+	assert_true(text.begins_with("wyrd 0.4.0-m6\n"))
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
 	assert_true(text.contains("check: compile and link a content pack"))
 	assert_true(text.contains("test: not implemented"))
@@ -15,7 +15,9 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("voice-check: report variable text per speaker"))
 	assert_true(text.contains("script-export: write one speaker's lines for a recording pass"))
 	assert_true(text.contains("unvoiced-report: list line ids with no audio for each locale"))
-	assert_eq(WyrdCli.COMMANDS.size(), 10)
+	assert_true(text.contains("storylets: list storylets for a scope and speaker"))
+	assert_true(text.contains("cooldowns: list storylet rows and speaker clocks"))
+	assert_eq(WyrdCli.COMMANDS.size(), 12)
 
 
 func test_execute_without_args_matches_render() -> void:
