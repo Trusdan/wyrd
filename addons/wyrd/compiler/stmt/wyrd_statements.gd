@@ -1766,6 +1766,16 @@ func _storylet_when(node: WyrdNode, story: WyrdStoryletDef) -> void:
 	story.condition = compiled["compiled"]
 	if story.condition != null:
 		story.specificity = story.condition.specificity
+		_storylet_clauses(story, compiled["ast"] as WyrdExprNode)
+
+
+func _storylet_clauses(story: WyrdStoryletDef, ast: WyrdExprNode) -> void:
+	if ast == null or ast.kind == &"error":
+		return
+	var emitter := WyrdEmitter.new()
+	for part in WyrdStoryletTie.and_parts(ast):
+		story.clause_text.append(WyrdStoryletTie.render(part))
+		story.clauses.append(emitter.emit(part))
 
 
 func _storylet_priority(node: WyrdNode, story: WyrdStoryletDef) -> void:

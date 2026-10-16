@@ -11,7 +11,8 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("export-json: write the linked pack as JSON"))
 	assert_true(text.contains("facts: print the fact cross-reference"))
 	assert_true(text.contains("roles: print a sorted table of role holders"))
-	assert_eq(WyrdCli.COMMANDS.size(), 6)
+	assert_true(text.contains("why-not: explain one storylet for a scope and speaker"))
+	assert_eq(WyrdCli.COMMANDS.size(), 7)
 
 
 func test_execute_without_args_matches_render() -> void:

@@ -791,6 +791,15 @@ func trace_add(kind: String, fields: Dictionary) -> void:
 	trace.add(kind, fields)
 
 
+func trace_why_not(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("why_not", fields)
+	print(WyrdDirector.format_why_not(fields))
+
+
 func trace_director(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return

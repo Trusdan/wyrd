@@ -16,6 +16,9 @@ var scope_id: String = ""
 var speaker: String = ""
 var when_text: String = ""
 var condition: WyrdCompiledCondition = null
+## Top-level [code]and[/code] pieces, in source order. Used by why-not.
+var clauses: Array[WyrdCompiledCondition] = []
+var clause_text: PackedStringArray = PackedStringArray()
 var specificity: int = 0
 var generic: bool = true
 var priority: int = 0
