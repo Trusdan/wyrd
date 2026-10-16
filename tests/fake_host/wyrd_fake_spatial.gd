@@ -9,6 +9,7 @@ var _perceive: Dictionary = {}
 var _reach: Dictionary = {}
 var _nearby: Dictionary = {}
 var _witnesses: Dictionary = {}
+var _perception: Dictionary = {}
 
 
 func set_place(entity: StringName, place: StringName) -> void:
@@ -39,6 +40,21 @@ func set_nearby(
 
 func set_witnesses(place: StringName, ids: PackedStringArray) -> void:
 	_witnesses[place] = ids.duplicate()
+
+
+## One mode for [param observer] at [param place]. An empty place applies at every place.
+func set_perception(observer: StringName, mode: StringName, place: StringName = &"") -> void:
+	_perception["%s\t%s" % [String(observer), String(place)]] = mode
+
+
+func perceive(observer: StringName, _actor: StringName, _target: StringName, place: StringName) -> StringName:
+	var specific := "%s\t%s" % [String(observer), String(place)]
+	if _perception.has(specific):
+		return _perception[specific] as StringName
+	var any := "%s\t" % String(observer)
+	if _perception.has(any):
+		return _perception[any] as StringName
+	return &"saw"
 
 
 func witnesses_of(_actor: StringName, _target: StringName, place: StringName) -> PackedStringArray:

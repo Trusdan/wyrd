@@ -1028,6 +1028,16 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 			if not _belief(effect, items, false):
 				_no_block(node)
 				return null
+		"learn":
+			effect.kind = &"learn"
+			if not _belief(effect, items, true):
+				_no_block(node)
+				return null
+		"forget":
+			effect.kind = &"forget"
+			if not _belief(effect, items, false):
+				_no_block(node)
+				return null
 		_:
 			_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
 			_no_block(node)
@@ -1088,7 +1098,7 @@ func _assign(effect: WyrdEffectDef, items: Array[WyrdToken], is_inc: bool) -> bo
 
 
 func _belief(effect: WyrdEffectDef, items: Array[WyrdToken], has_value: bool) -> bool:
-	var who_noun := "agent" if effect.kind == &"believe" or effect.kind == &"unbelieve" else "group"
+	var who_noun := "group" if effect.kind == &"declare" or effect.kind == &"retract" else "agent"
 	var shape := "%s needs <%s> <fact>%s" % [String(effect.kind), who_noun, " = <expr>" if has_value else ""]
 	var who := _dotted_at(items, 1)
 	var name := String(who["name"])
@@ -1166,19 +1176,27 @@ func _deed(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
 		return false
 	effect.verb = items[2].text
 	var seen := {}
+	var reveals: Dictionary = {}
+	var claim: Dictionary = {}
 	var rows := _arg_rows(items, 4, close)
 	for row in rows:
 		var name := String(row["name"])
 		if name.is_empty():
 			_error(WyrdDiagnostic.E_ARG_NAME, "deed arguments are named", int(row["line"]), int(row["col"]))
 			continue
-		if not _DEED_TYPES.has(name) and name != "witnesses":
+		if not _DEED_TYPES.has(name) and name != "witnesses" and name != "reveals" and name != "claim":
 			_error(WyrdDiagnostic.E_ARG_NAME, "deed has no argument \"%s\"" % name, int(row["line"]), int(row["col"]))
 			continue
 		if seen.has(name):
 			_error(WyrdDiagnostic.E_ARG_NAME, "deed argument \"%s\" is duplicated" % name, int(row["line"]), int(row["col"]))
 			continue
 		seen[name] = true
+		if name == "reveals":
+			reveals = row
+			continue
+		if name == "claim":
+			claim = row
+			continue
 		var expected: StringName = &"symbol" if name == "witnesses" and _witness_auto(items, int(row["from"]), int(row["to"])) else _DEED_TYPES.get(name, &"set")
 		if name == "witnesses" and expected != &"symbol":
 			expected = &"set"
@@ -1196,7 +1214,33 @@ func _deed(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
 		effect.args.append({"compiled": compiled["compiled"], "name": name, "text": String(row["text"])})
 	if not seen.has("actor"):
 		_error(WyrdDiagnostic.E_ARG_TYPE, "deed missing argument \"actor\"", effect.line, effect.col)
+	_reveal_args(effect, reveals, claim)
 	return true
+
+
+func _reveal_args(effect: WyrdEffectDef, reveals: Dictionary, claim: Dictionary) -> void:
+	if reveals.is_empty() and claim.is_empty():
+		return
+	if reveals.is_empty():
+		_error(WyrdDiagnostic.E_ARG_TYPE, "deed argument \"claim\" needs reveals", int(claim["line"]), int(claim["col"]))
+		return
+	if claim.is_empty():
+		_error(WyrdDiagnostic.E_ARG_TYPE, "deed missing argument \"claim\"", int(reveals["line"]), int(reveals["col"]))
+	var target := _expr(String(reveals["text"]), int(reveals["line"]), int(reveals["col"]), _STORY, false, &"", effect.reads)
+	var fact := _stored_fact(target["ast"], effect)
+	if claim.is_empty():
+		return
+	var value_type: StringName = fact.type_name if fact != null else &""
+	var value := _expr(String(claim["text"]), int(claim["line"]), int(claim["col"]), _STORY, false, value_type, effect.reads)
+	effect.value = value["compiled"]
+	effect.value_text = String(claim["text"])
+	if fact != null and value["ast"] != null and value_type != &"" and not _fits((value["ast"] as WyrdExprNode).type_name, fact.type_name):
+		_error(
+			WyrdDiagnostic.E_WRITE_TYPE,
+			"cannot write %s to %s fact \"%s\"" % [(value["ast"] as WyrdExprNode).type_name, fact.type_name, fact.key],
+			int(claim["line"]),
+			int(claim["col"])
+		)
 
 
 func _witness_auto(items: Array[WyrdToken], start: int, end: int) -> bool:

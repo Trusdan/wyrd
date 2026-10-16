@@ -11,7 +11,8 @@ extends RefCounted
 ## role reveal or [code]known/<agent>[/code]. [code]believes[/code] is truthy of
 ## the resolved belief. [code]belief[/code] returns that value. [code]held[/code]
 ## reads one group's bag. [code]conflicted[/code] is true when the agent's groups
-## hold different values for one key. A compiled key argument loads the fact; the key is the
+## hold different values for one key. [code]perceived[/code] returns the latest
+## witness mode for an agent and verb. A compiled key argument loads the fact; the key is the
 ## latest load in this evaluation.
 
 var record_id: String = ""
@@ -41,6 +42,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"holder": Callable(self, &"_holder"),
 		&"known": Callable(self, &"_known"),
 		&"outcome": Callable(self, &"_outcome"),
+		&"perceived": Callable(self, &"_perceived"),
 		&"knows": Callable(self, &"_knows"),
 		&"rel": Callable(self, &"_rel"),
 		&"slot_state": Callable(self, &"_slot_state"),
@@ -229,6 +231,15 @@ func _chance(args: Array) -> bool:
 
 func _knows(args: Array) -> bool:
 	return _known(args)
+
+
+func _perceived(args: Array) -> Variant:
+	if args.size() < 2 or args[0] == null or args[1] == null or _runtime == null or _runtime.deeds == null:
+		return null
+	var mode := _runtime.deeds.mode_of(StringName(str(args[0])), StringName(str(args[1])))
+	if mode == &"":
+		return null
+	return mode
 
 
 func _belief(args: Array) -> Variant:

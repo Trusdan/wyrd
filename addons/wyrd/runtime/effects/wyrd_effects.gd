@@ -1,7 +1,7 @@
 class_name WyrdEffects
 extends RefCounted
 
-## Runs the slice effects, including belief writes.
+## Runs the slice effects, including belief and knowledge writes.
 ##
 ## @experimental
 ## [code]set[/code] and [code]inc[/code] write stored facts and keep provenance
@@ -98,9 +98,9 @@ func run_one(effect: WyrdEffectDef) -> String:
 			return _command(effect)
 		&"outcome":
 			outcome_changed.emit(quest_id, StringName(effect.branch), StringName(effect.outcome))
-		&"believe", &"declare":
+		&"believe", &"declare", &"learn":
 			_belief(effect, true)
-		&"unbelieve", &"retract":
+		&"unbelieve", &"retract", &"forget":
 			_belief(effect, false)
 		_:
 			push_error("WyrdEffects: effect \"%s\" is not in this slice" % String(effect.kind))
@@ -115,7 +115,11 @@ func _belief(effect: WyrdEffectDef, write_value: bool) -> void:
 	if effect.agent.is_empty():
 		push_error("WyrdEffects: belief needs an agent or group")
 		return
-	var layer := "believed" if effect.kind == &"believe" or effect.kind == &"unbelieve" else "held"
+	var layer := "held"
+	if effect.kind == &"believe" or effect.kind == &"unbelieve":
+		layer = "believed"
+	elif effect.kind == &"learn" or effect.kind == &"forget":
+		layer = "known"
 	var perspective := StringName("%s/%s" % [layer, effect.agent])
 	if write_value:
 		runtime.facts.set_in(StringName(key), runtime.eval_value(effect.value), perspective)
@@ -155,7 +159,11 @@ func _deed(effect: WyrdEffectDef) -> void:
 			witnesses = StringName(str(raw))
 		else:
 			witnesses = _strings(raw, _text(args, "witnesses"))
-	runtime.deeds.record(
+	var claim: Variant = null
+	if not effect.fact_key.is_empty():
+		claim = runtime.eval_value(effect.value)
+		runtime.perception_claim(effect.fact_key, claim)
+	var deed_id := runtime.deeds.record(
 		StringName(effect.verb),
 		actor,
 		_name(_value(args, "target")),
@@ -166,6 +174,23 @@ func _deed(effect: WyrdEffectDef) -> void:
 		_name(_value(args, "visibility")) if args.has("visibility") else &"public",
 		bool(_value(args, "memorable")) if args.has("memorable") else false
 	)
+	runtime.clear_perception_claim()
+	if effect.fact_key.is_empty() or deed_id < 0 or runtime.deeds.size() == 0:
+		return
+	var row := runtime.deeds.row_at(runtime.deeds.size() - 1)
+	if int(row["id"]) != deed_id:
+		return
+	_reveal(row, effect.fact_key, claim)
+
+
+## [code]saw[/code] writes [code]known/[/code]. [code]heard[/code] and [code]inferred[/code]
+## write [code]believed/[/code]. The actor and other agents are not copied in.
+func _reveal(row: Dictionary, key: String, claim: Variant) -> void:
+	var witnesses: PackedStringArray = row["witnesses"]
+	var modes: PackedStringArray = row["perception"]
+	for i in witnesses.size():
+		var layer := "known" if String(modes[i]) == "saw" else "believed"
+		runtime.facts.set_in(StringName(key), claim, StringName("%s/%s" % [layer, String(witnesses[i])]))
 
 
 func _command(effect: WyrdEffectDef) -> String:

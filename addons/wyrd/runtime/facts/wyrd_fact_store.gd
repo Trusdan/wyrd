@@ -9,8 +9,8 @@ extends RefCounted
 ## a perspective argument cannot be added and [code]set[/code] cannot return a
 ## bool. [method set_in] and [method get_in] take [code]world[/code],
 ## [code]known/<agent>[/code], [code]believed/<agent>[/code], or
-## [code]held/<group>[/code]. Only schema-declared stored facts can be believed
-## or held. A missing fact reads as null. Conditions treat that as false.
+## [code]held/<group>[/code]. Only schema-declared stored facts can be learned,
+## believed, or held. A missing fact reads as null. Conditions treat that as false.
 ##
 ## [signal fact_changed] fires only for prefixes passed to [method subscribe].
 ## Callables on this object are the runtime's hooks. They are not saved.
@@ -22,6 +22,8 @@ var tracer: Callable = Callable()
 ## Called after a [code]believed/[/code] or [code]held/[/code] value changes.
 ## [code]op[/code] is [code]believe[/code], [code]unbelieve[/code], [code]declare[/code], or [code]retract[/code].
 var on_belief: Callable = Callable()
+## Called after a [code]known/[/code] value changes. [code]op[/code] is [code]learn[/code] or [code]forget[/code].
+var on_knowledge: Callable = Callable()
 var on_resolved: Callable = Callable()
 var clock: Callable = Callable()
 var resolver_of: Callable = Callable()
@@ -199,15 +201,17 @@ func set_in(key: StringName, new_value: Variant, perspective: StringName = &"wor
 	_emit(text, old_value, stored, had)
 	if kind == "believed" or kind == "held":
 		_log_belief("believe" if kind == "believed" else "declare", _who(perspective), text, stored)
+	elif kind == "known":
+		_log_knowledge("learn", _who(perspective), text, stored)
 	return true
 
 
-## Removes one [code]believed/[/code] or [code]held/[/code] key. A missing key is a no-op.
+## Removes one [code]known/[/code], [code]believed/[/code], or [code]held/[/code] key. A missing key is a no-op.
 func clear_in(key: StringName, perspective: StringName) -> bool:
 	var text := String(key)
 	var kind := _kind(perspective)
-	if kind != "believed" and kind != "held":
-		_refuse("perspective", text, "clear only removes believed/ or held/")
+	if kind != "known" and kind != "believed" and kind != "held":
+		_refuse("perspective", text, "clear only removes known/, believed/, or held/")
 		return false
 	if not _stored_key(text):
 		return false
@@ -224,7 +228,10 @@ func clear_in(key: StringName, perspective: StringName) -> bool:
 		layers.erase(who)
 	_notify(PackedStringArray([text]))
 	_emit(text, old_value, null, true)
-	_log_belief("unbelieve" if kind == "believed" else "retract", who, text, null)
+	if kind == "known":
+		_log_knowledge("forget", who, text, null)
+	else:
+		_log_belief("unbelieve" if kind == "believed" else "retract", who, text, null)
 	return true
 
 
@@ -260,6 +267,7 @@ func remember(key: StringName, value: Variant, perspective: StringName) -> bool:
 	bag[text] = stored
 	_notify(PackedStringArray([text]))
 	_emit(text, old_value, stored, had)
+	_log_knowledge("learn", _who(perspective), text, stored)
 	return true
 
 
@@ -451,6 +459,12 @@ func _log_belief(op: String, who: String, key: String, value: Variant) -> void:
 	if _quiet or not on_belief.is_valid():
 		return
 	on_belief.call({"key": key, "op": op, "value": value, "who": who})
+
+
+func _log_knowledge(op: String, who: String, key: String, value: Variant) -> void:
+	if _quiet or not on_knowledge.is_valid():
+		return
+	on_knowledge.call({"key": key, "op": op, "value": value, "who": who})
 
 
 func _type_ok(type_name: StringName, new_value: Variant) -> bool:

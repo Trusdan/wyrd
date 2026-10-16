@@ -6,8 +6,11 @@ extends WyrdStmtSpan
 ## @experimental
 ## [member kind] is [code]set[/code], [code]inc[/code], [code]record_deed[/code],
 ## [code]unlock_topic[/code], [code]do[/code], [code]outcome[/code],
-## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code], or
-## [code]retract[/code]. [member agent] is the belief agent or group id.
+## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code],
+## [code]retract[/code], [code]learn[/code], or [code]forget[/code].
+## [member agent] is the belief or knowledge agent, or the group id.
+## A deed with [code]reveals[/code] stores the fact on [member fact_key] and the
+## claim on [member value].
 ## [member args] holds named deed or command arguments.
 ## Command names are checked against [code]WyrdCommandSchema[/code] when the linker has one.
 
