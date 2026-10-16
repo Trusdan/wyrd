@@ -10,6 +10,8 @@ extends RefCounted
 ## and scenes. S2d saves that state and can record a decision trace.
 ## Callables stay in the registries.
 
+signal bark_ready(line: WyrdLineView)
+
 const VERSION_PATH: String = "res://addons/wyrd/VERSION"
 const _DEED_CALLS: PackedStringArray = ["deed_count", "deed_score", "affinity", "axis", "disposition", "reputation", "perceived", "slot_state"]
 const _ROLE_CALLS: PackedStringArray = ["holder", "display_name", "filled", "known", "knows", "slot_state", "disposition"]
@@ -969,6 +971,7 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 	_apply_event_act(event_name, payload, normalized)
 	if quests != null:
 		quests.on_world_event(emit_id, event_name, normalized)
+	_wake_spatial(event_name)
 	var in_batch := events != null and events.batching()
 	if in_batch or not owned:
 		trace_add("emit", {
@@ -1416,6 +1419,49 @@ func _tracked_calls() -> PackedStringArray:
 func _clear_belief_cache() -> void:
 	if _ctx != null:
 		_ctx.clear_belief_cache()
+
+
+func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
+	if story == null:
+		return
+	var view := WyrdLineView.new()
+	var line_id := str(drawn.get("line_id", ""))
+	view.id = line_id
+	var entity := story.speaker
+	if roles != null:
+		var held := roles.holder(StringName(story.speaker))
+		if held != &"":
+			entity = String(held)
+	view.speaker = StringName(entity)
+	var shown := ""
+	var world := _world()
+	if world != null and view.speaker != &"":
+		shown = world.display_name(view.speaker)
+	view.display_name = shown if not shown.is_empty() else entity
+	if roles != null:
+		view.roles = roles.roles_of(view.speaker)
+	var line_def: WyrdLineDef = null
+	if _content != null and not line_id.is_empty():
+		line_def = _content.lines.get(line_id) as WyrdLineDef
+	if line_def != null:
+		view.tags = line_def.tags.duplicate()
+		if dialogue != null:
+			view.text = dialogue.render_prose(line_def.prose, line_id)
+			view.audio = dialogue.audio_for(line_id)
+	bark_ready.emit(view)
+
+
+func _wake_spatial(event_name: StringName) -> void:
+	if _content == null:
+		return
+	var hits := _content.spatial_waits(event_name)
+	if hits.is_empty():
+		return
+	_queue.mark(hits)
+	if not _collecting:
+		return
+	for index in hits:
+		_collected[int(index)] = true
 
 
 func _spatial() -> WyrdSpatialAdapter:

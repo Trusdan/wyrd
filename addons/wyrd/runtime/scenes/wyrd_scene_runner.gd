@@ -63,6 +63,16 @@ func line() -> WyrdLineView:
 	return _line
 
 
+func render_prose(prose: WyrdExprNode, line_id: String) -> String:
+	if _text == null:
+		return ""
+	return _text.render(prose, line_id)
+
+
+func audio_for(line_id: String) -> Variant:
+	return _audio(line_id)
+
+
 func choices() -> Array[WyrdChoiceView]:
 	return _choices.duplicate()
 

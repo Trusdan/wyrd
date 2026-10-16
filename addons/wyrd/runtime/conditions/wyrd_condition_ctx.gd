@@ -13,7 +13,9 @@ extends RefCounted
 ## reads one group's bag. [code]conflicted[/code] is true when the agent's groups
 ## hold different values for one key. [code]perceived[/code] returns the latest
 ## witness mode for an agent and verb. [code]reputation[/code] is the mean disposition
-## of a group's members toward the subject. A compiled key argument loads the fact; the key is the
+## of a group's members toward the subject. [code]nearby[/code] counts adapter ids.
+## [code]has[/code] is a positive [code]count[/code]. A missing adapter returns 0 or
+## false and does not call the unimplemented base. A compiled key argument loads the fact; the key is the
 ## latest load in this evaluation.
 
 var record_id: String = ""
@@ -38,17 +40,22 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"axis": Callable(self, &"_axis"),
 		&"belief": Callable(self, &"_belief"),
 		&"believes": Callable(self, &"_believes"),
+		&"can_perceive": Callable(self, &"_can_perceive"),
+		&"can_reach": Callable(self, &"_can_reach"),
 		&"conflicted": Callable(self, &"_conflicted"),
+		&"count": Callable(self, &"_count"),
 		&"chance": Callable(self, &"_chance"),
 		&"deed_count": Callable(self, &"_deed_count"),
 		&"deed_score": Callable(self, &"_deed_score"),
 		&"disposition": Callable(self, &"_disposition"),
 		&"display_name": Callable(self, &"_display_name"),
 		&"filled": Callable(self, &"_filled"),
+		&"has": Callable(self, &"_has"),
 		&"has_tag": Callable(self, &"_has_tag"),
 		&"held": Callable(self, &"_held"),
 		&"holder": Callable(self, &"_holder"),
 		&"known": Callable(self, &"_known"),
+		&"nearby": Callable(self, &"_nearby"),
 		&"outcome": Callable(self, &"_outcome"),
 		&"perceived": Callable(self, &"_perceived"),
 		&"knows": Callable(self, &"_knows"),
@@ -88,6 +95,52 @@ func _display_name(args: Array) -> Variant:
 	if shown.is_empty():
 		return null
 	return StringName(shown)
+
+
+func _nearby(args: Array) -> int:
+	if args.size() < 3 or args[0] == null:
+		return 0
+	var spatial := _spatial()
+	if spatial == null:
+		return 0
+	var tag := &""
+	if args[2] != null:
+		tag = StringName(str(args[2]))
+	var radius := 0.0
+	if args[1] != null:
+		radius = float(args[1])
+	return spatial.nearby(StringName(str(args[0])), radius, WyrdEntityFilter.new(tag, &"")).size()
+
+
+func _can_perceive(args: Array) -> bool:
+	if args.size() < 2 or args[0] == null or args[1] == null:
+		return false
+	var spatial := _spatial()
+	if spatial == null:
+		return false
+	return spatial.can_perceive(StringName(str(args[0])), StringName(str(args[1])))
+
+
+func _can_reach(args: Array) -> bool:
+	if args.size() < 2 or args[0] == null or args[1] == null:
+		return false
+	var spatial := _spatial()
+	if spatial == null:
+		return false
+	return spatial.can_reach(StringName(str(args[0])), StringName(str(args[1])))
+
+
+func _has(args: Array) -> bool:
+	return _count(args) > 0
+
+
+func _count(args: Array) -> int:
+	if args.size() < 2 or args[0] == null or args[1] == null:
+		return 0
+	var inventory := _inventory()
+	if inventory == null:
+		return 0
+	return inventory.count(StringName(str(args[0])), StringName(str(args[1])))
 
 
 func _has_tag(args: Array) -> bool:
@@ -410,4 +463,22 @@ func _world() -> WyrdWorldAdapter:
 	var found := _runtime.adapter(WyrdWorldAdapter)
 	if found is WyrdWorldAdapter:
 		return found as WyrdWorldAdapter
+	return null
+
+
+func _spatial() -> WyrdSpatialAdapter:
+	if _runtime == null:
+		return null
+	var found := _runtime.adapter(WyrdSpatialAdapter)
+	if found is WyrdSpatialAdapter:
+		return found as WyrdSpatialAdapter
+	return null
+
+
+func _inventory() -> WyrdInventoryAdapter:
+	if _runtime == null:
+		return null
+	var found := _runtime.adapter(WyrdInventoryAdapter)
+	if found is WyrdInventoryAdapter:
+		return found as WyrdInventoryAdapter
 	return null

@@ -8,6 +8,7 @@ var _distances: Dictionary = {}
 var _perceive: Dictionary = {}
 var _reach: Dictionary = {}
 var _nearby: Dictionary = {}
+var nearby_calls: int = 0
 var _witnesses: Dictionary = {}
 var _perception: Dictionary = {}
 
@@ -64,6 +65,7 @@ func witnesses_of(_actor: StringName, _target: StringName, place: StringName) ->
 
 
 func nearby(center: StringName, radius_m: float, filter: WyrdEntityFilter) -> PackedStringArray:
+	nearby_calls += 1
 	var tag_name := &""
 	if filter != null:
 		tag_name = filter.tag

@@ -402,6 +402,7 @@ func _stage(node: WyrdNode, quest: WyrdQuestDef) -> void:
 	quest.stages.append(stage)
 	for child in node.children:
 		_stage_stmt(child, stage)
+	_spatial_wait(stage)
 	WyrdStmtSpan.add_reads(quest.reads, stage.reads)
 
 
@@ -447,7 +448,7 @@ func _waits(node: WyrdNode, stage: WyrdStageDef) -> void:
 		return
 	var span := _span_text(node.head, 0, node.head.size())
 	stage.waits_text = span["text"]
-	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", stage.reads)
+	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", stage.reads, {}, true)
 	stage.waits_until = compiled["compiled"]
 	_no_block(node)
 
@@ -475,7 +476,7 @@ func _on_event(node: WyrdNode, stage: WyrdStageDef) -> void:
 	if event != null:
 		for field in event.fields:
 			_event_fields[str(field["name"])] = StringName(str(field["type"]))
-	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads)
+	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads, {}, true)
 	handler.where_cond = compiled["compiled"]
 	for child in node.children:
 		match child.keyword:
@@ -509,7 +510,7 @@ func _handler_transition(node: WyrdNode, handler: WyrdOnEventDef) -> void:
 			return
 		var span := _span_text(items, 2, items.size())
 		expr = span["text"]
-		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads)
+		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", handler.reads, {}, true)
 		when = compiled["compiled"]
 	handler.transitions.append({
 		"col": items[0].col,
@@ -690,6 +691,7 @@ func _variant(node: WyrdNode, stage: WyrdStageDef) -> void:
 			_redirect(child, variant)
 		else:
 			_stage_stmt(child, variant.body)
+	_spatial_wait(variant.body)
 	WyrdStmtSpan.add_reads(variant.reads, variant.body.reads)
 	stage.variants.append(variant)
 	WyrdStmtSpan.add_reads(stage.reads, variant.reads)
@@ -1403,7 +1405,8 @@ func _expr(
 	require_bool: bool,
 	expected: StringName,
 	into: Array[StringName],
-	bindings: Dictionary = {}
+	bindings: Dictionary = {},
+	allow_spatial: bool = false
 ) -> Dictionary:
 	if text.strip_edges().is_empty():
 		_error(WyrdDiagnostic.E_EXPR_SYNTAX, "expected an expression", line, col)
@@ -1422,7 +1425,8 @@ func _expr(
 		require_bool,
 		expected,
 		_event_fields,
-		bindings
+		bindings,
+		allow_spatial
 	)
 	WyrdStmtSpan.add_reads(into, compiled.reads)
 	return {"ast": compiler.ast, "compiled": compiled}
@@ -1620,6 +1624,7 @@ const _STORYLET_FIELDS := {
 	"priority": true,
 	"scope": true,
 	"speaker": true,
+	"speaker_cooldown": true,
 	"weight": true,
 	"when": true,
 }
@@ -1709,6 +1714,8 @@ func _storylet_field(node: WyrdNode, story: WyrdStoryletDef, field: String) -> v
 			_storylet_weight(node, story)
 		"cooldown":
 			_storylet_cooldown(node, story)
+		"speaker_cooldown":
+			_storylet_speaker_cooldown(node, story)
 
 
 func _storylet_scope(node: WyrdNode, story: WyrdStoryletDef) -> void:
@@ -1798,13 +1805,27 @@ func _storylet_weight(node: WyrdNode, story: WyrdStoryletDef) -> void:
 
 
 func _storylet_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var minutes := _duration_minutes(node, "cooldown")
+	if minutes < 0:
+		return
+	story.cooldown_minutes = minutes
+
+
+func _storylet_speaker_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var minutes := _duration_minutes(node, "speaker_cooldown")
+	if minutes < 0:
+		return
+	story.speaker_cooldown_minutes = minutes
+
+
+func _duration_minutes(node: WyrdNode, label: String) -> int:
 	var at := _colon_at(node)
 	if at >= 0 and at < node.head.size() and node.head[at].kind == &"minus":
-		_story_error(node, "cooldown cannot be negative")
-		return
+		_story_error(node, "%s cannot be negative" % label)
+		return -1
 	if at < 0 or at + 1 >= node.head.size() or node.head[at].kind != &"int" or node.head[at + 1].kind != &"ident" or at + 2 != node.head.size():
-		_story_error(node, "cooldown needs a duration")
-		return
+		_story_error(node, "%s needs a duration" % label)
+		return -1
 	var scale := 0
 	match node.head[at + 1].text:
 		"m":
@@ -1814,9 +1835,23 @@ func _storylet_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
 		"d":
 			scale = WyrdCondition.MINUTES_PER_DAY
 		_:
-			_story_error(node, "cooldown unit must be m, h, or d")
-			return
-	story.cooldown_minutes = int(node.head[at].text) * scale
+			_story_error(node, "%s unit must be m, h, or d" % label)
+			return -1
+	return int(node.head[at].text) * scale
+
+
+func _spatial_wait(stage: WyrdStageDef) -> void:
+	if stage == null or stage.waits_until == null or not stage.waits_until.uses_spatial:
+		return
+	if not stage.handlers.is_empty():
+		return
+	var span: Dictionary = stage.waits_until.source_span
+	_error(
+		WyrdDiagnostic.E_SPATIAL_CONTEXT,
+		"waits_until nearby, can_perceive, or can_reach needs an on <event> handler",
+		int(span.get("line", stage.line)),
+		int(span.get("col", stage.col))
+	)
 
 
 func _storylet_set(node: WyrdNode, story: WyrdStoryletDef) -> void:

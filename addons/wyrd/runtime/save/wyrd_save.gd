@@ -5,7 +5,9 @@ extends RefCounted
 ## Evidence deadlines, when any exist, ride in [code]facts.evidence[/code].
 ## Line-set draw state and director [code]seen[/code] / [code]last_minute[/code],
 ## when any of that exists, ride in [code]storylets[/code]. An unknown storylet
-## id is kept in that bag and ignored.
+## id is kept in that bag and ignored. Bark speaker clocks, when any exist,
+## ride in [code]bark_speakers[/code]. An unknown speaker id is kept. A missing
+## [code]bark_speakers[/code] key clears those clocks and leaves storylet rows.
 ## An older loader ignores those keys. Schema stays 2.
 ##
 ## @experimental
@@ -61,6 +63,9 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 		var drawn := runtime.storylets.export_state()
 		if not drawn.is_empty():
 			data["storylets"] = drawn
+		var speakers := runtime.storylets.export_speakers()
+		if not speakers.is_empty():
+			data["bark_speakers"] = speakers
 	return data
 
 
@@ -132,7 +137,11 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 		if working.has("storylets"):
 			runtime.storylets.import_state(_dict(working.get("storylets", {})))
 		else:
-			runtime.storylets.clear()
+			runtime.storylets.clear_draws()
+		if working.has("bark_speakers"):
+			runtime.storylets.import_speakers(_dict(working.get("bark_speakers", {})))
+		else:
+			runtime.storylets.clear_speakers()
 	report.ok = true
 	report.manifest_hash = content.manifest_hash
 	return report

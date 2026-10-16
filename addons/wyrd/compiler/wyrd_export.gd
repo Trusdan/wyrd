@@ -280,6 +280,7 @@ static func _storylets(pack: WyrdLinkedPack) -> Array:
 				"scene": story.scene_id,
 				"scope": story.scope_text(),
 				"speaker": story.speaker,
+				"speaker_cooldown": story.speaker_cooldown_minutes,
 				"specificity": story.specificity,
 				"weight": story.weight,
 				"when": story.when_text,

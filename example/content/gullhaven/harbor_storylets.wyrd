@@ -22,3 +22,10 @@ storylet dock_bark_lantern
   when: nearby(player, 4m, tag: lantern) > 0
   cooldown: 30m
   - Mind that flame near the ropes. #line:sg04
+
+storylet dock_bark_lantern_carried
+  scope: bark
+  speaker: ferry
+  when: has(player, lantern) and nearby(player, 4m, tag: lantern) > 0
+  speaker_cooldown: 10m
+  - That lantern in your hand is close to the ropes. #line:sg05

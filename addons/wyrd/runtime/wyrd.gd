@@ -11,7 +11,9 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [member roles], [member quests], [member dialogue], [member storylets],
 ## and [member director] are the runtime's sub-objects. [member dialogue] is
 ## the scene runner. [member storylets] draws a line set. [member director]
-## ranks one.
+## ranks one. [signal bark_ready] repeats the runtime signal for a bark win.
+
+signal bark_ready(line: WyrdLineView)
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -39,6 +41,11 @@ func _init() -> void:
 	storylets = _runtime.storylets
 	director = _runtime.director
 	trace = _runtime.trace
+	_runtime.bark_ready.connect(_relay_bark)
+
+
+func _relay_bark(line: WyrdLineView) -> void:
+	bark_ready.emit(line)
 
 
 func get_version() -> String:

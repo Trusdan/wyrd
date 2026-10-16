@@ -33,6 +33,8 @@ var pure: PackedByteArray = PackedByteArray()
 var _by_cond: Dictionary = {}
 ## Call name to condition indexes. Built for the names the tick queue watches.
 var _calls: Dictionary = {}
+## Event name to spatial [code]waits_until[/code] indexes. Woken on that emit.
+var _spatial_waits: Dictionary = {}
 
 
 static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
@@ -107,7 +109,12 @@ func _stage(quest_id: String, stage: WyrdStageDef) -> void:
 	if stage == null:
 		return
 	var prefix := "%s.%s" % [quest_id, stage.id]
-	_add(stage.waits_until, prefix, "waits")
+	var wait_index := _add(stage.waits_until, prefix, "waits")
+	if wait_index >= 0 and stage.waits_until != null and stage.waits_until.uses_spatial:
+		for handler in stage.handlers:
+			if handler.event_name.is_empty():
+				continue
+			_note_spatial(handler.event_name, wait_index)
 	for row in stage.transitions:
 		var when: Variant = row.get("when", null)
 		if when is WyrdCompiledCondition:
@@ -220,13 +227,30 @@ func index_of(cond: WyrdCompiledCondition) -> int:
 	return int(_by_cond[key])
 
 
-func _add(cond: WyrdCompiledCondition, record: String, site: String) -> void:
+func spatial_waits(event_name: StringName) -> PackedInt32Array:
+	var key := String(event_name)
+	if not _spatial_waits.has(key):
+		return PackedInt32Array()
+	return _spatial_waits[key]
+
+
+func _note_spatial(event_name: String, index: int) -> void:
+	var rows := PackedInt32Array()
+	if _spatial_waits.has(event_name):
+		rows = _spatial_waits[event_name]
+	rows.append(index)
+	_spatial_waits[event_name] = rows
+
+
+func _add(cond: WyrdCompiledCondition, record: String, site: String) -> int:
 	if cond == null:
-		return
-	_by_cond[cond.get_instance_id()] = conditions.size()
+		return -1
+	var index := conditions.size()
+	_by_cond[cond.get_instance_id()] = index
 	conditions.append(cond)
 	records.append(record)
 	sites.append(site)
+	return index
 
 
 static func _hex_to_int(hex: String) -> int:

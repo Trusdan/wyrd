@@ -541,6 +541,20 @@ func tell(role: StringName, agent: StringName) -> void:
 	_write_known(role, agent)
 
 
+## World role ids whose binding holder is [param entity]. Sorted.
+func roles_of(entity: StringName) -> PackedStringArray:
+	var found := PackedStringArray()
+	if entity == &"":
+		return found
+	for role in _bindings.keys():
+		var row: Dictionary = _bindings[role]
+		if row.get("holder", &"") != entity:
+			continue
+		found.append(String(role))
+	found.sort()
+	return found
+
+
 func holder(slot_or_role: StringName) -> StringName:
 	var name := String(slot_or_role)
 	if _slots.has(name):

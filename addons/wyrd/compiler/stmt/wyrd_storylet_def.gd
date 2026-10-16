@@ -8,6 +8,7 @@ extends WyrdStmtSpan
 ## [member specificity] counts top-level [code]and[/code] clauses.
 ## [member body_kind] is [code]line[/code], [code]set[/code], or [code]scene[/code].
 ## [member cooldown_minutes] is stored here. The director enforces it.
+## [member speaker_cooldown_minutes] is a bark clock for one concrete speaker.
 ## [member priority] is stored and does not change [member specificity].
 
 var id: String = ""
@@ -24,6 +25,7 @@ var generic: bool = true
 var priority: int = 0
 var weight: int = 1
 var cooldown_minutes: int = 0
+var speaker_cooldown_minutes: int = 0
 var body_kind: StringName = &""
 var lines: Array[WyrdLineDef] = []
 var scene_id: String = ""

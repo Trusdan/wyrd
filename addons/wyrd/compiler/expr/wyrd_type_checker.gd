@@ -20,6 +20,11 @@ var context: StringName = &"storylet_or_choice"
 var minutes_per_day: int = 1440
 var reads: Array[StringName] = []
 var uses_chance: bool = false
+var uses_spatial: bool = false
+## Wait context may name [code]nearby[/code], [code]can_perceive[/code], and
+## [code]can_reach[/code] when the caller is an [code]on[/code] handler or a
+## [code]waits_until[/code] that a later check ties to one.
+var allow_spatial: bool = false
 ## Field name to type for [code]event.<field>[/code] inside an [code]on[/code] handler.
 var event_fields: Dictionary = {}
 ## Bare name to type. Eligibility compiles [code]candidate[/code] as an entity.
@@ -271,6 +276,14 @@ func _call(node: WyrdExprNode) -> void:
 			_error(
 				WyrdDiagnostic.E_CHANCE_CONTEXT,
 				"chance is not allowed in a wait, trigger, or eligibility condition",
+				node
+			)
+	if node.text == "nearby" or node.text == "can_perceive" or node.text == "can_reach":
+		uses_spatial = true
+		if context == _WAIT and not allow_spatial:
+			_error(
+				WyrdDiagnostic.E_SPATIAL_CONTEXT,
+				"%s is not allowed in a wait, trigger, or eligibility condition" % node.text,
 				node
 			)
 	var params: Array = sig["params"]
