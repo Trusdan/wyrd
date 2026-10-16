@@ -371,6 +371,7 @@ func tick(game_minutes: int) -> void:
 	if _config != null and _config.compact_after > 0 and deeds.size() >= _config.compact_after:
 		deeds.compact()
 	facts.refresh_poll(now_minutes())
+	facts.decay_evidence(now_minutes())
 	if game_minutes > 0:
 		_mark_calls(_DEED_CALLS)
 	if not _always.is_empty():
@@ -901,6 +902,7 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 			"payload": _payload_strings(normalized),
 			"time": now_minutes(),
 		})
+	_apply_event_act(event_name, payload, normalized)
 	if quests != null:
 		quests.on_world_event(emit_id, event_name, normalized)
 	var in_batch := events != null and events.batching()
@@ -927,6 +929,234 @@ func _on_emit(event_name: StringName, payload: Dictionary) -> void:
 		quests.on_tick()
 	_collecting = false
 	_collected.clear()
+
+
+## Writes [code]leaves[/code] evidence and one witness layer per mode.
+## [code]saw[/code] learns the fact. [code]heard[/code] and [code]inferred[/code] believe it.
+func _apply_event_act(event_name: StringName, payload: Dictionary, normalized: Dictionary) -> void:
+	if _content == null or not _content.events.has(String(event_name)):
+		return
+	var event := _content.events[String(event_name)] as WyrdEventDef
+	if event == null:
+		return
+	var key := event.leaves_key
+	var value: Variant = null
+	if not key.is_empty():
+		value = event.leaves_value
+		if event.leaves_kind == &"symbol":
+			value = StringName(str(value))
+		if not facts.set_in(StringName(key), value, &"world"):
+			return
+		value = facts.get_in(StringName(key), &"world")
+		var until := -1
+		if event.decays_minutes > 0:
+			until = now_minutes() + event.decays_minutes
+		facts.note_evidence(
+			key,
+			value,
+			_event_place(normalized),
+			until,
+			event.name,
+			_event_actor(normalized),
+			_event_target(normalized)
+		)
+		_trace_evidence(event.name, key, value, until)
+	if not _has_witnesses(payload):
+		return
+	for pair in _event_witnesses(payload, normalized):
+		var who := pair["id"] as StringName
+		var mode := pair["mode"] as StringName
+		if key.is_empty():
+			_trace_event_witness(who, mode, event.name, "", null)
+			continue
+		_write_event_witness(who, mode, event.name, key, value)
+
+
+## A later spatial perceive of evidence still at [param place].
+## The world fact and its deadline stay. [code]saw[/code] learns it. [code]heard[/code]
+## and [code]inferred[/code] believe it.
+func notice_evidence(observer: StringName, place: StringName) -> void:
+	var spatial := adapter(WyrdSpatialAdapter) as WyrdSpatialAdapter
+	for row in facts.evidence_rows():
+		if String(row.get("place", "")) != String(place):
+			continue
+		var mode := &"saw"
+		if spatial != null:
+			mode = spatial.perceive(
+				observer,
+				StringName(str(row.get("actor", ""))),
+				StringName(str(row.get("target", ""))),
+				place
+			)
+		var mode_name := String(mode)
+		if mode_name.is_empty():
+			continue
+		if not _witness_mode_ok(mode_name, "Wyrd.notice_evidence"):
+			continue
+		_write_event_witness(
+			observer,
+			StringName(mode_name),
+			String(row.get("event", "")),
+			String(row.get("key", "")),
+			row.get("value")
+		)
+
+
+func _write_event_witness(
+	who: StringName,
+	mode: StringName,
+	event_name: String,
+	key: String,
+	value: Variant
+) -> void:
+	var layer := "known" if String(mode) == "saw" else "believed"
+	facts.set_in(StringName(key), value, StringName("%s/%s" % [layer, String(who)]))
+	_trace_event_witness(who, mode, event_name, key, value)
+
+
+func _event_witnesses(payload: Dictionary, normalized: Dictionary) -> Array:
+	var spec: Variant = _witness_spec(payload)
+	if spec is String or spec is StringName:
+		if String(spec) == "auto":
+			return _auto_witnesses(normalized)
+		push_error("Wyrd.events.emit: witnesses must be \"auto\" or a list of {id, mode}")
+		return []
+	if spec is Array:
+		var out: Array = []
+		for item in spec:
+			if not (item is Dictionary):
+				push_error("Wyrd.events.emit: witnesses must be \"auto\" or a list of {id, mode}")
+				continue
+			var row: Dictionary = item
+			var id_text := ""
+			if row.has("id"):
+				id_text = String(row["id"])
+			elif row.has(&"id"):
+				id_text = String(row[&"id"])
+			var mode: Variant = null
+			if row.has("mode"):
+				mode = row["mode"]
+			elif row.has(&"mode"):
+				mode = row[&"mode"]
+			if id_text.is_empty() or mode == null:
+				push_error("Wyrd.events.emit: a witness needs id and mode")
+				continue
+			var mode_name := String(mode)
+			if mode_name.is_empty():
+				continue
+			if not _witness_mode_ok(mode_name, "Wyrd.events.emit"):
+				continue
+			out.append({"id": StringName(id_text), "mode": StringName(mode_name)})
+		return out
+	push_error("Wyrd.events.emit: witnesses must be \"auto\" or a list of {id, mode}")
+	return []
+
+
+func _auto_witnesses(normalized: Dictionary) -> Array:
+	var spatial := adapter(WyrdSpatialAdapter) as WyrdSpatialAdapter
+	if spatial == null:
+		return []
+	var actor := StringName(_event_actor(normalized))
+	var target := StringName(_event_target(normalized))
+	var place := StringName(_event_place(normalized))
+	var out: Array = []
+	for observer in spatial.witnesses_of(actor, target, place):
+		var mode := spatial.perceive(StringName(String(observer)), actor, target, place)
+		var mode_name := String(mode)
+		if mode_name.is_empty():
+			continue
+		if not _witness_mode_ok(mode_name, "Wyrd.events.emit"):
+			continue
+		out.append({"id": StringName(String(observer)), "mode": StringName(mode_name)})
+	return out
+
+
+func _witness_mode_ok(mode_name: String, site: String) -> bool:
+	if mode_name == "saw" or mode_name == "heard" or mode_name == "inferred":
+		return true
+	push_error("%s: unknown witness mode \"%s\"" % [site, mode_name])
+	return false
+
+
+func _has_witnesses(payload: Dictionary) -> bool:
+	return payload.has("witnesses") or payload.has(&"witnesses")
+
+
+func _witness_spec(payload: Dictionary) -> Variant:
+	if payload.has("witnesses"):
+		return payload["witnesses"]
+	return payload[&"witnesses"]
+
+
+func _event_actor(payload: Dictionary) -> String:
+	if payload.has("actor"):
+		return String(payload["actor"])
+	return ""
+
+
+func _event_target(payload: Dictionary) -> String:
+	if payload.has("target"):
+		return String(payload["target"])
+	if payload.has("object"):
+		return String(payload["object"])
+	return ""
+
+
+func _event_place(payload: Dictionary) -> String:
+	if payload.has("place"):
+		return String(payload["place"])
+	return _event_target(payload)
+
+
+func _trace_event_witness(
+	agent: StringName,
+	mode: StringName,
+	event_name: String,
+	key: String,
+	value: Variant
+) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := ""
+	if value != null:
+		shown = str(value)
+	var fields := {
+		"agent": String(agent),
+		"event": event_name,
+		"key": key,
+		"mode": String(mode),
+		"value": shown,
+		"who": String(agent),
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("event_witness", fields)
+	print(
+		"wyrd event_witness agent=%s mode=%s event=%s key=%s value=%s"
+		% [fields["agent"], fields["mode"], fields["event"], fields["key"], fields["value"]]
+	)
+
+
+func _trace_evidence(event_name: String, key: String, value: Variant, until: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var until_text := ""
+	if until >= 0:
+		until_text = str(until)
+	var fields := {
+		"event": event_name,
+		"key": key,
+		"until": until_text,
+		"value": str(value),
+		"who": "",
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("evidence", fields)
+	print(
+		"wyrd evidence event=%s key=%s value=%s until=%s"
+		% [fields["event"], fields["key"], fields["value"], fields["until"]]
+	)
 
 
 func _flush_collected() -> PackedInt32Array:
@@ -961,6 +1191,7 @@ func _payload_problem(event_name: StringName, payload: Dictionary) -> String:
 	if event == null:
 		return "unknown event \"%s\"" % String(event_name)
 	var incoming := _payload_strings(payload)
+	incoming.erase("witnesses")
 	var declared := {}
 	for field in event.fields:
 		declared[str(field.get("name", ""))] = str(field.get("type", ""))

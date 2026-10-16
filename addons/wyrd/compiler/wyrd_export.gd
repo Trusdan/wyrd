@@ -62,11 +62,17 @@ static func _events(pack: WyrdLinkedPack) -> Array:
 		var fields: Array = []
 		for field in event.fields:
 			fields.append({"name": str(field.get("name", "")), "type": str(field.get("type", ""))})
-		rows.append({
+		var row := {
 			"fields": fields,
 			"line": event.line,
 			"name": event.name,
-		})
+		}
+		if not event.leaves_key.is_empty():
+			var leaves := {"key": event.leaves_key, "value": event.leaves_value}
+			if event.decays_minutes > 0:
+				leaves["decays"] = event.decays_minutes
+			row["leaves"] = leaves
+		rows.append(row)
 	return rows
 
 

@@ -39,6 +39,9 @@ var _reasons: Dictionary = {}
 var _subs: PackedStringArray = PackedStringArray()
 var _once: Dictionary = {}
 var _quiet: bool = false
+## Evidence deadlines. Each row is actor, event, key, place, target, until, value.
+## [code]until[/code] is the game minute that clears the world fact, or [code]-1[/code].
+var _evidence: Array = []
 
 
 func bind_schema(schema: WyrdFactSchema) -> void:
@@ -47,12 +50,15 @@ func bind_schema(schema: WyrdFactSchema) -> void:
 
 
 func export_state() -> Dictionary:
-	return {
+	var out := {
 		"believed": _export_layers(_believed),
 		"held": _export_layers(_held),
 		"known": _export_layers(_known),
 		"world": _export_bag(_world),
 	}
+	if not _evidence.is_empty():
+		out["evidence"] = _export_evidence()
+	return out
 
 
 func import_state(data: Dictionary) -> void:
@@ -82,6 +88,7 @@ func import_state(data: Dictionary) -> void:
 				set_in(StringName(text), value, perspective)
 	_import_beliefs(data.get("believed", {}), "believed")
 	_import_beliefs(data.get("held", {}), "held")
+	_import_evidence(data.get("evidence", []))
 	_quiet = false
 
 
@@ -100,6 +107,53 @@ func _import_beliefs(raw: Variant, layer: String) -> void:
 		for key in keys:
 			var text := String(key)
 			set_in(StringName(text), _saved_value(text, (bag as Dictionary)[key]), perspective)
+
+
+func _export_evidence() -> Array:
+	var rows: Array = _evidence.duplicate(true)
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("key", "")) < str(b.get("key", "")))
+	var out: Array = []
+	for row in rows:
+		out.append({
+			"actor": str(row.get("actor", "")),
+			"event": str(row.get("event", "")),
+			"key": str(row.get("key", "")),
+			"place": str(row.get("place", "")),
+			"target": str(row.get("target", "")),
+			"until": int(row.get("until", -1)),
+			"value": _plain_fact(row.get("value")),
+		})
+	return out
+
+
+func _import_evidence(raw: Variant) -> void:
+	if not (raw is Array):
+		return
+	for item in raw:
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var key := String(row.get("key", ""))
+		if key.is_empty():
+			continue
+		note_evidence(
+			key,
+			_saved_value(key, row.get("value")),
+			String(row.get("place", "")),
+			int(row.get("until", -1)),
+			String(row.get("event", "")),
+			String(row.get("actor", "")),
+			String(row.get("target", ""))
+		)
+
+
+func _clear_world_key(text: String) -> void:
+	if not _world.has(text):
+		return
+	var old_value: Variant = _world[text]
+	_world.erase(text)
+	_notify(PackedStringArray([text]))
+	_emit(text, old_value, null, true)
 
 
 func _export_layers(layers: Dictionary) -> Dictionary:
@@ -150,6 +204,55 @@ func clear_values() -> void:
 	_cache.clear()
 	_last.clear()
 	_reasons.clear()
+	_evidence.clear()
+
+
+## Replaces any deadline already stored for [param key]. [param until] of [code]-1[/code] does not decay.
+func note_evidence(
+	key: String,
+	value: Variant,
+	place: String,
+	until: int,
+	event_name: String,
+	actor: String,
+	target: String
+) -> void:
+	var next: Array = []
+	for row in _evidence:
+		if str(row.get("key", "")) == key:
+			continue
+		next.append(row)
+	next.append({
+		"actor": actor,
+		"event": event_name,
+		"key": key,
+		"place": place,
+		"target": target,
+		"until": until,
+		"value": value,
+	})
+	_evidence = next
+
+
+func evidence_rows() -> Array:
+	return _evidence.duplicate(true)
+
+
+## Drops deadlines that have come due. Clears the world fact when it still holds the evidence value.
+func decay_evidence(now: int) -> void:
+	if _evidence.is_empty():
+		return
+	var next: Array = []
+	for row in _evidence:
+		var until := int(row.get("until", -1))
+		if until < 0 or now < until:
+			next.append(row)
+			continue
+		var key := String(row.get("key", ""))
+		var current: Variant = get_in(StringName(key), &"world")
+		if current != null and current == row.get("value"):
+			_clear_world_key(key)
+	_evidence = next
 
 
 func subscribe(prefix: StringName) -> void:

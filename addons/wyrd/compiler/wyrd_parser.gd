@@ -227,6 +227,10 @@ func _read_event(line: Array[WyrdToken]) -> WyrdEventDef:
 			return event
 	else:
 		cursor.advance()
+	if cursor.kind() == &"ident" and cursor.text() == "leaves":
+		if not _read_leaves(cursor, event):
+			event.name = ""
+			return event
 	if cursor.has():
 		_event_error("unexpected token \"%s\" in an event" % cursor.peek().display(), cursor, event.line, event.col)
 		event.name = ""
@@ -268,6 +272,15 @@ func _read_event_fields(cursor: _Cursor, event: WyrdEventDef) -> bool:
 				field_col
 			)
 			return false
+		if field_name == "witnesses":
+			_diagnostics.add(
+				WyrdDiagnostic.E_EVENT_ARG,
+				"field \"witnesses\" is reserved for the emit payload",
+				_source.path,
+				field_line,
+				field_col
+			)
+			return false
 		seen[field_name] = true
 		event.fields.append({"name": field_name, "type": cursor.text()})
 		cursor.advance()
@@ -279,6 +292,110 @@ func _read_event_fields(cursor: _Cursor, event: WyrdEventDef) -> bool:
 			return false
 		cursor.advance()
 	_event_error("expected \")\" in an event", cursor, event.line, event.col)
+	return false
+
+
+func _read_leaves(cursor: _Cursor, event: WyrdEventDef) -> bool:
+	event.leaves_line = cursor.line()
+	event.leaves_col = cursor.col()
+	cursor.advance()
+	if cursor.kind() != &"colon":
+		_event_error("expected \":\" after \"leaves\"", cursor, event.line, event.col)
+		return false
+	cursor.advance()
+	var segments := PackedStringArray()
+	if cursor.kind() != &"ident":
+		_event_error("expected a fact key after \"leaves:\"", cursor, event.line, event.col)
+		return false
+	event.leaves_line = cursor.line()
+	event.leaves_col = cursor.col()
+	if not _read_concrete_key(cursor, segments):
+		_event_error("expected a fact key after \"leaves:\"", cursor, event.leaves_line, event.leaves_col)
+		return false
+	event.leaves_key = ".".join(segments)
+	if cursor.kind() != &"eq":
+		_event_error("expected \"=\" after the evidence fact", cursor, event.leaves_line, event.leaves_col)
+		return false
+	cursor.advance()
+	if not _read_leaves_value(cursor, event):
+		return false
+	if cursor.kind() == &"ident" and cursor.text() == "decays":
+		var decay_line := cursor.line()
+		var decay_col := cursor.col()
+		cursor.advance()
+		if cursor.kind() != &"int":
+			_event_error("expected a duration after \"decays\"", cursor, decay_line, decay_col)
+			return false
+		var minutes := int(cursor.text())
+		if minutes <= 0:
+			_diagnostics.add(
+				WyrdDiagnostic.E_EVENT_ARG,
+				"decays must be a positive number of game minutes",
+				_source.path,
+				cursor.line(),
+				cursor.col()
+			)
+			return false
+		event.decays_minutes = minutes
+		cursor.advance()
+	return true
+
+
+func _read_concrete_key(cursor: _Cursor, segments: PackedStringArray) -> bool:
+	if cursor.kind() == &"lbrace":
+		_event_error("evidence fact must be a concrete key", cursor, cursor.line(), cursor.col())
+		return false
+	if cursor.kind() != &"ident":
+		return false
+	segments.append(cursor.text())
+	cursor.advance()
+	while cursor.kind() == &"dot":
+		cursor.advance()
+		if cursor.kind() == &"lbrace":
+			_event_error("evidence fact must be a concrete key", cursor, cursor.line(), cursor.col())
+			return false
+		if cursor.kind() != &"ident":
+			return false
+		segments.append(cursor.text())
+		cursor.advance()
+	return true
+
+
+func _read_leaves_value(cursor: _Cursor, event: WyrdEventDef) -> bool:
+	if cursor.kind() == &"ident":
+		var word := cursor.text()
+		if word == "true" or word == "false":
+			event.leaves_kind = &"bool"
+			event.leaves_value = word == "true"
+			cursor.advance()
+			return true
+		var parts := PackedStringArray()
+		parts.append(word)
+		cursor.advance()
+		while cursor.kind() == &"dot":
+			cursor.advance()
+			if cursor.kind() != &"ident":
+				_event_error("expected a value after \"=\"", cursor, event.leaves_line, event.leaves_col)
+				return false
+			parts.append(cursor.text())
+			cursor.advance()
+		event.leaves_kind = &"symbol"
+		event.leaves_value = ".".join(parts)
+		return true
+	if cursor.kind() == &"int":
+		var whole := int(cursor.text())
+		cursor.advance()
+		if cursor.kind() == &"dot" and cursor.index + 1 < cursor.items.size() and cursor.items[cursor.index + 1].kind == &"int":
+			cursor.advance()
+			var frac := cursor.text()
+			cursor.advance()
+			event.leaves_kind = &"float"
+			event.leaves_value = float("%d.%s" % [whole, frac])
+			return true
+		event.leaves_kind = &"int"
+		event.leaves_value = whole
+		return true
+	_event_error("expected a value after \"=\"", cursor, event.leaves_line, event.leaves_col)
 	return false
 
 

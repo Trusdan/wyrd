@@ -5,11 +5,13 @@ events
   season_changed()
   entity_alive_changed(entity: symbol, alive: bool)
   mechanism_state(object: symbol, state: symbol, actor: symbol)
+  bucket_poured(actor: symbol, place: symbol) leaves: harbor.deck_wet = true decays 60
 
 facts
   player.coins       : int    stored  doc: "Coins the player is carrying."
   ferry.toll_coins   : int    stored  doc: "Coins counted toward the ferry toll."
   harbor.room_taken  : bool   stored  doc: "Whether tonight's tavern room was taken."
+  harbor.deck_wet    : bool   stored  doc: "Whether the harbor deck is still wet."
   harbor.watch_alive : bool   stored  doc: "Whether the dock watch is looking for the ferry master."
   harbor.bell_struck : bool   stored  doc: "Whether the harbor bell was struck."
   harbor.bell_count  : int    stored  doc: "How many times the harbor bell was struck."

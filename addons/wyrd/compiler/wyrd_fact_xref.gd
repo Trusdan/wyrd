@@ -21,7 +21,8 @@ func build(
 	schema: WyrdFactSchema,
 	units: Array,
 	fact_paths: Dictionary,
-	diagnostics: WyrdDiagnostics
+	diagnostics: WyrdDiagnostics,
+	declared_events: Dictionary = {}
 ) -> void:
 	facts.clear()
 	events.clear()
@@ -29,6 +30,7 @@ func build(
 		return
 	var readers := _readers(units)
 	var writers := _writers(units)
+	_leave_writers(writers, declared_events)
 	var reader_index := _index(readers)
 	var writer_index := _index(writers)
 	for fact in schema.entries:
@@ -510,6 +512,23 @@ func _effect_reader(rows: Array, effect: WyrdEffectDef, id: String, path: String
 	if effect.kind == &"unbelieve" or effect.kind == &"retract":
 		return
 	_push(rows, effect.reads, "effect", id, path, effect.line, effect.col)
+
+
+func _leave_writers(rows: Array, declared_events: Dictionary) -> void:
+	var names: Array = declared_events.keys()
+	names.sort()
+	for name in names:
+		var event := declared_events[name] as WyrdEventDef
+		if event == null or event.leaves_key.is_empty():
+			continue
+		rows.append({
+			"col": event.leaves_col if event.leaves_col > 0 else event.col,
+			"file": event.source_path,
+			"id": event.name,
+			"kind": "event",
+			"line": event.leaves_line if event.leaves_line > 0 else event.line,
+			"reads": [StringName(event.leaves_key)],
+		})
 
 
 func _writers(units: Array) -> Array:
