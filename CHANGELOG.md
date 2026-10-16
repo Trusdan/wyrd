@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A seeded Gullhaven scale pack and a same-job performance bench. Pull requests run a warn-only smoke subset. Tags, the nightly run, and a manual dispatch run the full scale and fail a metric that is more than 20% slower or larger than the base build in that job. Absolute budgets warn until they are confirmed. The tag run commits `bench/results/<tag>.json` and regenerates `bench/TREND.md`.
+
 ## 0.3.0-m5 - 2026-10-16
 
 M5 deeds and social. `addons/wyrd/VERSION` is `0.3.0-m5`. Corey cuts the tag. Save schema is 2.

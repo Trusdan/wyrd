@@ -19,7 +19,10 @@ godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- roles --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
 godot --headless --path . -s res://tests/bench/bench.gd -- --iterations 1000 --out res://tests/bench/out/latest.json
+tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-smoke.json
 ```
+
+`tests/bench` is informational and does not gate CI. The milestone suite lives in `bench/` and `tools/perf_bench.sh`. Pull requests run a warn-only smoke subset. Tags, the 07:00 UTC nightly, and a manual dispatch run the full scale. See `bench/README.md`.
 
 `addons/wyrd` is the folder a host copies. `example/` is the Gullhaven placeholder. `tests/fake_host` is the scripted host. The grammar draft is `docs/grammar-v1.md`. Examples use only that invented village. See `docs/CONTRIBUTING.md`.
 

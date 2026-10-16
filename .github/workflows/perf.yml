@@ -1,0 +1,101 @@
+name: Performance
+
+on:
+  push:
+    tags:
+      - "v*"
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: head
+
+      - name: Install pinned Godot
+        working-directory: head
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source tools/pins.env
+          mkdir -p "$HOME/.local/bin" /tmp/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q -o /tmp/godot.zip -d /tmp/godot-bin
+          install -m 0755 "/tmp/godot-bin/Godot_v${GODOT_TAG}_linux.x86_64" "$HOME/.local/bin/godot"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          godot --version
+
+      - name: Checkout previous tag
+        working-directory: head
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            prev="$(git tag --sort=-v:refname | grep -vx "${GITHUB_REF_NAME}" | head -n 1 || true)"
+            echo "BENCH_TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            prev="$(git tag --sort=-v:refname | head -n 1 || true)"
+            if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+              echo "BENCH_TAG=nightly" >> "$GITHUB_ENV"
+            else
+              echo "BENCH_TAG=manual" >> "$GITHUB_ENV"
+            fi
+          fi
+          if [[ -n "${prev}" ]]; then
+            git worktree add --detach "${GITHUB_WORKSPACE}/base" "${prev}"
+            echo "BENCH_BASE=${GITHUB_WORKSPACE}/base" >> "$GITHUB_ENV"
+            echo "perf base ${prev}"
+          else
+            echo "BENCH_BASE=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Full bench
+        working-directory: head
+        run: |
+          set -euo pipefail
+          args=(
+            --profile full
+            --head .
+            --mode gate
+            --tag "${BENCH_TAG}"
+            --out "${RUNNER_TEMP}/perf-full.json"
+            --summary "$GITHUB_STEP_SUMMARY"
+          )
+          if [[ -n "${BENCH_BASE}" ]]; then
+            args+=(--base "${BENCH_BASE}")
+          fi
+          tools/perf_bench.sh "${args[@]}"
+
+      - name: Upload full results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-full
+          path: ${{ runner.temp }}/perf-full.json
+
+      - name: Commit tag baseline
+        if: github.ref_type == 'tag' && success()
+        working-directory: head
+        run: |
+          set -euo pipefail
+          mkdir -p bench/results
+          cp "${RUNNER_TEMP}/perf-full.json" "bench/results/${GITHUB_REF_NAME}.json"
+          python3 tools/perf_reduce.py --write-trend bench/results bench/TREND.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B bench-record
+          git add bench/results "bench/TREND.md"
+          git commit -m "bench: record ${GITHUB_REF_NAME}"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main

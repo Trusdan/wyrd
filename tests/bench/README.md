@@ -1,3 +1,7 @@
+# Informational benchmark
+
+This folder is the older timing probe. CI runs it and does not fail on the numbers. The milestone suite, with smoke and full profiles, is `bench/README.md`.
+
 # Benchmark harness
 
 `bench.gd` writes JSON for two informational workloads. CI does not fail on the timing.
