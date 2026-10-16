@@ -731,6 +731,8 @@ func _cond_ready(cond: WyrdCompiledCondition) -> bool:
 	var index := content.index_of(cond)
 	if runtime.condition_dirty(index):
 		return false
+	if cond.uses_spatial:
+		return runtime.condition_flag(index) != 0
 	return runtime.eval_bool(cond)
 
 

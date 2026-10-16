@@ -15,6 +15,14 @@ extends RefCounted
 ## [member WyrdStoryletDef.cooldown_minutes]. If every match is cooling, the
 ## query has no winner.
 ##
+## A bark also consults [member WyrdStoryletDef.speaker_cooldown_minutes].
+## The clock key is the query speaker when that name is concrete, otherwise
+## the storylet speaker when that name is concrete. [code]any[/code] and an
+## empty name are not concrete and do not start a clock. Topic, event, and
+## beat queries ignore it. A win with a positive cooldown stores that
+## duration for the key. A candidate is cooling while [code]now - last[/code]
+## is still below the stored duration.
+##
 ## Ranking, highest first: priority, specificity, weight, then fewer times
 ## seen, then the older [code]last_minute[/code]. Never selected sorts as
 ## older than any selection. Generics stay in this pool at specificity 0.
@@ -55,8 +63,12 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 	var seen_before := 0
 	if winner != null:
 		seen_before = _runtime.storylets.seen_of(winner.id)
-		_runtime.storylets.note_selected(winner.id, _runtime.now_minutes())
+		var minute := _runtime.now_minutes()
+		_runtime.storylets.note_selected(winner.id, minute)
+		_note_speaker(winner, speaker, minute)
 		drawn = _runtime.storylets.draw(winner.id)
+		if kind == &"bark":
+			_runtime.present_bark(winner, drawn)
 	return _finish(scope_text, speaker, matched, winner, drawn, seen_before)
 
 
@@ -135,6 +147,11 @@ func why_not(storylet_id: String, scope_kind: String, scope_id: String = "", spe
 		return _finish_why(storylet_id, scope_text, speaker, false, "when", clause, score, story.cooldown_minutes, remaining, "")
 	if _cooling(story):
 		return _finish_why(storylet_id, scope_text, speaker, false, "cooldown", "", score, story.cooldown_minutes, remaining, "")
+	if _speaker_cooling(story, speaker):
+		var key := _speaker_key(story, speaker)
+		var stored := _runtime.storylets.speaker_cooldown_of(key)
+		var left := _runtime.storylets.speaker_remaining(key, _runtime.now_minutes())
+		return _finish_why(storylet_id, scope_text, speaker, false, "cooldown", "", score, stored, left, "")
 	var matched := _eligible(kind, scope_id, speaker)
 	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
 	var winner_id := "" if winner == null else winner.id
@@ -216,6 +233,8 @@ func _eligible(kind: StringName, scope_id: String, speaker: String) -> Array:
 		if not _when_passes(story):
 			continue
 		if _cooling(story):
+			continue
+		if _speaker_cooling(story, speaker):
 			continue
 		matched.append(story)
 	return matched
@@ -321,6 +340,36 @@ func _cooling(story: WyrdStoryletDef) -> bool:
 	if last < 0:
 		return false
 	return _runtime.now_minutes() - last < story.cooldown_minutes
+
+
+func _note_speaker(story: WyrdStoryletDef, query_speaker: String, minute: int) -> void:
+	if story.scope_kind != &"bark" or story.speaker_cooldown_minutes <= 0:
+		return
+	var key := _speaker_key(story, query_speaker)
+	if key.is_empty():
+		return
+	_runtime.storylets.note_bark_speaker(key, story.speaker_cooldown_minutes, minute)
+
+
+func _speaker_cooling(story: WyrdStoryletDef, query_speaker: String) -> bool:
+	if story.scope_kind != &"bark":
+		return false
+	var key := _speaker_key(story, query_speaker)
+	if key.is_empty() or _runtime == null or _runtime.storylets == null:
+		return false
+	return _runtime.storylets.speaker_cooling(key, _runtime.now_minutes())
+
+
+func _speaker_key(story: WyrdStoryletDef, query_speaker: String) -> String:
+	if _concrete(query_speaker):
+		return query_speaker
+	if _concrete(story.speaker):
+		return story.speaker
+	return ""
+
+
+func _concrete(name: String) -> bool:
+	return not name.is_empty() and name != WILDCARD
 
 
 func _known_scope(kind: StringName) -> bool:

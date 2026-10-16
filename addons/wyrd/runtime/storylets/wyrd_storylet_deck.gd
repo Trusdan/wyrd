@@ -12,6 +12,7 @@ extends RefCounted
 ## when the cursor reaches the end. [code]seen[/code] and [code]last_minute[/code]
 ## ride on the same row and are omitted when the storylet has never been selected.
 ## An id the pack does not declare is kept and ignored.
+## Bark speaker clocks live in a separate bag, [code]bark_speakers[/code].
 
 const STREAM: StringName = &"storylet_lines"
 
@@ -20,17 +21,30 @@ var _seed: int = 0
 var _rows: Dictionary = {}
 ## Save rows whose storylet id is not in the loaded pack. Ignored by draw and rank.
 var _kept: Dictionary = {}
+## Speaker id to [code]cooldown[/code] and [code]last_minute[/code]. Not storylet rows.
+var _speakers: Dictionary = {}
 
 
 func bind(content: WyrdContent) -> void:
 	_content = content
 	_rows.clear()
 	_kept.clear()
+	_speakers.clear()
 
 
 func clear() -> void:
 	_rows.clear()
 	_kept.clear()
+	_speakers.clear()
+
+
+func clear_draws() -> void:
+	_rows.clear()
+	_kept.clear()
+
+
+func clear_speakers() -> void:
+	_speakers.clear()
 
 
 func set_seed(seed_value: int) -> void:
@@ -78,6 +92,32 @@ func last_minute_of(id: String) -> int:
 	return int((_rows[id] as Dictionary).get("last_minute", -1))
 
 
+func note_bark_speaker(key: String, cooldown: int, minute: int) -> void:
+	if key.is_empty() or cooldown <= 0:
+		return
+	_speakers[key] = {"cooldown": cooldown, "last_minute": minute}
+
+
+func speaker_cooling(key: String, now_minute: int) -> bool:
+	if key.is_empty() or not _speakers.has(key):
+		return false
+	var row: Dictionary = _speakers[key]
+	return now_minute - int(row.get("last_minute", 0)) < int(row.get("cooldown", 0))
+
+
+func speaker_cooldown_of(key: String) -> int:
+	if not _speakers.has(key):
+		return 0
+	return int((_speakers[key] as Dictionary).get("cooldown", 0))
+
+
+func speaker_remaining(key: String, now_minute: int) -> int:
+	if not speaker_cooling(key, now_minute):
+		return 0
+	var row: Dictionary = _speakers[key]
+	return int(row.get("cooldown", 0)) - (now_minute - int(row.get("last_minute", 0)))
+
+
 func note_selected(id: String, minute: int) -> void:
 	var row: Dictionary
 	if _rows.has(id):
@@ -108,6 +148,37 @@ func export_state() -> Dictionary:
 	for id in names:
 		out[String(id)] = pending[id]
 	return out
+
+
+func export_speakers() -> Dictionary:
+	if _speakers.is_empty():
+		return {}
+	var names: Array = _speakers.keys()
+	names.sort()
+	var out := {}
+	for id in names:
+		var row: Dictionary = _speakers[id]
+		out[String(id)] = {
+			"cooldown": int(row.get("cooldown", 0)),
+			"last_minute": int(row.get("last_minute", 0)),
+		}
+	return out
+
+
+## Unknown speaker ids are kept. A non-object entry is dropped.
+func import_speakers(data: Dictionary) -> void:
+	_speakers.clear()
+	for key in data.keys():
+		if not (data[key] is Dictionary):
+			continue
+		var raw: Dictionary = data[key]
+		var cooldown := _whole(raw.get("cooldown", 0))
+		if cooldown < 0:
+			cooldown = 0
+		var last := _whole(raw.get("last_minute", 0))
+		if last < 0:
+			last = 0
+		_speakers[String(key)] = {"cooldown": cooldown, "last_minute": last}
 
 
 ## Drops line ids that are no longer in the set. Appends new ids in source order.

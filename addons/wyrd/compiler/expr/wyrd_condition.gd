@@ -6,7 +6,9 @@ extends RefCounted
 ## @experimental
 ## [constant CONTEXT_STORYLET] allows [code]chance[/code]. [constant CONTEXT_WAIT]
 ## rejects it, and rejects resolved facts invalidated [code]per_query[/code] or not at all
-## ([code]E_WAIT_RESOLVER_MODE[/code]). [param event_fields] types [code]event.<field>[/code].
+## ([code]E_WAIT_RESOLVER_MODE[/code]). [param allow_spatial] lets a wait name
+## [code]nearby[/code], [code]can_perceive[/code], or [code]can_reach[/code].
+## [param event_fields] types [code]event.<field>[/code].
 ## [param bindings] types a bare name, such as [code]candidate[/code] in a role eligibility condition.
 ## [param minutes_per_day] defaults to 1440 until a calendar resource exists.
 ## [param expected] is used when [param require_bool] is false, so a value
@@ -33,7 +35,8 @@ func compile(
 	require_bool: bool = true,
 	expected: StringName = &"",
 	event_fields: Dictionary = {},
-	bindings: Dictionary = {}
+	bindings: Dictionary = {},
+	allow_spatial: bool = false
 ) -> WyrdCompiledCondition:
 	if signatures == null:
 		signatures = WyrdSignatures.new()
@@ -48,6 +51,7 @@ func compile(
 	checker.minutes_per_day = minutes_per_day
 	checker.event_fields = event_fields
 	checker.bindings = bindings
+	checker.allow_spatial = allow_spatial
 	var want := expected
 	if require_bool:
 		want = WyrdSignatures.T_BOOL
@@ -56,6 +60,7 @@ func compile(
 	compiled.reads = checker.reads
 	compiled.specificity = specificity(ast)
 	compiled.uses_chance = checker.uses_chance
+	compiled.uses_spatial = checker.uses_spatial
 	compiled.source_span = {
 		"col": ast.col,
 		"end_col": ast.end_col,

@@ -10,7 +10,8 @@ extends RefCounted
 var id: String = ""
 var speaker: StringName = &""
 var display_name: String = ""
-## Role ids this speaker holds among the slots passed into the scene. Sorted.
+## Role ids this speaker holds. A scene line lists quest slots passed into
+## that scene. A bark lists world role bindings. Sorted.
 ## The host formats a name-plus-role label from these ids.
 var roles: PackedStringArray = PackedStringArray()
 var text: String = ""

@@ -45,6 +45,8 @@ Durations compile to minutes and distances to metres. `30m` is 30 minutes when a
 
 `chance(p)` is allowed in `storylet_or_choice`. In `wait_trigger_or_eligibility` it is `E_CHANCE_CONTEXT`. The condition still records `uses_chance`.
 
+`nearby(center, radius, tag)` returns an int count. `can_perceive(a, b)` and `can_reach(a, place)` return bool. `has(holder, item_or_tag)` is true when `count` is greater than 0. These calls are allowed in `storylet_or_choice`. In `wait_trigger_or_eligibility` the three spatial calls are `E_SPATIAL_CONTEXT` unless the caller is an `on` condition, a transition nested in that `on`, or `waits_until`. A `waits_until` that uses one and whose stage has no `on` handler is also `E_SPATIAL_CONTEXT`. The condition records `uses_spatial`. That flag is not written into the condition's saved data. A missing adapter returns 0 or false and does not call the unimplemented base.
+
 In `wait_trigger_or_eligibility`, a resolved fact whose invalidation is empty or `per_query` is `E_WAIT_RESOLVER_MODE`. `on_event` and `poll` are allowed. Stored facts are allowed. `E_RESOLVER_INVALIDATION` remains defined and is not emitted. Pack linking also requires every resolved fact to name `on_event`, `poll`, or `per_query` (`E_RESOLVER_NO_INVALIDATE` in `docs/events-draft.md`).
 
 ## Interpolation
@@ -106,6 +108,7 @@ Codes use the existing `path:line:col: error[CODE]: message` format.
 | `E_OP_TYPE` | An operator does not accept the operand types |
 | `E_NOT_BOOL` | A condition's type is not `bool` |
 | `E_CHANCE_CONTEXT` | `chance` appears in a wait, trigger, or eligibility condition |
+| `E_SPATIAL_CONTEXT` | `nearby`, `can_perceive`, or `can_reach` appears in a wait, trigger, or eligibility condition that is not an `on` handler or a `waits_until` tied to one |
 | `E_WAIT_RESOLVER_MODE` | A wait condition reads a resolved fact with empty or `per_query` invalidation |
 
 ## Not in this draft

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A bark may set `speaker_cooldown`. That clock is per concrete speaker, in game minutes, and is saved as `bark_speakers` on schema 2. `nearby`, `can_perceive`, and `can_reach` are allowed in a storylet and in a `waits_until` that has an `on` handler. Those waits wake when the event is emitted. A bark win emits `bark_ready` with the speaker entity and the roles they hold. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - Two storylets that share a scope and a speaker, with equal priority and specificity, warn `W_STORYLET_TIE` when their conditions can both be true. `speaker: any` overlaps every speaker in that scope. Weight does not clear the warning. `wyrd why-not` and a `why_not` trace line explain one storylet without recording a selection. Schema stays 2. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A director query filters storylets by scope, speaker, `when`, and cooldown, then ranks by priority, specificity, weight, and recency. `speaker: any` is a wildcard. Ties sort by id and break with a seeded roll. A win records `seen` and `last_minute` on schema 2. One `director` line is logged per query. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A `storylet` block compiles `scope`, `speaker`, `when`, `priority`, `weight`, and `cooldown`, plus one line, a `lines` set, or `-> scene`. Specificity counts top-level `and` clauses, and `wyrd check` prints it. A line set draws one seeded line and does not repeat until the set is exhausted. That draw state is saved on schema 2 and omitted when no set has been drawn. `addons/wyrd/VERSION` stays `0.3.0-m5`.
