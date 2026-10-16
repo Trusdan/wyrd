@@ -12,7 +12,8 @@ extends RefCounted
 ## the resolved belief. [code]belief[/code] returns that value. [code]held[/code]
 ## reads one group's bag. [code]conflicted[/code] is true when the agent's groups
 ## hold different values for one key. [code]perceived[/code] returns the latest
-## witness mode for an agent and verb. A compiled key argument loads the fact; the key is the
+## witness mode for an agent and verb. [code]reputation[/code] is the mean disposition
+## of a group's members toward the subject. A compiled key argument loads the fact; the key is the
 ## latest load in this evaluation.
 
 var record_id: String = ""
@@ -45,6 +46,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"perceived": Callable(self, &"_perceived"),
 		&"knows": Callable(self, &"_knows"),
 		&"rel": Callable(self, &"_rel"),
+		&"reputation": Callable(self, &"_reputation"),
 		&"slot_state": Callable(self, &"_slot_state"),
 	}
 
@@ -145,6 +147,12 @@ func _rel(args: Array) -> bool:
 	if args.size() < 3 or not _pair(args) or args[2] == null:
 		return false
 	return _runtime.social.has_kind(StringName(str(args[0])), StringName(str(args[1])), StringName(str(args[2])))
+
+
+func _reputation(args: Array) -> float:
+	if args.size() < 2 or args[0] == null or args[1] == null or _runtime == null:
+		return 0.0
+	return _runtime.social.reputation(StringName(str(args[0])), StringName(str(args[1])))
 
 
 func _filled(args: Array) -> bool:
