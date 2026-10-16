@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A `storylet` block compiles `scope`, `speaker`, `when`, `priority`, `weight`, and `cooldown`, plus one line, a `lines` set, or `-> scene`. Specificity counts top-level `and` clauses, and `wyrd check` prints it. A line set draws one seeded line and does not repeat until the set is exhausted. That draw state is saved on schema 2 and omitted when no set has been drawn. Ranking and cooldown enforcement are later. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A host event may name witnesses and leave a world fact. `saw` learns that fact, and `heard` or `inferred` believes it. `witnesses: auto` asks the spatial adapter. `leaves: <fact> = <value> decays <minutes>` writes the fact and clears it on a later tick. The deadline is saved on schema 2. One `event_witness` line and one `evidence` line are logged. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - The 07:00 UTC nightly performance run skips when the default branch SHA matches the last successful scheduled run. Pull requests no longer run `perf-smoke`. Tag and manual runs still use the full scale and the 20% gate.
 - A seeded Gullhaven scale pack and a same-job performance bench. Tags, the nightly run, and a manual dispatch run the full scale and fail a metric that is more than 20% slower or larger than the base build in that job. Absolute budgets warn until they are confirmed. The tag run commits `bench/results/<tag>.json` and regenerates `bench/TREND.md`.

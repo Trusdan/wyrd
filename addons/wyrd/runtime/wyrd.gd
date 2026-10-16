@@ -8,8 +8,9 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## The editor plugin does not register this script as an autoload.
 ## When it does, the autoload name is Wyrd, so this script has no class_name.
 ## [member facts], [member events], [member deeds], [member social],
-## [member roles], [member quests], and [member dialogue] are the runtime's
-## sub-objects. [member dialogue] is the scene runner.
+## [member roles], [member quests], [member dialogue], and [member storylets]
+## are the runtime's sub-objects. [member dialogue] is the scene runner.
+## [member storylets] draws a line set. It does not rank storylets.
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -18,6 +19,7 @@ var social: WyrdSocial
 var roles: WyrdRoles
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
+var storylets: WyrdStoryletDeck
 var trace: WyrdTrace
 
 var _runtime: WyrdRuntime
@@ -32,6 +34,7 @@ func _init() -> void:
 	roles = _runtime.roles
 	quests = _runtime.quests
 	dialogue = _runtime.dialogue
+	storylets = _runtime.storylets
 	trace = _runtime.trace
 
 

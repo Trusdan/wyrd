@@ -117,6 +117,9 @@ static func _walk(node: WyrdNode, kind: String, owner: String, sites: Array) -> 
 	elif node.keyword == "scene":
 		next_kind = "scene"
 		next_owner = _dotted(node)
+	elif node.keyword == "storylet":
+		next_kind = "storylet"
+		next_owner = _dotted(node)
 	elif _is_site(node, kind):
 		sites.append({"line": node.start_line, "owner": owner, "tag": node.line_tag})
 	for child in node.children:
@@ -124,6 +127,8 @@ static func _walk(node: WyrdNode, kind: String, owner: String, sites: Array) -> 
 
 
 static func _is_site(node: WyrdNode, kind: String) -> bool:
+	if kind == "storylet" and node.keyword == "-":
+		return true
 	if kind == "quest" and node.keyword == "journal":
 		return true
 	if kind != "scene":

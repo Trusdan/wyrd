@@ -23,7 +23,7 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	var xref := {}
 	if pack.xref != null:
 		xref = pack.xref.to_data()
-	return {
+	var data := {
 		"events": _events(pack),
 		"facts": _facts(pack),
 		"files": files,
@@ -36,6 +36,10 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 		"wyrd_export": VERSION,
 		"xref": xref,
 	}
+	var storylets := _storylets(pack)
+	if not storylets.is_empty():
+		data["storylets"] = storylets
+	return data
 
 
 static func to_json(data: Dictionary) -> String:
@@ -255,6 +259,35 @@ static func _item(item: WyrdSceneItem) -> Dictionary:
 	return data
 
 
+static func _storylets(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for story in file.storylets:
+			var line_ids: Array = []
+			for line_def in story.lines:
+				line_ids.append(line_def.line_id)
+			rows.append({
+				"body": String(story.body_kind),
+				"cooldown": story.cooldown_minutes,
+				"file": str(unit["path"]),
+				"generic": story.generic,
+				"id": story.id,
+				"line_ids": line_ids,
+				"priority": story.priority,
+				"scene": story.scene_id,
+				"scope": story.scope_text(),
+				"speaker": story.speaker,
+				"specificity": story.specificity,
+				"weight": story.weight,
+				"when": story.when_text,
+			})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
+	return rows
+
+
 static func _lines(pack: WyrdLinkedPack) -> Array:
 	var rows: Array = []
 	for unit in pack.units:
@@ -269,6 +302,9 @@ static func _lines(pack: WyrdLinkedPack) -> Array:
 					rows.append(_line_row(item.line_def.line_id, "spoken", path, pack.pack_id, scene.id, item.line_def.speaker, item.line_def.condition, item.line_def.tags))
 				if item.choice != null and not item.choice.line_id.is_empty():
 					rows.append(_line_row(item.choice.line_id, "choice", path, pack.pack_id, scene.id, "", item.choice.condition, item.choice.tags))
+		for story in file.storylets:
+			for line_def in story.lines:
+				rows.append(_line_row(line_def.line_id, "storylet", path, pack.pack_id, "", line_def.speaker, null, line_def.tags))
 	return rows
 
 

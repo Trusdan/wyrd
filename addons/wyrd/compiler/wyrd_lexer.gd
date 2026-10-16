@@ -6,7 +6,9 @@ extends RefCounted
 ## @experimental
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
-## Inside a [code]facts[/code], [code]events[/code], or [code]role[/code] block, lines stay code. Elsewhere a line that starts
+## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], or [code]storylet[/code] block, lines stay code.
+## A storylet prose line starts with a dash. A dash before [code]([/code] stays a label.
+## Elsewhere a line that starts
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
 ## a single [code]{[/code] opens an interpolation raw span, and a stray [code]}[/code]
 ## is literal. [code]}}[/code] is not an escape.
@@ -96,10 +98,13 @@ func _lex_line(line: String, line_no: int) -> void:
 	_saw_line = true
 	var origin := index + 1
 	var parent := _kinds[_kinds.size() - 1]
-	var code_block := parent == "facts" or parent == "events" or parent == "role"
+	var story_parent := parent == "storylet" or parent == "lines"
+	var code_block := parent == "facts" or parent == "events" or parent == "role" or story_parent
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
-	if not code_block and not code_colon and _speaker_colon(content) >= 0:
+	if story_parent and _dash_prose(content):
+		first_ident = _lex_dash_prose(content, line_no, origin)
+	elif not code_block and not code_colon and _speaker_colon(content) >= 0:
 		first_ident = _lex_speaker_line(content, line_no, origin)
 	elif not code_block and _when_speaker_colon(content) >= 0:
 		first_ident = _lex_when_line(content, line_no, origin)
@@ -237,6 +242,27 @@ func _dotted_end(content: String, start: int) -> int:
 			return -1
 		return index
 	return -1
+
+
+func _dash_prose(content: String) -> bool:
+	if not content.begins_with("-") or content.begins_with("->"):
+		return false
+	var cursor := 1
+	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+		cursor += 1
+	if cursor < content.length() and content[cursor] == "(":
+		return false
+	return true
+
+
+func _lex_dash_prose(content: String, line_no: int, origin: int) -> String:
+	_emit_span(&"minus", "-", line_no, origin, 0, 1)
+	var cursor := 1
+	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+		cursor += 1
+	cursor = _read_prose(content, cursor, line_no, origin, false)
+	_finish_suffix(content, cursor, line_no, origin)
+	return "-"
 
 
 func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host: bool = false) -> String:

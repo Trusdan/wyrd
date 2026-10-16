@@ -153,6 +153,10 @@ func _warn_interps(schema: WyrdFactSchema, units: Array, writers: Array, diagnos
 					_warn_prose(schema, item.line_def.prose, path, writers, diagnostics, _gate_list(schema, item.line_def.condition_text))
 				if item.choice != null:
 					_warn_prose(schema, item.choice.label, path, writers, diagnostics, _gate_list(schema, item.choice.condition_text))
+		for storylet in file.storylets:
+			var gates := _gate_list(schema, storylet.when_text)
+			for line_def in storylet.lines:
+				_warn_prose(schema, line_def.prose, path, writers, diagnostics, gates)
 
 
 func _warn_stage(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
@@ -433,6 +437,10 @@ func _readers(units: Array) -> Array:
 			_scene_readers(rows, scene, path)
 		for role in file.roles:
 			_push(rows, _cond_reads(role.eligibility), "eligibility", role.id, path, role.line, role.col)
+		for storylet in file.storylets:
+			_push(rows, _cond_reads(storylet.condition), "storylet", storylet.id, path, storylet.line, storylet.col)
+			for line_def in storylet.lines:
+				_push(rows, line_def.reads, "line", line_def.line_id, path, line_def.line, line_def.col)
 	return rows
 
 

@@ -23,6 +23,7 @@ var social: WyrdSocial
 var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
+var storylets: WyrdStoryletDeck
 var trace: WyrdTrace
 
 var _config: WyrdConfig
@@ -57,6 +58,7 @@ func _init() -> void:
 	facts = WyrdFactStore.new()
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
+	storylets = WyrdStoryletDeck.new()
 	deeds = WyrdDeedLog.new()
 	social = WyrdSocial.new()
 	_config = WyrdConfig.new()
@@ -248,6 +250,8 @@ func start_new_game(seed_value: int) -> void:
 	_arm_queue()
 	_reset_play()
 	roles.note_started()
+	if storylets != null:
+		storylets.set_seed(_seed)
 
 
 func game_seed() -> int:
@@ -261,6 +265,8 @@ func play_minutes() -> int:
 func restore_clock(seed_value: int, minutes: int) -> void:
 	_seed = seed_value
 	_minutes = maxi(minutes, 0)
+	if storylets != null:
+		storylets.set_seed(_seed)
 
 
 func rng_stream(name: StringName) -> WyrdRng:
@@ -311,6 +317,8 @@ func now_minutes() -> int:
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	var report := WyrdLoadReport.new()
 	_content = null
+	if storylets != null:
+		storylets.bind(null)
 	_flags = PackedByteArray()
 	_always = PackedInt32Array()
 	_queue.clear()
@@ -348,6 +356,9 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	if report.diagnostics.has_errors():
 		return report
 	_content = WyrdContent.from_pack(pack)
+	if storylets != null:
+		storylets.bind(_content)
+		storylets.set_seed(_seed)
 	report.ok = true
 	report.manifest_hash = _content.manifest_hash
 	facts.bind_schema(_content.schema)
@@ -772,6 +783,8 @@ func trace_log() -> Array[Dictionary]:
 
 func _reset_play() -> void:
 	_slot_traced.clear()
+	if storylets != null:
+		storylets.clear()
 	if effects != null:
 		effects.clear()
 	if dialogue != null:

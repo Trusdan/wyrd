@@ -3,7 +3,8 @@ extends RefCounted
 
 ## JSON-safe snapshot of one runtime. Schema 2 fills belief bags on older saves.
 ## Evidence deadlines, when any exist, ride in [code]facts.evidence[/code].
-## An older loader ignores that key. Schema stays 2.
+## Line-set draw state, when any set has been drawn, rides in [code]storylets[/code].
+## An older loader ignores those keys. Schema stays 2.
 ##
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills
@@ -40,7 +41,7 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 			"hash": WyrdRng.format_u64(content.manifest_hash),
 			"id": content.pack_id,
 		})
-	return {
+	var data := {
 		"content": {"packs": packs},
 		"deeds": runtime.deeds.export_state(),
 		"facts": runtime.facts.export_state(),
@@ -54,6 +55,11 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 		"seed": WyrdRng.format_u64(runtime.game_seed()),
 		"social": runtime.social.export_state(),
 	}
+	if runtime.storylets != null:
+		var drawn := runtime.storylets.export_state()
+		if not drawn.is_empty():
+			data["storylets"] = drawn
+	return data
 
 
 static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
@@ -120,6 +126,11 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 	if not runtime.import_rng(rng_data):
 		report.diagnostics.add(WyrdDiagnostic.E_SAVE_VERSION, "RNG streams were rejected", "", 1, 1)
 		return report
+	if runtime.storylets != null:
+		if working.has("storylets"):
+			runtime.storylets.import_state(_dict(working.get("storylets", {})))
+		else:
+			runtime.storylets.clear()
 	report.ok = true
 	report.manifest_hash = content.manifest_hash
 	return report

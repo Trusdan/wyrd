@@ -61,7 +61,7 @@ Spoken lines keep the raw spans from the block lexer.
 
 ## Specificity and dependencies
 
-Specificity is the number of top-level `and` clauses. An `or` group or a `not` group counts as one. A parse error at the root counts as zero. `priority:` is not part of this draft.
+Specificity is the number of top-level `and` clauses. An `or` group or a `not` group counts as one. A named-argument call counts as one clause, and so does a comparison that contains one. A parse error at the root counts as zero. A storylet with no `when` scores 0 and is generic. `priority` is stored on the storylet and does not change the score. `wyrd check` prints each storylet's score as `info[I_STORYLET_SCORE]`.
 
 `reads` lists every fact key the condition may read, including keys on a short-circuit arm that one evaluation skips. `and`, `or`, and `?:` compile to jumps.
 

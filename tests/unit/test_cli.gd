@@ -58,11 +58,14 @@ func test_check_gullhaven_manifest_is_clean() -> void:
 	assert_eq(int(result["exit_code"]), 0, str(result["output"]))
 	var output := str(result["output"])
 	assert_true(output.contains("warning[W_CLAIM]"), output)
+	assert_true(output.contains("info[I_STORYLET_SCORE]"), output)
 	assert_false(output.contains("error["), output)
 	for line in output.split("\n"):
 		if line.is_empty():
 			continue
-		assert_true(line.contains("warning[W_CLAIM]"), line)
+		var claim := line.contains("warning[W_CLAIM]")
+		var score := line.contains("info[I_STORYLET_SCORE]")
+		assert_true(claim or score, line)
 
 
 func test_check_invalid_file_exits_one() -> void:

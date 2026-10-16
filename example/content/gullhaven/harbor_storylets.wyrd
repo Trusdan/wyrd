@@ -1,0 +1,24 @@
+// [EXAMPLE CONTENT] Gullhaven storylets. An invented fishing village, not a host game.
+language 1
+
+storylet harbor_gossip.generic
+  scope: topic rumor.ferry_toll
+  speaker: any
+  - They say the ferry's dear since the storm. #line:sg01
+
+storylet harbor_gossip.tavern
+  scope: topic rumor.ferry_toll
+  speaker: tavern
+  when: knows(player, harbor.toll_fate) and world.season == autumn
+  weight: 2
+  cooldown: 60m
+  lines:
+    - The toll money never reached the council, if you ask me. #line:sg02
+    - Lost at sea, they say. Lost in someone's pocket. #line:sg03
+
+storylet dock_bark_lantern
+  scope: bark
+  speaker: ferry
+  when: nearby(player, 4m, tag: lantern) > 0
+  cooldown: 30m
+  - Mind that flame near the ropes. #line:sg04
