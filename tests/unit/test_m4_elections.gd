@@ -153,7 +153,7 @@ func test_pending_status_loads_as_contested() -> void:
 	runtime.roles.assign(&"dock_keeper", &"ada")
 	runtime.roles.vacate(&"dock_keeper", &"left")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 1)
+	assert_eq(int(saved["schema_version"]), 2)
 	var roles: Dictionary = saved["roles"]
 	assert_true((roles["pending"] as Dictionary).has("dock_keeper"))
 	assert_eq(String((roles["bindings"] as Dictionary)["dock_keeper"]["status"]), "contested")

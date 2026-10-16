@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Save schema is 2. A schema 1 save gains empty `facts.believed` and `facts.held` bags. New saves write those bags sparse, one map per agent or group.
+- `~ believe <agent> <fact> = <expr>`, `~ unbelieve <agent> <fact>`, `~ declare <group> <fact> = <expr>`, and `~ retract <group> <fact>` write schema stored facts. A resolved fact is `E_WRITE_RESOLVED`. A type mismatch is `E_WRITE_TYPE`. A belief write does not change `world` or `known`. One `belief` trace line is logged when a value changes. `knows`, `believes`, and `held` conditions stay false.
+
 ## 0.2.0-m4 - 2026-10-15
 
 M4 roles and casting. `VERSION` is `0.2.0-m4`. Corey cuts the tag. Save schema stays 1.

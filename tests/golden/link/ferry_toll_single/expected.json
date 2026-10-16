@@ -318,6 +318,7 @@
           {
             "effects": [
               {
+                "agent": "",
                 "args": [],
                 "branch": "",
                 "command": "",
@@ -361,6 +362,7 @@
                 "verb": ""
               },
               {
+                "agent": "",
                 "args": [
                   {
                     "name": "actor",
@@ -445,6 +447,7 @@
           {
             "effects": [
               {
+                "agent": "",
                 "args": [],
                 "branch": "crossing",
                 "command": "",
@@ -539,6 +542,7 @@
             "divert": "",
             "effects": [
               {
+                "agent": "",
                 "args": [
                   {
                     "name": "",
@@ -561,6 +565,7 @@
                 "verb": ""
               },
               {
+                "agent": "",
                 "args": [],
                 "branch": "",
                 "command": "",

@@ -8,6 +8,10 @@ facts
 quest ferry_toll "The Ferry Toll"
   slot ferry = ferry_master mode: live
   stage pay
+    ~ believe player player.coins = 1
+    ~ declare harbor_guild player.coins = 2
+    ~ unbelieve ferry_master player.coins
+    ~ retract harbor_guild player.coins
     ~ set player.coins = player.coins - 2
     ~ set npc.{id}.met = true
     ~ inc ferry.toll_coins by 1

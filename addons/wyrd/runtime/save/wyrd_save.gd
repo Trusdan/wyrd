@@ -1,16 +1,31 @@
 class_name WyrdSave
 extends RefCounted
 
-## JSON-safe snapshot of one runtime. Version 1 has no migration steps.
+## JSON-safe snapshot of one runtime. Schema 2 fills belief bags on older saves.
 ##
 ## @experimental
-## [member migrations] is the ordered table from schema N to N+1. It is empty
-## at version 1. 64-bit values are lowercase hex. A scene must be closed.
-## A manifest hash mismatch warns in a debug build and is silent in a release.
+## [member migrations] is the ordered table from schema N to N+1. Step 0 fills
+## [code]facts.believed[/code] and [code]facts.held[/code]. 64-bit values are
+## lowercase hex. A scene must be closed. A manifest hash mismatch warns in a
+## debug build and is silent in a release.
 
-const SCHEMA_VERSION := 1
+const SCHEMA_VERSION := 2
 
 static var migrations: Array = []
+
+
+static func _static_init() -> void:
+	migrations = [Callable(WyrdSave, &"_fill_belief_bags")]
+
+
+static func _fill_belief_bags(data: Dictionary) -> Dictionary:
+	var facts := _dict(data.get("facts", {}))
+	if not (facts.get("believed") is Dictionary):
+		facts["believed"] = {}
+	if not (facts.get("held") is Dictionary):
+		facts["held"] = {}
+	data["facts"] = facts
+	return data
 
 
 static func capture(runtime: WyrdRuntime) -> Dictionary:

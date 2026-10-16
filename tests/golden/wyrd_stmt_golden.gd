@@ -208,6 +208,7 @@ static func _effect(effect: WyrdEffectDef) -> Dictionary:
 			"text": String(arg["text"]),
 		})
 	return {
+		"agent": effect.agent,
 		"args": args,
 		"branch": effect.branch,
 		"command": effect.command,

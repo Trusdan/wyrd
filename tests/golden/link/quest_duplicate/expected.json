@@ -36,6 +36,7 @@
           {
             "effects": [
               {
+                "agent": "",
                 "args": [],
                 "branch": "route",
                 "command": "",
@@ -70,6 +71,7 @@
           {
             "effects": [
               {
+                "agent": "",
                 "args": [],
                 "branch": "route",
                 "command": "",

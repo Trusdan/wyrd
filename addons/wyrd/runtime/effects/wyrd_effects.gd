@@ -1,7 +1,7 @@
 class_name WyrdEffects
 extends RefCounted
 
-## Runs the six slice effects.
+## Runs the slice effects, including belief writes.
 ##
 ## @experimental
 ## [code]set[/code] and [code]inc[/code] write stored facts and keep provenance
@@ -98,9 +98,29 @@ func run_one(effect: WyrdEffectDef) -> String:
 			return _command(effect)
 		&"outcome":
 			outcome_changed.emit(quest_id, StringName(effect.branch), StringName(effect.outcome))
+		&"believe", &"declare":
+			_belief(effect, true)
+		&"unbelieve", &"retract":
+			_belief(effect, false)
 		_:
 			push_error("WyrdEffects: effect \"%s\" is not in this slice" % String(effect.kind))
 	return ""
+
+
+func _belief(effect: WyrdEffectDef, write_value: bool) -> void:
+	var key := effect.fact_key
+	if key.is_empty() or key.contains("{"):
+		push_error("WyrdEffects: \"%s\" is not a concrete stored fact" % key)
+		return
+	if effect.agent.is_empty():
+		push_error("WyrdEffects: belief needs an agent or group")
+		return
+	var layer := "believed" if effect.kind == &"believe" or effect.kind == &"unbelieve" else "held"
+	var perspective := StringName("%s/%s" % [layer, effect.agent])
+	if write_value:
+		runtime.facts.set_in(StringName(key), runtime.eval_value(effect.value), perspective)
+	else:
+		runtime.facts.clear_in(StringName(key), perspective)
 
 
 func _write(effect: WyrdEffectDef, is_inc: bool) -> void:

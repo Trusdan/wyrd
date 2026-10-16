@@ -30,13 +30,182 @@
       "span": {
         "col": 1,
         "end_col": 76,
-        "end_line": 18,
+        "end_line": 22,
         "line": 8
       },
       "stages": [
         {
           "effects": [
             {
+              "agent": "player",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "believe",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 38,
+                "end_line": 11,
+                "line": 11
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 22,
+                  "end_col": 34,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 37,
+                  "end_col": 38,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "1",
+              "verb": ""
+            },
+            {
+              "agent": "harbor_guild",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "declare",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 44,
+                "end_line": 12,
+                "line": 12
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 28,
+                  "end_col": 40,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 43,
+                  "end_col": 44,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "2",
+              "verb": ""
+            },
+            {
+              "agent": "ferry_master",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "unbelieve",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 42,
+                "end_line": 13,
+                "line": 13
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 30,
+                  "end_col": 42,
+                  "end_line": 13,
+                  "line": 13
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "agent": "harbor_guild",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "retract",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 40,
+                "end_line": 14,
+                "line": 14
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 28,
+                  "end_col": 40,
+                  "end_line": 14,
+                  "line": 14
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "agent": "",
               "args": [],
               "branch": "",
               "command": "",
@@ -50,8 +219,8 @@
               "span": {
                 "col": 5,
                 "end_col": 42,
-                "end_line": 11,
-                "line": 11
+                "end_line": 15,
+                "line": 15
               },
               "target": {
                 "reads": [
@@ -60,8 +229,8 @@
                 "source_span": {
                   "col": 11,
                   "end_col": 23,
-                  "end_line": 11,
-                  "line": 11
+                  "end_line": 15,
+                  "line": 15
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -75,8 +244,8 @@
                 "source_span": {
                   "col": 26,
                   "end_col": 42,
-                  "end_line": 11,
-                  "line": 11
+                  "end_line": 15,
+                  "line": 15
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -85,6 +254,7 @@
               "verb": ""
             },
             {
+              "agent": "",
               "args": [],
               "branch": "",
               "command": "",
@@ -98,8 +268,8 @@
               "span": {
                 "col": 5,
                 "end_col": 30,
-                "end_line": 12,
-                "line": 12
+                "end_line": 16,
+                "line": 16
               },
               "target": {
                 "reads": [
@@ -108,8 +278,8 @@
                 "source_span": {
                   "col": 11,
                   "end_col": 23,
-                  "end_line": 12,
-                  "line": 12
+                  "end_line": 16,
+                  "line": 16
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -121,8 +291,8 @@
                 "source_span": {
                   "col": 26,
                   "end_col": 30,
-                  "end_line": 12,
-                  "line": 12
+                  "end_line": 16,
+                  "line": 16
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -131,6 +301,7 @@
               "verb": ""
             },
             {
+              "agent": "",
               "args": [],
               "branch": "",
               "command": "",
@@ -144,8 +315,8 @@
               "span": {
                 "col": 5,
                 "end_col": 32,
-                "end_line": 13,
-                "line": 13
+                "end_line": 17,
+                "line": 17
               },
               "target": {
                 "reads": [
@@ -154,8 +325,8 @@
                 "source_span": {
                   "col": 11,
                   "end_col": 27,
-                  "end_line": 13,
-                  "line": 13
+                  "end_line": 17,
+                  "line": 17
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -167,8 +338,8 @@
                 "source_span": {
                   "col": 31,
                   "end_col": 32,
-                  "end_line": 13,
-                  "line": 13
+                  "end_line": 17,
+                  "line": 17
                 },
                 "specificity": 1,
                 "uses_chance": false
@@ -177,6 +348,7 @@
               "verb": ""
             },
             {
+              "agent": "",
               "args": [
                 {
                   "compiled": {
@@ -184,8 +356,8 @@
                     "source_span": {
                       "col": 31,
                       "end_col": 37,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -199,8 +371,8 @@
                     "source_span": {
                       "col": 47,
                       "end_col": 52,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -214,8 +386,8 @@
                     "source_span": {
                       "col": 61,
                       "end_col": 70,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -229,8 +401,8 @@
                     "source_span": {
                       "col": 78,
                       "end_col": 84,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -244,8 +416,8 @@
                     "source_span": {
                       "col": 97,
                       "end_col": 98,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -259,8 +431,8 @@
                     "source_span": {
                       "col": 111,
                       "end_col": 115,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -274,8 +446,8 @@
                     "source_span": {
                       "col": 129,
                       "end_col": 135,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -289,8 +461,8 @@
                     "source_span": {
                       "col": 148,
                       "end_col": 152,
-                      "end_line": 14,
-                      "line": 14
+                      "end_line": 18,
+                      "line": 18
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -309,8 +481,8 @@
               "span": {
                 "col": 5,
                 "end_col": 153,
-                "end_line": 14,
-                "line": 14
+                "end_line": 18,
+                "line": 18
               },
               "target": null,
               "target_text": "",
@@ -320,6 +492,7 @@
               "verb": "paid"
             },
             {
+              "agent": "",
               "args": [
                 {
                   "compiled": {
@@ -327,8 +500,8 @@
                     "source_span": {
                       "col": 32,
                       "end_col": 38,
-                      "end_line": 15,
-                      "line": 15
+                      "end_line": 19,
+                      "line": 19
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -342,8 +515,8 @@
                     "source_span": {
                       "col": 51,
                       "end_col": 65,
-                      "end_line": 15,
-                      "line": 15
+                      "end_line": 19,
+                      "line": 19
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -362,8 +535,8 @@
               "span": {
                 "col": 5,
                 "end_col": 66,
-                "end_line": 15,
-                "line": 15
+                "end_line": 19,
+                "line": 19
               },
               "target": null,
               "target_text": "",
@@ -373,6 +546,7 @@
               "verb": "waved"
             },
             {
+              "agent": "",
               "args": [],
               "branch": "",
               "command": "",
@@ -384,8 +558,8 @@
               "span": {
                 "col": 5,
                 "end_col": 31,
-                "end_line": 16,
-                "line": 16
+                "end_line": 20,
+                "line": 20
               },
               "target": null,
               "target_text": "",
@@ -395,6 +569,7 @@
               "verb": ""
             },
             {
+              "agent": "",
               "args": [],
               "branch": "crossing",
               "command": "",
@@ -406,8 +581,8 @@
               "span": {
                 "col": 5,
                 "end_col": 38,
-                "end_line": 17,
-                "line": 17
+                "end_line": 21,
+                "line": 21
               },
               "target": null,
               "target_text": "",
@@ -417,6 +592,7 @@
               "verb": ""
             },
             {
+              "agent": "",
               "args": [
                 {
                   "compiled": {
@@ -424,8 +600,8 @@
                     "source_span": {
                       "col": 25,
                       "end_col": 31,
-                      "end_line": 18,
-                      "line": 18
+                      "end_line": 22,
+                      "line": 22
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -439,8 +615,8 @@
                     "source_span": {
                       "col": 40,
                       "end_col": 56,
-                      "end_line": 18,
-                      "line": 18
+                      "end_line": 22,
+                      "line": 22
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -459,8 +635,8 @@
               "span": {
                 "col": 5,
                 "end_col": 76,
-                "end_line": 18,
-                "line": 18
+                "end_line": 22,
+                "line": 22
               },
               "target": null,
               "target_text": "",
@@ -481,7 +657,7 @@
           "span": {
             "col": 3,
             "end_col": 76,
-            "end_line": 18,
+            "end_line": 22,
             "line": 10
           },
           "transitions": [],

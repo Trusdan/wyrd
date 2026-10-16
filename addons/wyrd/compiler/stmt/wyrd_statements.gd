@@ -1008,6 +1008,26 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 			if outcome == null:
 				_no_block(node)
 			return outcome
+		"believe":
+			effect.kind = &"believe"
+			if not _belief(effect, items, true):
+				_no_block(node)
+				return null
+		"unbelieve":
+			effect.kind = &"unbelieve"
+			if not _belief(effect, items, false):
+				_no_block(node)
+				return null
+		"declare":
+			effect.kind = &"declare"
+			if not _belief(effect, items, true):
+				_no_block(node)
+				return null
+		"retract":
+			effect.kind = &"retract"
+			if not _belief(effect, items, false):
+				_no_block(node)
+				return null
 		_:
 			_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
 			_no_block(node)
@@ -1055,6 +1075,59 @@ func _assign(effect: WyrdEffectDef, items: Array[WyrdToken], is_inc: bool) -> bo
 	if is_inc and fact != null and fact.type_name != &"int" and fact.type_name != &"float":
 		_error(WyrdDiagnostic.E_WRITE_TYPE, "inc needs an int or float fact", effect.line, effect.col)
 		expected = &""
+	var value := _expr(value_span["text"], int(value_span["line"]), int(value_span["col"]), _STORY, false, expected, effect.reads)
+	effect.value = value["compiled"]
+	if fact != null and value["ast"] != null and expected != &"" and not _fits((value["ast"] as WyrdExprNode).type_name, fact.type_name):
+		_error(
+			WyrdDiagnostic.E_WRITE_TYPE,
+			"cannot write %s to %s fact \"%s\"" % [(value["ast"] as WyrdExprNode).type_name, fact.type_name, fact.key],
+			int(value_span["line"]),
+			int(value_span["col"])
+		)
+	return true
+
+
+func _belief(effect: WyrdEffectDef, items: Array[WyrdToken], has_value: bool) -> bool:
+	var who_noun := "agent" if effect.kind == &"believe" or effect.kind == &"unbelieve" else "group"
+	var shape := "%s needs <%s> <fact>%s" % [String(effect.kind), who_noun, " = <expr>" if has_value else ""]
+	var who := _dotted_at(items, 1)
+	var name := String(who["name"])
+	var at := int(who["next"])
+	if name.is_empty() or not _shape_ok(name):
+		_unknown_msg_at(effect, shape)
+		return false
+	effect.agent = name
+	if at >= items.size():
+		_unknown_msg_at(effect, shape)
+		return false
+	var fact_end := items.size()
+	var value_at := -1
+	if has_value:
+		var sep := _find(items, at, &"eq", "")
+		if sep <= at:
+			_unknown_msg_at(effect, shape)
+			return false
+		fact_end = sep
+		value_at = sep + 1
+		if value_at >= items.size():
+			_unknown_msg_at(effect, shape)
+			return false
+	elif _find(items, at, &"eq", "") >= 0:
+		_unknown_msg_at(effect, shape)
+		return false
+	var target_span := _span_text(items, at, fact_end)
+	if String(target_span["text"]).is_empty():
+		_unknown_msg_at(effect, shape)
+		return false
+	effect.target_text = target_span["text"]
+	var target := _expr(target_span["text"], int(target_span["line"]), int(target_span["col"]), _STORY, false, &"", effect.reads)
+	effect.target = target["compiled"]
+	var fact := _stored_fact(target["ast"], effect)
+	if not has_value:
+		return true
+	var value_span := _span_text(items, value_at, items.size())
+	effect.value_text = value_span["text"]
+	var expected: StringName = fact.type_name if fact != null else &""
 	var value := _expr(value_span["text"], int(value_span["line"]), int(value_span["col"]), _STORY, false, expected, effect.reads)
 	effect.value = value["compiled"]
 	if fact != null and value["ast"] != null and expected != &"" and not _fits((value["ast"] as WyrdExprNode).type_name, fact.type_name):

@@ -128,6 +128,7 @@
         {
           "effects": [
             {
+              "agent": "",
               "args": [],
               "branch": "crossing",
               "command": "",
