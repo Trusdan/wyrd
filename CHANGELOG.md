@@ -3,7 +3,8 @@
 ## Unreleased
 
 - A host event may name witnesses and leave a world fact. `saw` learns that fact, and `heard` or `inferred` believes it. `witnesses: auto` asks the spatial adapter. `leaves: <fact> = <value> decays <minutes>` writes the fact and clears it on a later tick. The deadline is saved on schema 2. One `event_witness` line and one `evidence` line are logged. `addons/wyrd/VERSION` stays `0.3.0-m5`.
-- A seeded Gullhaven scale pack and a same-job performance bench. Pull requests run a warn-only smoke subset. Tags, the nightly run, and a manual dispatch run the full scale and fail a metric that is more than 20% slower or larger than the base build in that job. Absolute budgets warn until they are confirmed. The tag run commits `bench/results/<tag>.json` and regenerates `bench/TREND.md`.
+- The 07:00 UTC nightly performance run skips when the default branch SHA matches the last successful scheduled run. Pull requests no longer run `perf-smoke`. Tag and manual runs still use the full scale and the 20% gate.
+- A seeded Gullhaven scale pack and a same-job performance bench. Tags, the nightly run, and a manual dispatch run the full scale and fail a metric that is more than 20% slower or larger than the base build in that job. Absolute budgets warn until they are confirmed. The tag run commits `bench/results/<tag>.json` and regenerates `bench/TREND.md`.
 - Deed axes walk the actor index. Reputation, belief lookup, and call-name dirty marks are cached and dropped when the underlying rows, beliefs, membership, or config change. A pure quest start is considered when its recheck becomes true. Save schema stays 2: deed export omits fields the loader already defaults. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 
 ## 0.3.0-m5 - 2026-10-16

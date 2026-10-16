@@ -12,8 +12,8 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --bench-filter tick --o
 
 Smoke is one tenth of the full pack: 70 quests, 1,000 facts, 50 NPCs, 5,000 deeds. Full is 700 quests, 10,000 facts, 500 NPCs, 50,000 deeds. There are no storylets. Each profile discards 2 warm-up runs, then takes 3 smoke samples or 7 full samples. The shell runs the base checkout and the head checkout in one job and alternates samples.
 
-The PR job warns only and uploads `perf-smoke`. A metric more than 20% slower or larger than the base build fails the tag, nightly, and manual runs. A 10–20% gap warns. Absolute budgets warn until they are confirmed. A checksum that changes between samples fails the script. The PR step is marked continue-on-error, so that failure still does not block the pull request.
+Pull requests do not run this suite. A metric more than 20% slower or larger than the base build fails a tag run and a manual dispatch. The same gate applies to the nightly run. A 10–20% gap warns. Absolute budgets warn until they are confirmed. A checksum that changes between samples fails the script.
 
-The tag run writes `bench/results/<tag>.json` and regenerates `bench/TREND.md` after a clean gate. Nightly and manual runs upload an artifact and do not commit. The nightly schedule is 07:00 UTC.
+The nightly schedule is 07:00 UTC. That run skips when `github.sha` on the default branch equals the `headSha` of the last successful scheduled run of `.github/workflows/perf.yml`. A lookup failure still runs the bench. Tag and manual runs do not use that skip. The tag run writes `bench/results/<tag>.json` and regenerates `bench/TREND.md` after a clean gate. Nightly and manual runs upload an artifact and do not commit.
 
 Each log line is `perf <name> median=… p95=… delta=… verdict=…`. `delta` compares the judged statistic with the base build in this job: the median, or the p95 for `tick.recheck`. `n/a` means the base checkout has no `bench/perf_worker.gd`.

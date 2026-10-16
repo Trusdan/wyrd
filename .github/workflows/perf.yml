@@ -9,10 +9,59 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
 
 jobs:
+  nightly-gate:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - name: Compare main with the last successful nightly
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          set +e
+          last_sha="$(gh run list \
+            --repo "${GITHUB_REPOSITORY}" \
+            --workflow perf.yml \
+            --event schedule \
+            --branch "${DEFAULT_BRANCH}" \
+            --status success \
+            --limit 1 \
+            --json headSha \
+            --jq '.[0].headSha // ""')"
+          code=$?
+          set -e
+          if [[ "${code}" -ne 0 ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "perf nightly: lookup failed; running the bench."
+            exit 0
+          fi
+          if [[ -n "${last_sha}" && "${last_sha}" == "${HEAD_SHA}" ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "perf nightly: skip ${HEAD_SHA}; it matches the last successful nightly."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ -z "${last_sha}" ]]; then
+              echo "perf nightly: no earlier success; running ${HEAD_SHA}."
+            else
+              echo "perf nightly: running ${HEAD_SHA}; last success was ${last_sha}."
+            fi
+          fi
+
   full:
+    needs: nightly-gate
+    if: >-
+      always() &&
+      (needs.nightly-gate.result == 'success' || needs.nightly-gate.result == 'skipped') &&
+      needs.nightly-gate.outputs.run != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
