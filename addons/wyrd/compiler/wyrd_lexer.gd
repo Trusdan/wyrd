@@ -18,7 +18,7 @@ extends RefCounted
 ## and the spoken text in prose. The first depth-zero [code]: <speaker> :[/code]
 ## ends that condition, so a ternary colon in it needs parentheses.
 ## [code]variant <holder>:[/code] is prose after the colon.
-## [code]#tag:<name>[/code] may sit before [code]#line:[/code].
+## [code]#tag:<name>[/code] and [code]#secrecy:<name>[/code] may sit before [code]#line:[/code].
 
 const _RESERVED: PackedStringArray = [
 	"document",
@@ -281,6 +281,9 @@ func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host
 			continue
 		if ch == "/" and index + 1 < content.length() and content[index + 1] == "/":
 			break
+		if content.substr(index, 9) == "#secrecy:":
+			index = _read_secrecy(content, index, line_no, origin)
+			continue
 		if content.substr(index, 5) == "#tag:":
 			index = _read_named_tag(content, index, line_no, origin)
 			continue
@@ -353,7 +356,7 @@ func _read_prose(content: String, start: int, line_no: int, origin: int, stop_at
 	var buf := ""
 	var buf_at := start
 	while index < content.length():
-		if content.substr(index, 2) == "//" or content.substr(index, 6) == "#line:" or content.substr(index, 5) == "#tag:":
+		if content.substr(index, 2) == "//" or content.substr(index, 6) == "#line:" or content.substr(index, 9) == "#secrecy:" or content.substr(index, 5) == "#tag:":
 			break
 		if stop_at_bracket and content[index] == "]":
 			break
@@ -414,6 +417,9 @@ func _finish_suffix(content: String, index: int, line_no: int, origin: int, tag_
 				origin + marked
 			)
 			return
+		if content.substr(cursor, 9) == "#secrecy:":
+			cursor = _read_secrecy(content, cursor, line_no, origin)
+			continue
 		if content.substr(cursor, 5) == "#tag:":
 			cursor = _read_named_tag(content, cursor, line_no, origin)
 			continue
@@ -431,6 +437,10 @@ func _read_line_tag(content: String, index: int, line_no: int, origin: int) -> i
 
 func _read_named_tag(content: String, index: int, line_no: int, origin: int) -> int:
 	return _read_hash_tag(content, index, 5, &"tag", "line tag name must match [A-Za-z0-9_]+", line_no, origin)
+
+
+func _read_secrecy(content: String, index: int, line_no: int, origin: int) -> int:
+	return _read_hash_tag(content, index, 9, &"secrecy", "secrecy name must match [A-Za-z0-9_]+", line_no, origin)
 
 
 func _read_hash_tag(

@@ -821,6 +821,7 @@ func _journal(node: WyrdNode, stage: WyrdStageDef) -> void:
 	line_def.line_id = _line_id(node, true)
 	var tokens := _tail(node.head, 1)
 	line_def.tags = node.tags.duplicate()
+	line_def.secrecy = node.secrecy
 	line_def.prose = _interp(tokens, line_def.reads)
 	_take_variants(node, line_def)
 	stage.journals.append(line_def)
@@ -1035,6 +1036,7 @@ func _spoken(node: WyrdNode, scene: WyrdSceneDef, speaker: String, colon: int, c
 		var compiled := _expr(condition_text, line, col, _STORY, true, &"", line_def.reads)
 		line_def.condition = compiled["compiled"]
 	line_def.tags = node.tags.duplicate()
+	line_def.secrecy = node.secrecy
 	line_def.prose = _interp(_tail(node.head, colon + 1), line_def.reads)
 	_take_variants(node, line_def)
 	var item := WyrdSceneItem.new()
@@ -1116,6 +1118,7 @@ func _choice(node: WyrdNode, scene: WyrdSceneDef) -> void:
 	choice.target = String(target["name"])
 	choice.line_id = _line_id(node, label_at >= 0)
 	choice.tags = node.tags.duplicate()
+	choice.secrecy = node.secrecy
 	_lint_voiced(choice.label, choice.tags, choice.line, choice.col)
 	_note_label(choice.target, items[i + 1].line, items[i + 1].col)
 	for child in node.children:
@@ -1753,6 +1756,7 @@ func _variant_line(node: WyrdNode, parent: WyrdLineDef) -> WyrdLineDef:
 	variant.scene_id = parent.scene_id
 	variant.line_id = _line_id(node, true)
 	variant.tags = node.tags.duplicate()
+	variant.secrecy = node.secrecy
 	variant.prose = _interp(_tail(items, 2), variant.reads)
 	if not node.children.is_empty():
 		_error(WyrdDiagnostic.E_VARIANT_SYNTAX, "a variant line cannot contain a block", node.start_line, node.start_col)
@@ -1975,6 +1979,7 @@ const _STORYLET_FIELDS := {
 	"cooldown": true,
 	"priority": true,
 	"scope": true,
+	"secrecy": true,
 	"speaker": true,
 	"speaker_cooldown": true,
 	"weight": true,
@@ -2072,6 +2077,8 @@ func _storylet_field(node: WyrdNode, story: WyrdStoryletDef, field: String) -> v
 			_storylet_cooldown(node, story)
 		"speaker_cooldown":
 			_storylet_speaker_cooldown(node, story)
+		"secrecy":
+			_storylet_secrecy(node, story)
 
 
 func _storylet_scope(node: WyrdNode, story: WyrdStoryletDef) -> void:
@@ -2167,6 +2174,16 @@ func _storylet_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
 	story.cooldown_minutes = minutes
 
 
+func _storylet_secrecy(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var at := _colon_at(node)
+	var found := _dotted_at(node.head, at if at >= 0 else node.head.size())
+	var name := String(found["name"])
+	if at < 0 or name.is_empty() or int(found["next"]) != node.head.size() or name.contains("."):
+		_story_error(node, "secrecy needs a name")
+		return
+	story.secrecy = name
+
+
 func _storylet_speaker_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
 	var minutes := _duration_minutes(node, "speaker_cooldown")
 	if minutes < 0:
@@ -2237,6 +2254,7 @@ func _storylet_line(node: WyrdNode, story: WyrdStoryletDef) -> void:
 	line_def.speaker = story.speaker
 	line_def.line_id = _line_id(node, true)
 	line_def.tags = node.tags.duplicate()
+	line_def.secrecy = node.secrecy
 	if node.head.is_empty():
 		_story_error(node, "a storylet line needs prose")
 	else:

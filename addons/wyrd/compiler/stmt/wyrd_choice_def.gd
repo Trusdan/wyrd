@@ -18,4 +18,6 @@ var effects: Array[WyrdEffectDef] = []
 var disabled_when: String = ""
 var disabled_reason: String = ""
 var tags: PackedStringArray = PackedStringArray()
+## Name from [code]#secrecy:[/code]. Empty stays visible.
+var secrecy: String = ""
 var scene_id: String = ""

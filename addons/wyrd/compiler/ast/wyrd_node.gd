@@ -14,6 +14,8 @@ var head: Array[WyrdToken] = []
 var title: String = ""
 var line_tag: String = ""
 var tags: PackedStringArray = PackedStringArray()
+## Name from [code]#secrecy:[/code]. Empty when the line has none.
+var secrecy: String = ""
 var children: Array[WyrdNode] = []
 var entries: Array[WyrdFact] = []
 var events: Array[WyrdEventDef] = []

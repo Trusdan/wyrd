@@ -9,7 +9,8 @@ extends Resource
 ## [member hostile_threshold], [member axis_verbs], [member axis_names],
 ## [member axis_deltas], [member kind_scale_kinds], [member kind_scale_axes],
 ## [member kind_scale_values], [member scheduler_work_per_tick],
-## [member credibility_threshold], and [member compact_after].
+## [member credibility_threshold], [member compact_after],
+## [member secrecy_tiers], and [member secrecy_fact].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -29,6 +30,10 @@ extends Resource
 @export var credibility_threshold: float = 0.5
 ## 0 leaves the log until the host calls [method WyrdDeedLog.compact]. Not saved.
 @export var compact_after: int = 0
+## Ordered secrecy names, lowest first. Not saved. An empty list locks every named tier.
+@export var secrecy_tiers: PackedStringArray = PackedStringArray()
+## World fact whose symbol is the unlocked secrecy name. Not saved.
+@export var secrecy_fact: String = "player.clearance"
 
 
 func half_life_for(verb: StringName) -> float:

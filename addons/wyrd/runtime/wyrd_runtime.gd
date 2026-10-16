@@ -31,6 +31,8 @@ var director: WyrdDirector
 var trace: WyrdTrace
 
 var _config: WyrdConfig
+## Unknown secrecy names already reported. Not saved.
+var _secrecy_warned: Dictionary = {}
 var _content: WyrdContent
 var _queue: WyrdTickQueue
 var _ctx: WyrdConditionCtx
@@ -247,6 +249,7 @@ func start_new_game(seed_value: int) -> void:
 	_streams.clear()
 	if trace != null:
 		trace.events.clear()
+	_secrecy_warned.clear()
 	facts.clear_values()
 	_group_cache.clear()
 	_clear_belief_cache()
@@ -889,6 +892,88 @@ func trace_sequence(sequence_id: String, count: int, done: bool, reason: String)
 		return
 	trace_add("sequence", fields)
 	print("wyrd sequence id=%s count=%s done=%s reason=%s" % [sequence_id, str(count), flag, reason])
+
+
+## True when [param name] is empty or its place in [member WyrdConfig.secrecy_tiers]
+## is at or below the unlocked fact. A name missing from that list is locked.
+## The same unknown name is reported once until the next new game.
+func secrecy_allows(name: String) -> bool:
+	if name.is_empty():
+		return true
+	var index := _tier_index(name)
+	if index < 0:
+		if not _secrecy_warned.has(name):
+			_secrecy_warned[name] = true
+			push_error("Wyrd.secrecy: unknown tier \"%s\"" % name)
+		return false
+	return index <= _unlocked_index()
+
+
+## The world fact named by [member WyrdConfig.secrecy_fact], or empty when it is unset.
+func secrecy_unlocked_name() -> String:
+	if _config == null or _config.secrecy_fact.is_empty() or facts == null:
+		return ""
+	var value: Variant = facts.get_in(StringName(_config.secrecy_fact))
+	if value == null:
+		return ""
+	return str(value)
+
+
+func _tier_index(name: String) -> int:
+	if _config == null or name.is_empty():
+		return -1
+	for i in _config.secrecy_tiers.size():
+		if _config.secrecy_tiers[i] == name:
+			return i
+	return -1
+
+
+func _unlocked_index() -> int:
+	return _tier_index(secrecy_unlocked_name())
+
+
+## One line when a storylet or a line is dropped for secrecy.
+## [param line_id] is empty when the whole storylet is dropped.
+func trace_secrecy(storylet_id: String, line_id: String, tier: String, unlocked: String, scope: String = "", speaker: String = "") -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown_line := line_id if not line_id.is_empty() else "-"
+	var shown_story := storylet_id if not storylet_id.is_empty() else "-"
+	var shown_tier := tier if not tier.is_empty() else "-"
+	var shown_unlock := unlocked if not unlocked.is_empty() else "-"
+	var fields := {
+		"key": storylet_id if not storylet_id.is_empty() else line_id,
+		"line": shown_line,
+		"path": line_id,
+		"scope": scope,
+		"speaker": speaker,
+		"storylet": shown_story,
+		"tier": shown_tier,
+		"unlocked": shown_unlock,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("secrecy", fields)
+	print("wyrd secrecy storylet=%s line=%s tier=%s unlocked=%s" % [shown_story, shown_line, shown_tier, shown_unlock])
+
+
+## When the chosen holder line is above the unlock, the name-free line is used instead.
+func apply_variant_secrecy(parent: WyrdLineDef, shown: Dictionary) -> Dictionary:
+	var chosen_id := str(shown.get("id", ""))
+	if parent == null or chosen_id.is_empty() or chosen_id == parent.line_id:
+		return shown
+	for item in parent.variants:
+		var variant := item as WyrdLineDef
+		if variant == null or variant.line_id != chosen_id:
+			continue
+		if variant.secrecy.is_empty() or secrecy_allows(variant.secrecy):
+			return shown
+		trace_secrecy("", variant.line_id, variant.secrecy, secrecy_unlocked_name(), "", parent.speaker)
+		var text := ""
+		if dialogue != null:
+			text = dialogue.render_prose(parent.prose, parent.line_id)
+		return {"holder": "", "id": parent.line_id, "tags": parent.tags, "text": text}
+	return shown
 
 
 func trace_director(fields: Dictionary) -> void:
@@ -1553,7 +1638,7 @@ func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
 	if _content != null and not line_id.is_empty():
 		line_def = _content.lines.get(line_id) as WyrdLineDef
 	if line_def != null:
-		var picked := resolve_line(line_def)
+		var picked := apply_variant_secrecy(line_def, resolve_line(line_def))
 		view.id = str(picked["id"])
 		view.tags = (picked["tags"] as PackedStringArray).duplicate()
 		view.text = str(picked["text"])

@@ -18,6 +18,8 @@ var prose: WyrdExprNode = null
 var condition: WyrdCompiledCondition = null
 var condition_text: String = ""
 var tags: PackedStringArray = PackedStringArray()
+## Name from [code]#secrecy:[/code]. Empty inherits the storylet, or stays open.
+var secrecy: String = ""
 var scene_id: String = ""
 var variant_slot: String = ""
 var holder: String = ""
