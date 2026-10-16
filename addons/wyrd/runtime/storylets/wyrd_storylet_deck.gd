@@ -1,29 +1,36 @@
 class_name WyrdStoryletDeck
 extends RefCounted
 
-## Seeded draw of a storylet line set. Not a director.
+## Seeded draw of a storylet line set, plus director selection rows.
 ##
 ## @experimental
-## A [code]line[/code] body and a [code]scene[/code] body write no row.
+## [method draw] does not record a selection. [method note_selected] does.
+## A [code]line[/code] body and a [code]scene[/code] body write no draw row.
 ## A [code]set[/code] shuffles with [method WyrdRng.for_decision] on the
 ## [constant STREAM] stream, the storylet id, and the cycle number.
 ## The row stores that order, a cursor, and the cycle. The next cycle starts
-## when the cursor reaches the end. Cooldown is not read here.
+## when the cursor reaches the end. [code]seen[/code] and [code]last_minute[/code]
+## ride on the same row and are omitted when the storylet has never been selected.
+## An id the pack does not declare is kept and ignored.
 
 const STREAM: StringName = &"storylet_lines"
 
 var _content: WyrdContent
 var _seed: int = 0
 var _rows: Dictionary = {}
+## Save rows whose storylet id is not in the loaded pack. Ignored by draw and rank.
+var _kept: Dictionary = {}
 
 
 func bind(content: WyrdContent) -> void:
 	_content = content
 	_rows.clear()
+	_kept.clear()
 
 
 func clear() -> void:
 	_rows.clear()
+	_kept.clear()
 
 
 func set_seed(seed_value: int) -> void:
@@ -59,60 +66,99 @@ func draw(id: String) -> Dictionary:
 	return _drawn(story, line_id, int(row["cycle"]))
 
 
+func seen_of(id: String) -> int:
+	if not _rows.has(id):
+		return 0
+	return int((_rows[id] as Dictionary).get("seen", 0))
+
+
+func last_minute_of(id: String) -> int:
+	if not _rows.has(id):
+		return -1
+	return int((_rows[id] as Dictionary).get("last_minute", -1))
+
+
+func note_selected(id: String, minute: int) -> void:
+	var row: Dictionary
+	if _rows.has(id):
+		row = _rows[id]
+	else:
+		row = {"seen": 0, "last_minute": -1}
+		_rows[id] = row
+	row["seen"] = int(row.get("seen", 0)) + 1
+	row["last_minute"] = minute
+
+
 func export_state() -> Dictionary:
-	if _rows.is_empty():
+	var pending := {}
+	for id in _rows.keys():
+		var item := _export_row(_rows[id])
+		if not item.is_empty():
+			pending[String(id)] = item
+	for id in _kept.keys():
+		if pending.has(String(id)):
+			continue
+		if _kept[id] is Dictionary:
+			pending[String(id)] = (_kept[id] as Dictionary).duplicate(true)
+	if pending.is_empty():
 		return {}
-	var names: Array = _rows.keys()
+	var names: Array = pending.keys()
 	names.sort()
 	var out := {}
 	for id in names:
-		var row: Dictionary = _rows[id]
-		var order: Array = []
-		var packed: PackedStringArray = row.get("order", PackedStringArray())
-		for line_id in packed:
-			order.append(String(line_id))
-		out[String(id)] = {
-			"cursor": int(row.get("cursor", 0)),
-			"cycle": int(row.get("cycle", 0)),
-			"order": order,
-		}
+		out[String(id)] = pending[id]
 	return out
 
 
-## Drops ids that are no longer in the set. Appends new ids in source order.
+## Drops line ids that are no longer in the set. Appends new ids in source order.
 ## The cursor is clamped to the new order. It is not remapped.
+## An unknown storylet id is kept. A non-object entry is dropped.
 func import_state(data: Dictionary) -> void:
 	_rows.clear()
-	if _content == null:
-		return
+	_kept.clear()
 	for key in data.keys():
-		var id := String(key)
-		var story := _story(id)
-		if story == null or story.body_kind != &"set":
-			continue
 		if not (data[key] is Dictionary):
 			continue
+		var id := String(key)
 		var raw: Dictionary = data[key]
+		var story := _story(id)
+		if story == null:
+			_kept[id] = raw.duplicate(true)
+			continue
+		var seen := _whole(raw.get("seen", 0))
+		if seen < 0:
+			seen = 0
+		var last := -1
+		if raw.has("last_minute"):
+			last = _whole(raw.get("last_minute", -1))
+			if last < 0:
+				last = -1
+		if story.body_kind != &"set":
+			if seen > 0 or last >= 0:
+				_rows[id] = {"seen": seen, "last_minute": last}
+			continue
 		var source := PackedStringArray()
 		for line in story.lines:
 			if not line.line_id.is_empty():
 				source.append(line.line_id)
 		var order := PackedStringArray()
-		var seen := {}
+		var taken := {}
 		var saved: Variant = raw.get("order", [])
 		if saved is Array:
 			for item in saved:
 				var line_id := String(item)
-				if not source.has(line_id) or seen.has(line_id):
+				if not source.has(line_id) or taken.has(line_id):
 					continue
 				order.append(line_id)
-				seen[line_id] = true
+				taken[line_id] = true
 		for line_id in source:
-			if seen.has(line_id):
+			if taken.has(line_id):
 				continue
 			order.append(line_id)
-			seen[line_id] = true
+			taken[line_id] = true
 		if order.is_empty():
+			if seen > 0 or last >= 0:
+				_rows[id] = {"seen": seen, "last_minute": last}
 			continue
 		var cursor := _whole(raw.get("cursor", 0))
 		var cycle := _whole(raw.get("cycle", 0))
@@ -122,7 +168,13 @@ func import_state(data: Dictionary) -> void:
 			cursor = 0
 		if cursor > order.size():
 			cursor = order.size()
-		_rows[id] = {"cursor": cursor, "cycle": cycle, "order": order}
+		_rows[id] = {
+			"cursor": cursor,
+			"cycle": cycle,
+			"last_minute": last,
+			"order": order,
+			"seen": seen,
+		}
 
 
 func _story(id: String) -> WyrdStoryletDef:
@@ -137,17 +189,35 @@ func _story(id: String) -> WyrdStoryletDef:
 func _ensure(story: WyrdStoryletDef) -> Dictionary:
 	var id := story.id
 	if not _rows.has(id):
-		var created := {"cursor": 0, "cycle": 0, "order": _shuffle(id, 0, story.lines)}
+		var created := {
+			"cursor": 0,
+			"cycle": 0,
+			"last_minute": -1,
+			"order": _shuffle(id, 0, story.lines),
+			"seen": 0,
+		}
 		_rows[id] = created
 		return created
 	var row: Dictionary = _rows[id]
-	var order: PackedStringArray = row.get("order", PackedStringArray())
+	if not (row.get("order") is PackedStringArray):
+		row["cursor"] = 0
+		row["cycle"] = int(row.get("cycle", 0))
+		row["order"] = _shuffle(id, int(row.get("cycle", 0)), story.lines)
+		if not row.has("seen"):
+			row["seen"] = 0
+		if not row.has("last_minute"):
+			row["last_minute"] = -1
+		_rows[id] = row
+		return row
+	var order: PackedStringArray = row["order"]
 	if int(row.get("cursor", 0)) < order.size():
 		return row
 	var cycle := int(row.get("cycle", 0)) + 1
-	var next := {"cursor": 0, "cycle": cycle, "order": _shuffle(id, cycle, story.lines)}
-	_rows[id] = next
-	return next
+	row["cursor"] = 0
+	row["cycle"] = cycle
+	row["order"] = _shuffle(id, cycle, story.lines)
+	_rows[id] = row
+	return row
 
 
 func _shuffle(id: String, cycle: int, lines: Array[WyrdLineDef]) -> PackedStringArray:
@@ -165,6 +235,24 @@ func _shuffle(id: String, cycle: int, lines: Array[WyrdLineDef]) -> PackedString
 		order[swap_at] = swap
 		index -= 1
 	return order
+
+
+func _export_row(row: Dictionary) -> Dictionary:
+	var item := {}
+	if row.get("order") is PackedStringArray:
+		var order: Array = []
+		var packed: PackedStringArray = row["order"]
+		for line_id in packed:
+			order.append(String(line_id))
+		item["cursor"] = int(row.get("cursor", 0))
+		item["cycle"] = int(row.get("cycle", 0))
+		item["order"] = order
+	var seen := int(row.get("seen", 0))
+	if seen > 0:
+		item["seen"] = seen
+	if int(row.get("last_minute", -1)) >= 0:
+		item["last_minute"] = int(row["last_minute"])
+	return item
 
 
 func _drawn(story: WyrdStoryletDef, line_id: String, cycle: int) -> Dictionary:
