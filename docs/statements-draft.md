@@ -69,6 +69,31 @@ Line conditions and choice conditions use `storylet_or_choice`. The first depth-
 
 `-> end` leaves the scene. `-> scene <id>` calls a sub-scene. The target must be a scene in the pack, or the linker reports `E_SCENE_UNKNOWN`.
 
+## Storylet
+
+```wyrd
+storylet <id>
+  scope: topic <id>
+  scope: bark
+  scope: event <name>
+  scope: beat <quest>.<stage>
+  speaker: <slot, entity, or any>
+  when: <condition>
+  priority: <int>
+  weight: <int>
+  cooldown: <duration>
+  - <prose> #line:<id>
+  lines:
+    - <prose> #line:<id>
+  -> scene <id>
+```
+
+A storylet has one body: one prose line, a `lines:` set, or `-> scene <id>`. Field order is free. `when` uses `storylet_or_choice`, so `chance` is allowed. An omitted `when` scores 0 and is generic. `when: true` scores 1 and is not generic. `wyrd check` prints `info[I_STORYLET_SCORE]` with the specificity, the priority, and `generic=true` or `generic=false`.
+
+`priority` defaults to 0 and may be negative. `weight` defaults to 1. `0` is allowed. A negative weight is `E_STORYLET_SYNTAX`. `cooldown` defaults to 0 minutes. It is a duration (`m`, `h`, or `d`, with a day of 1440 minutes) and is stored, not enforced. A duplicate id is `E_STORYLET_DUPLICATE`. A `-> scene` target the pack does not declare is `E_SCENE_UNKNOWN`. An `event` scope the pack does not declare is `E_EVENT_UNKNOWN`. A `topic` scope and a `beat` scope are stored and not checked against topics or quests.
+
+`speaker: any` stores the speaker id `any`. This slice does not treat it as a wildcard, and it does not rank storylets. A line set is drawn by `WyrdStoryletDeck` on the runtime: one seeded shuffle per cycle, no repeat until the set is exhausted, then a new cycle. That order, cursor, and cycle are saved under `storylets` on schema 2 and omitted when no set has been drawn. A single line and a scene body write no row. The storylet `when` is not added to the tick queue.
+
 ## Effects
 
 | Form | Notes |

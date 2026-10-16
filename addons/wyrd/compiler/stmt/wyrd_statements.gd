@@ -1,7 +1,7 @@
 class_name WyrdStatements
 extends RefCounted
 
-## Walks a block tree and emits quest, scene, and effect records.
+## Walks a block tree and emits quest, scene, storylet, and effect records.
 ##
 ## @experimental
 ## Conditions reuse [WyrdCondition]. Prose reuses [WyrdInterp].
@@ -64,6 +64,7 @@ func compile(
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
 	var seen_roles := {}
+	var seen_storylets := {}
 	for child in tree.children:
 		if child.keyword == "quest":
 			var quest := _quest(child)
@@ -83,6 +84,16 @@ func compile(
 			seen_roles[role.id] = true
 			file.roles.append(role)
 			WyrdStmtSpan.add_reads(file.reads, role.reads)
+		elif child.keyword == "storylet":
+			var storylet := _storylet(child)
+			if storylet.id.is_empty():
+				continue
+			if seen_storylets.has(storylet.id):
+				_error(WyrdDiagnostic.E_STORYLET_DUPLICATE, "duplicate storylet \"%s\"" % storylet.id, storylet.line, storylet.col)
+				continue
+			seen_storylets[storylet.id] = true
+			file.storylets.append(storylet)
+			WyrdStmtSpan.add_reads(file.reads, storylet.reads)
 	return file
 
 
@@ -1602,6 +1613,282 @@ func _ident_ok(part: String) -> bool:
 		if not ok:
 			return false
 	return true
+
+
+const _STORYLET_FIELDS := {
+	"cooldown": true,
+	"priority": true,
+	"scope": true,
+	"speaker": true,
+	"weight": true,
+	"when": true,
+}
+
+
+func _storylet(node: WyrdNode) -> WyrdStoryletDef:
+	var story := WyrdStoryletDef.new()
+	story.take_span(node)
+	if not node.line_tag.is_empty():
+		_story_error(node, "a line tag is not allowed on a storylet")
+	if not node.title.is_empty():
+		_story_error(node, "a storylet has no title")
+	var ident := _dotted_at(node.head, 0)
+	story.id = String(ident["name"])
+	if story.id.is_empty() or int(ident["next"]) != node.head.size():
+		_story_error(node, "storylet needs an id")
+		story.id = ""
+	var seen := {}
+	var bodies := 0
+	for child in node.children:
+		var field := child.keyword
+		if field == "lines" and seen.has("lines"):
+			_story_error(child, "duplicate storylet field \"lines\"")
+			_no_story_block(child)
+			continue
+		if field == "-" or field == "->" or field == "lines":
+			if bodies > 0:
+				_story_error(child, "a storylet has one body")
+				_no_story_block(child)
+				continue
+			bodies += 1
+			if field == "-":
+				story.body_kind = &"line"
+				_storylet_line(child, story)
+			elif field == "->":
+				_storylet_scene(child, story)
+			else:
+				seen["lines"] = true
+				story.body_kind = &"set"
+				_storylet_set(child, story)
+			continue
+		if not _STORYLET_FIELDS.has(field):
+			_story_error(child, "unknown storylet field \"%s\"" % field)
+			_no_story_block(child)
+			continue
+		if seen.has(field):
+			_story_error(child, "duplicate storylet field \"%s\"" % field)
+			_no_story_block(child)
+			continue
+		seen[field] = true
+		_storylet_field(child, story, field)
+	if not seen.has("scope"):
+		_story_error(node, "storylet needs a scope")
+	if not seen.has("speaker"):
+		_story_error(node, "storylet needs a speaker")
+	if bodies == 0:
+		_story_error(node, "a storylet needs a line, a lines set, or -> scene <id>")
+	for line_def in story.lines:
+		line_def.speaker = story.speaker
+	if not story.id.is_empty():
+		var flag := "true" if story.generic else "false"
+		_diagnostics.add(
+			WyrdDiagnostic.I_STORYLET_SCORE,
+			"storylet \"%s\" specificity %d priority %d generic=%s" % [story.id, story.specificity, story.priority, flag],
+			_path,
+			story.line,
+			story.col,
+			WyrdDiagnostic.SEVERITY_INFO
+		)
+	return story
+
+
+func _storylet_field(node: WyrdNode, story: WyrdStoryletDef, field: String) -> void:
+	if not node.line_tag.is_empty():
+		_story_error(node, "a line tag is not allowed on %s" % field)
+	_no_story_block(node)
+	match field:
+		"scope":
+			_storylet_scope(node, story)
+		"speaker":
+			_storylet_speaker(node, story)
+		"when":
+			_storylet_when(node, story)
+		"priority":
+			_storylet_priority(node, story)
+		"weight":
+			_storylet_weight(node, story)
+		"cooldown":
+			_storylet_cooldown(node, story)
+
+
+func _storylet_scope(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var at := _colon_at(node)
+	if at < 0 or at >= node.head.size() or node.head[at].kind != &"ident":
+		_story_error(node, "scope needs a kind")
+		return
+	var kind := node.head[at].text
+	var rest := at + 1
+	if kind == "bark":
+		if rest != node.head.size():
+			_story_error(node, "bark scope takes no id")
+			return
+		story.scope_kind = &"bark"
+		return
+	if kind != "topic" and kind != "event" and kind != "beat":
+		_story_error(node, "unknown scope \"%s\"" % kind)
+		return
+	var found := _dotted_at(node.head, rest)
+	var name := String(found["name"])
+	if name.is_empty() or int(found["next"]) != node.head.size():
+		_story_error(node, "scope %s needs an id" % kind)
+		return
+	if kind == "beat" and not name.contains("."):
+		_story_error(node, "beat scope needs <quest>.<stage>")
+		return
+	if kind == "event" and not _events.has(name):
+		_error(WyrdDiagnostic.E_EVENT_UNKNOWN, "unknown event \"%s\"" % name, node.head[rest].line, node.head[rest].col)
+	story.scope_kind = StringName(kind)
+	story.scope_id = name
+
+
+func _storylet_speaker(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var at := _colon_at(node)
+	var found := _dotted_at(node.head, at if at >= 0 else node.head.size())
+	var name := String(found["name"])
+	if at < 0 or name.is_empty() or int(found["next"]) != node.head.size() or not _shape_ok(name):
+		_story_error(node, "speaker needs a slot, an entity, or any")
+		return
+	story.speaker = name
+
+
+func _storylet_when(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	story.generic = false
+	var at := _colon_at(node)
+	if at < 0:
+		_story_error(node, "when needs a condition")
+		return
+	var span := _span_text(node.head, at, node.head.size())
+	if str(span["text"]).is_empty():
+		_story_error(node, "when needs a condition")
+		return
+	story.when_text = str(span["text"])
+	var compiled := _expr(story.when_text, int(span["line"]), int(span["col"]), _STORY, true, &"", story.reads)
+	story.condition = compiled["compiled"]
+	if story.condition != null:
+		story.specificity = story.condition.specificity
+
+
+func _storylet_priority(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var parsed := _signed_int(node)
+	if not bool(parsed["ok"]):
+		_story_error(node, "priority needs an integer")
+		return
+	story.priority = int(parsed["value"])
+
+
+func _storylet_weight(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var parsed := _signed_int(node)
+	if not bool(parsed["ok"]):
+		_story_error(node, "weight needs an integer")
+		return
+	if int(parsed["value"]) < 0:
+		_story_error(node, "weight cannot be negative")
+		return
+	story.weight = int(parsed["value"])
+
+
+func _storylet_cooldown(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var at := _colon_at(node)
+	if at >= 0 and at < node.head.size() and node.head[at].kind == &"minus":
+		_story_error(node, "cooldown cannot be negative")
+		return
+	if at < 0 or at + 1 >= node.head.size() or node.head[at].kind != &"int" or node.head[at + 1].kind != &"ident" or at + 2 != node.head.size():
+		_story_error(node, "cooldown needs a duration")
+		return
+	var scale := 0
+	match node.head[at + 1].text:
+		"m":
+			scale = 1
+		"h":
+			scale = 60
+		"d":
+			scale = WyrdCondition.MINUTES_PER_DAY
+		_:
+			_story_error(node, "cooldown unit must be m, h, or d")
+			return
+	story.cooldown_minutes = int(node.head[at].text) * scale
+
+
+func _storylet_set(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	if not node.line_tag.is_empty():
+		_story_error(node, "a line tag is not allowed on lines")
+	if node.head.size() != 1 or node.head[0].kind != &"colon":
+		_story_error(node, "lines takes no arguments")
+	if node.children.is_empty():
+		_story_error(node, "a line set needs at least one line")
+	for child in node.children:
+		if child.keyword != "-":
+			_story_error(child, "a line set holds prose lines")
+			_no_story_block(child)
+			continue
+		_storylet_line(child, story)
+
+
+func _storylet_line(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	if not node.children.is_empty():
+		_story_error(node, "a storylet line cannot contain a block")
+		for child in node.children:
+			_no_story_block(child)
+	if not node.head.is_empty() and node.head[0].kind == &"lparen":
+		_story_error(node, "a storylet line is prose, not a label")
+		return
+	var line_def := WyrdLineDef.new()
+	line_def.take_span(node)
+	line_def.kind = &"storylet"
+	line_def.line_id = _line_id(node, true)
+	if node.head.is_empty():
+		_story_error(node, "a storylet line needs prose")
+	else:
+		line_def.prose = _interp(node.head, line_def.reads)
+		WyrdStmtSpan.add_reads(story.reads, line_def.reads)
+	story.lines.append(line_def)
+
+
+func _storylet_scene(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	if not node.line_tag.is_empty():
+		_story_error(node, "a line tag is not allowed on a storylet divert")
+	_no_story_block(node)
+	var items := node.head
+	if items.is_empty() or items[0].kind != &"ident" or items[0].text != "scene":
+		_story_error(node, "storylet divert needs -> scene <id>")
+		return
+	var found := _dotted_at(items, 1)
+	if String(found["name"]).is_empty() or int(found["next"]) != items.size():
+		_story_error(node, "storylet divert needs -> scene <id>")
+		return
+	story.body_kind = &"scene"
+	story.scene_id = String(found["name"])
+
+
+func _colon_at(node: WyrdNode) -> int:
+	if node.head.is_empty() or node.head[0].kind != &"colon":
+		return -1
+	return 1
+
+
+func _signed_int(node: WyrdNode) -> Dictionary:
+	var at := _colon_at(node)
+	if at < 0 or at >= node.head.size():
+		return {"ok": false, "value": 0}
+	var sign := 1
+	if node.head[at].kind == &"minus":
+		sign = -1
+		at += 1
+	if at >= node.head.size() or node.head[at].kind != &"int" or at + 1 != node.head.size():
+		return {"ok": false, "value": 0}
+	return {"ok": true, "value": sign * int(node.head[at].text)}
+
+
+func _story_error(node: WyrdNode, message: String) -> void:
+	_diagnostics.add(WyrdDiagnostic.E_STORYLET_SYNTAX, message, _path, node.start_line, node.start_col)
+
+
+func _no_story_block(node: WyrdNode) -> void:
+	if node.children.is_empty():
+		return
+	_story_error(node, "a storylet field cannot contain a block")
+	for child in node.children:
+		_no_story_block(child)
 
 
 func _no_block(node: WyrdNode) -> void:

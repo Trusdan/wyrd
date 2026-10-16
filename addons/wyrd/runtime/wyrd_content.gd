@@ -4,7 +4,8 @@ extends RefCounted
 ## Runtime index of one compiled pack. Built at load. Not a save document.
 ##
 ## @experimental
-## Quests, scenes, and lines are the compiler's plain records, keyed by id.
+## Quests, scenes, storylets, and lines are the compiler's plain records, keyed by id.
+## A storylet [code]when[/code] is compiled and is not added to the tick queue.
 ## [member conditions] is every gating condition, in source order, with a
 ## parallel [member records] / [member sites] pair. [code]chance[/code] uses
 ## [code]<record>:<site>[/code]. [member manifest_hash] folds the pack id and
@@ -19,6 +20,8 @@ var quests: Dictionary = {}
 var scenes: Dictionary = {}
 ## Role id to [WyrdRoleDef]. Compiled with the pack. Not a save document.
 var roles: Dictionary = {}
+## Storylet id to [WyrdStoryletDef]. Compiled with the pack. Not a save document.
+var storylets: Dictionary = {}
 var lines: Dictionary = {}
 var files: Array = []
 var conditions: Array[WyrdCompiledCondition] = []
@@ -60,6 +63,13 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 				content._item(scene.id, item)
 		for role in file.roles:
 			content.roles[role.id] = role
+		for storylet in file.storylets:
+			if storylet.id.is_empty():
+				continue
+			content.storylets[storylet.id] = storylet
+			for line_def in storylet.lines:
+				if not line_def.line_id.is_empty():
+					content.lines[line_def.line_id] = line_def
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()

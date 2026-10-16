@@ -59,6 +59,7 @@ func finish_xref(pack: WyrdLinkedPack, fact_paths: Dictionary) -> void:
 func _index_symbols(units: Array) -> void:
 	var quests := {}
 	var roles := {}
+	var storylets := {}
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
@@ -66,6 +67,8 @@ func _index_symbols(units: Array) -> void:
 			_claim(quests, quest.id, path, quest.line, quest.col, WyrdDiagnostic.E_QUEST_DUPLICATE, "quest")
 		for role in file.roles:
 			_claim(roles, role.id, path, role.line, role.col, WyrdDiagnostic.E_ROLE_DUPLICATE, "role")
+		for storylet in file.storylets:
+			_claim(storylets, storylet.id, path, storylet.line, storylet.col, WyrdDiagnostic.E_STORYLET_DUPLICATE, "storylet")
 		for scene in file.scenes:
 			if scene.id.is_empty():
 				continue
@@ -112,6 +115,9 @@ func _lines(units: Array) -> void:
 					_take_line(seen, item.line_def.line_id, path, item.line_def.line, item.line_def.col)
 				if item.choice != null:
 					_take_line(seen, item.choice.line_id, path, item.choice.line, item.choice.col)
+		for storylet in file.storylets:
+			for line_def in storylet.lines:
+				_take_line(seen, line_def.line_id, path, line_def.line, line_def.col)
 
 
 func _line_stage(stage: WyrdStageDef, path: String, seen: Dictionary) -> void:
@@ -403,6 +409,18 @@ func _scenes_of(units: Array) -> void:
 						item.line,
 						item.col
 					)
+		for storylet in file.storylets:
+			if storylet.body_kind != &"scene" or storylet.scene_id.is_empty():
+				continue
+			if _scenes.has(storylet.scene_id):
+				continue
+			_diagnostics.add(
+				WyrdDiagnostic.E_SCENE_UNKNOWN,
+				"unknown scene \"%s\"" % storylet.scene_id,
+				path,
+				storylet.line,
+				storylet.col
+			)
 
 
 func _mark_runs(stage: WyrdStageDef, run: Dictionary) -> void:

@@ -5,7 +5,7 @@ Lexer, block parser, fact-schema check, condition compiler, and statement compil
 Pipeline for one file:
 
 1. **Lex.** `WyrdLexer` tokenizes one UTF-8 source: two-space indent, `//` comments, `#line:` tags, quoted titles, and prose escapes.
-2. **Block parse.** `WyrdParser` builds a file node, top-level `facts`, `events`, `role`, `quest`, and `scene` blocks, and a generic statement-line tree. A `role` block is code, like `facts`. Its fields are compiled by `WyrdStatements` into a `WyrdRoleDef`.
+2. **Block parse.** `WyrdParser` builds a file node, top-level `facts`, `events`, `role`, `quest`, `scene`, and `storylet` blocks, and a generic statement-line tree. A `role` block is code, like `facts`. Its fields are compiled by `WyrdStatements` into a `WyrdRoleDef`. A `storylet` block is code except for dash prose lines, and compiles to a `WyrdStoryletDef`. `wyrd check` prints each storylet's specificity as `info[I_STORYLET_SCORE]`.
 3. **Facts check.** Each `facts` entry becomes a `WyrdFact` on a `WyrdFactSchema`: type, stored or resolved, optional invalidation, and an optional trailing `doc` string. `lookup` finds a concrete key first, then a `{id}` pattern.
 4. **Conditions.** `WyrdCondition` lexes, parses, type-checks, and emits one expression to a `WyrdCompiledCondition` (a flat instruction array, constants, reads, and specificity). The draft language is `docs/conditions-draft.md`. It is not frozen. `WyrdInterp` compiles the raw `{...}` spans the block lexer already kept.
 5. **Statements.** `WyrdStatements` walks the quest and scene tree into plain records (`WyrdQuestDef`, `WyrdSceneDef`, `WyrdEffectDef`, and the rest under `stmt/`). Prose goes through `WyrdInterp`. The draft is `docs/statements-draft.md`. It is not frozen.

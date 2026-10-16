@@ -4,7 +4,7 @@ Engine code with no editor dependency. `wyrd_runtime.gd` is the instanceable run
 
 ## Load
 
-`load_content(manifest)` compiles the manifest's `.wyrd` sources with `WyrdPack.compile` and, when that reports no errors, builds a runtime-only `WyrdContent` (quests, scenes, lines, condition table, dependency index, `manifest_hash`). Any compile error refuses the load and leaves the runtime empty. Warnings do not refuse it. `export-json` stays a debug format.
+`load_content(manifest)` compiles the manifest's `.wyrd` sources with `WyrdPack.compile` and, when that reports no errors, builds a runtime-only `WyrdContent` (quests, scenes, storylets, lines, condition table, dependency index, `manifest_hash`). Storylet conditions are not added to the tick queue. Any compile error refuses the load and leaves the runtime empty. Warnings do not refuse it. `export-json` stays a debug format.
 
 Exported games must include `*.wyrd` and the manifest in the export filter. There is no import plugin in this slice.
 
