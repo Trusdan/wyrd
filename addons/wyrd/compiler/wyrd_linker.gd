@@ -37,6 +37,7 @@ func link(
 	pack.schema = schema
 	pack.units = units
 	_index_symbols(units)
+	_storylet_ties(units)
 	_lines(units)
 	_host_steps(units)
 	_quests(units, pack)
@@ -99,6 +100,18 @@ func _claim(table: Dictionary, id: String, path: String, line: int, col: int, co
 		)
 		return
 	table[id] = {"col": col, "line": line, "path": path}
+
+
+func _storylet_ties(units: Array) -> void:
+	var rows: Array = []
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for storylet in file.storylets:
+			rows.append({"path": path, "story": storylet})
+	for index in rows.size():
+		for other in range(index + 1, rows.size()):
+			WyrdStoryletTie.warn(_diagnostics, rows[index], rows[other])
 
 
 func _lines(units: Array) -> void:

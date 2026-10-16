@@ -17,7 +17,7 @@ var enabled: bool = false
 ## speaker equals this text or begins with it. Empty keeps every line. Belief,
 ## knowledge, credibility, event witness, and evidence lines use who and key.
 ## A credibility line's who is the listener. An evidence line's who is empty.
-## A director line uses scope, speaker, and key. Key is the scope id.
+## A director line and a why_not line use scope, speaker, and key. Key is the scope id.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 

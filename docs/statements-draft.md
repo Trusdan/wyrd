@@ -102,6 +102,10 @@ A win records `seen` and `last_minute`, then draws the body. `draw` alone does n
 
 One `director` line is logged per query when tracing is on: scope, speaker, candidate count, winner, and score `priority/specificity/weight/seen`. Candidates are the rows that passed the filters. The score uses `seen` from before this selection. A line set is still drawn by `WyrdStoryletDeck`: one seeded shuffle per cycle, no repeat until the set is exhausted, then a new cycle.
 
+The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two storylets share a scope, their speakers can meet in one query, priority and specificity are equal, and the conditions can both be true. A topic, event, or beat scope matches the same kind and the same id. Every bark shares one scope. `speaker: any` overlaps every speaker. Two other speakers do not. The same storylet id is a duplicate, not a tie. Weight is printed in id order and does not suppress the warning. Exclusion is static. The same subject required to equal two values, a required equality that is also forbidden, or a required call or comparison that is also forbidden, do not warn. `or`, and `not` of `and` or `or`, do not prove exclusion. A `when` that fails to parse may still overlap. `chance` does not exclude another `chance`.
+
+`WyrdDirector.why_not(storylet_id, scope_kind, scope_id, speaker)` explains one storylet. It does not record a selection, draw a line, or advance a random stream. Reasons, in order, are `missing`, `scope`, `speaker`, `when`, `cooldown`, `ok`, and `outranked`. `eligible` is true only for `ok`. The `when` reason names the first failing top-level `and` clause. `cooldown` is the authored minutes. `remaining` is the minutes left, or 0 when the storylet was never selected, the cooldown is 0, or the cooldown has elapsed. When the storylet would win the seeded rank, the reason is `ok` and `winner` is that id. When another storylet would win, the reason is `outranked` and `winner` is that id. A secrecy tier is not applied. One `why_not` line is logged when tracing is on. `wyrd why-not --manifest <path> [--scope kind] [--scope-id id] [--speaker id] [--save path] <storylet-id>` prints the same line. Omitted flags use the storylet's own scope, scope id, and speaker. An explicit `--speaker` replaces that default, and an empty speaker matches every storylet in the scope. The command exits 0 when it can explain the storylet, including an ineligible one, and exits 1 when the id is unknown or the pack does not load. `--trace-director`, a storylets dump, and a cooldowns dump are not in this draft.
+
 ## Effects
 
 | Form | Notes |
@@ -199,6 +203,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_HOLDER_UNGUARDED` | Prose interpolates `holder(slot)` where that slot can be empty. A guard is a `when` that requires `filled(slot)`, or an `empty` variant that replaces the branch |
 | `W_STALE_BELIEF` | A scene `learn` writes `known/<agent>` while a contradicting `believe` of that agent and key remains and no `unbelieve` clears it |
 | `W_CLAIM` | Prose interpolates `belief`, `believes`, or `held`. The value is a claim |
+| `W_STORYLET_TIE` | Two storylets share a scope and a speaker, priority and specificity are equal, and the conditions can both be true |
 | `E_FACT_LEAK` | Prose interpolates a stored fact's world value, and a `when` or `{if}` reads that fact from the world without `knows` or `known` |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 

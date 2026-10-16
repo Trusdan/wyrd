@@ -49,23 +49,7 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 	if not _known_scope(kind):
 		push_error("Wyrd.director.query: unknown scope \"%s\"" % scope_kind)
 		return _finish(scope_text, speaker, [], null, {}, 0)
-	var matched: Array = []
-	var ids: Array = _runtime.content().storylets.keys()
-	ids.sort()
-	for id in ids:
-		var found: Variant = _runtime.content().storylets[id]
-		if not (found is WyrdStoryletDef):
-			continue
-		var story: WyrdStoryletDef = found
-		if not _scope_matches(story, kind, scope_id):
-			continue
-		if not _speaker_matches(story.speaker, speaker):
-			continue
-		if not _when_passes(story):
-			continue
-		if _cooling(story):
-			continue
-		matched.append(story)
+	var matched := _eligible(kind, scope_id, speaker)
 	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
 	var drawn := {}
 	var seen_before := 0
@@ -123,6 +107,146 @@ func _finish(
 			"winner": winner_id,
 		})
 	return row
+
+
+## Explains one storylet for a query. Does not record a selection.
+func why_not(storylet_id: String, scope_kind: String, scope_id: String = "", speaker: String = "") -> Dictionary:
+	var kind := StringName(scope_kind)
+	var scope_text := _scope_text(kind, scope_id)
+	if _runtime == null or _runtime.content() == null or _runtime.storylets == null:
+		push_error("Wyrd.director.why_not: load content before a storylet query")
+		return _finish_why(storylet_id, scope_text, speaker, false, "missing", "", "-", 0, 0, "")
+	var found: Variant = _runtime.content().storylets.get(storylet_id, null)
+	if not (found is WyrdStoryletDef):
+		push_error("Wyrd.director.why_not: unknown storylet \"%s\"" % storylet_id)
+		return _finish_why(storylet_id, scope_text, speaker, false, "missing", "", "-", 0, 0, "")
+	var story: WyrdStoryletDef = found
+	var score := "%d/%d/%d/%d" % [story.priority, story.specificity, story.weight, _runtime.storylets.seen_of(story.id)]
+	var remaining := _remaining(story)
+	if not _known_scope(kind):
+		push_error("Wyrd.director.why_not: unknown scope \"%s\"" % scope_kind)
+		return _finish_why(storylet_id, scope_text, speaker, false, "scope", "", score, story.cooldown_minutes, remaining, "")
+	if not _scope_matches(story, kind, scope_id):
+		return _finish_why(storylet_id, scope_text, speaker, false, "scope", "", score, story.cooldown_minutes, remaining, "")
+	if not _speaker_matches(story.speaker, speaker):
+		return _finish_why(storylet_id, scope_text, speaker, false, "speaker", "", score, story.cooldown_minutes, remaining, "")
+	var clause := _failing_clause(story)
+	if not clause.is_empty():
+		return _finish_why(storylet_id, scope_text, speaker, false, "when", clause, score, story.cooldown_minutes, remaining, "")
+	if _cooling(story):
+		return _finish_why(storylet_id, scope_text, speaker, false, "cooldown", "", score, story.cooldown_minutes, remaining, "")
+	var matched := _eligible(kind, scope_id, speaker)
+	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
+	var winner_id := "" if winner == null else winner.id
+	if winner_id == story.id:
+		return _finish_why(storylet_id, scope_text, speaker, true, "ok", "", score, story.cooldown_minutes, remaining, winner_id)
+	return _finish_why(storylet_id, scope_text, speaker, false, "outranked", "", score, story.cooldown_minutes, remaining, winner_id)
+
+
+static func format_why_not(row: Dictionary) -> String:
+	var clause := str(row.get("clause", ""))
+	if clause.is_empty():
+		clause = "-"
+	var spoken := str(row.get("speaker", ""))
+	if spoken.is_empty():
+		spoken = "-"
+	var winner := str(row.get("winner", ""))
+	if winner.is_empty():
+		winner = "-"
+	var eligible := "true" if bool(row.get("eligible", false)) else "false"
+	return "wyrd why_not storylet=%s scope=%s speaker=%s eligible=%s reason=%s clause=\"%s\" score=%s cooldown=%s remaining=%s winner=%s" % [
+		str(row.get("storylet", "")),
+		str(row.get("scope", "")),
+		spoken,
+		eligible,
+		str(row.get("reason", "")),
+		clause,
+		str(row.get("score", "-")),
+		str(row.get("cooldown", 0)),
+		str(row.get("remaining", 0)),
+		winner,
+	]
+
+
+func _finish_why(
+	storylet_id: String,
+	scope_text: String,
+	speaker: String,
+	eligible: bool,
+	reason: String,
+	clause: String,
+	score: String,
+	cooldown: int,
+	remaining: int,
+	winner: String
+) -> Dictionary:
+	var row := {
+		"clause": clause,
+		"cooldown": cooldown,
+		"eligible": eligible,
+		"key": _scope_id_of(scope_text),
+		"reason": reason,
+		"remaining": remaining,
+		"scope": scope_text,
+		"score": score,
+		"speaker": speaker,
+		"storylet": storylet_id,
+		"winner": winner,
+	}
+	if _runtime != null:
+		_runtime.trace_why_not(row)
+	return row
+
+
+func _eligible(kind: StringName, scope_id: String, speaker: String) -> Array:
+	var matched: Array = []
+	if _runtime == null or _runtime.content() == null:
+		return matched
+	var ids: Array = _runtime.content().storylets.keys()
+	ids.sort()
+	for id in ids:
+		var found: Variant = _runtime.content().storylets[id]
+		if not (found is WyrdStoryletDef):
+			continue
+		var story: WyrdStoryletDef = found
+		if not _scope_matches(story, kind, scope_id):
+			continue
+		if not _speaker_matches(story.speaker, speaker):
+			continue
+		if not _when_passes(story):
+			continue
+		if _cooling(story):
+			continue
+		matched.append(story)
+	return matched
+
+
+func _failing_clause(story: WyrdStoryletDef) -> String:
+	if story.condition == null:
+		return ""
+	if story.clauses.is_empty():
+		if _runtime.eval_storylet(story.condition, story.id):
+			return ""
+		return story.when_text
+	for index in story.clauses.size():
+		if _runtime.eval_storylet(story.clauses[index], story.id):
+			continue
+		if index < story.clause_text.size():
+			return story.clause_text[index]
+		return story.when_text
+	return ""
+
+
+func _remaining(story: WyrdStoryletDef) -> int:
+	if story.cooldown_minutes <= 0 or _runtime == null or _runtime.storylets == null:
+		return 0
+	var last := _runtime.storylets.last_minute_of(story.id)
+	if last < 0:
+		return 0
+	var elapsed := _runtime.now_minutes() - last
+	if elapsed >= story.cooldown_minutes:
+		return 0
+	return story.cooldown_minutes - elapsed
 
 
 func _pick(matched: Array, scope_text: String, speaker: String) -> WyrdStoryletDef:

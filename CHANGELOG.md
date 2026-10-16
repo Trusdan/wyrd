@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Two storylets that share a scope and a speaker, with equal priority and specificity, warn `W_STORYLET_TIE` when their conditions can both be true. `speaker: any` overlaps every speaker in that scope. Weight does not clear the warning. `wyrd why-not` and a `why_not` trace line explain one storylet without recording a selection. Schema stays 2. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A director query filters storylets by scope, speaker, `when`, and cooldown, then ranks by priority, specificity, weight, and recency. `speaker: any` is a wildcard. Ties sort by id and break with a seeded roll. A win records `seen` and `last_minute` on schema 2. One `director` line is logged per query. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A `storylet` block compiles `scope`, `speaker`, `when`, `priority`, `weight`, and `cooldown`, plus one line, a `lines` set, or `-> scene`. Specificity counts top-level `and` clauses, and `wyrd check` prints it. A line set draws one seeded line and does not repeat until the set is exhausted. That draw state is saved on schema 2 and omitted when no set has been drawn. `addons/wyrd/VERSION` stays `0.3.0-m5`.
 - A host event may name witnesses and leave a world fact. `saw` learns that fact, and `heard` or `inferred` believes it. `witnesses: auto` asks the spatial adapter. `leaves: <fact> = <value> decays <minutes>` writes the fact and clears it on a later tick. The deadline is saved on schema 2. One `event_witness` line and one `evidence` line are logged. `addons/wyrd/VERSION` stays `0.3.0-m5`.

@@ -10,10 +10,11 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]tag-lines[/code] writes missing line ids. [code]export-json[/code] writes
 ## the debug pack document. [code]facts[/code] prints the cross-reference.
 ## [code]roles[/code] prints a sorted table of role holders.
+## [code]why-not[/code] explains one storylet for a scope and speaker.
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "facts", "roles", "why-not"]
 
 
 static func version_line() -> String:
@@ -28,6 +29,7 @@ static func command_lines() -> PackedStringArray:
 		"export-json: write the linked pack as JSON",
 		"facts: print the fact cross-reference",
 		"roles: print a sorted table of role holders",
+		"why-not: explain one storylet for a scope and speaker",
 	])
 
 
@@ -54,6 +56,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _facts(args)
 	if command == "roles":
 		return _roles(args)
+	if command == "why-not":
+		return _why_not(args)
 	return {"exit_code": 1, "output": "wyrd: unknown command \"%s\"\n" % command}
 
 
@@ -182,6 +186,47 @@ static func _roles(args: PackedStringArray) -> Dictionary:
 	return {"exit_code": 0, "output": output}
 
 
+static func _why_not(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var runtime: WyrdRuntime = _Runtime.new()
+	runtime.roles.set_host_decides(Callable(_NoHost.new(), &"decide"))
+	runtime.register_adapter(WyrdElectionAdapter, _NoElection.new())
+	var report := runtime.load_content(_manifest(parsed))
+	if not report.ok:
+		return {"exit_code": 1, "output": report.diagnostics.format()}
+	runtime.start_new_game(1)
+	var save_path := str(parsed["save"])
+	if not save_path.is_empty():
+		var resolved := _resolve(save_path)
+		if not FileAccess.file_exists(resolved):
+			return {"exit_code": 1, "output": "wyrd: no such file: %s\n" % save_path}
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(resolved))
+		if not (data is Dictionary):
+			return {"exit_code": 1, "output": "wyrd: save is not a JSON object\n"}
+		var loaded_save := runtime.load_state(data)
+		if not loaded_save.ok:
+			return {"exit_code": 1, "output": loaded_save.diagnostics.format()}
+	var storylet_id := str(parsed["storylet"])
+	var scope := str(parsed["scope"])
+	var scope_id := str(parsed["scope_id"])
+	var speaker := str(parsed["speaker"])
+	var found: Variant = runtime.content().storylets.get(storylet_id, null)
+	if found is WyrdStoryletDef:
+		var story: WyrdStoryletDef = found
+		if not bool(parsed["scope_set"]):
+			scope = String(story.scope_kind)
+		if not bool(parsed["scope_id_set"]) and scope != "bark":
+			scope_id = story.scope_id
+		if not bool(parsed["speaker_set"]):
+			speaker = story.speaker
+	var row := runtime.director.why_not(storylet_id, scope, scope_id, speaker)
+	if str(row.get("reason", "")) == "missing":
+		return {"exit_code": 1, "output": "wyrd: unknown storylet \"%s\"\n" % storylet_id}
+	return {"exit_code": 0, "output": WyrdDirector.format_why_not(row) + "\n"}
+
+
 static func _manifest(parsed: Dictionary) -> WyrdContentManifest:
 	var path := str(parsed["manifest"])
 	if not path.is_empty():
@@ -226,6 +271,12 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var out := ""
 	var prefix := ""
 	var save_path := ""
+	var scope := ""
+	var scope_id := ""
+	var speaker := ""
+	var scope_set := false
+	var scope_id_set := false
+	var speaker_set := false
 	var positionals: PackedStringArray = PackedStringArray()
 	var i := 1
 	while i < args.size():
@@ -256,15 +307,39 @@ static func _options(args: PackedStringArray) -> Dictionary:
 			if i >= args.size():
 				return _fail("wyrd: --save needs a path\n")
 			save_path = args[i]
+		elif command == "why-not" and arg == "--scope":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --scope needs a kind\n")
+			scope = args[i]
+			scope_set = true
+		elif command == "why-not" and arg == "--scope-id":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --scope-id needs an id\n")
+			scope_id = args[i]
+			scope_id_set = true
+		elif command == "why-not" and arg == "--speaker":
+			i += 1
+			if i >= args.size():
+				return _fail("wyrd: --speaker needs an id\n")
+			speaker = args[i]
+			speaker_set = true
 		elif arg.begins_with("-"):
 			return _fail("wyrd: unknown option \"%s\"\n" % arg)
 		else:
 			positionals.append(arg)
 		i += 1
-	if not manifest.is_empty() and not positionals.is_empty():
-		return _fail("wyrd: pass a path or --manifest\n")
-	if manifest.is_empty() and positionals.size() != 1:
-		return _fail("wyrd: %s needs one file or directory\n" % command)
+	if command == "why-not":
+		if manifest.is_empty():
+			return _fail("wyrd: why-not needs --manifest\n")
+		if positionals.size() != 1:
+			return _fail("wyrd: why-not needs one storylet id\n")
+	else:
+		if not manifest.is_empty() and not positionals.is_empty():
+			return _fail("wyrd: pass a path or --manifest\n")
+		if manifest.is_empty() and positionals.size() != 1:
+			return _fail("wyrd: %s needs one file or directory\n" % command)
 	var files := PackedStringArray()
 	var pack_id := ""
 	var language_version := 1
@@ -306,6 +381,13 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"pack_id": pack_id,
 		"prefix": prefix,
 		"save": save_path,
+		"scope": scope,
+		"scope_id": scope_id,
+		"scope_id_set": scope_id_set,
+		"scope_set": scope_set,
+		"speaker": speaker,
+		"speaker_set": speaker_set,
+		"storylet": positionals[0] if command == "why-not" and positionals.size() == 1 else "",
 		"strict": strict,
 	}
 
