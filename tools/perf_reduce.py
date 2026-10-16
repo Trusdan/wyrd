@@ -274,6 +274,9 @@ def write_trend(results_dir, out_path):
             ("compact.time", "s"),
             ("memory.peak", "B"),
             ("memory.steady", "B"),
+            ("director.query", "s"),
+            ("director.why_not", "s"),
+            ("compile.tie_lint", "s"),
         ]
         names = [item[0] for item in catalog]
         units = {item[0]: item[1] for item in catalog}

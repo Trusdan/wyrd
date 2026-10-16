@@ -9,6 +9,8 @@ var _pack := ""
 var _profile := ""
 var _facts := 0
 var _npcs := 0
+var _topics := 0
+var _stories_ready := false
 var _runtime: WyrdRuntime
 var _world: WyrdFakeWorld
 var _spatial: WyrdFakeSpatial
@@ -75,6 +77,7 @@ func _prepare() -> Dictionary:
 	_profile = str(info.get("profile", _profile))
 	_facts = int(info.get("facts", "0"))
 	_npcs = int(info.get("npcs", "0"))
+	_topics = int(info.get("topics", "0"))
 	if _facts < 1 or _npcs < 2:
 		return {"error": "pack needs facts and at least two npcs", "ok": false}
 	_runtime = WyrdRuntime.new()
@@ -117,6 +120,9 @@ func _prepare() -> Dictionary:
 			"facts": _facts,
 			"npcs": _npcs,
 			"quests": int(info.get("quests", "0")),
+			"speakers": int(info.get("speakers", "0")),
+			"storylets": int(info.get("storylets", "0")),
+			"topics": _topics,
 		},
 		"seed": WyrdPerfScale.SEED,
 		"warmups": WyrdPerfScale.WARMUPS,
@@ -155,8 +161,18 @@ func _sample(name: String) -> Dictionary:
 			row = _sample_memory(false)
 		"memory.steady":
 			row = _sample_memory(true)
+		"director.query":
+			row = _sample_query()
+		"director.why_not":
+			row = _sample_why_not()
+		"compile.tie_lint":
+			row = _sample_tie_lint()
 		_:
 			return {"error": "unknown metric %s" % name, "metric": name, "ok": false}
+	if not str(row.get("error", "")).is_empty():
+		row["metric"] = name
+		row["ok"] = false
+		return row
 	row["metric"] = name
 	row["ok"] = true
 	_note_mem()
@@ -342,6 +358,91 @@ func _sample_compact() -> Dictionary:
 	}
 
 
+func _sample_query() -> Dictionary:
+	var err := _ensure_stories()
+	if not err.is_empty():
+		return {"error": err}
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	var digest := WyrdHash.of_int(WyrdPerfScale.QUERY_BATCH)
+	var candidates := 0
+	var started := Time.get_ticks_usec()
+	for step in WyrdPerfScale.QUERY_BATCH:
+		var topic := "rumor.scale_%02d" % (step % _topics)
+		var won := _runtime.director.query("topic", topic, WyrdPerfScale.QUERY_SPEAKER)
+		digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(won["id"]))))
+		candidates = int(won["candidates"])
+		digest = WyrdHash.combine(digest, candidates)
+	var elapsed := Time.get_ticks_usec() - started
+	return {
+		"checksum": str(digest),
+		"extra": {"batch": WyrdPerfScale.QUERY_BATCH, "candidates": candidates},
+		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.QUERY_BATCH),
+	}
+
+
+func _sample_why_not() -> Dictionary:
+	var err := _ensure_stories()
+	if not err.is_empty():
+		return {"error": err}
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	var story_id := WyrdScalePack.queried_winner(_topics)
+	var digest := WyrdHash.of_int(WyrdPerfScale.WHY_BATCH)
+	var reason := ""
+	var started := Time.get_ticks_usec()
+	for _step in WyrdPerfScale.WHY_BATCH:
+		var row := _runtime.director.why_not(story_id, "topic", WyrdPerfScale.QUERY_TOPIC, WyrdPerfScale.QUERY_SPEAKER)
+		reason = str(row.get("reason", ""))
+		digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(reason)))
+		digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(row.get("winner", "")))))
+	var elapsed := Time.get_ticks_usec() - started
+	return {
+		"checksum": str(digest),
+		"extra": {"batch": WyrdPerfScale.WHY_BATCH, "reason": reason},
+		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.WHY_BATCH),
+	}
+
+
+func _sample_tie_lint() -> Dictionary:
+	var started := Time.get_ticks_usec()
+	var result := WyrdCli.execute(PackedStringArray(["check", "--strict", WyrdScalePack.storylets_root(_pack)]))
+	var elapsed := Time.get_ticks_usec() - started
+	var errors := 0
+	var warnings := 0
+	for line in str(result["output"]).split("\n"):
+		if line.contains("error["):
+			errors += 1
+		elif line.contains("warning["):
+			warnings += 1
+	return {
+		"checksum": "%s:%s:%s" % [int(result["exit_code"]), errors, warnings],
+		"extra": {"exit_code": int(result["exit_code"]), "warnings": warnings},
+		"value": float(elapsed) / 1000000.0,
+	}
+
+
+func _ensure_stories() -> String:
+	if _stories_ready:
+		return ""
+	if _topics < 1:
+		return "pack has no topics"
+	var extra := _wyrd_files_in(WyrdScalePack.storylets_root(_pack))
+	if extra.is_empty():
+		return "storylet pack is missing"
+	var files := _wyrd_files()
+	files.append_array(extra)
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"gullhaven"
+	manifest.language_version = 1
+	manifest.files = files
+	var report := _runtime.load_content(manifest)
+	if not report.ok:
+		return report.diagnostics.format()
+	_runtime.trace.enabled = false
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_stories_ready = true
+	return ""
+
+
 func _sample_memory(steady: bool) -> Dictionary:
 	if steady:
 		_runtime.tick(0)
@@ -389,15 +490,19 @@ func _p95(values: Array[float]) -> float:
 
 
 func _wyrd_files() -> PackedStringArray:
+	return _wyrd_files_in(_pack)
+
+
+func _wyrd_files_in(dir: String) -> PackedStringArray:
 	var rows := PackedStringArray()
-	var listing := DirAccess.open(_pack)
+	var listing := DirAccess.open(dir)
 	if listing == null:
 		return rows
 	listing.list_dir_begin()
 	var name := listing.get_next()
 	while name != "":
 		if name.ends_with(".wyrd") and not listing.current_is_dir():
-			rows.append(_pack.path_join(name))
+			rows.append(dir.path_join(name))
 		name = listing.get_next()
 	listing.list_dir_end()
 	rows.sort()

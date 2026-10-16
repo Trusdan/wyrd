@@ -18,28 +18,54 @@ static func write(dir: String, profile_name: String) -> String:
 	if counts.is_empty():
 		push_error("scale pack: unknown profile %s" % profile_name)
 		return ""
+	var story_dir := storylets_root(dir)
 	remove_dir(dir)
+	remove_dir(story_dir)
 	DirAccess.make_dir_recursive_absolute(dir)
+	DirAccess.make_dir_recursive_absolute(story_dir)
 	_store(dir.path_join("facts.wyrd"), _facts(counts))
 	_store(dir.path_join("roles.wyrd"), _roles(counts))
 	_store(dir.path_join("quests.wyrd"), _quests(counts))
 	_store(dir.path_join("deeds.tsv"), _deeds(counts))
 	_store(dir.path_join("pack.txt"), _pack_text(profile_name, counts))
-	return hash_dir(dir)
+	_store(story_dir.path_join("scale.wyrd"), _storylets(counts))
+	return hash_release(dir)
+
+
+## Sibling of the quest pack. [code]compile.strict[/code] does not walk it.
+static func storylets_root(pack_dir: String) -> String:
+	return "%s_storylets" % pack_dir
+
+
+static func hash_release(pack_dir: String) -> String:
+	var ctx := HashingContext.new()
+	ctx.start(HashingContext.HASH_SHA256)
+	_hash_tree(ctx, pack_dir, "")
+	_hash_tree(ctx, storylets_root(pack_dir), "storylets/")
+	return ctx.finish().hex_encode()
+
+
+## Topic-0, [constant WyrdPerfScale.QUERY_SPEAKER] winner. Slot 1 of that topic.
+static func queried_winner(topics: int) -> String:
+	return _storylet_id(topics)
 
 
 static func hash_dir(dir: String) -> String:
-	var names := _file_names(dir)
-	names.sort()
 	var ctx := HashingContext.new()
 	ctx.start(HashingContext.HASH_SHA256)
+	_hash_tree(ctx, dir, "")
+	return ctx.finish().hex_encode()
+
+
+static func _hash_tree(ctx: HashingContext, dir: String, prefix: String) -> void:
+	var names := _file_names(dir)
+	names.sort()
 	for name in names:
-		ctx.update(String(name).to_utf8_buffer())
+		ctx.update((prefix + String(name)).to_utf8_buffer())
 		ctx.update(PackedByteArray([0]))
 		var body := FileAccess.get_file_as_bytes(dir.path_join(String(name)))
 		ctx.update(_u64(body.size()))
 		ctx.update(body)
-	return ctx.finish().hex_encode()
 
 
 static func read_pack(dir: String) -> Dictionary:
@@ -208,6 +234,9 @@ static func _pack_text(profile_name: String, counts: Dictionary) -> String:
 		"profile=%s" % profile_name,
 		"quests=%d" % int(counts["quests"]),
 		"seed=%d" % WyrdPerfScale.SEED,
+		"speakers=%d" % int(counts["speakers"]),
+		"storylets=%d" % int(counts["storylets"]),
+		"topics=%d" % int(counts["topics"]),
 	])
 	return "\n".join(lines) + "\n"
 
@@ -234,6 +263,63 @@ static func _npc(index: int) -> String:
 
 static func _quest(index: int) -> String:
 	return "scale_q%04d" % index
+
+
+## One [code]any[/code] line per topic, then named speakers.
+## The first named pass is the specific winner. Later passes share a speaker
+## and differ by [code]harbor.line_on == slot[/code], which the tie lint excludes.
+static func _storylets(counts: Dictionary) -> String:
+	var lines := PackedStringArray()
+	lines.append(_banner())
+	lines.append("facts")
+	lines.append("  harbor.line_on : int stored doc: \"Scale line switch.\"")
+	lines.append("quest scale_line \"Scale Line\"")
+	lines.append("  start when false")
+	lines.append("  stage note")
+	lines.append("    ~ set harbor.line_on = 0")
+	lines.append("")
+	var total := int(counts["storylets"])
+	var topics := int(counts["topics"])
+	var speakers := int(counts["speakers"])
+	for index in total:
+		var topic := index % topics
+		var slot := int(index / float(topics))
+		var speaker := "any"
+		var priority := 1
+		var weight := 1
+		var when := ""
+		if slot > 0:
+			var speaker_index := (slot - 1) % speakers
+			var variant := int((slot - 1) / float(speakers))
+			speaker = _npc(speaker_index)
+			if variant == 0:
+				priority = 2
+				weight = 2
+			else:
+				priority = 0
+				when = "harbor.line_on == %d" % slot
+		lines.append("storylet %s" % _storylet_id(index))
+		lines.append("  scope: topic %s" % _topic(topic))
+		lines.append("  speaker: %s" % speaker)
+		lines.append("  priority: %d" % priority)
+		lines.append("  weight: %d" % weight)
+		if not when.is_empty():
+			lines.append("  when: %s" % when)
+		lines.append("  - The harbor keeps this scale line. #line:%s" % _line_id(index))
+		lines.append("")
+	return "\n".join(lines)
+
+
+static func _storylet_id(index: int) -> String:
+	return "harbor.line_%05d" % index
+
+
+static func _line_id(index: int) -> String:
+	return "hl%05d" % index
+
+
+static func _topic(index: int) -> String:
+	return "rumor.scale_%02d" % index
 
 
 static func _file_names(dir: String) -> PackedStringArray:

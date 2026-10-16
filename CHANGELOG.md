@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The seeded scale pack adds a storylet sibling: 4,000 storylets across 80 topics and 20 speakers at full scale, one tenth of each count for smoke. `director.query`, `director.why_not`, and `compile.tie_lint` join the bench. Absolute budgets warn. Pull requests still do not run the suite. A base harness that does not know a metric records the head timing only.
+
 ## 0.4.0-m6 - 2026-10-16
 
 M6 director and reactivity. `addons/wyrd/VERSION` is `0.4.0-m6`. Corey cuts the tag `v0.4.0-m6`. Save schema is 2. The bench suite is unchanged.
