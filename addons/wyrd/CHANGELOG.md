@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `Wyrd.debug.snapshot(sections)` reads live facts, role bindings and history, quest stages with waiting reasons, the dirty condition set, deeds with decayed weights, social axes and disposition, belief and group precedence, and fact provenance. The document is built on demand and is not saved. A prefix and a page window filter each section. One `wyrd debug snapshot` line is logged when tracing is on. Load does not log it.
 - The scale bench times director query, why-not, and storylet tie-lint. Budgets warn.
 
 ## 0.4.0-m6 - 2026-10-16

@@ -29,6 +29,7 @@ var storylets: WyrdStoryletDeck
 var sequences: WyrdSequences
 var director: WyrdDirector
 var trace: WyrdTrace
+var debug: WyrdDebug
 
 var _config: WyrdConfig
 ## Unknown secrecy names already reported. Not saved.
@@ -121,6 +122,8 @@ func _init() -> void:
 	dialogue.scene_ended.connect(quests.on_scene_ended)
 	roles.role_holder_changed.connect(dialogue.note_role)
 	trace = WyrdTrace.new()
+	debug = WyrdDebug.new()
+	debug.bind(self)
 
 
 func get_version() -> String:
@@ -802,6 +805,16 @@ func trace_add(kind: String, fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
 	trace.add(kind, fields)
+
+
+## One line for an inspector read. Logged only when tracing is on.
+func trace_debug_snapshot(fields: Dictionary, line: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("debug_snapshot", fields)
+	print(line)
 
 
 func trace_why_not(fields: Dictionary) -> void:
