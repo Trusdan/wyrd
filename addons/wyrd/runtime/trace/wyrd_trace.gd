@@ -18,6 +18,7 @@ var enabled: bool = false
 ## Belief, knowledge, credibility, event witness, and evidence lines use who and key.
 ## A credibility line's who is the listener. An evidence line's who is empty.
 ## A director line and a why_not line use scope, speaker, and key. Key is the scope id.
+## A director_candidate line uses the same fields. Its path is the storylet id.
 ## A region line uses quest and path. A sequence line's key is the sequence id.
 ## A voice line's key is the name-free line id, and its who is the holder.
 ## A secrecy line's key is the storylet id, or the line id when there is no storylet.
