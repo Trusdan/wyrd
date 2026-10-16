@@ -16,7 +16,7 @@ godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- facts <file-or
 
 `coverage` prints storylets, slot variants, and line ids that have no count in the merge file. Columns are kind, id, and `path:line`. `--file` selects that JSON file. The default is `user://wyrd_coverage.json`. A missing file treats every id as never hit. The command does not record hits and does not turn tracing on.
 
-`console <pack>` is the playtest prompt. `--cmd` may be repeated and runs those lines without reading stdin. With no `--cmd`, the prompt prints `wyrd>` and reads until `quit` or end of input. `--save` loads a JSON save first. The command does not turn tracing on. A release build prints `wyrd: console is not in this build` and exits 1. See `runtime/console/README.md`.
+`console <pack>` is the playtest prompt. `--cmd` may be repeated and runs those lines without reading stdin. With no `--cmd`, the prompt prints `wyrd>` and reads until `quit` or end of input. `--save` loads a JSON save first. `--out` (or `-o`) writes the JSON save after those commands when every command succeeded. An open scene refuses that write. A failed command does not write the file. The command does not turn tracing on. A release build prints `wyrd: console is not in this build` and exits 1. See `runtime/console/README.md`.
 
 `tag-lines` appends a missing `#line:` id and does not change an existing one. `--dry-run` prints `path:line: + #line:<id>` and does not write. `export-json` writes the debug pack document. `facts` prints the cross-reference table; `--json` prints the `xref` object. `test` prints `not implemented`.
 

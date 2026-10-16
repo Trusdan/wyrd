@@ -10,7 +10,7 @@ events
 facts
   player.coins       : int    stored  doc: "Coins the player is carrying."
   player.clearance   : symbol stored doc: "The secrecy name this player has unlocked."
-  ferry.toll_coins   : int    stored  doc: "Coins counted toward the ferry toll."
+  ferry.toll_coins   : int    stored recap: true  doc: "Coins counted toward the ferry toll."
   harbor.room_taken  : bool   stored  doc: "Whether tonight's tavern room was taken."
   harbor.deck_wet    : bool   stored  doc: "Whether the harbor deck is still wet."
   harbor.watch_alive : bool   stored  doc: "Whether the dock watch is looking for the ferry master."
