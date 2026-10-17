@@ -143,6 +143,81 @@ func test_decayed_weight_survives_save() -> void:
 	assert_eq(int(again["t"]), int(deed["t"]))
 
 
+func test_filtered_page_matches_full_then_filter() -> void:
+	var runtime := _prime()
+	runtime.deeds.record(
+		&"paid",
+		&"player",
+		&"ferry",
+		&"gullhaven",
+		PackedStringArray(),
+		3.0,
+		PackedStringArray([&"dock_hand"]),
+		&"public",
+		false
+	)
+	runtime.deeds.record(
+		&"arrived",
+		&"dock_hand",
+		&"player",
+		&"gullhaven",
+		PackedStringArray(),
+		1.0,
+		PackedStringArray([&"lane_watch"]),
+		&"public",
+		false
+	)
+	var full: Dictionary = runtime.debug.snapshot()
+	var cases: Array = [
+		["", "", 0, 0],
+		["", "harbor", 0, 0],
+		["", "harbor", 1, 1],
+		["facts", "harbor", 0, 1],
+		["facts", "harbor.coins", 0, 0],
+		["facts", "world/", 0, 0],
+		["deeds", "player/paid/ferry", 0, 1],
+		["deeds,facts", "player", 0, 2],
+		["social", "ferry/", 0, 0],
+		["social", "lane_watch/", 0, 0],
+		["precedence", "lane_watch", 0, 0],
+		["precedence", "dock", 0, 1],
+		["roles", "ferry", 0, 0],
+		["quests", "toll", 0, 0],
+		["dirty", "", 1, 1],
+		["provenance", "harbor", 0, 0],
+		["facts", "harbor", 50, 1],
+		["facts,facts", "dock", 0, 0],
+		["", "missing", 0, 5],
+	]
+	for item in cases:
+		var spec: Array = item
+		var section_text := str(spec[0])
+		var prefix := str(spec[1])
+		var offset := int(spec[2])
+		var limit := int(spec[3])
+		var sections := PackedStringArray()
+		if not section_text.is_empty():
+			sections = section_text.split(",")
+		var shot: Dictionary = runtime.debug.snapshot(sections, prefix, offset, limit)
+		var expected := _legacy_document(full, sections, prefix, offset, limit)
+		var label := "%s prefix=%s offset=%d limit=%d" % [section_text, prefix, offset, limit]
+		var page_limit := 0
+		if limit > 0:
+			page_limit = limit
+		assert_eq(shot["sections"], expected["sections"], label)
+		assert_eq(str(shot["prefix"]), prefix, label)
+		assert_eq(int(shot["offset"]), maxi(offset, 0), label)
+		assert_eq(int(shot["limit"]), page_limit, label)
+		for section_name in shot["sections"]:
+			var name := String(section_name)
+			assert_eq(JSON.stringify(shot[name]), JSON.stringify(expected[name]), "%s %s" % [label, name])
+		for section_name in full["sections"]:
+			var name := String(section_name)
+			if (shot["sections"] as Array).has(name):
+				continue
+			assert_false(shot.has(name), "%s kept %s" % [label, name])
+
+
 func test_facade_snapshot() -> void:
 	var node = _Facade.new()
 	var shot: Dictionary = node.debug.snapshot(PackedStringArray(["provenance"]))
@@ -220,6 +295,71 @@ func _boot() -> WyrdRuntime:
 
 func _value(runtime: WyrdRuntime, text: String) -> WyrdCompiledCondition:
 	return WyrdCondition.new().compile(text, runtime.content().schema, WyrdDiagnostics.new(), "", 1, 1, WyrdCondition.CONTEXT_STORYLET, 1440, null, false)
+
+
+func _legacy_document(full: Dictionary, sections: PackedStringArray, prefix: String, offset: int, limit: int) -> Dictionary:
+	var page_offset := maxi(offset, 0)
+	var page_limit := limit if limit > 0 else 0
+	var chosen: Array = []
+	var seen := {}
+	var source: Array = []
+	if sections.is_empty():
+		source = ["facts", "roles", "quests", "dirty", "deeds", "social", "precedence", "provenance"]
+	else:
+		for section_name in sections:
+			source.append(String(section_name))
+	for section_name in source:
+		var name := String(section_name).strip_edges()
+		if not ["facts", "roles", "quests", "dirty", "deeds", "social", "precedence", "provenance"].has(name):
+			continue
+		if seen.has(name):
+			continue
+		seen[name] = true
+		chosen.append(name)
+	var out := {
+		"limit": page_limit,
+		"offset": page_offset,
+		"prefix": prefix,
+		"sections": chosen,
+	}
+	for section_name in chosen:
+		var name := String(section_name)
+		var rows: Array = (full[name]["rows"] as Array).duplicate()
+		out[name] = _legacy_page(rows, prefix, page_offset, page_limit, name == "facts")
+	return out
+
+
+func _legacy_page(rows: Array, prefix: String, offset: int, limit: int, also_fact: bool) -> Dictionary:
+	var filtered: Array = []
+	for item in rows:
+		if item is Dictionary and _legacy_matches(item, prefix, also_fact):
+			filtered.append(item)
+	filtered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _legacy_before(a, b))
+	var total := filtered.size()
+	var start := mini(offset, total)
+	var ending := total if limit <= 0 else mini(start + limit, total)
+	var page: Array = []
+	for index in range(start, ending):
+		page.append(filtered[index])
+	return {"limit": limit, "offset": offset, "rows": page, "total": total}
+
+
+func _legacy_matches(row: Dictionary, prefix: String, also_fact: bool) -> bool:
+	if prefix.is_empty() or str(row.get("key", "")).begins_with(prefix):
+		return true
+	return also_fact and str(row.get("fact", "")).begins_with(prefix)
+
+
+func _legacy_before(a: Dictionary, b: Dictionary) -> bool:
+	var left := str(a.get("key", ""))
+	var right := str(b.get("key", ""))
+	if left != right:
+		return left < right
+	if a.has("id") or b.has("id"):
+		return int(a.get("id", 0)) < int(b.get("id", 0))
+	if a.has("index") or b.has("index"):
+		return int(a.get("index", 0)) < int(b.get("index", 0))
+	return false
 
 
 func _find(section: Dictionary, key: String) -> Dictionary:

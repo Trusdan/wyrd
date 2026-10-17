@@ -170,9 +170,11 @@ func _sample(name: String) -> Dictionary:
 		"compile.tie_lint":
 			row = _sample_tie_lint()
 		"debug.snapshot":
-			row = _sample_snapshot(false)
+			row = _sample_snapshot("full")
 		"debug.snapshot_page":
-			row = _sample_snapshot(true)
+			row = _sample_snapshot("page")
+		"debug.snapshot_section":
+			row = _sample_snapshot("section")
 		_:
 			return {"error": "unknown metric %s" % name, "metric": name, "ok": false}
 	if not str(row.get("error", "")).is_empty():
@@ -403,23 +405,25 @@ func _sample_query_batch(count_hits: bool) -> Dictionary:
 	}
 
 
-## One inspector build. [param paged] applies the shared prefix and page window.
-## A new game plus the deed import and one write per scale fact run first, so
-## the document holds the pack's facts, roles, and deeds. The page still builds
-## every section, then slices.
-func _sample_snapshot(paged: bool) -> Dictionary:
+## One inspector build. [param mode] `page` filters every section. `section`
+## asks only for facts with that same prefix and page window. A new game plus
+## the deed import and one write per scale fact run first.
+func _sample_snapshot(mode: String) -> Dictionary:
 	_runtime.start_new_game(WyrdPerfScale.SEED)
 	_import_deeds()
 	_fill_scale_facts()
 	var prefix := ""
 	var offset := 0
 	var limit := 0
-	if paged:
+	var sections := PackedStringArray()
+	if mode == "page" or mode == "section":
 		prefix = WyrdPerfScale.SNAPSHOT_PREFIX
 		offset = WyrdPerfScale.SNAPSHOT_OFFSET
 		limit = WyrdPerfScale.SNAPSHOT_LIMIT
+	if mode == "section":
+		sections = PackedStringArray(["facts"])
 	var started := Time.get_ticks_usec()
-	var doc := _runtime.debug.snapshot(PackedStringArray(), prefix, offset, limit)
+	var doc := _runtime.debug.snapshot(sections, prefix, offset, limit)
 	var elapsed := Time.get_ticks_usec() - started
 	return {
 		"checksum": _snapshot_checksum(doc),

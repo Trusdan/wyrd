@@ -85,6 +85,7 @@ static func metrics() -> Array:
 		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
 		{"budget": 0.05, "name": "director.why_not", "stat": "median", "unit": "s"},
 		{"budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
-		{"budget": 10.0, "name": "debug.snapshot", "stat": "median", "unit": "s"},
-		{"budget": 8.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
+		{"budget": 9.0, "name": "debug.snapshot", "stat": "median", "unit": "s"},
+		{"budget": 2.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
+		{"budget": 0.1, "name": "debug.snapshot_section", "stat": "median", "unit": "s"},
 	]

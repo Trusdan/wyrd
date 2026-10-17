@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- The scale bench times director query, why-not, storylet tie-lint, a full debug snapshot, a filtered snapshot page, and the same query with coverage counting on. Budgets warn.
+- The scale bench times director query, why-not, storylet tie-lint, a full debug snapshot, a filtered snapshot page, a single-section facts page, and the same query with coverage counting on. Budgets warn.
+- `Wyrd.debug.snapshot` builds only the requested sections. The prefix filter runs while those rows are collected, and the kept rows are sorted and paged as before. Social rows and precedence agents read deed witness names without building a full deed row.
 
 ## 0.5.0-m7 - 2026-10-16
 

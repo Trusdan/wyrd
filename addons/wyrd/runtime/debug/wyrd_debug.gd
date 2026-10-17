@@ -4,11 +4,13 @@ extends RefCounted
 ## On-demand inspector document. Not saved, and not rebuilt each frame.
 ##
 ## @experimental
-## [method snapshot] reads the live runtime. An empty section list returns
-## every section in [constant SECTIONS]. [param prefix] keeps rows whose
-## [code]key[/code] begins with that text. A fact row also matches when its
-## [code]fact[/code] begins with the prefix. [param offset] and [param limit]
-## page the filtered rows. [code]limit[/code] of 0 returns the rest.
+## [method snapshot] reads the live runtime. An empty section list builds
+## every section in [constant SECTIONS]. A named list builds only those
+## sections. [param prefix] is applied while each section collects rows: a
+## row is kept when its [code]key[/code] begins with that text, and a fact
+## row is also kept when its [code]fact[/code] does. Kept rows are then
+## sorted and paged. [param offset] and [param limit] page those rows.
+## [code]limit[/code] of 0 returns the rest.
 ## One [code]debug_snapshot[/code] line is logged when tracing is on.
 
 const SECTIONS: PackedStringArray = [
@@ -49,7 +51,7 @@ func snapshot(
 	}
 	var row_count := 0
 	for name in chosen:
-		var rows := _rows(String(name))
+		var rows := _rows(String(name), prefix)
 		var page := _page(rows, prefix, page_offset, page_limit, String(name) == "facts")
 		out[String(name)] = page
 		names.append(String(name))
@@ -75,29 +77,29 @@ func _choose(sections: PackedStringArray) -> PackedStringArray:
 	return chosen
 
 
-func _rows(section: String) -> Array:
+func _rows(section: String, prefix: String) -> Array:
 	match section:
 		"facts":
-			return _facts()
+			return _facts(prefix)
 		"roles":
-			return _roles()
+			return _roles(prefix)
 		"quests":
-			return _quests()
+			return _quests(prefix)
 		"dirty":
-			return _dirty()
+			return _dirty(prefix)
 		"deeds":
-			return _deeds()
+			return _deeds(prefix)
 		"social":
-			return _social()
+			return _social(prefix)
 		"precedence":
-			return _precedence()
+			return _precedence(prefix)
 		"provenance":
-			return _provenance()
+			return _provenance(prefix)
 		_:
 			return []
 
 
-func _facts() -> Array:
+func _facts(prefix: String) -> Array:
 	var exported := _runtime.facts.export_state()
 	var deadlines := {}
 	for item in exported.get("evidence", []):
@@ -115,7 +117,10 @@ func _facts() -> Array:
 	var world_keys: Array = world.keys()
 	world_keys.sort()
 	for fact in world_keys:
-		rows.append(_fact_row("world", "", String(fact), world[fact], deadlines))
+		var fact_name := String(fact)
+		if not _fact_kept("world", "", fact_name, prefix):
+			continue
+		rows.append(_fact_row("world", "", fact_name, world[fact], deadlines))
 	for layer in ["known", "believed", "held"]:
 		var owners: Dictionary = exported.get(layer, {})
 		var owner_ids: Array = owners.keys()
@@ -127,7 +132,11 @@ func _facts() -> Array:
 			var keys: Array = (bag as Dictionary).keys()
 			keys.sort()
 			for fact in keys:
-				rows.append(_fact_row(layer, String(owner), String(fact), (bag as Dictionary)[fact], deadlines))
+				var fact_name := String(fact)
+				var owner_name := String(owner)
+				if not _fact_kept(layer, owner_name, fact_name, prefix):
+					continue
+				rows.append(_fact_row(layer, owner_name, fact_name, (bag as Dictionary)[fact], deadlines))
 	return rows
 
 
@@ -145,7 +154,7 @@ func _fact_row(layer: String, owner: String, fact: String, value: Variant, deadl
 	return row
 
 
-func _roles() -> Array:
+func _roles(prefix: String) -> Array:
 	var exported := _runtime.roles.export_state()
 	var bindings: Dictionary = exported.get("bindings", {})
 	var defs: Dictionary = exported.get("defs", {})
@@ -164,6 +173,9 @@ func _roles() -> Array:
 	ids.sort()
 	var rows: Array = []
 	for role in ids:
+		var role_name := String(role)
+		if not _text_matches(role_name, prefix):
+			continue
 		var binding: Dictionary = bindings.get(role, {})
 		var spec: Dictionary = defs.get(role, {})
 		var history: Array = []
@@ -173,7 +185,7 @@ func _roles() -> Array:
 		rows.append({
 			"history": history,
 			"holder": String(binding.get("holder", "")),
-			"key": String(role),
+			"key": role_name,
 			"since": int(binding.get("since", 0)),
 			"status": String(binding.get("status", "")),
 			"strategy": String(spec.get("strategy", "")),
@@ -181,7 +193,7 @@ func _roles() -> Array:
 	return rows
 
 
-func _quests() -> Array:
+func _quests(prefix: String) -> Array:
 	var exported := _runtime.quests.export_state()
 	var ids: Array = exported.keys()
 	ids.sort()
@@ -190,13 +202,16 @@ func _quests() -> Array:
 		var item: Variant = exported[quest_id]
 		if not (item is Dictionary):
 			continue
+		var quest_name := String(quest_id)
+		if not _text_matches(quest_name, prefix):
+			continue
 		var row: Dictionary = item
 		var regions: Dictionary = {}
 		var packed: Variant = row.get("regions", {})
 		if packed is Dictionary:
 			regions = (packed as Dictionary).duplicate(true)
 		rows.append({
-			"key": String(quest_id),
+			"key": quest_name,
 			"regions": regions,
 			"stage": String(row.get("stage", "")),
 			"status": String(row.get("status", "")),
@@ -206,7 +221,7 @@ func _quests() -> Array:
 	return rows
 
 
-func _dirty() -> Array:
+func _dirty(prefix: String) -> Array:
 	var content := _runtime.content()
 	var rows: Array = []
 	for index in _runtime.condition_count():
@@ -216,6 +231,8 @@ func _dirty() -> Array:
 		if content != null:
 			found = content.condition_at(index)
 		var record := str(found.get("record", ""))
+		if not _text_matches(record, prefix):
+			continue
 		rows.append({
 			"index": index,
 			"key": record,
@@ -225,9 +242,18 @@ func _dirty() -> Array:
 	return rows
 
 
-func _deeds() -> Array:
+func _deeds(prefix: String) -> Array:
 	var rows: Array = []
+	var filtering := not prefix.is_empty()
 	for index in _runtime.deeds.size():
+		if filtering:
+			var key := "%s/%s/%s" % [
+				String(_runtime.deeds.actor_at(index)),
+				String(_runtime.deeds.verb_at(index)),
+				String(_runtime.deeds.target_at(index)),
+			]
+			if not key.begins_with(prefix):
+				continue
 		var deed := _runtime.deeds.row_at(index)
 		var actor := str(deed.get("actor", ""))
 		var verb := str(deed.get("verb", ""))
@@ -251,25 +277,24 @@ func _deeds() -> Array:
 	return rows
 
 
-func _social() -> Array:
+func _social(prefix: String) -> Array:
 	var exported := _runtime.social.export_state()
 	var pairs := {}
 	for item in exported.get("baselines", []):
 		if item is Dictionary:
 			var row: Dictionary = item
-			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")))
+			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")), prefix)
 	for item in exported.get("kinds", []):
 		if item is Dictionary:
 			var row: Dictionary = item
-			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")))
+			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")), prefix)
 	for index in _runtime.deeds.size():
-		var actor := str(_runtime.deeds.actor_at(index))
+		var actor := String(_runtime.deeds.actor_at(index))
 		if actor.is_empty():
 			continue
-		_note_pair(pairs, str(_runtime.deeds.target_at(index)), actor)
-		var deed := _runtime.deeds.row_at(index)
-		for witness in deed.get("witnesses", []):
-			_note_pair(pairs, str(witness), actor)
+		_note_pair(pairs, String(_runtime.deeds.target_at(index)), actor, prefix)
+		for witness in _runtime.deeds.witnesses_at(index):
+			_note_pair(pairs, witness, actor, prefix)
 	var names := _axis_names()
 	var rows: Array = []
 	for key in pairs.keys():
@@ -289,25 +314,25 @@ func _social() -> Array:
 	return rows
 
 
-func _precedence() -> Array:
+func _precedence(prefix: String) -> Array:
 	var agents := {}
 	var facts := _runtime.facts.export_state()
 	for layer in ["known", "believed"]:
 		var owners: Variant = facts.get(layer, {})
 		if owners is Dictionary:
 			for owner in (owners as Dictionary).keys():
-				_note_agent(agents, String(owner))
+				_note_agent(agents, String(owner), prefix)
 	var bindings: Dictionary = _runtime.roles.export_state().get("bindings", {})
 	for role in bindings.keys():
 		var binding: Variant = bindings[role]
 		if binding is Dictionary:
-			_note_agent(agents, String((binding as Dictionary).get("holder", "")))
+			_note_agent(agents, String((binding as Dictionary).get("holder", "")), prefix)
 	for index in _runtime.deeds.size():
-		_note_agent(agents, str(_runtime.deeds.actor_at(index)))
-		_note_agent(agents, str(_runtime.deeds.target_at(index)))
-		var deed := _runtime.deeds.row_at(index)
-		for witness in deed.get("witnesses", []):
-			_note_agent(agents, str(witness))
+		var actor := String(_runtime.deeds.actor_at(index))
+		_note_agent(agents, actor, prefix)
+		_note_agent(agents, String(_runtime.deeds.target_at(index)), prefix)
+		for witness in _runtime.deeds.witnesses_at(index):
+			_note_agent(agents, witness, prefix)
 	var rows: Array = []
 	for agent in agents.keys():
 		var groups: Array = []
@@ -317,7 +342,7 @@ func _precedence() -> Array:
 	return rows
 
 
-func _provenance() -> Array:
+func _provenance(prefix: String) -> Array:
 	var exported := _runtime.effects.export_state()
 	var keys: Array = exported.keys()
 	keys.sort()
@@ -326,10 +351,13 @@ func _provenance() -> Array:
 		var item: Variant = exported[fact]
 		if not (item is Dictionary):
 			continue
+		var fact_name := String(fact)
+		if not _text_matches(fact_name, prefix):
+			continue
 		var row: Dictionary = item
 		rows.append({
 			"choice": String(row.get("choice", "")),
-			"key": String(fact),
+			"key": fact_name,
 			"scene": String(row.get("scene", "")),
 			"time": int(row.get("time", 0)),
 		})
@@ -352,11 +380,22 @@ func _page(rows: Array, prefix: String, offset: int, limit: int, also_fact: bool
 
 
 func _matches(row: Dictionary, prefix: String, also_fact: bool) -> bool:
+	if _text_matches(str(row.get("key", "")), prefix):
+		return true
+	return also_fact and _text_matches(str(row.get("fact", "")), prefix)
+
+
+func _text_matches(text: String, prefix: String) -> bool:
+	return prefix.is_empty() or text.begins_with(prefix)
+
+
+func _fact_kept(layer: String, owner: String, fact: String, prefix: String) -> bool:
 	if prefix.is_empty():
 		return true
-	if str(row.get("key", "")).begins_with(prefix):
+	if fact.begins_with(prefix):
 		return true
-	return also_fact and str(row.get("fact", "")).begins_with(prefix)
+	var key := "world/%s" % fact if layer == "world" else "%s/%s/%s" % [layer, owner, fact]
+	return key.begins_with(prefix)
 
 
 static func _before(a: Dictionary, b: Dictionary) -> bool:
@@ -383,14 +422,17 @@ func _axis_names() -> Array:
 	return names
 
 
-func _note_pair(pairs: Dictionary, source: String, target: String) -> void:
+func _note_pair(pairs: Dictionary, source: String, target: String, prefix: String) -> void:
 	if source.is_empty() or target.is_empty():
 		return
-	pairs["%s/%s" % [source, target]] = {"source": source, "target": target}
+	var key := "%s/%s" % [source, target]
+	if not _text_matches(key, prefix):
+		return
+	pairs[key] = {"source": source, "target": target}
 
 
-func _note_agent(agents: Dictionary, agent: String) -> void:
-	if agent.is_empty():
+func _note_agent(agents: Dictionary, agent: String, prefix: String) -> void:
+	if agent.is_empty() or not _text_matches(agent, prefix):
 		return
 	agents[agent] = true
 
