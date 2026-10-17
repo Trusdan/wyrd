@@ -662,6 +662,7 @@ func _read_recap(cursor: _Cursor, fact: WyrdFact, fallback_line: int, fallback_c
 		_fact_error("expected true or false after \"recap\"", cursor, fallback_line, fallback_col)
 		return false
 	fact.recap = cursor.text() == "true"
+	fact.recap_marked = true
 	cursor.advance()
 	return true
 

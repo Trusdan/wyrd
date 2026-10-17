@@ -10,7 +10,7 @@ godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- export-json <f
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- facts <file-or-dir> [--json]
 ```
 
-`check` compiles and links one pack. A path with no manifest is one pack named after the folder (or the file stem). `--manifest` uses the listed files and reads `wyrd_commands.json` beside the manifest. A missing command file is one info line when a `do` exists. `check` exits 1 on an error. `--strict` also fails on warnings.
+`check` compiles and links one pack. A path with no manifest is one pack named after the folder (or the file stem). `--manifest` uses the listed files and reads `wyrd_commands.json` beside the manifest. A missing command file is one info line when a `do` exists. `check` exits 1 on an error. `--strict` also fails on warnings. `W_RECAP_UNMARKED` is one of those warnings: `check` prints `warning[W_RECAP_UNMARKED]` and exits 0, and `check --strict` exits 1. There is no separate suppress switch. `recap: true` and `recap: false` on the fact silence that line, and the code greps like `W_FACT_NEVER_SET`.
 
 `choices` prints fact writes from a save's provenance map: key, scene, choice, time, and recap. `--scene`, `--choice`, `--prefix`, `--from`, and `--to` filter it. `--from` and `--to` are inclusive game minutes. With no save the table is only the header.
 

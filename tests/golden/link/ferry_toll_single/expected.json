@@ -47,6 +47,14 @@
       "message": "pack \"harbor\" is not loaded; the quest stays unavailable until it is",
       "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
       "severity": "warning"
+    },
+    {
+      "code": "W_RECAP_UNMARKED",
+      "col": 5,
+      "line": 43,
+      "message": "stored fact \"player.coins\" is written by a choice and has no recap key",
+      "path": "res://tests/golden/link/ferry_toll_single/ferry_toll.wyrd",
+      "severity": "warning"
     }
   ],
   "export": {
