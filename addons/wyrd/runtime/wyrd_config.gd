@@ -49,7 +49,7 @@ extends Resource
 @export var rumor_coarse_minutes: int = 60
 ## Missed issues one visit may enqueue per document, oldest first.
 ## The default is 3. [code]0[/code] or a negative value enqueues none.
-## Issues past the cap in that visit are skipped. Not saved.
+## Issues past the cap are numbered in the document fact and are not published later.
 @export var publish_catchup_max: int = 3
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5

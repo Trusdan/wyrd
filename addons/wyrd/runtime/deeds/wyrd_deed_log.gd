@@ -8,9 +8,12 @@ extends RefCounted
 ## A witness index stores each witness once per deed. That witness is the
 ## knower of the deed. [code]saw[/code], [code]heard[/code], and
 ## [code]inferred[/code] share the list. The mode stays on the row.
+## A believer index stores each rumor listener who adopted the deed, with the
+## minute they adopted it. [method note_believer] keeps the earlier minute.
 ## Time buckets use [member WyrdConfig.hour_bucket_minutes]. Each row is stored
 ## once. [method set_lookup] false makes scans walk every row instead.
-## Neither index is saved.
+## The witness index and the time index are not saved. The believer index is
+## rebuilt from the optional [code]believers[/code] field on each deed row.
 ## [code]now[/code] is bucketed with [member WyrdConfig.hour_bucket_minutes].
 ## Memorable rows keep full magnitude. A half-life of 0 does not decay.
 ## Sums are rounded to 6 decimal places before they are returned.
@@ -18,7 +21,7 @@ extends RefCounted
 ## An explicit list is stored as given, sorted by id.
 ## Each witness stores a perception mode from [method WyrdSpatialAdapter.perceive]:
 ## [code]saw[/code], [code]heard[/code], or [code]inferred[/code]. An empty mode
-## drops that witness. There is no rumour spread.
+## drops that witness. A rumor adoption is not a witness. It is a believer.
 
 signal deed_recorded(deed: Dictionary)
 
@@ -54,6 +57,12 @@ var _by_target: Dictionary = {}
 var _by_verb: Dictionary = {}
 ## Witness name to deed rows. Each witness is a knower of that deed. Not saved.
 var _by_witness: Dictionary = {}
+## Deed id to row index. Rebuilt with the rows. Not a separate save key.
+var _row_of: Dictionary = {}
+## Deed id to {who: adoption minute}. Rebuilt from each row's believers field.
+var _believers: Dictionary = {}
+## Listener to {deed id: adoption minute}. The reverse of [member _believers].
+var _by_believer: Dictionary = {}
 ## Hour bucket to deed rows. Not saved.
 var _by_time: Dictionary = {}
 var _time_width: int = -1
@@ -85,6 +94,48 @@ func witness_indexes(agent: StringName) -> PackedInt32Array:
 	return _index_rows(_by_witness, agent)
 
 
+## Row index for [param deed_id], or [code]-1[/code] when that id is not stored.
+func index_of(deed_id: int) -> int:
+	return int(_row_of.get(deed_id, -1))
+
+
+## Records that [param who] adopted [param deed_id] at [param minute].
+## A later note for the same pair keeps the earlier minute. A missing deed id
+## is stored until the next rebuild and is not exported.
+func note_believer(deed_id: int, who: StringName, minute: int) -> void:
+	if deed_id <= 0 or who == &"":
+		return
+	var at := minute if minute > 0 else 0
+	var text := String(who)
+	var bag: Dictionary = {}
+	if _believers.has(deed_id):
+		bag = _believers[deed_id]
+	if bag.has(text) and int(bag[text]) <= at:
+		return
+	bag[text] = at
+	_believers[deed_id] = bag
+	var owned: Dictionary = {}
+	if _by_believer.has(text):
+		owned = _by_believer[text]
+	owned[deed_id] = at
+	_by_believer[text] = owned
+
+
+## Deeds [param who] believes through a rumor, sorted by id.
+## Each item is [code]{id, t}[/code]. [code]t[/code] is the adoption minute.
+func believer_deeds(who: StringName) -> Array:
+	var rows: Array = []
+	var text := String(who)
+	if who == &"" or not _by_believer.has(text):
+		return rows
+	var owned: Dictionary = _by_believer[text]
+	var ids: Array = owned.keys()
+	ids.sort()
+	for deed_id in ids:
+		rows.append({"id": int(deed_id), "t": int(owned[deed_id])})
+	return rows
+
+
 func _index_rows(table: Dictionary, name: StringName) -> PackedInt32Array:
 	var text := String(name)
 	if not table.has(text):
@@ -108,7 +159,9 @@ func import_state(data: Dictionary) -> void:
 
 ## Merges rows that still count the same, and drops weight that has rounded to zero.
 ## Rows keep their minute, so a [code]within[/code] window does not grow. The newest id in a
-## merged group is kept. [code]_next[/code] does not go backwards. Perception callbacks do not run.
+## merged group is kept. Believers from a merged group move onto that id, and the
+## same listener keeps the earlier minute. A dropped row loses its believers.
+## [code]_next[/code] does not go backwards. Perception callbacks do not run.
 func compact() -> int:
 	var before := size()
 	var plan := _compact_plan()
@@ -167,6 +220,9 @@ func _export_row(index: int) -> Dictionary:
 	var visibility := String(_visibility[index])
 	if visibility != "public":
 		row["visibility"] = visibility
+	var believers := _believer_list(int(_id[index]))
+	if not believers.is_empty():
+		row["believers"] = believers
 	return row
 
 
@@ -196,8 +252,12 @@ func _append_stored(row: Dictionary) -> void:
 	_index(_by_actor, StringName(_actor[index]), index)
 	_index(_by_target, StringName(_target[index]), index)
 	_index(_by_verb, StringName(_verb[index]), index)
+	_row_of[int(_id[index])] = index
 	_index_witnesses(index)
 	_note_time(index)
+	for item in row.get("believers", []):
+		if item is Dictionary:
+			note_believer(int(_id[index]), StringName(str(item.get("who", ""))), int(item.get("t", 0)))
 
 
 func _compact_plan() -> Dictionary:
@@ -239,18 +299,20 @@ func _compact_plan() -> Dictionary:
 		if last != i:
 			continue
 		if bucket.size() == 1:
-			rows.append(row_at(i))
+			rows.append(_attach_believers(row_at(i), [int(_id[i])]))
 			continue
 		var combined := row_at(i)
 		var magnitude := 0.0
 		var kept_id := 0
+		var ids: Array = []
 		for member in bucket:
 			var index := int(member)
 			magnitude += float(_magnitude[index])
 			kept_id = maxi(kept_id, int(_id[index]))
+			ids.append(int(_id[index]))
 		combined["magnitude"] = round_sum(magnitude)
 		combined["id"] = kept_id
-		rows.append(combined)
+		rows.append(_attach_believers(combined, ids))
 		merged += bucket.size() - 1
 	return {"dropped": drop.size(), "merged": merged, "rows": rows}
 
@@ -284,6 +346,41 @@ func _compact_key(index: int) -> String:
 		",".join(tags),
 		wit,
 	]
+
+
+func _believer_list(deed_id: int) -> Array:
+	var listed: Array = []
+	if not _believers.has(deed_id):
+		return listed
+	var bag: Dictionary = _believers[deed_id]
+	var names: Array = bag.keys()
+	names.sort()
+	for who in names:
+		listed.append({"t": int(bag[who]), "who": String(who)})
+	return listed
+
+
+## Copies believers from [param deed_ids] onto [param row]. The same listener
+## keeps the earlier minute. An empty list adds no field.
+func _attach_believers(row: Dictionary, deed_ids: Array) -> Dictionary:
+	var bag := {}
+	for deed_id in deed_ids:
+		if not _believers.has(int(deed_id)):
+			continue
+		var part: Dictionary = _believers[int(deed_id)]
+		for who in part.keys():
+			var minute := int(part[who])
+			if not bag.has(who) or minute < int(bag[who]):
+				bag[who] = minute
+	if bag.is_empty():
+		return row
+	var names: Array = bag.keys()
+	names.sort()
+	var listed: Array = []
+	for who in names:
+		listed.append({"t": int(bag[who]), "who": String(who)})
+	row["believers"] = listed
+	return row
 
 
 func _string_list(value: Variant) -> Array:
@@ -329,6 +426,9 @@ func clear() -> void:
 	_by_target.clear()
 	_by_verb.clear()
 	_by_witness.clear()
+	_row_of.clear()
+	_believers.clear()
+	_by_believer.clear()
 	_by_time.clear()
 	_time_width = -1
 	_gen += 1
@@ -390,6 +490,7 @@ func record(
 	_index(_by_actor, actor, row)
 	_index(_by_target, target, row)
 	_index(_by_verb, verb, row)
+	_row_of[int(_id[row])] = row
 	_index_witnesses(row)
 	_note_time(row)
 	_gen += 1

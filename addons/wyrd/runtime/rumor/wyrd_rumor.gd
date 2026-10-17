@@ -29,6 +29,7 @@ const REACH_FULL := 4
 
 var social: WyrdSocial
 var facts: WyrdFactStore
+var deeds: WyrdDeedLog
 var config_of: Callable = Callable()
 var seed_of: Callable = Callable()
 var now_of: Callable = Callable()
@@ -213,6 +214,7 @@ func hop(token: String) -> void:
 	accepted = facts != null and facts.set_in(StringName(key), mutated.get("value"), StringName("believed/%s" % to_who))
 	if accepted:
 		_mark_held(deed_id, to_who, mutated.get("value"))
+		_note_believer(deed_id, to_who)
 	_trace_adopt(from_who, to_who, key, policy_id, verb, score, accepted)
 	if not accepted:
 		return
@@ -278,6 +280,7 @@ func materialize(who: StringName, key: StringName) -> void:
 			accepted = facts != null and facts.set_in(key, mutated.get("value"), StringName("believed/%s" % who_text))
 			if accepted:
 				_mark_held(deed_id, who_text, mutated.get("value"))
+				_note_believer(deed_id, who_text)
 		else:
 			accepted = false
 			_mark_gone(deed_id, who_text)
@@ -301,6 +304,15 @@ func _speaker_copy(deed_id: String, speaker: String, original: Variant) -> Dicti
 	if _held.has(token):
 		return {"present": true, "value": _held[token]}
 	return {"present": true, "value": original}
+
+
+func _note_believer(deed_id: String, who_text: String) -> void:
+	if deeds == null or who_text.is_empty():
+		return
+	var id_num := int(deed_id)
+	if id_num <= 0:
+		return
+	deeds.note_believer(id_num, StringName(who_text), _now())
 
 
 func _mark_held(deed_id: String, who_text: String, value: Variant) -> void:

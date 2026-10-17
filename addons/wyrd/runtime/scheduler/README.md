@@ -10,4 +10,4 @@ A debug build can log `wyrd scheduler queue=frame` when the units take longer th
 
 The rumor queue delivers one precise hop, or one coarse reach rise, per token. Coarse rises use the same share and the same work budget. See `runtime/rumor/README.md`.
 
-The publish queue delivers one frozen issue per token. A visit enqueues at most `publish_catchup_max` missed issues per document (default 3). That cap is a count of issues, not a time budget. See `runtime/publish/README.md`.
+The publish queue delivers one frozen issue per token. A visit enqueues at most `publish_catchup_max` missed issues per document (default 3). Issues past that cap are numbered in the document fact and are not published later. That cap is a count of issues, not a time budget. See `runtime/publish/README.md`.

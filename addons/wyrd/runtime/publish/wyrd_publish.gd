@@ -6,10 +6,12 @@ extends RefCounted
 ## @experimental
 ## [method enqueue_due] pushes one [code]publish[/code] token per missed issue,
 ## oldest first, up to [member WyrdConfig.publish_catchup_max]. One token is one
-## frozen issue. The handler builds it. Nothing in this object is saved.
-## [method deeds_known_to] reads the witness index. A [code]saw[/code] witness
-## counts as [code]known:[/code]. [code]heard[/code] and [code]inferred[/code]
-## count as [code]believed:[/code]. A later rumor belief is not a new witness.
+## frozen issue. The handler builds it. Issues past the cap are numbered and
+## written as [code]skip[/code] lines in the document fact, so they are not
+## published later. The in-memory counter and the queued tokens are not saved.
+## [method deeds_known_to] reads the witness index and the believer index.
+## A [code]saw[/code] witness counts as [code]known:[/code]. [code]heard[/code],
+## [code]inferred[/code], and a rumor believer count as [code]believed:[/code].
 
 var facts: WyrdFactStore
 var deeds: WyrdDeedLog
@@ -32,11 +34,13 @@ func clear() -> void:
 	_queued.clear()
 
 
-## Deed rows any current member witnessed at or after [param since].
-## [param filter] empty keeps every verb. Otherwise it is the verb.
-## Rows are unique by deed id and sorted by that id. [code]mode[/code] is
-## [code]known[/code] when any included member saw the deed, and
-## [code]believed[/code] otherwise. [code]knowers[/code] lists those members.
+## Deed rows any current member witnessed, or believes through a rumor, at or
+## after [param since]. A witness uses the deed minute. A believer uses the
+## adoption minute. [param filter] empty keeps every verb. Otherwise it is the
+## verb. Rows are unique by deed id and sorted by that id. [code]t[/code] is
+## the earliest qualifying minute. [code]mode[/code] is [code]known[/code] when
+## any included member saw the deed, and [code]believed[/code] otherwise.
+## [code]knowers[/code] lists those members once.
 func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> Array:
 	var rows: Array = []
 	if deeds == null or group == &"":
@@ -46,41 +50,20 @@ func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> 
 	var seen := {}
 	for member in _members(String(group)):
 		var who := String(member)
-		for index in deeds.witness_indexes(StringName(who)):
-			var row := deeds.row_at(int(index))
-			if int(row["t"]) < start:
-				continue
-			if not verb.is_empty() and String(row["verb"]) != verb:
-				continue
-			var deed_id := int(row["id"])
-			if not seen.has(deed_id):
-				seen[deed_id] = {
-					"actor": String(row["actor"]),
-					"id": deed_id,
-					"knowers": [],
-					"mode": "believed",
-					"place": String(row["place"]),
-					"t": int(row["t"]),
-					"verb": String(row["verb"]),
-				}
-			var entry: Dictionary = seen[deed_id]
-			var layer := "known" if _witness_mode(row, who) == "saw" else "believed"
-			var knowers: Array = entry["knowers"]
-			knowers.append({"layer": layer, "who": who})
-			entry["knowers"] = knowers
-			if layer == "known":
-				entry["mode"] = "known"
-			seen[deed_id] = entry
+		_collect_witnesses(seen, who, start, verb)
+		_collect_beliefs(seen, who, start, verb)
 	var order: Array = seen.keys()
 	order.sort()
 	for deed_id in order:
-		rows.append(seen[deed_id])
+		var entry: Dictionary = seen[deed_id]
+		entry.erase("_seen")
+		rows.append(entry)
 	return rows
 
 
-## Queues due issues that are not already frozen or already queued.
-## A visit takes at most the catch-up cap, oldest first, then treats the rest
-## of this clock reading as missed. The cap is per document.
+## Queues due issues that are not already frozen, skipped, or already queued.
+## A visit takes at most the catch-up cap, oldest first. The rest are numbered
+## and stored as skip lines in the document fact. The cap is per document.
 func enqueue_due() -> void:
 	var content := _content()
 	if content == null or not enqueue_of.is_valid():
@@ -151,12 +134,15 @@ func _enqueue_doc(doc: WyrdDocumentDef, now: int, cap: int) -> void:
 	if cap < take:
 		take = cap
 	var number := int(_published(doc)["n"])
-	for index in take:
+	for index in missed.size():
 		number += 1
 		var due := int(missed[index])
 		_memory_n[doc.id] = number
-		_queued["%s\t%d" % [doc.id, due]] = true
-		enqueue_of.call("issue\t%s\t%d\t%d" % [doc.id, number, due])
+		if index < take:
+			_queued["%s\t%d" % [doc.id, due]] = true
+			enqueue_of.call("issue\t%s\t%d\t%d" % [doc.id, number, due])
+		else:
+			_write(doc, "skip %s#%d due=%d" % [doc.id, number, due])
 	_covered[doc.id] = now
 
 
@@ -188,10 +174,18 @@ func _published(doc: WyrdDocumentDef) -> Dictionary:
 		var line := raw.strip_edges()
 		if line.is_empty():
 			continue
-		var head := line.split(" ")[0]
-		if not head.begins_with(prefix):
+		var parts := line.split(" ")
+		var head := parts[0]
+		var copy := ""
+		if head == "skip":
+			if parts.size() < 2:
+				continue
+			copy = parts[1]
+		elif head.begins_with(prefix):
+			copy = head
+		if not copy.begins_with(prefix):
 			continue
-		var num_text := head.substr(prefix.length())
+		var num_text := copy.substr(prefix.length())
 		if not num_text.is_valid_int():
 			continue
 		var found := int(num_text)
@@ -287,6 +281,73 @@ func _members(group: String) -> PackedStringArray:
 			rows.append(String(item))
 	rows.sort()
 	return rows
+
+
+func _collect_witnesses(seen: Dictionary, who: String, start: int, verb: String) -> void:
+	for index in deeds.witness_indexes(StringName(who)):
+		var row := deeds.row_at(int(index))
+		var at := int(row["t"])
+		if at < start:
+			continue
+		if not verb.is_empty() and String(row["verb"]) != verb:
+			continue
+		var layer := "known" if _witness_mode(row, who) == "saw" else "believed"
+		_include(seen, row, who, layer, at)
+
+
+func _collect_beliefs(seen: Dictionary, who: String, start: int, verb: String) -> void:
+	for hit in deeds.believer_deeds(StringName(who)):
+		var at := int(hit["t"])
+		if at < start:
+			continue
+		var index := deeds.index_of(int(hit["id"]))
+		if index < 0:
+			continue
+		var row := deeds.row_at(index)
+		if not verb.is_empty() and String(row["verb"]) != verb:
+			continue
+		_include(seen, row, who, "believed", at)
+
+
+func _include(seen: Dictionary, row: Dictionary, who: String, layer: String, at: int) -> void:
+	var deed_id := int(row["id"])
+	if not seen.has(deed_id):
+		seen[deed_id] = {
+			"actor": String(row["actor"]),
+			"id": deed_id,
+			"knowers": [],
+			"mode": "believed",
+			"place": String(row["place"]),
+			"t": at,
+			"verb": String(row["verb"]),
+			"_seen": {},
+		}
+	var entry: Dictionary = seen[deed_id]
+	if at < int(entry["t"]):
+		entry["t"] = at
+	var known: Dictionary = entry["_seen"]
+	if known.has(who):
+		if layer == "known":
+			_mark_known(entry, who)
+		seen[deed_id] = entry
+		return
+	known[who] = true
+	entry["_seen"] = known
+	var knowers: Array = entry["knowers"]
+	knowers.append({"layer": layer, "who": who})
+	entry["knowers"] = knowers
+	if layer == "known":
+		entry["mode"] = "known"
+	seen[deed_id] = entry
+
+
+func _mark_known(entry: Dictionary, who: String) -> void:
+	var knowers: Array = entry["knowers"]
+	for item in knowers:
+		if item is Dictionary and String(item.get("who", "")) == who:
+			item["layer"] = "known"
+	entry["knowers"] = knowers
+	entry["mode"] = "known"
 
 
 func _witness_mode(row: Dictionary, who: String) -> String:

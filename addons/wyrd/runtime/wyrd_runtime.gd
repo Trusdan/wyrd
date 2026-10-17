@@ -109,6 +109,7 @@ func _init() -> void:
 	rumors = WyrdRumor.new()
 	rumors.social = social
 	rumors.facts = facts
+	rumors.deeds = deeds
 	rumors.config_of = Callable(self, &"config")
 	rumors.seed_of = Callable(self, &"game_seed")
 	rumors.now_of = Callable(self, &"now_minutes")

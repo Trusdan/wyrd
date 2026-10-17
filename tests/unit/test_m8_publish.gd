@@ -173,12 +173,13 @@ func test_a_time_jump_publishes_the_oldest_three() -> void:
 		"harbor_gazette#2 due=120 deeds=0 ids= claim=lost_at_sea source=world",
 		"harbor_gazette#3 due=180 deeds=0 ids= claim=lost_at_sea source=world",
 	])
-	assert_false(String(runtime.facts.get(&"harbor.gazette")).contains("due=240"))
+	assert_eq(_skips(runtime), _skip_span(4, 240, 7))
 	assert_eq(_rows(runtime, "publish").size(), 3)
 	assert_eq(String(_rows(runtime, "publish")[0]["issue"]), "harbor_gazette#1")
 	assert_eq(int(_rows(runtime, "publish")[2]["deeds"]), 0)
 	runtime.tick(0)
 	assert_eq(_lines(runtime).size(), 3)
+	assert_eq(_skips(runtime), _skip_span(4, 240, 7))
 
 
 func test_catchup_zero_publishes_nothing() -> void:
@@ -187,11 +188,16 @@ func test_catchup_zero_publishes_nothing() -> void:
 	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
 	_host(runtime).clock.set_minutes(600)
 	runtime.tick(0)
-	assert_null(runtime.facts.get(&"harbor.gazette"))
+	assert_eq(_lines(runtime), [])
+	assert_eq(_skips(runtime), _skip_span(1, 60, 10))
 	assert_eq(runtime.scheduler().carry("publish"), 0)
+	runtime.tick(0)
+	assert_eq(_lines(runtime), [])
+	assert_eq(_skips(runtime).size(), 10)
 	runtime.config().publish_catchup_max = -2
 	runtime.tick(0)
-	assert_null(runtime.facts.get(&"harbor.gazette"))
+	assert_eq(_lines(runtime), [])
+	assert_eq(_skips(runtime).size(), 10)
 
 
 func test_carry_publishes_one_issue_per_unit() -> void:
@@ -205,6 +211,7 @@ func test_carry_publishes_one_issue_per_unit() -> void:
 	_host(runtime).clock.set_minutes(600)
 	runtime.tick(0)
 	assert_eq(_lines(runtime), ["harbor_gazette#1 due=60 deeds=0 ids= claim=lost_at_sea source=world"])
+	assert_eq(_skips(runtime), _skip_span(4, 240, 7))
 	assert_eq(runtime.scheduler().carry("publish"), 2)
 	runtime.tick(0)
 	runtime.tick(0)
@@ -312,6 +319,223 @@ func test_save_keeps_the_frozen_fact_and_drops_the_queue() -> void:
 	_host(resumed).clock.set_minutes(60)
 	resumed.tick(0)
 	assert_eq(_lines(resumed), ["harbor_gazette#1 due=60 deeds=0 ids= claim=lost_at_sea source=world"])
+
+
+func test_a_rumor_listener_adds_the_deed_at_the_adoption_minute() -> void:
+	var runtime := _boot(_HOUR, 4)
+	_policy(runtime, 1, 1.0)
+	_link(runtime, "line_fisher", "dock_hand")
+	_guild(runtime, PackedStringArray(["dock_hand"]))
+	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
+	runtime.perception_claim("harbor.toll_fate", &"stolen")
+	runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	runtime.clear_perception_claim()
+	assert_eq(runtime.deeds.witnesses_at(0).size(), 0)
+	_host(runtime).clock.set_minutes(30)
+	runtime.tick(0)
+	assert_eq(runtime.now_minutes(), 30)
+	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"known/dock_hand"))
+	assert_eq(int(runtime.deeds.row_at(0)["t"]), 0)
+	var adopted := runtime.deeds_known_to(&"harbor_guild", 30, &"whispered")
+	assert_eq(_ids(adopted), [1])
+	assert_eq(int(adopted[0]["t"]), 30)
+	assert_eq(String(adopted[0]["mode"]), "believed")
+	assert_eq(adopted[0]["knowers"], [{"layer": "believed", "who": "dock_hand"}])
+	assert_eq(_ids(runtime.deeds_known_to(&"harbor_guild", 0, &"whispered")), [1])
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 31, &"whispered").size(), 0)
+	runtime.rumors.clear_flight()
+	assert_eq(_ids(runtime.deeds_known_to(&"harbor_guild", 30, &"whispered")), [1])
+	var kept := runtime.save_state()
+	var loaded := _boot(_HOUR, 1)
+	assert_true(loaded.load_state(kept).ok)
+	_guild(loaded, PackedStringArray(["dock_hand"]))
+	var restored := loaded.deeds_known_to(&"harbor_guild", 30, &"whispered")
+	assert_eq(_ids(restored), [1])
+	assert_eq(int(restored[0]["t"]), 30)
+	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+	var bare: Dictionary = runtime.save_state()
+	for row in bare["deeds"]["rows"]:
+		row.erase("believers")
+	var forgotten := _boot(_HOUR, 1)
+	assert_true(forgotten.load_state(bare).ok)
+	_guild(forgotten, PackedStringArray(["dock_hand"]))
+	assert_eq(forgotten.deeds_known_to(&"harbor_guild", 0, &"whispered").size(), 0)
+	assert_eq(forgotten.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+	_host(runtime).clock.set_minutes(60)
+	runtime.tick(0)
+	assert_eq(_lines(runtime), ["harbor_gazette#1 due=60 deeds=1 ids=1 claim=stolen source=belief"])
+
+
+func test_a_materialized_coarse_believer_adds_the_deed() -> void:
+	var runtime := _boot(_HOUR, 4)
+	_policy(runtime, 1, 1.0)
+	_guild(runtime, PackedStringArray(["dock_hand"]))
+	var host := _host(runtime)
+	host.spatial.set_precision(&"gullhaven", &"coarse")
+	host.spatial.set_place(&"dock_hand", &"gullhaven")
+	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
+	runtime.perception_claim("harbor.toll_fate", &"stolen")
+	runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	runtime.clear_perception_claim()
+	assert_eq(runtime.deeds.witnesses_at(0).size(), 0)
+	runtime.tick(240)
+	assert_eq(runtime.now_minutes(), 240)
+	assert_eq(runtime.rumors.reach_level("1", &"gullhaven"), 4)
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"))
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 0, &"whispered").size(), 0)
+	assert_true(runtime.eval_bool(_compile(runtime, "believes(dock_hand, harbor.toll_fate)")))
+	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+	assert_eq(int(runtime.deeds.row_at(0)["t"]), 0)
+	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
+	var known := runtime.deeds_known_to(&"harbor_guild", 240, &"whispered")
+	assert_eq(_ids(known), [1])
+	assert_eq(int(known[0]["t"]), 240)
+	assert_eq(known[0]["knowers"], [{"layer": "believed", "who": "dock_hand"}])
+	assert_eq(_ids(runtime.deeds_known_to(&"harbor_guild", 1, &"whispered")), [1])
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 241, &"whispered").size(), 0)
+	var kept := runtime.save_state()
+	assert_false(kept.has("believers"))
+	var loaded := _boot(_HOUR, 1)
+	assert_true(loaded.load_state(kept).ok)
+	_guild(loaded, PackedStringArray(["dock_hand"]))
+	var restored := loaded.deeds_known_to(&"harbor_guild", 240, &"whispered")
+	assert_eq(_ids(restored), [1])
+	assert_eq(int(restored[0]["t"]), 240)
+	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), -1)
+
+
+func test_a_mutated_rumor_belief_is_the_claim() -> void:
+	var runtime := _boot(_HOUR, 4)
+	var policy := WyrdRumorPolicy.new()
+	policy.id = &"harbor_toll"
+	policy.kinds = PackedStringArray(["friend"])
+	policy.max_hops = 1
+	policy.pass_chance = 1.0
+	policy.mutations = [_change("harbor.toll_fate", Callable(self, &"_waive"), Callable(self, &"_keep_none"))]
+	runtime.register_rumor_policy(policy)
+	_link(runtime, "line_fisher", "dock_hand")
+	_guild(runtime, PackedStringArray(["dock_hand", "ferry_master"]))
+	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
+	runtime.perception_claim("harbor.toll_fate", &"stolen")
+	var deed := runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	runtime.clear_perception_claim()
+	runtime.tick(0)
+	assert_eq(deed, 1)
+	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"known/dock_hand"))
+	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
+	assert_eq(runtime.deeds.row_at(0)["verb"], &"whispered")
+	assert_eq(runtime.deeds.row_at(0)["actor"], &"line_fisher")
+	var known := runtime.deeds_known_to(&"harbor_guild", 0, &"whispered")
+	assert_eq(_ids(known), [1])
+	assert_eq(known[0]["knowers"], [{"layer": "believed", "who": "dock_hand"}])
+	runtime.tick(60)
+	assert_eq(_lines(runtime), ["harbor_gazette#1 due=60 deeds=1 ids=1 claim=waived source=belief"])
+	assert_eq(runtime.deeds.row_at(0)["verb"], &"whispered")
+	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
+
+
+func test_compaction_moves_believers_onto_the_newest_id() -> void:
+	var runtime := _boot(_QUERY, 4)
+	_guild(runtime, PackedStringArray(["dock_hand", "ferry_master"]))
+	var first := runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	var second := runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	assert_eq(first, 1)
+	assert_eq(second, 2)
+	runtime.deeds.note_believer(first, &"dock_hand", 15)
+	runtime.deeds.note_believer(second, &"dock_hand", 40)
+	runtime.deeds.note_believer(second, &"ferry_master", 50)
+	runtime.deeds.note_believer(first, &"ferry_master", 80)
+	assert_eq(runtime.deeds.compact(), 1)
+	assert_eq(int(runtime.deeds.row_at(0)["id"]), 2)
+	assert_eq(runtime.deeds.index_of(1), -1)
+	var early := runtime.deeds_known_to(&"harbor_guild", 15, &"whispered")
+	assert_eq(_ids(early), [2])
+	assert_eq(int(early[0]["t"]), 15)
+	assert_eq(early[0]["knowers"], [
+		{"layer": "believed", "who": "dock_hand"},
+		{"layer": "believed", "who": "ferry_master"},
+	])
+	var later := runtime.deeds_known_to(&"harbor_guild", 16, &"whispered")
+	assert_eq(int(later[0]["t"]), 50)
+	assert_eq(later[0]["knowers"], [{"layer": "believed", "who": "ferry_master"}])
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 51, &"whispered").size(), 0)
+	var saved := runtime.save_state()
+	var loaded := _boot(_QUERY, 1)
+	assert_true(loaded.load_state(saved).ok)
+	_guild(loaded, PackedStringArray(["dock_hand", "ferry_master"]))
+	var restored := loaded.deeds_known_to(&"harbor_guild", 15, &"whispered")
+	assert_eq(_ids(restored), [2])
+	assert_eq(int(restored[0]["t"]), 15)
+	assert_eq(restored[0]["knowers"], early[0]["knowers"])
+
+
+func test_a_dropped_deed_loses_its_believer() -> void:
+	var runtime := _boot(_QUERY, 4)
+	_guild(runtime, PackedStringArray(["dock_hand", "ferry_master"]))
+	runtime.config().half_life_verbs = PackedStringArray(["whispered"])
+	runtime.config().half_life_minutes = PackedFloat64Array([60.0])
+	var gone := runtime.deeds.record(&"whispered", &"line_fisher", &"", &"gullhaven")
+	var kept := runtime.deeds.record(
+		&"told", &"line_fisher", &"", &"gullhaven",
+		PackedStringArray(), 1.0, null, &"public", true
+	)
+	runtime.deeds.note_believer(gone, &"dock_hand", 5)
+	runtime.deeds.note_believer(kept, &"ferry_master", 8)
+	runtime.tick(1260)
+	assert_eq(runtime.deeds.compact(), 1)
+	assert_eq(int(runtime.deeds.row_at(0)["id"]), kept)
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 0, &"whispered").size(), 0)
+	var told := runtime.deeds_known_to(&"harbor_guild", 8, &"told")
+	assert_eq(_ids(told), [kept])
+	assert_eq(int(told[0]["t"]), 8)
+	assert_eq(told[0]["knowers"], [{"layer": "believed", "who": "ferry_master"}])
+	assert_eq(runtime.deeds_known_to(&"harbor_guild", 9, &"told").size(), 0)
+
+
+func test_skipped_issues_match_across_save() -> void:
+	var live := _jumped(4)
+	var paused := _jumped(4)
+	var data := paused.save_state()
+	assert_eq(int(data["schema_version"]), 2)
+	assert_false(data.has("publish"))
+	assert_false(data.has("issues"))
+	assert_false(data.has("believers"))
+	var raw := JSON.stringify(data)
+	assert_false(raw.contains("issue\t"))
+	assert_true(raw.contains("skip harbor_gazette#4 due=240"))
+	assert_true(raw.contains("harbor_gazette#1"))
+	var loaded := _boot(_HOUR, 1)
+	assert_true(loaded.load_state(data).ok)
+	assert_eq(loaded.scheduler().carry("publish"), 0)
+	live.trace.enabled = true
+	loaded.trace.enabled = true
+	live.trace.clear()
+	loaded.trace.clear()
+	_host(live).clock.set_minutes(720)
+	_host(loaded).clock.set_minutes(720)
+	live.tick(0)
+	loaded.tick(0)
+	var expected := [
+		"harbor_gazette#1 due=60 deeds=0 ids= claim=lost_at_sea source=world",
+		"harbor_gazette#2 due=120 deeds=0 ids= claim=lost_at_sea source=world",
+		"harbor_gazette#3 due=180 deeds=0 ids= claim=lost_at_sea source=world",
+		"harbor_gazette#11 due=660 deeds=0 ids= claim=lost_at_sea source=world",
+		"harbor_gazette#12 due=720 deeds=0 ids= claim=lost_at_sea source=world",
+	]
+	assert_eq(_lines(live), expected)
+	assert_eq(_lines(loaded), expected)
+	assert_eq(_skips(live), _skip_span(4, 240, 7))
+	assert_eq(_skips(loaded), _skips(live))
+	assert_eq(String(loaded.facts.get(&"harbor.gazette")), String(live.facts.get(&"harbor.gazette")))
+	assert_eq(_rows(live, "publish").size(), 2)
+	assert_eq(_rows(loaded, "publish").size(), 2)
+	live.tick(0)
+	loaded.tick(0)
+	assert_eq(String(loaded.facts.get(&"harbor.gazette")), String(live.facts.get(&"harbor.gazette")))
+	assert_eq(_rows(loaded, "publish").size(), 2)
 
 
 func test_a_document_parses_and_rejects_a_bad_header() -> void:
@@ -426,7 +650,58 @@ func _host(runtime: WyrdRuntime) -> WyrdFakeHost:
 	return runtime.get_meta(&"host") as WyrdFakeHost
 
 
-func _lines(runtime: WyrdRuntime) -> Array:
+func _policy(runtime: WyrdRuntime, hops: int, chance: float) -> void:
+	var policy := WyrdRumorPolicy.new()
+	policy.id = &"harbor_toll"
+	policy.kinds = PackedStringArray(["friend"])
+	policy.max_hops = hops
+	policy.pass_chance = chance
+	runtime.register_rumor_policy(policy)
+
+
+func _link(runtime: WyrdRuntime, source: String, target: String) -> void:
+	runtime.social.set_kind(StringName(source), StringName(target), &"friend")
+
+
+func _jumped(seed_value: int) -> WyrdRuntime:
+	var runtime := _boot(_HOUR, seed_value)
+	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
+	_host(runtime).clock.set_minutes(600)
+	runtime.tick(0)
+	return runtime
+
+
+func _compile(runtime: WyrdRuntime, text: String) -> WyrdCompiledCondition:
+	var diagnostics := WyrdDiagnostics.new()
+	var compiled := WyrdCondition.new().compile(
+		text,
+		runtime.content().schema,
+		diagnostics,
+		"sample.wyrd",
+		1,
+		1
+	)
+	assert_false(diagnostics.has_errors(), "%s %s" % [text, diagnostics.format()])
+	return compiled
+
+
+func _change(field: String, to: Variant, keep: Callable) -> Dictionary:
+	return {"field": field, "keep_chance_fn": keep, "to": to}
+
+
+func _keep_none(value: Variant, hop: int) -> float:
+	if hop < 0 or value == null:
+		return 1.0
+	return 0.0
+
+
+func _waive(value: Variant, hop: int) -> StringName:
+	if hop < 0:
+		return value
+	return &"waived"
+
+
+func _fact_lines(runtime: WyrdRuntime) -> Array:
 	var value: Variant = runtime.facts.get(&"harbor.gazette")
 	if value == null:
 		return []
@@ -434,6 +709,33 @@ func _lines(runtime: WyrdRuntime) -> Array:
 	for line in String(value).split("\n"):
 		if not line.is_empty():
 			rows.append(line)
+	return rows
+
+
+func _lines(runtime: WyrdRuntime) -> Array:
+	var rows: Array = []
+	for line in _fact_lines(runtime):
+		if not String(line).begins_with("skip "):
+			rows.append(line)
+	return rows
+
+
+func _skips(runtime: WyrdRuntime) -> Array:
+	var rows: Array = []
+	for line in _fact_lines(runtime):
+		if String(line).begins_with("skip "):
+			rows.append(line)
+	return rows
+
+
+func _skip_span(first: int, due: int, count: int) -> Array:
+	var rows: Array = []
+	var number := first
+	var minute := due
+	for _step in count:
+		rows.append("skip harbor_gazette#%d due=%d" % [number, minute])
+		number += 1
+		minute += 60
 	return rows
 
 
