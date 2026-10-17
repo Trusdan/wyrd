@@ -6,7 +6,7 @@ extends RefCounted
 ## @experimental
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
-## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], [code]sequence[/code], or [code]storylet[/code] block, lines stay code.
+## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], [code]sequence[/code], [code]storylet[/code], or [code]document[/code] block, lines stay code.
 ## A storylet prose line starts with a dash. A dash before [code]([/code] stays a label.
 ## Elsewhere a line that starts
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
@@ -101,7 +101,7 @@ func _lex_line(line: String, line_no: int) -> void:
 	var origin := index + 1
 	var parent := _kinds[_kinds.size() - 1]
 	var story_parent := parent == "storylet" or parent == "lines"
-	var code_block := parent == "facts" or parent == "events" or parent == "role" or parent == "sequence" or story_parent
+	var code_block := parent == "facts" or parent == "events" or parent == "role" or parent == "sequence" or parent == "document" or story_parent
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
 	if story_parent and _dash_prose(content):
@@ -326,7 +326,7 @@ func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host
 			if leading:
 				first_ident = word
 			_emit_span(&"ident", word, line_no, origin, index, end)
-			_check_reserved(word, line_no, origin + index, leading and allow_await_host)
+			_check_reserved(word, line_no, origin + index, leading and allow_await_host, _document_word(content, word, leading, first_ident, end))
 			index = end
 			continue
 		if _is_digit(ch):
@@ -538,13 +538,28 @@ func _read_string(content: String, index: int, line_no: int, origin: int) -> int
 	return cursor
 
 
-func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false) -> void:
+func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false, document_ok: bool = false) -> void:
 	if statement_ok and word == "await_host":
+		return
+	if document_ok and (word == "document" or word == "publishes_by"):
 		return
 	if _effect_verb(word):
 		return
 	if _RESERVED.has(word):
 		_error(WyrdDiagnostic.E_RESERVED_WORD, "reserved word \"%s\"" % word, line_no, col)
+
+
+## [code]document[/code] opens a block only when the next token is an id.
+## [code]publishes_by[/code] is legal on that same header line. Both stay reserved elsewhere.
+func _document_word(content: String, word: String, leading: bool, first_ident: String, end: int) -> bool:
+	if word == "publishes_by":
+		return first_ident == "document"
+	if word != "document" or not leading:
+		return false
+	var look := end
+	while look < content.length() and (content[look] == " " or content[look] == "\t"):
+		look += 1
+	return look < content.length() and _is_ident_start(content[look])
 
 
 ## [code]believe[/code], [code]declare[/code], [code]retract[/code], [code]learn[/code],

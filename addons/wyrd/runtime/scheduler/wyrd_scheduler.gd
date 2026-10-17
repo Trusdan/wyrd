@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## Queues, in round-robin order: waits, rumor, publish, cache_refresh.
-## A unit is one waiting-condition recheck, one rumor hop, one issue fragment,
+## A unit is one waiting-condition recheck, one rumor hop, one frozen issue,
 ## or one cache-entry rebuild. [code]run[/code] spends at most the tick budget.
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
@@ -77,7 +77,7 @@ func recheck_some(indexes: PackedInt32Array, eval_one: Callable) -> PackedInt32A
 	return _waits.recheck_some(indexes, eval_one)
 
 
-## Appends one rumor hop, issue fragment, or cache rebuild. Tokens stay in order.
+## Appends one rumor hop, frozen issue, or cache rebuild. Tokens stay in order.
 func push(queue: String, token: String) -> void:
 	match queue:
 		"rumor":

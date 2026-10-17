@@ -66,6 +66,9 @@ var enabled: bool = false
 ## who is the listener. path is the policy id. key is the field.
 ## kept is true when the seeded roll retains the value. result is keep, mutate,
 ## or drop. Replay skips it. Load does not log it.
+## A publish line is one frozen issue. path is the document id.
+## key and issue are the copy id. who is the group. deeds is the deed count.
+## Replay skips it. Load does not log it.
 ## A storylet_index line is one index read. scope is the scope text.
 ## speaker is the query speaker. key is the scope id, empty for a bark.
 ## ids is the count returned before secrecy, when, and cooldown.
@@ -119,7 +122,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(float(row.get("minutes", 0)))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate":
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish":
 				pass
 			_:
 				pass

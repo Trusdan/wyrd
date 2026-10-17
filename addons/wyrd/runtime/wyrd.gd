@@ -7,7 +7,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## @experimental
 ## The editor plugin does not register this script as an autoload.
 ## When it does, the autoload name is Wyrd, so this script has no class_name.
-## [member facts], [member events], [member deeds], [member social], [member rumors],
+## [member facts], [member events], [member deeds], [member social], [member rumors], [member publish],
 ## [member roles], [member quests], [member dialogue], [member storylets],
 ## [member sequences], [member director], [member debug], and [member coverage] are the runtime's sub-objects. [member dialogue] is
 ## the scene runner. [member storylets] draws a line set. [member director]
@@ -20,6 +20,7 @@ var events: WyrdEvents
 var deeds: WyrdDeedLog
 var social: WyrdSocial
 var rumors: WyrdRumor
+var publish: WyrdPublish
 var roles: WyrdRoles
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
@@ -40,6 +41,7 @@ func _init() -> void:
 	deeds = _runtime.deeds
 	social = _runtime.social
 	rumors = _runtime.rumors
+	publish = _runtime.publish
 	roles = _runtime.roles
 	quests = _runtime.quests
 	dialogue = _runtime.dialogue
@@ -82,6 +84,10 @@ func register_credibility(fn: Callable) -> void:
 
 func register_rumor_policy(policy: WyrdRumorPolicy) -> void:
 	_runtime.register_rumor_policy(policy)
+
+
+func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> Array:
+	return _runtime.deeds_known_to(group, since, filter)
 
 
 func invalidate_groups() -> void:

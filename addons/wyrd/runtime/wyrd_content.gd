@@ -27,6 +27,8 @@ var storylets: Dictionary = {}
 var storylet_index: WyrdStoryletIndex
 ## Sequence id to [WyrdSequenceDef]. Compiled with the pack. Not a save document.
 var sequences: Dictionary = {}
+## Document id to [WyrdDocumentDef]. Compiled with the pack. Not a save document.
+var documents: Dictionary = {}
 var lines: Dictionary = {}
 ## Catalog rows for coverage: [code]kind[/code], [code]id[/code], [code]path[/code], [code]line[/code].
 var coverage_sites: Array = []
@@ -83,6 +85,10 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			if sequence.id.is_empty():
 				continue
 			content.sequences[sequence.id] = sequence
+		for document in file.documents:
+			if document.id.is_empty():
+				continue
+			content.documents[document.id] = document
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()

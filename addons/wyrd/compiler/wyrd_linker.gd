@@ -76,6 +76,7 @@ func _index_symbols(units: Array) -> void:
 	var roles := {}
 	var storylets := {}
 	var sequences := {}
+	var documents := {}
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
@@ -87,6 +88,8 @@ func _index_symbols(units: Array) -> void:
 			_claim(storylets, storylet.id, path, storylet.line, storylet.col, WyrdDiagnostic.E_STORYLET_DUPLICATE, "storylet")
 		for sequence in file.sequences:
 			_claim(sequences, sequence.id, path, sequence.line, sequence.col, WyrdDiagnostic.E_SEQUENCE_DUPLICATE, "sequence")
+		for document in file.documents:
+			_claim(documents, document.id, path, document.line, document.col, WyrdDiagnostic.E_DOCUMENT_DUPLICATE, "document")
 		for scene in file.scenes:
 			if scene.id.is_empty():
 				continue

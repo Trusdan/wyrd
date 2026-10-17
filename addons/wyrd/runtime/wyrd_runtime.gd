@@ -23,6 +23,7 @@ var roles: WyrdRoles
 var deeds: WyrdDeedLog
 var social: WyrdSocial
 var rumors: WyrdRumor
+var publish: WyrdPublish
 var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
@@ -108,6 +109,7 @@ func _init() -> void:
 	rumors = WyrdRumor.new()
 	rumors.social = social
 	rumors.facts = facts
+	rumors.deeds = deeds
 	rumors.config_of = Callable(self, &"config")
 	rumors.seed_of = Callable(self, &"game_seed")
 	rumors.now_of = Callable(self, &"now_minutes")
@@ -117,6 +119,17 @@ func _init() -> void:
 	rumors.trace_of = Callable(self, &"_trace_rumor")
 	rumors.enqueue_hop = Callable(self, &"_enqueue_rumor")
 	_queue.rumor_handler = Callable(rumors, &"hop")
+	publish = WyrdPublish.new()
+	publish.facts = facts
+	publish.deeds = deeds
+	publish.config_of = Callable(self, &"config")
+	publish.now_of = Callable(self, &"now_minutes")
+	publish.members_of = Callable(self, &"_members")
+	publish.content_of = Callable(self, &"content")
+	publish.eval_of = Callable(self, &"eval_bool")
+	publish.trace_of = Callable(self, &"_trace_publish")
+	publish.enqueue_of = Callable(self, &"_enqueue_publish")
+	_queue.publish_handler = Callable(publish, &"issue")
 	roles.social = social
 	roles.deeds = deeds
 	roles.facts = facts
@@ -296,6 +309,8 @@ func start_new_game(seed_value: int) -> void:
 	social.clear_state()
 	if rumors != null:
 		rumors.clear_flight()
+	if publish != null:
+		publish.clear()
 	roles.clear()
 	_reset_event_memory()
 	_arm_queue()
@@ -383,6 +398,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	social.clear_state()
 	if rumors != null:
 		rumors.clear_flight()
+	if publish != null:
+		publish.clear()
 	roles.bind_content(null)
 	roles.clear()
 	if manifest == null:
@@ -505,6 +522,8 @@ func _run_scheduler() -> void:
 		threshold = _config.scheduler_frame_warn_usec
 	if rumors != null:
 		rumors.enqueue_due()
+	if publish != null:
+		publish.enqueue_due()
 	var debug := OS.is_debug_build()
 	var started := 0
 	if debug:
@@ -787,6 +806,30 @@ func _enqueue_rumor(token: String) -> void:
 	_queue.push("rumor", token)
 
 
+func _enqueue_publish(token: String) -> void:
+	_queue.push("publish", token)
+
+
+## Deed rows any current member of [param group] witnessed at or after [param since].
+## [param filter] empty keeps every verb. See [method WyrdPublish.deeds_known_to].
+func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> Array:
+	if publish == null:
+		return []
+	return publish.deeds_known_to(group, since, filter)
+
+
+func _trace_publish(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("publish", fields)
+	print(
+		"wyrd publish document=%s issue=%s deeds=%d"
+		% [str(fields.get("document", "")), str(fields.get("issue", "")), int(fields.get("deeds", 0))]
+	)
+
+
 func _trace_rumor(kind: String, fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -1006,6 +1049,8 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 		_queue.clear_carry()
 		if rumors != null:
 			rumors.clear_flight()
+		if publish != null:
+			publish.clear()
 		_reset_event_memory()
 		_clear_belief_cache()
 	return report
