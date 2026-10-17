@@ -32,6 +32,13 @@ func test_m7_bench_metrics_are_registered() -> void:
 	assert_true(names.has("debug.snapshot_page"))
 	assert_true(names.has("debug.snapshot_section"))
 	assert_true(names.has("director.query_coverage"))
+	assert_eq(WyrdPerfScale.MEMORY_PEAK_BUDGET, 402653184.0)
+	var peak_budget := 0.0
+	for item in WyrdPerfScale.metrics():
+		var budget_row: Dictionary = item
+		if str(budget_row["name"]) == "memory.peak":
+			peak_budget = float(budget_row["budget"])
+	assert_eq(peak_budget, WyrdPerfScale.MEMORY_PEAK_BUDGET)
 	assert_eq(WyrdPerfScale.SNAPSHOT_PREFIX, "harbor.scale_000")
 	assert_eq(WyrdPerfScale.SNAPSHOT_OFFSET, 0)
 	assert_eq(WyrdPerfScale.SNAPSHOT_LIMIT, 50)

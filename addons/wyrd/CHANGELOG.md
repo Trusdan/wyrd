@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Storylet queries read a link-time index of sorted ids per scope kind, scope id, and speaker, plus a bucket for speaker `any`. The winners match a full scan. A bark query still runs inside the call. The index is not saved. Schema stays 2.
+- The proposed `memory.peak` warning budget is 384 MiB, sized for an 8 GB laptop. It still warns only.
 - The scale bench times director query, why-not, storylet tie-lint, a full debug snapshot, a filtered snapshot page, a single-section facts page, and the same query with coverage counting on. Budgets warn.
 - `Wyrd.debug.snapshot` builds only the requested sections. The prefix filter runs while those rows are collected, and the kept rows are sorted and paged as before. Social rows and precedence agents read deed witness names without building a full deed row.
 

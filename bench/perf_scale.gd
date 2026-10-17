@@ -33,6 +33,9 @@ const OWN_AGENT := "dock_hand_000"
 const GROUP_AGENT := "dock_hand_001"
 const BELIEF_FACT := "harbor.scale_00000"
 const VERBS: PackedStringArray = ["paid", "arrived", "whispered"]
+## Proposed warning for memory.peak. 384 MiB, sized for an 8 GB laptop.
+## The bench still only warns on this budget.
+const MEMORY_PEAK_BUDGET := 402653184.0
 
 
 static func profile(name: String) -> Dictionary:
@@ -79,7 +82,7 @@ static func metrics() -> Array:
 		{"budget": 10485760.0, "name": "save.bytes", "stat": "median", "unit": "B"},
 		{"budget": 1.0, "name": "load.time", "stat": "median", "unit": "s"},
 		{"budget": 2.0, "name": "compact.time", "stat": "median", "unit": "s"},
-		{"budget": 268435456.0, "name": "memory.peak", "stat": "median", "unit": "B"},
+		{"budget": MEMORY_PEAK_BUDGET, "name": "memory.peak", "stat": "median", "unit": "B"},
 		{"budget": 268435456.0, "name": "memory.steady", "stat": "median", "unit": "B"},
 		{"budget": 0.02, "name": "director.query", "stat": "median", "unit": "s"},
 		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
