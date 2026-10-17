@@ -43,6 +43,7 @@ var enabled: bool = false
 ## key and queue are waits, rumor, publish, cache_refresh, or frame.
 ## units is the work done. carry is the unfinished count. A frame line is the
 ## debug soft warning: us is the measured time and threshold is the config.
+## The default threshold is 2000 microseconds (2 ms). 0 disables the line.
 ## The warning does not change the work. Replay skips the line. It is not saved.
 ## A storylet_index line is one index read. scope is the scope text.
 ## speaker is the query speaker. key is the scope id, empty for a bark.

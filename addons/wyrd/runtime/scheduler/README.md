@@ -6,4 +6,4 @@
 
 Each game tick spends at most `scheduler_work_per_tick` units. The four share weights split that budget. Round-robin gives each queue one unit at a time, up to its share. Unused share moves to the earliest queue that still has work, so waits still receives the full budget while the other queues are empty. Unfinished items stay in order. The queues and the leftover slice are not saved. Schema stays 2.
 
-A debug build can log `wyrd scheduler queue=frame` when the units take longer than `scheduler_frame_warn_usec`. That line is information only.
+A debug build can log `wyrd scheduler queue=frame` when the units take longer than `scheduler_frame_warn_usec` (default 2000 microseconds, 2 ms). `0` disables it. That line is information only.

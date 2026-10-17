@@ -136,8 +136,14 @@ func test_a_jump_matches_one_minute_steps() -> void:
 	assert_eq(_hash(jumped), _hash(stepped))
 
 
+func test_frame_warn_default_is_two_milliseconds() -> void:
+	var cfg := WyrdConfig.new()
+	assert_eq(cfg.scheduler_frame_warn_usec, 2000)
+
+
 func test_frame_warning_does_not_change_the_work() -> void:
 	var runtime := _sample()
+	assert_eq(runtime.config().scheduler_frame_warn_usec, 2000)
 	runtime.config().scheduler_frame_warn_usec = 1
 	runtime.config().scheduler_work_per_tick = 4
 	runtime.config().scheduler_share_waits = 0

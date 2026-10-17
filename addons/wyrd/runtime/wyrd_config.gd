@@ -39,9 +39,9 @@ extends Resource
 @export var scheduler_share_publish: int = 8
 @export var scheduler_share_cache: int = 4
 ## Debug builds log [code]wyrd scheduler queue=frame[/code] when one game tick's
-## units take longer than this many microseconds. [code]0[/code] disables it.
-## The line does not change the work. Not saved.
-@export var scheduler_frame_warn_usec: int = 1000000
+## units take longer than this many microseconds. The default is 2000 (2 ms).
+## [code]0[/code] disables it. The line does not change the work. Not saved.
+@export var scheduler_frame_warn_usec: int = 2000
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5
 ## 0 leaves the log until the host calls [method WyrdDeedLog.compact]. Not saved.
