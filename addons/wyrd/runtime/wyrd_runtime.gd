@@ -834,6 +834,20 @@ func _trace_rumor(kind: String, fields: Dictionary) -> void:
 				str(fields.get("key", "")),
 			]
 		)
+	elif kind == "rumor_mutate":
+		print(
+			"wyrd rumor mutate listener=%s speaker=%s policy=%s field=%s hop=%d kept=%s result=%s value=%s"
+			% [
+				str(fields.get("listener", "")),
+				str(fields.get("speaker", "")),
+				str(fields.get("path", "")),
+				str(fields.get("field", "")),
+				int(fields.get("hop", 0)),
+				str(fields.get("kept", "")),
+				str(fields.get("result", "")),
+				str(fields.get("value", "")),
+			]
+		)
 	elif kind == "rumor_materialize":
 		print(
 			"wyrd rumor materialize listener=%s place=%s policy=%s key=%s level=%d chance=%s accepted=%s"

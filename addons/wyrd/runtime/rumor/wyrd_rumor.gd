@@ -18,8 +18,10 @@ extends RefCounted
 ## A deed in a coarse place stores a reach row instead of hops. Each coarse
 ## tick enqueues one rumor unit that raises that row's level by one.
 ## [method materialize] rolls once when content asks about one NPC there.
-## Jobs, the seen set, the queued set, reach rows, and the once-set are not saved.
-## Load drops them.
+## An accepted hop or materialize then evaluates [member WyrdRumorPolicy.mutations]
+## on the claim value. The listener stores that copy. The deed row is unchanged.
+## Jobs, the seen set, the queued set, reach rows, the once-set, and those
+## copies are not saved. Load drops them.
 
 ## Level at or above this is a certain materialize roll, because [code]randf[/code]
 ## is below 1. Chance is [code]level / REACH_FULL[/code]. Level 0 does not roll.
@@ -43,6 +45,8 @@ var _seen: Dictionary = {}
 var _queued: Dictionary = {}
 var _reach: Dictionary = {}
 var _drawn: Dictionary = {}
+var _held: Dictionary = {}
+var _gone: Dictionary = {}
 
 
 func register(policy: WyrdRumorPolicy) -> void:
@@ -58,17 +62,20 @@ func register(policy: WyrdRumorPolicy) -> void:
 	if is_nan(chance) or is_inf(chance):
 		chance = 0.0
 	copy.pass_chance = clampf(chance, 0.0, 1.0)
+	copy.mutations = _copy_mutations(policy.mutations)
 	_policies.append(copy)
 
 
-## Drops in-flight claims, hop memory, reach rows, and materialize draws.
-## Registered policies stay.
+## Drops in-flight claims, hop memory, reach rows, materialize draws, and
+## mutated copies. Registered policies stay.
 func clear_flight() -> void:
 	_jobs.clear()
 	_seen.clear()
 	_queued.clear()
 	_reach.clear()
 	_drawn.clear()
+	_held.clear()
+	_gone.clear()
 
 
 ## Applied coarse ticks for [param deed_id] at [param place]. [code]-1[/code]
@@ -101,6 +108,7 @@ func note_deed(deed: Dictionary, claim_key: String, claim_value: Variant) -> voi
 		"key": claim_key,
 		"kinds": policy.kinds.duplicate(),
 		"max_hops": policy.max_hops,
+		"mutations": policy.mutations,
 		"policy": String(policy.id),
 		"value": claim_value,
 		"verb": String(verb),
@@ -181,8 +189,30 @@ func hop(token: String) -> void:
 		return
 	var score := _score(to_who, from_who)
 	var accepted := score >= _threshold()
+	if not accepted:
+		_trace_adopt(from_who, to_who, key, policy_id, verb, score, false)
+		return
+	var offered := _speaker_copy(deed_id, from_who, job.get("value"))
+	if not bool(offered.get("present", false)):
+		_trace_adopt(from_who, to_who, key, policy_id, verb, score, false)
+		return
+	var mutated := _apply_mutations(
+		deed_id,
+		from_who,
+		to_who,
+		hop_n,
+		key,
+		policy_id,
+		offered.get("value"),
+		job.get("mutations", [])
+	)
+	if not bool(mutated.get("present", false)):
+		_mark_gone(deed_id, to_who)
+		_trace_adopt(from_who, to_who, key, policy_id, verb, score, false)
+		return
+	accepted = facts != null and facts.set_in(StringName(key), mutated.get("value"), StringName("believed/%s" % to_who))
 	if accepted:
-		accepted = facts != null and facts.set_in(StringName(key), job.get("value"), StringName("believed/%s" % to_who))
+		_mark_held(deed_id, to_who, mutated.get("value"))
 	_trace_adopt(from_who, to_who, key, policy_id, verb, score, accepted)
 	if not accepted:
 		return
@@ -232,9 +262,149 @@ func materialize(who: StringName, key: StringName) -> void:
 	var roll := WyrdRng.for_decision(_seed(), &"rumor", decision, _time_bucket()).randf()
 	var accepted := roll < chance
 	_drawn["%s\t%s" % [deed_id, who_text]] = true
+	var policy_id := str(best.get("policy", ""))
 	if accepted:
-		accepted = facts != null and facts.set_in(key, best.get("value"), StringName("believed/%s" % who_text))
-	_trace_materialize(who_text, place_text, str(best.get("policy", "")), fact, deed_id, level, chance, accepted)
+		var mutated := _apply_mutations(
+			deed_id,
+			place_text,
+			who_text,
+			level,
+			fact,
+			policy_id,
+			best.get("value"),
+			best.get("mutations", [])
+		)
+		if bool(mutated.get("present", false)):
+			accepted = facts != null and facts.set_in(key, mutated.get("value"), StringName("believed/%s" % who_text))
+			if accepted:
+				_mark_held(deed_id, who_text, mutated.get("value"))
+		else:
+			accepted = false
+			_mark_gone(deed_id, who_text)
+	_trace_materialize(who_text, place_text, policy_id, fact, deed_id, level, chance, accepted)
+
+
+func _copy_mutations(items: Array) -> Array:
+	var copied: Array = []
+	for item in items:
+		if item is Dictionary:
+			copied.append((item as Dictionary).duplicate())
+			continue
+		push_error("WyrdRumor.register: a mutation must be a dictionary")
+	return copied
+
+
+func _speaker_copy(deed_id: String, speaker: String, original: Variant) -> Dictionary:
+	var token := "%s\t%s" % [deed_id, speaker]
+	if _gone.has(token):
+		return {"present": false, "value": null}
+	if _held.has(token):
+		return {"present": true, "value": _held[token]}
+	return {"present": true, "value": original}
+
+
+func _mark_held(deed_id: String, who_text: String, value: Variant) -> void:
+	var token := "%s\t%s" % [deed_id, who_text]
+	_gone.erase(token)
+	_held[token] = value
+
+
+func _mark_gone(deed_id: String, who_text: String) -> void:
+	var token := "%s\t%s" % [deed_id, who_text]
+	_held.erase(token)
+	_gone[token] = true
+
+
+## Evaluates mutations whose field is [param fact]. Hop number for a precise
+## hop is the hop. For a materialize it is the reach level, and the speaker is
+## the place. A keep roll uses stream [code]rumor[/code].
+func _apply_mutations(
+	deed_id: String,
+	from_who: String,
+	to_who: String,
+	hop_n: int,
+	fact: String,
+	policy_id: String,
+	value: Variant,
+	found: Variant
+) -> Dictionary:
+	var current: Variant = value
+	var present := true
+	var mutations := _mutation_list(found)
+	for index in mutations.size():
+		if not present:
+			break
+		var item: Variant = mutations[index]
+		if not item is Dictionary:
+			continue
+		var spec: Dictionary = item
+		var field := str(spec.get("field", ""))
+		if field.is_empty() or field != fact:
+			continue
+		var chance := _keep_chance(spec.get("keep_chance_fn", null), current, hop_n)
+		var kept := _mutate_kept(deed_id, from_who, to_who, hop_n, field, index, chance)
+		var result := "keep"
+		var shown: Variant = current
+		if not kept:
+			var change: Variant = spec.get("to", "drop")
+			if _is_drop(change):
+				present = false
+				result = "drop"
+				shown = null
+			elif change is Callable and (change as Callable).is_valid():
+				current = _call_fn(change, current, hop_n)
+				result = "mutate"
+				shown = current
+			else:
+				push_error("WyrdRumor: mutation to must be a callable or drop")
+				result = "keep"
+				shown = current
+		_trace_mutate(deed_id, from_who, to_who, hop_n, field, policy_id, kept, result, shown)
+	return {"present": present, "value": current}
+
+
+func _mutation_list(found: Variant) -> Array:
+	if found is Array:
+		return found as Array
+	return []
+
+
+func _keep_chance(fn: Variant, value: Variant, hop_n: int) -> float:
+	if not fn is Callable or not (fn as Callable).is_valid():
+		push_error("WyrdRumor: mutation keep_chance_fn must be a callable")
+		return 1.0
+	var result: Variant = _call_fn(fn, value, hop_n)
+	if not (result is float or typeof(result) == TYPE_INT) or is_nan(float(result)) or is_inf(float(result)):
+		push_error("WyrdRumor: keep_chance_fn must return a number")
+		return 1.0
+	return clampf(float(result), 0.0, 1.0)
+
+
+func _call_fn(fn: Variant, value: Variant, hop_n: int) -> Variant:
+	var callable := fn as Callable
+	var argc := callable.get_argument_count()
+	if argc <= 0:
+		return callable.call()
+	if argc == 1:
+		return callable.call(value)
+	return callable.call(value, hop_n)
+
+
+func _is_drop(change: Variant) -> bool:
+	return (change is String or change is StringName) and String(change) == "drop"
+
+
+func _mutate_kept(
+	deed_id: String,
+	from_who: String,
+	to_who: String,
+	hop_n: int,
+	field: String,
+	index: int,
+	chance: float
+) -> bool:
+	var key := StringName("mutate\t%s\t%s\t%s\t%d\t%s\t%d" % [deed_id, from_who, to_who, hop_n, field, index])
+	return WyrdRng.for_decision(_seed(), &"rumor", key, _time_bucket()).randf() < chance
 
 
 func _policy_for(verb: StringName) -> WyrdRumorPolicy:
@@ -315,6 +485,7 @@ func _note_reach(
 		"key": claim_key,
 		"level": 0,
 		"pending": 0,
+		"mutations": policy.mutations,
 		"place": String(place),
 		"policy": String(policy.id),
 		"value": claim_value,
@@ -482,6 +653,34 @@ func _trace_reach(row: Dictionary) -> void:
 		"path": str(row.get("policy", "")),
 		"place": place,
 		"who": place,
+	})
+
+
+func _trace_mutate(
+	deed_id: String,
+	from_who: String,
+	to_who: String,
+	hop_n: int,
+	field: String,
+	policy_id: String,
+	kept: bool,
+	result: String,
+	shown: Variant
+) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call("rumor_mutate", {
+		"deed": deed_id,
+		"field": field,
+		"hop": hop_n,
+		"kept": "true" if kept else "false",
+		"key": field,
+		"listener": to_who,
+		"path": policy_id,
+		"result": result,
+		"speaker": from_who,
+		"value": "" if shown == null else str(shown),
+		"who": to_who,
 	})
 
 
