@@ -132,7 +132,7 @@ def decide(spec, head, base, mode):
         if verdict != "fail":
             verdict = "warn"
         reasons.append("regression")
-    if head_stat > float(spec["budget"]):
+    if spec.get("absolute", True) and head_stat > float(spec["budget"]):
         if verdict != "fail":
             verdict = "warn"
         reasons.append("budget")
@@ -161,6 +161,7 @@ def build_report(args, prepare, samples):
         elif verdict == "fail":
             worst = max(worst, 1)
         entry = {
+            "absolute": bool(spec.get("absolute", True)),
             "budget": spec["budget"],
             "checksum": published["checksums"][0] if len(set(published["checksums"])) == 1 else "",
             "delta": delta,
@@ -277,6 +278,24 @@ def write_trend(results_dir, out_path):
             ("director.query", "s"),
             ("director.why_not", "s"),
             ("compile.tie_lint", "s"),
+            ("debug.snapshot", "s"),
+            ("debug.snapshot_page", "s"),
+            ("debug.snapshot_section", "s"),
+            ("director.query_coverage", "s"),
+            ("memory.quests", "B"),
+            ("rumor.tick", "s"),
+            ("scheduler.tick", "s"),
+            ("publish.issue", "s"),
+            ("deeds_known_to", "s"),
+            ("memory.believers", "B"),
+            ("memory.per_belief", "B"),
+            ("save.believers", "B"),
+            ("save.flight", "s"),
+            ("save.flight_bytes", "B"),
+            ("load.flight", "s"),
+            ("deeds.index", "s"),
+            ("deeds.scan", "s"),
+            ("memory.resident", "B"),
         ]
         names = [item[0] for item in catalog]
         units = {item[0]: item[1] for item in catalog}

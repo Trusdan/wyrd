@@ -18,6 +18,13 @@ var _host: WyrdFakeHost
 var _saved_bytes := 0
 var _peak := 0
 var _ready := false
+var _quest_mem := 0
+var _deeds := 0
+var _rumors_ready := false
+var _flight_ready := false
+var _graph: Dictionary = {}
+var _cached_beliefs: Array = []
+var _belief_ready := false
 
 
 func _init() -> void:
@@ -78,6 +85,7 @@ func _prepare() -> Dictionary:
 	_facts = int(info.get("facts", "0"))
 	_npcs = int(info.get("npcs", "0"))
 	_topics = int(info.get("topics", "0"))
+	_deeds = int(info.get("deeds", "0"))
 	if _facts < 1 or _npcs < 2:
 		return {"error": "pack needs facts and at least two npcs", "ok": false}
 	_runtime = WyrdRuntime.new()
@@ -102,11 +110,13 @@ func _prepare() -> Dictionary:
 	manifest.language_version = 1
 	manifest.files = _wyrd_files()
 	print("perf worker loading")
+	var before_pack := int(Performance.get_monitor(Performance.MEMORY_STATIC))
 	var report := _runtime.load_content(manifest)
 	print("perf worker loaded")
 	if not report.ok:
 		return {"error": report.diagnostics.format(), "ok": false}
 	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_quest_mem = maxi(int(Performance.get_monitor(Performance.MEMORY_STATIC)) - before_pack, 0)
 	_import_deeds()
 	_note_mem()
 	_ready = true
@@ -175,8 +185,39 @@ func _sample(name: String) -> Dictionary:
 			row = _sample_snapshot("page")
 		"debug.snapshot_section":
 			row = _sample_snapshot("section")
+		"memory.quests":
+			row = _sample_quest_memory()
+		"rumor.tick":
+			row = _sample_rumor_tick()
+		"scheduler.tick":
+			row = _sample_scheduler_tick()
+		"publish.issue":
+			row = _sample_publish_issue()
+		"deeds_known_to":
+			row = _sample_known_to()
+		"memory.believers":
+			row = _sample_believer_cost("memory")
+		"memory.per_belief":
+			row = _sample_believer_cost("each")
+		"save.believers":
+			row = _sample_believer_cost("bytes")
+		"save.flight":
+			row = _sample_flight(true)
+		"save.flight_bytes":
+			row = _sample_flight(false)
+		"load.flight":
+			row = _sample_flight_load()
+		"deeds.index":
+			row = _sample_deed_lookup(true)
+		"deeds.scan":
+			row = _sample_deed_lookup(false)
+		"memory.resident":
+			row = _sample_resident()
 		_:
 			return {"error": "unknown metric %s" % name, "metric": name, "ok": false}
+	_restore_shares()
+	if _runtime != null and _runtime.deeds != null:
+		_runtime.deeds.set_lookup(true)
 	if not str(row.get("error", "")).is_empty():
 		row["metric"] = name
 		row["ok"] = false
@@ -628,6 +669,525 @@ func _npc(index: int) -> String:
 
 func _fact(index: int) -> StringName:
 	return StringName("harbor.scale_%05d" % index)
+
+
+func _sample_quest_memory() -> Dictionary:
+	return {
+		"checksum": "memory.quests",
+		"extra": {"bytes": _quest_mem},
+		"value": float(_quest_mem),
+	}
+
+
+func _sample_resident() -> Dictionary:
+	_note_mem()
+	return {"checksum": "memory.static", "extra": {}, "value": float(_peak)}
+
+
+## One median tick with the rumor queue full. Reach tokens sit ahead of the
+## precise hops, and the precise policy mutates [code]harbor.toll_fate[/code].
+func _sample_rumor_tick() -> Dictionary:
+	var seeded := _queue_rumor_work()
+	if not str(seeded.get("error", "")).is_empty():
+		return seeded
+	_set_shares(64, 0, 64, 0, 0)
+	var times := _time_ticks()
+	return {
+		"checksum": _rumor_checksum(int(seeded["coarse_id"])),
+		"extra": {
+			"carry": _runtime.scheduler().carry("rumor"),
+			"reached": int(seeded["reached"]),
+			"whispered": int(seeded["whispered"]),
+		},
+		"value": _median(times),
+	}
+
+
+## Default shares, with rumor hops, one gazette issue, and cache refresh all queued.
+func _sample_scheduler_tick() -> Dictionary:
+	var seeded := _queue_rumor_work()
+	if not str(seeded.get("error", "")).is_empty():
+		return seeded
+	_warm_cache()
+	_restore_shares()
+	var times := _time_ticks()
+	var gazette := _gazette_text()
+	return {
+		"checksum": "%s:%s:%s:%s" % [
+			_runtime.scheduler().carry("rumor"),
+			_runtime.scheduler().carry("publish"),
+			_runtime.scheduler().carry("cache_refresh"),
+			gazette.length(),
+		],
+		"extra": {"gazette": gazette.length()},
+		"value": _median(times),
+	}
+
+
+func _sample_publish_issue() -> Dictionary:
+	var err := _arm_scale_believers()
+	if not err.is_empty():
+		return {"error": err}
+	_runtime.facts.set_in(StringName(WyrdPerfScale.MUTATION_FIELD), &"lost_at_sea", &"world")
+	_runtime.restore_clock(WyrdPerfScale.SEED, 60)
+	_runtime.publish.enqueue_due()
+	var tokens := _runtime.scheduler().carry_tokens("publish")
+	if tokens.is_empty():
+		return {"error": "harbor gazette did not queue an issue"}
+	var started := Time.get_ticks_usec()
+	_runtime.publish.issue(tokens[0])
+	var elapsed := Time.get_ticks_usec() - started
+	var gazette := _gazette_text()
+	if gazette.is_empty():
+		return {"error": "harbor gazette did not issue"}
+	return {
+		"checksum": gazette,
+		"extra": {"deeds": _runtime.deeds.size()},
+		"value": float(elapsed) / 1000000.0,
+	}
+
+
+func _sample_known_to() -> Dictionary:
+	var err := _arm_scale_believers()
+	if not err.is_empty():
+		return {"error": err}
+	var started := Time.get_ticks_usec()
+	var rows := _runtime.deeds_known_to(StringName(WyrdPerfScale.GROUP), 0, &"whispered")
+	var elapsed := Time.get_ticks_usec() - started
+	var digest := WyrdHash.of_int(rows.size())
+	if not rows.is_empty():
+		digest = WyrdHash.combine(digest, int((rows[0] as Dictionary)["id"]))
+		digest = WyrdHash.combine(digest, int((rows[rows.size() - 1] as Dictionary)["id"]))
+	return {
+		"checksum": str(digest),
+		"extra": {"rows": rows.size()},
+		"value": float(elapsed) / 1000000.0,
+	}
+
+
+func _sample_believer_cost(kind: String) -> Dictionary:
+	var measured := _measure_believers()
+	if not str(measured.get("error", "")).is_empty():
+		return measured
+	var count := int(measured["count"])
+	var memory := int(measured["memory"])
+	var bytes := int(measured["bytes"])
+	var value := float(bytes)
+	if kind == "memory":
+		value = float(memory)
+	elif kind == "each":
+		value = float(memory) / float(count)
+	return {
+		"checksum": "%s:%s" % [count, bytes],
+		"extra": {"beliefs": count, "bytes": bytes, "memory": memory},
+		"value": value,
+	}
+
+
+func _sample_flight(timed: bool) -> Dictionary:
+	var seeded := _queue_flight()
+	if not str(seeded.get("error", "")).is_empty():
+		return seeded
+	var started := Time.get_ticks_usec()
+	var data := _runtime.save_state()
+	var text := JSON.stringify(data)
+	var elapsed := Time.get_ticks_usec() - started
+	var size := text.to_utf8_buffer().size()
+	_write_text(_flight_path(), text)
+	var jobs := 0
+	var flight: Variant = data.get("flight", {})
+	if flight is Dictionary:
+		var rumor: Variant = (flight as Dictionary).get("rumor", {})
+		if rumor is Dictionary:
+			var listed: Variant = (rumor as Dictionary).get("jobs", [])
+			if listed is Array:
+				jobs = (listed as Array).size()
+	data = {}
+	text = ""
+	var checksum := "%s:%s:%s" % [_runtime.deeds.size(), jobs, _runtime.scheduler().carry("rumor")]
+	if timed:
+		return {
+			"checksum": checksum,
+			"extra": {"bytes": size, "jobs": jobs},
+			"value": float(elapsed) / 1000000.0,
+		}
+	return {"checksum": str(size), "extra": {"jobs": jobs}, "value": float(size)}
+
+
+func _sample_flight_load() -> Dictionary:
+	if not FileAccess.file_exists(_flight_path()):
+		var saved := _sample_flight(true)
+		if not str(saved.get("error", "")).is_empty():
+			return saved
+	var err := _ensure_flight_content()
+	if not err.is_empty():
+		return {"error": err}
+	var parsed: Variant = JSON.parse_string(_read_text(_flight_path()))
+	var data: Dictionary = parsed if parsed is Dictionary else {}
+	var started := Time.get_ticks_usec()
+	var report := _runtime.load_state(data)
+	var elapsed := Time.get_ticks_usec() - started
+	data = {}
+	var jobs: Variant = _runtime.rumors.export_state().get("jobs", [])
+	var job_count := 0
+	if jobs is Array:
+		job_count = (jobs as Array).size()
+	return {
+		"checksum": "%s:%s:%s" % [1 if report.ok else 0, _runtime.deeds.size(), job_count],
+		"extra": {"jobs": job_count, "ok": report.ok},
+		"value": float(elapsed) / 1000000.0,
+	}
+
+
+## [param indexed] true times the hour-bucket index. False walks every row.
+## The score is checked against the other mode before the timer starts.
+func _sample_deed_lookup(indexed: bool) -> Dictionary:
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_import_deeds()
+	_runtime.restore_clock(WyrdPerfScale.SEED, _deed_clock())
+	_runtime.deeds.set_lookup(true)
+	var indexed_score := _deed_score()
+	_runtime.deeds.set_lookup(false)
+	var scanned_score := _deed_score()
+	if indexed_score != scanned_score:
+		_runtime.deeds.set_lookup(true)
+		return {
+			"error": "index score %s != scan %s" % [indexed_score, scanned_score],
+		}
+	_runtime.deeds.set_lookup(indexed)
+	var score := 0.0
+	var started := Time.get_ticks_usec()
+	for _step in WyrdPerfScale.QUERY_BATCH:
+		score = _deed_score()
+	var elapsed := Time.get_ticks_usec() - started
+	_runtime.deeds.set_lookup(true)
+	return {
+		"checksum": "%.6f" % score,
+		"extra": {"batch": WyrdPerfScale.QUERY_BATCH, "within": WyrdPerfScale.DEED_WITHIN},
+		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.QUERY_BATCH),
+	}
+
+
+func _queue_rumor_work() -> Dictionary:
+	var err := _boot_rumor()
+	if not err.is_empty():
+		return {"error": err}
+	var seeded := _seed_rumors(true)
+	if int(seeded["whispered"]) < 1 or int(seeded["reached"]) < 1:
+		return {"error": "rumor pack did not seed precise and coarse deeds"}
+	return seeded
+
+
+## Scale deed log plus in-flight rumor and gazette tokens. The hops are not run.
+## The quest pack stays loaded so the save is the scale game with rumors in flight.
+func _queue_flight() -> Dictionary:
+	var err := _boot_flight()
+	if not err.is_empty():
+		return {"error": err}
+	_import_deeds()
+	var seeded := _seed_rumors(true)
+	if int(seeded["whispered"]) < 1 or int(seeded["reached"]) < 1:
+		return {"error": "rumor pack did not seed precise and coarse deeds"}
+	_runtime.publish.enqueue_due()
+	return seeded
+
+
+func _boot_flight() -> String:
+	var err := _ensure_flight_content()
+	if not err.is_empty():
+		return err
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_runtime.trace.enabled = false
+	_apply_graph()
+	return ""
+
+
+func _ensure_flight_content() -> String:
+	var err := _ensure_rumors()
+	if not err.is_empty():
+		return err
+	if _flight_ready:
+		return ""
+	var files := _wyrd_files()
+	files.append_array(_wyrd_files_in(WyrdScalePack.rumors_root(_pack)))
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"gullhaven"
+	manifest.language_version = 1
+	manifest.files = files
+	var report := _runtime.load_content(manifest)
+	if not report.ok:
+		return report.diagnostics.format()
+	_runtime.trace.enabled = false
+	_flight_ready = true
+	return ""
+
+
+func _boot_rumor() -> String:
+	var err := _ensure_rumors()
+	if not err.is_empty():
+		return err
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_runtime.trace.enabled = false
+	_apply_graph()
+	return ""
+
+
+func _ensure_rumors() -> String:
+	if _rumors_ready:
+		return ""
+	var dir := WyrdScalePack.rumors_root(_pack)
+	var files := _wyrd_files_in(dir)
+	if files.is_empty():
+		return "rumor pack is missing"
+	_graph = WyrdScalePack.read_rumors(_pack)
+	if _graph.is_empty() or (_graph["friends"] as Array).is_empty():
+		return "rumor graph is missing"
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"gullhaven"
+	manifest.language_version = 1
+	manifest.files = files
+	var report := _runtime.load_content(manifest)
+	if not report.ok:
+		return report.diagnostics.format()
+	_runtime.trace.enabled = false
+	var registered := _register_policies()
+	if not registered.is_empty():
+		return registered
+	_rumors_ready = true
+	return ""
+
+
+func _register_policies() -> String:
+	for item in _graph["policies"]:
+		var row: Dictionary = item
+		var policy := WyrdRumorPolicy.new()
+		policy.id = StringName(str(row["id"]))
+		policy.kinds = PackedStringArray([str(row["kind"])])
+		policy.max_hops = int(row["hops"])
+		policy.verbs = PackedStringArray([str(row["verb"])])
+		policy.pass_chance = float(row["chance"])
+		var field := str(row["field"])
+		if not field.is_empty():
+			if field != WyrdPerfScale.MUTATION_FIELD or str(row["to"]) != WyrdPerfScale.MUTATION_TO or float(row["keep"]) != 0.0:
+				return "rumor graph mutation does not match the bench callable"
+			policy.mutations = [{
+				"field": field,
+				"keep_chance_fn": Callable(self, &"_keep_none"),
+				"to": Callable(self, &"_to_waived"),
+			}]
+		_runtime.register_rumor_policy(policy)
+	return ""
+
+
+func _apply_graph() -> void:
+	_spatial.set_precision(StringName(WyrdPerfScale.COARSE_PLACE), &"coarse")
+	_spatial.set_precision(StringName(WyrdPerfScale.PRECISE_PLACE), &"precise")
+	var places: Dictionary = _graph["places"]
+	for name in places.keys():
+		_spatial.set_place(StringName(str(name)), StringName(str(places[name])))
+	for edge in _graph["friends"]:
+		var pair: PackedStringArray = edge
+		_runtime.social.set_kind(StringName(pair[0]), StringName(pair[1]), StringName(WyrdPerfScale.RUMOR_KIND))
+
+
+## Coarse deeds are recorded at minute 0. The clock then moves to one hour so
+## reach tokens queue before the precise hops.
+func _seed_rumors(reach_first: bool) -> Dictionary:
+	var places: Dictionary = _graph["places"]
+	var names: Array = places.keys()
+	names.sort()
+	var whispered := 0
+	var reached := 0
+	var coarse_id := 0
+	if reach_first:
+		_runtime.perception_claim(WyrdPerfScale.MUTATION_FIELD, &"lost_at_sea")
+		for name in names:
+			if str(places[name]) != WyrdPerfScale.COARSE_PLACE:
+				continue
+			var id := _runtime.deeds.record(
+				&"arrived",
+				StringName(str(name)),
+				&"player",
+				StringName(WyrdPerfScale.COARSE_PLACE)
+			)
+			if coarse_id == 0:
+				coarse_id = id
+			reached += 1
+		_runtime.clear_perception_claim()
+		_runtime.restore_clock(WyrdPerfScale.SEED, 60)
+		_runtime.rumors.enqueue_due()
+	_runtime.perception_claim(WyrdPerfScale.MUTATION_FIELD, &"stolen")
+	for name in names:
+		if str(places[name]) != WyrdPerfScale.PRECISE_PLACE:
+			continue
+		_runtime.deeds.record(
+			&"whispered",
+			StringName(str(name)),
+			&"player",
+			StringName(WyrdPerfScale.PRECISE_PLACE)
+		)
+		whispered += 1
+	_runtime.clear_perception_claim()
+	return {"coarse_id": coarse_id, "reached": reached, "whispered": whispered}
+
+
+func _warm_cache() -> void:
+	var kinds := PackedStringArray([WyrdPerfScale.RUMOR_KIND])
+	var steps := mini(_npcs, WyrdPerfScale.QUERY_BATCH)
+	for step in steps:
+		_runtime.social.path_exists(
+			StringName(_npc(step)),
+			StringName(_npc((step + 2) % _npcs)),
+			kinds,
+			2
+		)
+	if _npcs >= 2:
+		_runtime.social.set_kind(StringName(_npc(0)), StringName(_npc(1)), StringName(WyrdPerfScale.RUMOR_KIND))
+
+
+func _belief_pairs() -> Dictionary:
+	if _belief_ready:
+		return {"pairs": _cached_beliefs}
+	var seeded := _queue_rumor_work()
+	if not str(seeded.get("error", "")).is_empty():
+		return seeded
+	_set_shares(64, 0, 64, 0, 0)
+	var guard := 0
+	while _runtime.scheduler().carry("rumor") > 0 and guard < WyrdPerfScale.RUMOR_DRAIN_TICKS:
+		_runtime.tick(0)
+		guard += 1
+	_restore_shares()
+	var pairs: Array = []
+	for index in _npcs:
+		var who := _npc(index)
+		for row in _runtime.deeds.believer_deeds(StringName(who)):
+			pairs.append({
+				"id": int(row["id"]),
+				"t": int(row["t"]),
+				"who": who,
+			})
+	if pairs.is_empty():
+		return {"error": "rumor spread produced no beliefs"}
+	_cached_beliefs = pairs
+	_belief_ready = true
+	return {"pairs": pairs}
+
+
+## Replays the drained pack's adoption pairs onto a fresh scale deed log.
+func _arm_scale_believers() -> String:
+	var found := _belief_pairs()
+	if not str(found.get("error", "")).is_empty():
+		return str(found["error"])
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_import_deeds()
+	for pair in found["pairs"]:
+		var row: Dictionary = pair
+		_runtime.deeds.note_believer(int(row["id"]), StringName(str(row["who"])), int(row["t"]))
+	return ""
+
+
+func _measure_believers() -> Dictionary:
+	var found := _belief_pairs()
+	if not str(found.get("error", "")).is_empty():
+		return found
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_import_deeds()
+	var before := int(Performance.get_monitor(Performance.MEMORY_STATIC))
+	for pair in found["pairs"]:
+		var row: Dictionary = pair
+		_runtime.deeds.note_believer(int(row["id"]), StringName(str(row["who"])), int(row["t"]))
+	var memory := maxi(int(Performance.get_monitor(Performance.MEMORY_STATIC)) - before, 0)
+	var exported := _runtime.deeds.export_state()
+	var with_bytes := JSON.stringify(exported).to_utf8_buffer().size()
+	for item in exported["rows"]:
+		(item as Dictionary).erase("believers")
+	var without_bytes := JSON.stringify(exported).to_utf8_buffer().size()
+	exported = {}
+	return {
+		"bytes": with_bytes - without_bytes,
+		"count": (found["pairs"] as Array).size(),
+		"memory": memory,
+	}
+
+
+func _rumor_checksum(coarse_id: int) -> String:
+	var level := -1
+	if coarse_id > 0:
+		level = _runtime.rumors.reach_level(str(coarse_id), StringName(WyrdPerfScale.COARSE_PLACE))
+	return "%s:%s:%s" % [
+		_runtime.scheduler().carry("rumor"),
+		_belief_count(),
+		level,
+	]
+
+
+func _belief_count() -> int:
+	var count := 0
+	for index in _npcs:
+		count += _runtime.deeds.believer_deeds(StringName(_npc(index))).size()
+	return count
+
+
+func _gazette_text() -> String:
+	var value: Variant = _runtime.facts.get_in(StringName(WyrdPerfScale.GAZETTE_FACT), &"world")
+	if value == null:
+		return ""
+	return str(value)
+
+
+func _deed_score() -> float:
+	return _runtime.deeds.score_matching(&"", null, null, null, WyrdPerfScale.DEED_WITHIN)
+
+
+func _deed_clock() -> int:
+	return 1000 + maxi(_deeds, 1) - 1
+
+
+func _time_ticks() -> Array[float]:
+	var times: Array[float] = []
+	for _step in WyrdPerfScale.TICKS_PER_SAMPLE:
+		var started := Time.get_ticks_usec()
+		_runtime.tick(0)
+		times.append(float(Time.get_ticks_usec() - started) / 1000000.0)
+	return times
+
+
+func _set_shares(work: int, waits: int, rumor: int, publish: int, cache: int) -> void:
+	var config := _runtime.config()
+	config.scheduler_work_per_tick = work
+	config.scheduler_share_waits = waits
+	config.scheduler_share_rumor = rumor
+	config.scheduler_share_publish = publish
+	config.scheduler_share_cache = cache
+
+
+func _restore_shares() -> void:
+	if _runtime == null:
+		return
+	_set_shares(64, 40, 12, 8, 4)
+
+
+func _keep_none(_value: Variant, _hop: int) -> float:
+	return 0.0
+
+
+func _to_waived(_value: Variant, _hop: int) -> StringName:
+	return StringName(WyrdPerfScale.MUTATION_TO)
+
+
+func _flight_path() -> String:
+	return _box.path_join("flight.json")
+
+
+func _median(values: Array[float]) -> float:
+	if values.is_empty():
+		return 0.0
+	var copy := values.duplicate()
+	copy.sort()
+	var mid := int(copy.size() / 2.0)
+	if copy.size() % 2 == 1:
+		return copy[mid]
+	return (copy[mid - 1] + copy[mid]) / 2.0
 
 
 func _reply(payload: Dictionary) -> void:

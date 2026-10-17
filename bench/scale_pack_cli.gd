@@ -32,15 +32,24 @@ func _init() -> void:
 	if digest.is_empty():
 		quit(1)
 		return
+	WyrdScalePack.write_rumors(out_dir, profile_name)
 	print("hash=%s" % digest)
 	print("dir=%s" % out_dir)
 	print("profile=%s" % profile_name)
+	print("rumors=%s" % WyrdScalePack.rumors_root(out_dir))
 	if not check:
 		quit(0)
 		return
 	var result := WyrdCli.execute(PackedStringArray(["check", "--strict", out_dir]))
 	if int(result["exit_code"]) != 0:
 		push_error(str(result["output"]))
+		quit(1)
+		return
+	var rumors := WyrdCli.execute(PackedStringArray([
+		"check", "--strict", WyrdScalePack.rumors_root(out_dir),
+	]))
+	if int(rumors["exit_code"]) != 0:
+		push_error(str(rumors["output"]))
 		quit(1)
 		return
 	print("strict=ok")
