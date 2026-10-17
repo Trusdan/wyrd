@@ -62,6 +62,10 @@ var enabled: bool = false
 ## seeded draw for an NPC in that place. who is the listener. path is the policy
 ## id. accepted is true when believed/<listener> was written. Replay skips both.
 ## Load does not log them.
+## A rumor_mutate line is one field of an accepted hop or materialize.
+## who is the listener. path is the policy id. key is the field.
+## kept is true when the seeded roll retains the value. result is keep, mutate,
+## or drop. Replay skips it. Load does not log it.
 ## A storylet_index line is one index read. scope is the scope text.
 ## speaker is the query speaker. key is the scope id, empty for a bark.
 ## ids is the count returned before secrecy, when, and cooldown.
@@ -115,7 +119,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(float(row.get("minutes", 0)))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize":
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate":
 				pass
 			_:
 				pass
