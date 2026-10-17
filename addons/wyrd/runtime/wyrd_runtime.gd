@@ -228,7 +228,7 @@ func register_credibility(fn: Callable) -> void:
 	_credibility = fn
 
 
-## Copies [param policy] into the precise rumor list. Not saved.
+## Copies [param policy] into the rumor list. Not saved.
 ## The first policy whose verb list matches the deed is the one that spreads.
 func register_rumor_policy(policy: WyrdRumorPolicy) -> void:
 	if rumors == null:
@@ -503,6 +503,8 @@ func _run_scheduler() -> void:
 			_config.scheduler_share_cache,
 		])
 		threshold = _config.scheduler_frame_warn_usec
+	if rumors != null:
+		rumors.enqueue_due()
 	var debug := OS.is_debug_build()
 	var started := 0
 	if debug:
@@ -790,6 +792,8 @@ func _trace_rumor(kind: String, fields: Dictionary) -> void:
 		return
 	if kind == "rumor_adopt":
 		fields["score"] = _score_text(float(fields.get("score", 0.0)))
+	if kind == "rumor_materialize":
+		fields["chance"] = _score_text(float(fields.get("chance", 0.0)))
 	if not _trace_allows(fields):
 		return
 	trace_add(kind, fields)
@@ -816,6 +820,30 @@ func _trace_rumor(kind: String, fields: Dictionary) -> void:
 				str(fields.get("path", "")),
 				str(fields.get("key", "")),
 				str(fields.get("score", "")),
+				str(fields.get("accepted", "")),
+			]
+		)
+	elif kind == "rumor_reach":
+		print(
+			"wyrd rumor reach deed=%s place=%s policy=%s level=%d key=%s"
+			% [
+				str(fields.get("deed", "")),
+				str(fields.get("place", "")),
+				str(fields.get("path", "")),
+				int(fields.get("level", 0)),
+				str(fields.get("key", "")),
+			]
+		)
+	elif kind == "rumor_materialize":
+		print(
+			"wyrd rumor materialize listener=%s place=%s policy=%s key=%s level=%d chance=%s accepted=%s"
+			% [
+				str(fields.get("listener", "")),
+				str(fields.get("place", "")),
+				str(fields.get("path", "")),
+				str(fields.get("key", "")),
+				int(fields.get("level", 0)),
+				str(fields.get("chance", "")),
 				str(fields.get("accepted", "")),
 			]
 		)

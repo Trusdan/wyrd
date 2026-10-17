@@ -412,15 +412,18 @@ func clear_belief_cache() -> void:
 ## order. A present value, including explicit false, stops the walk. Null is no
 ## opinion. [code]known/[/code] and [code]world[/code] are not read.
 ## Repeated lookups are cached while tracing is off. A belief write or
-## [method WyrdRuntime.invalidate_groups] drops the cache.
+## [method WyrdRuntime.invalidate_groups] drops the cache. A coarse reach draw
+## runs before that cache, so a later rise can still write.
 func _resolve_belief(args: Array) -> Dictionary:
 	if args.size() < 2 or args[0] == null or _runtime == null:
 		return {"source": "none", "value": null}
+	var agent := StringName(str(args[0]))
+	var key := _known_key(args[1])
+	if _runtime.rumors != null:
+		_runtime.rumors.materialize(agent, key)
 	var traced := _runtime.trace != null and _runtime.trace.enabled
 	if not traced and _belief_hot_ok and _belief_hot_left == args[0] and _belief_hot_right == args[1]:
 		return _belief_hot
-	var agent := StringName(str(args[0]))
-	var key := _known_key(args[1])
 	if not traced and _belief_hot_ok and _belief_hot_agent == agent and _belief_hot_key == key:
 		_belief_hot_left = args[0]
 		_belief_hot_right = args[1]
