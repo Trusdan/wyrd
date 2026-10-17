@@ -30,6 +30,7 @@ func test_m7_bench_metrics_are_registered() -> void:
 		names.append(str(row["name"]))
 	assert_true(names.has("debug.snapshot"))
 	assert_true(names.has("debug.snapshot_page"))
+	assert_true(names.has("debug.snapshot_section"))
 	assert_true(names.has("director.query_coverage"))
 	assert_eq(WyrdPerfScale.SNAPSHOT_PREFIX, "harbor.scale_000")
 	assert_eq(WyrdPerfScale.SNAPSHOT_OFFSET, 0)
@@ -37,7 +38,7 @@ func test_m7_bench_metrics_are_registered() -> void:
 	for item in WyrdPerfScale.metrics():
 		var row: Dictionary = item
 		var name := str(row["name"])
-		if name != "debug.snapshot" and name != "debug.snapshot_page" and name != "director.query_coverage":
+		if name != "debug.snapshot" and name != "debug.snapshot_page" and name != "debug.snapshot_section" and name != "director.query_coverage":
 			continue
 		assert_eq(str(row["stat"]), "median")
 		assert_eq(str(row["unit"]), "s")

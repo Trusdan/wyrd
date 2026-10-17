@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The seeded scale pack adds a storylet sibling: 4,000 storylets across 80 topics and 20 speakers at full scale, one tenth of each count for smoke. `director.query`, `director.why_not`, and `compile.tie_lint` join the bench. `debug.snapshot` times one full inspector build after the scale facts are stored and the deed log is imported, and `debug.snapshot_page` times one filtered page (`harbor.scale_000`, offset 0, limit 50) that still builds every section. `director.query_coverage` times the same 32-topic query with coverage counting on. Absolute budgets warn. Pull requests still do not run the suite. A base harness that does not know a metric records the head timing only.
+- The seeded scale pack adds a storylet sibling: 4,000 storylets across 80 topics and 20 speakers at full scale, one tenth of each count for smoke. `director.query`, `director.why_not`, and `compile.tie_lint` join the bench. `debug.snapshot` times one full inspector build after the scale facts are stored and the deed log is imported. `debug.snapshot_page` times one filtered page (`harbor.scale_000`, offset 0, limit 50) across every section, and `debug.snapshot_section` times that page for facts only. A snapshot builds only the requested sections and applies the prefix while collecting rows. `director.query_coverage` times the same 32-topic query with coverage counting on. Absolute budgets warn. Pull requests still do not run the suite. A base harness that does not know a metric records the head timing only.
 
 ## 0.5.0-m7 - 2026-10-16
 

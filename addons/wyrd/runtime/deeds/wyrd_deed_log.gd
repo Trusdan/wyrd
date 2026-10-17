@@ -398,6 +398,10 @@ func target_at(index: int) -> StringName:
 	return StringName(_target[index])
 
 
+func witnesses_at(index: int) -> PackedStringArray:
+	return _slice(_witnesses, int(_wit_at[index]), int(_wit_n[index]))
+
+
 func witnessed(index: int, agent: StringName) -> bool:
 	return _has_in(_witnesses, _wit_at[index], _wit_n[index], String(agent))
 
