@@ -45,6 +45,7 @@ func link(
 	_commands_of(units)
 	_warn_holder_gaps(units)
 	pack.xref = WyrdFactXref.new()
+	pack.storylet_index = _storylet_index(units)
 	return pack
 
 
@@ -55,6 +56,19 @@ func finish_xref(pack: WyrdLinkedPack, fact_paths: Dictionary) -> void:
 	if pack.events != null:
 		declared = pack.events
 	pack.xref.build(pack.schema, pack.units, fact_paths, _diagnostics, declared)
+
+
+func _storylet_index(units: Array) -> WyrdStoryletIndex:
+	var stories: Array = []
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for storylet in file.storylets:
+			stories.append(storylet)
+	var index := WyrdStoryletIndex.new()
+	index.build(stories)
+	return index
 
 
 func _index_symbols(units: Array) -> void:

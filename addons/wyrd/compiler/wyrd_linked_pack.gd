@@ -15,3 +15,5 @@ var topics: PackedStringArray = PackedStringArray()
 var xref: WyrdFactXref
 ## Event name to [WyrdEventDef]. Built at link. Not a save document.
 var events: Dictionary = {}
+## Sorted storylet ids by scope and speaker. Built at link. Not a save field.
+var storylet_index: WyrdStoryletIndex

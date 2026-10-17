@@ -22,6 +22,9 @@ var scenes: Dictionary = {}
 var roles: Dictionary = {}
 ## Storylet id to [WyrdStoryletDef]. Compiled with the pack. Not a save document.
 var storylets: Dictionary = {}
+## Sorted ids per scope and speaker. Built at link. Not a save field.
+## Null means a director query scans [member storylets] instead.
+var storylet_index: WyrdStoryletIndex
 ## Sequence id to [WyrdSequenceDef]. Compiled with the pack. Not a save document.
 var sequences: Dictionary = {}
 var lines: Dictionary = {}
@@ -83,6 +86,13 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()
+	content.storylet_index = pack.storylet_index
+	if content.storylet_index == null:
+		content.storylet_index = WyrdStoryletIndex.new()
+		var stories: Array = []
+		for id in content.storylets.keys():
+			stories.append(content.storylets[id])
+		content.storylet_index.build(stories)
 	return content
 
 
