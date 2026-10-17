@@ -1,7 +1,7 @@
 class_name WyrdRumor
 extends RefCounted
 
-## Precise rumor hops. One scheduler unit offers one deed to one listener.
+## Precise rumor hops and coarse reach.
 ##
 ## @experimental
 ## A deed starts a rumor when it carries a reveal claim and the first registered
@@ -13,9 +13,17 @@ extends RefCounted
 ## The decision key is [code]deed, from, to, hop[/code]. The time bucket is the
 ## hour bucket of [code]now[/code]. Adoption uses the credibility score and
 ## threshold, and writes [code]believed/<listener>[/code] only.
-## A coarse place does not start a rumor. A listener in a coarse place does not
-## adopt and does not pass the claim on. Empty places count as precise.
-## Jobs, the seen set, and the queued set are not saved. Load drops them.
+## A listener in a coarse place does not adopt and does not pass the claim on.
+## Empty places count as precise.
+## A deed in a coarse place stores a reach row instead of hops. Each coarse
+## tick enqueues one rumor unit that raises that row's level by one.
+## [method materialize] rolls once when content asks about one NPC there.
+## Jobs, the seen set, the queued set, reach rows, and the once-set are not saved.
+## Load drops them.
+
+## Level at or above this is a certain materialize roll, because [code]randf[/code]
+## is below 1. Chance is [code]level / REACH_FULL[/code]. Level 0 does not roll.
+const REACH_FULL := 4
 
 var social: WyrdSocial
 var facts: WyrdFactStore
@@ -33,6 +41,8 @@ var _policies: Array[WyrdRumorPolicy] = []
 var _jobs: Dictionary = {}
 var _seen: Dictionary = {}
 var _queued: Dictionary = {}
+var _reach: Dictionary = {}
+var _drawn: Dictionary = {}
 
 
 func register(policy: WyrdRumorPolicy) -> void:
@@ -51,14 +61,27 @@ func register(policy: WyrdRumorPolicy) -> void:
 	_policies.append(copy)
 
 
-## Drops in-flight claims and hop memory. Registered policies stay.
+## Drops in-flight claims, hop memory, reach rows, and materialize draws.
+## Registered policies stay.
 func clear_flight() -> void:
 	_jobs.clear()
 	_seen.clear()
 	_queued.clear()
+	_reach.clear()
+	_drawn.clear()
 
 
-## Starts a rumor for [param deed] when a policy matches and the place is precise.
+## Applied coarse ticks for [param deed_id] at [param place]. [code]-1[/code]
+## when that pair has no row.
+func reach_level(deed_id: String, place: StringName) -> int:
+	var key := "%s\t%s" % [deed_id, String(place)]
+	if not _reach.has(key):
+		return -1
+	return int((_reach[key] as Dictionary).get("level", 0))
+
+
+## Starts a rumor for [param deed] when a policy matches.
+## A precise place queues hops. A coarse place stores a reach row at level 0.
 func note_deed(deed: Dictionary, claim_key: String, claim_value: Variant) -> void:
 	if claim_key.is_empty() or social == null:
 		return
@@ -68,6 +91,7 @@ func note_deed(deed: Dictionary, claim_key: String, claim_value: Variant) -> voi
 		return
 	var place := StringName(str(deed.get("place", "")))
 	if _place_is_coarse(place):
+		_note_reach(deed, policy, claim_key, claim_value, place, verb)
 		return
 	var deed_id := str(int(deed.get("id", 0)))
 	if deed_id == "0" or _jobs.has(deed_id):
@@ -94,9 +118,42 @@ func note_deed(deed: Dictionary, claim_key: String, claim_value: Variant) -> voi
 		_enqueue_from(deed_id, person, 1)
 
 
+## Queues one rumor unit per coarse boundary crossed since each row was born.
+## The spatial adapter is read here. A place that is no longer coarse gains no
+## new unit. Units already queued still run.
+func enqueue_due() -> void:
+	if not enqueue_hop.is_valid() or _reach.is_empty():
+		return
+	var coarse := _coarse_minutes()
+	if coarse <= 0:
+		return
+	var now := _now()
+	var keys := PackedStringArray()
+	for key in _reach.keys():
+		keys.append(String(key))
+	keys.sort()
+	for key in keys:
+		var row: Dictionary = _reach[key]
+		var place := StringName(str(row.get("place", "")))
+		if not _place_is_coarse(place):
+			continue
+		var target := _coarse_index(now, coarse) - _coarse_index(int(row.get("born", 0)), coarse)
+		if target < 0:
+			target = 0
+		var have := int(row.get("level", 0)) + int(row.get("pending", 0))
+		var deed_id := str(row.get("deed", ""))
+		while have < target:
+			have += 1
+			row["pending"] = int(row.get("pending", 0)) + 1
+			enqueue_hop.call("reach\t%s\t%s\t%d" % [deed_id, String(place), have])
+
+
 ## One rumor unit. A token this runtime did not write is ignored.
 func hop(token: String) -> void:
 	var parts := token.split("\t")
+	if parts.size() == 4 and parts[0] == "reach":
+		_apply_reach(parts[1], parts[2], int(parts[3]))
+		return
 	if parts.size() != 4:
 		return
 	var deed_id := parts[0]
@@ -131,6 +188,53 @@ func hop(token: String) -> void:
 		return
 	if hop_n < int(job.get("max_hops", 0)):
 		_enqueue_from(deed_id, to_who, hop_n + 1)
+
+
+## Rolls once for the lowest undrawn reach row at [param who]'s coarse place.
+## An accept writes [code]believed/<who>[/code]. A reject is also once.
+## Level 0 does not roll. An existing belief is left as it is.
+func materialize(who: StringName, key: StringName) -> void:
+	if _reach.is_empty() or who == &"" or key == &"":
+		return
+	var who_text := String(who)
+	var fact := String(key)
+	if facts != null and facts.get_in(key, StringName("believed/%s" % who_text)) != null:
+		return
+	var spatial := _spatial()
+	if spatial == null:
+		return
+	var place := spatial.place_of(who)
+	if place == &"" or not _place_is_coarse(place):
+		return
+	var place_text := String(place)
+	var best: Dictionary = {}
+	var best_id := -1
+	for item in _reach.values():
+		var row: Dictionary = item
+		if str(row.get("place", "")) != place_text or str(row.get("key", "")) != fact:
+			continue
+		if int(row.get("level", 0)) < 1:
+			continue
+		var deed_num := str(row.get("deed", ""))
+		if _drawn.has("%s\t%s" % [deed_num, who_text]):
+			continue
+		var id_num := int(deed_num)
+		if best_id >= 0 and id_num >= best_id:
+			continue
+		best = row
+		best_id = id_num
+	if best.is_empty():
+		return
+	var deed_id := str(best.get("deed", ""))
+	var level := int(best.get("level", 0))
+	var chance := clampf(float(level) / float(REACH_FULL), 0.0, 1.0)
+	var decision := StringName("materialize\t%s\t%s\t%s\t%d" % [deed_id, place_text, who_text, level])
+	var roll := WyrdRng.for_decision(_seed(), &"rumor", decision, _time_bucket()).randf()
+	var accepted := roll < chance
+	_drawn["%s\t%s" % [deed_id, who_text]] = true
+	if accepted:
+		accepted = facts != null and facts.set_in(key, best.get("value"), StringName("believed/%s" % who_text))
+	_trace_materialize(who_text, place_text, str(best.get("policy", "")), fact, deed_id, level, chance, accepted)
 
 
 func _policy_for(verb: StringName) -> WyrdRumorPolicy:
@@ -191,18 +295,81 @@ func _enqueue_from(deed_id: String, source: String, hop_n: int) -> void:
 		enqueue_hop.call(_token(deed_id, source, person, hop_n))
 
 
+func _note_reach(
+	deed: Dictionary,
+	policy: WyrdRumorPolicy,
+	claim_key: String,
+	claim_value: Variant,
+	place: StringName,
+	verb: StringName
+) -> void:
+	var deed_id := str(int(deed.get("id", 0)))
+	if deed_id == "0":
+		return
+	var row_key := "%s\t%s" % [deed_id, String(place)]
+	if _reach.has(row_key):
+		return
+	_reach[row_key] = {
+		"born": _now(),
+		"deed": deed_id,
+		"key": claim_key,
+		"level": 0,
+		"pending": 0,
+		"place": String(place),
+		"policy": String(policy.id),
+		"value": claim_value,
+		"verb": String(verb),
+	}
+
+
+func _apply_reach(deed_id: String, place: String, seq: int) -> void:
+	if deed_id.is_empty() or place.is_empty():
+		return
+	var row_key := "%s\t%s" % [deed_id, place]
+	if not _reach.has(row_key):
+		return
+	var row: Dictionary = _reach[row_key]
+	if seq != int(row.get("level", 0)) + 1:
+		return
+	row["level"] = int(row.get("level", 0)) + 1
+	row["pending"] = maxi(int(row.get("pending", 0)) - 1, 0)
+	_trace_reach(row)
+
+
 func _roll(deed_id: String, from_who: String, to_who: String, hop_n: int, chance: float) -> bool:
-	var seed_value := 0
-	if seed_of.is_valid():
-		seed_value = int(seed_of.call())
 	var key := StringName(_token(deed_id, from_who, to_who, hop_n))
-	return WyrdRng.for_decision(seed_value, &"rumor", key, _time_bucket()).randf() < chance
+	return WyrdRng.for_decision(_seed(), &"rumor", key, _time_bucket()).randf() < chance
+
+
+func _seed() -> int:
+	if seed_of.is_valid():
+		return int(seed_of.call())
+	return 0
+
+
+func _now() -> int:
+	if now_of.is_valid():
+		return int(now_of.call())
+	return 0
+
+
+func _coarse_minutes() -> int:
+	if not config_of.is_valid():
+		return 60
+	var cfg: Variant = config_of.call()
+	if cfg is WyrdConfig:
+		return int((cfg as WyrdConfig).rumor_coarse_minutes)
+	return 60
+
+
+func _coarse_index(minute: int, coarse: int) -> int:
+	if coarse <= 0:
+		return 0
+	return int(floor(float(minute) / float(coarse)))
 
 
 func _time_bucket() -> int:
-	var now := 0
-	if now_of.is_valid():
-		now = int(now_of.call())
+	var now := _now()
 	var size := 60
 	if config_of.is_valid():
 		var cfg: Variant = config_of.call()
@@ -210,7 +377,7 @@ func _time_bucket() -> int:
 			size = maxi((cfg as WyrdConfig).hour_bucket_minutes, 0)
 	if size <= 0:
 		return now
-	return int(now / float(size)) * size
+	return int(floor(float(now) / float(size))) * size
 
 
 func _score(listener: String, speaker: String) -> float:
@@ -301,6 +468,45 @@ func _trace_adopt(
 		"speaker": from_who,
 		"verb": verb,
 		"who": to_who,
+	})
+
+
+func _trace_reach(row: Dictionary) -> void:
+	if not trace_of.is_valid():
+		return
+	var place := str(row.get("place", ""))
+	trace_of.call("rumor_reach", {
+		"deed": str(row.get("deed", "")),
+		"key": str(row.get("key", "")),
+		"level": int(row.get("level", 0)),
+		"path": str(row.get("policy", "")),
+		"place": place,
+		"who": place,
+	})
+
+
+func _trace_materialize(
+	who_text: String,
+	place_text: String,
+	policy_id: String,
+	fact: String,
+	deed_id: String,
+	level: int,
+	chance: float,
+	accepted: bool
+) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call("rumor_materialize", {
+		"accepted": "true" if accepted else "false",
+		"chance": chance,
+		"deed": deed_id,
+		"key": fact,
+		"level": level,
+		"listener": who_text,
+		"path": policy_id,
+		"place": place_text,
+		"who": who_text,
 	})
 
 
