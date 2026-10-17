@@ -90,7 +90,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	return _runtime.load_content(manifest)
 
 
-func tick(game_minutes: int) -> void:
+func tick(game_minutes: float) -> void:
 	_runtime.tick(game_minutes)
 
 

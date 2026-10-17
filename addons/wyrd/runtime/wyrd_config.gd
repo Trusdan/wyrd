@@ -9,6 +9,9 @@ extends Resource
 ## [member hostile_threshold], [member axis_verbs], [member axis_names],
 ## [member axis_deltas], [member kind_scale_kinds], [member kind_scale_axes],
 ## [member kind_scale_values], [member scheduler_work_per_tick],
+## [member scheduler_tick_minutes], [member scheduler_share_waits],
+## [member scheduler_share_rumor], [member scheduler_share_publish],
+## [member scheduler_share_cache], [member scheduler_frame_warn_usec],
 ## [member credibility_threshold], [member compact_after],
 ## [member secrecy_tiers], [member secrecy_fact], and [member trace_director].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
@@ -26,6 +29,19 @@ extends Resource
 @export var kind_scale_axes: PackedStringArray = PackedStringArray()
 @export var kind_scale_values: PackedFloat64Array = PackedFloat64Array()
 @export var scheduler_work_per_tick: int = 64
+## Game minutes in one scheduler tick. Slices of [code]Wyrd.tick[/code] add up
+## until this many minutes have accumulated. Not saved.
+@export var scheduler_tick_minutes: int = 1
+## Weights for waits, rumor, publish, and cache refresh. They split
+## [member scheduler_work_per_tick]. Not saved.
+@export var scheduler_share_waits: int = 40
+@export var scheduler_share_rumor: int = 12
+@export var scheduler_share_publish: int = 8
+@export var scheduler_share_cache: int = 4
+## Debug builds log [code]wyrd scheduler queue=frame[/code] when one game tick's
+## units take longer than this many microseconds. [code]0[/code] disables it.
+## The line does not change the work. Not saved.
+@export var scheduler_frame_warn_usec: int = 1000000
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5
 ## 0 leaves the log until the host calls [method WyrdDeedLog.compact]. Not saved.

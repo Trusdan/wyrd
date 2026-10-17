@@ -13,6 +13,7 @@ extends RefCounted
 ## Quest region leaves ride inside the quest row and are omitted when empty.
 ## An older loader ignores those keys. The unlocked secrecy name is an ordinary
 ## world fact. Schema stays 2 and the document has no secrecy key.
+## Scheduler queues and the unfinished tick slice are not in the document.
 ##
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills

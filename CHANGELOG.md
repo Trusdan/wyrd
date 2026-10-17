@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `Wyrd.tick` accepts any non-negative slice and runs whole game ticks of `scheduler_tick_minutes` (default 1). A zero slice still runs one tick and does not move the clock. One scheduler spends `scheduler_work_per_tick` units across waits, rumor, publish, and cache refresh. Shares are 40, 12, 8, and 4. Unused share moves to the earliest queue that still has work. Unfinished items stay in order. A debug build can log `wyrd scheduler queue=frame` when a tick's units exceed `scheduler_frame_warn_usec`. The line does not change the work. The queues and the leftover slice are not saved. Schema stays 2.
 - Deed rows are indexed by witness and by hour bucket. A witness is the knower of that deed, and `saw`, `heard`, and `inferred` share one list. Snapshot deed, social, and precedence reads use the indexes. A prefix visits only names that can start the row key. Precedence reads the name lists and does not walk every deed. The rows match a full scan. The indexes are not saved. Schema stays 2.
 - Storylet queries read a link-time index of sorted ids per scope kind, scope id, and speaker, plus a bucket for speaker `any`. The winners match a full scan. A bark query still runs inside the call. The index is not saved. Schema stays 2.
 - The proposed `memory.peak` warning budget is 384 MiB, sized for an 8 GB laptop. It still warns only.
