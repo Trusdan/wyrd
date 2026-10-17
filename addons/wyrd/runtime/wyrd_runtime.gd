@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## @experimental
 ## S2a loads a manifest by compiling its [code].wyrd[/code] sources, then keeps
-## a fact store, a condition table, and a fixed-work tick queue. S2b adds the
+## a fact store, a condition table, and a fixed-work scheduler. S2b adds the
 ## deed log, relationship axes, and role slots. S2c runs slice effects, quests,
 ## and scenes. S2d saves that state and can record a decision trace.
 ## Callables stay in the registries.
@@ -36,7 +36,9 @@ var _config: WyrdConfig
 ## Unknown secrecy names already reported. Not saved.
 var _secrecy_warned: Dictionary = {}
 var _content: WyrdContent
-var _queue: WyrdTickQueue
+var _queue: WyrdScheduler
+## Units of a game minute still waiting to complete [member WyrdConfig.scheduler_tick_minutes]. Not saved.
+var _slice_carry: int = 0
 var _ctx: WyrdConditionCtx
 var _rpn: WyrdRpnEval
 var _signatures: WyrdSignatures
@@ -74,7 +76,8 @@ func _init() -> void:
 	deeds = WyrdDeedLog.new()
 	social = WyrdSocial.new()
 	_config = WyrdConfig.new()
-	_queue = WyrdTickQueue.new()
+	_queue = WyrdScheduler.new()
+	_queue.trace_hook = Callable(self, &"_trace_scheduler")
 	_ctx = WyrdConditionCtx.new()
 	_rpn = WyrdRpnEval.new()
 	_signatures = WyrdSignatures.new()
@@ -255,6 +258,7 @@ func function_table() -> Dictionary:
 func start_new_game(seed_value: int) -> void:
 	_seed = seed_value
 	_minutes = 0
+	_slice_carry = 0
 	_trace.clear()
 	_streams.clear()
 	if trace != null:
@@ -401,28 +405,96 @@ func content() -> WyrdContent:
 	return _content
 
 
-func tick(game_minutes: int) -> void:
-	if game_minutes < 0:
+func tick(game_minutes: float) -> void:
+	if is_nan(game_minutes) or is_inf(game_minutes) or game_minutes < 0.0:
 		push_error("Wyrd.tick: game minutes must be >= 0")
 		return
-	trace_add("tick", {"minutes": game_minutes})
-	_minutes += game_minutes
+	var shown: Variant = game_minutes
+	if game_minutes == floor(game_minutes) and game_minutes <= 2147483647.0:
+		shown = int(game_minutes)
+	trace_add("tick", {"minutes": shown})
+	if game_minutes == 0.0:
+		_game_tick(0)
+		return
+	var units := int(round(game_minutes * float(WyrdScheduler.SLICE_UNITS_PER_MINUTE)))
+	if units <= 0:
+		return
+	_slice_carry += units
+	var length := 1
+	if _config != null:
+		length = maxi(_config.scheduler_tick_minutes, 1)
+	var span := length * WyrdScheduler.SLICE_UNITS_PER_MINUTE
+	var whole := int(_slice_carry / span)
+	_slice_carry = _slice_carry % span
+	for _step in whole:
+		_game_tick(length)
+
+
+## Units still waiting for the next whole game tick. Not saved.
+func slice_remainder_units() -> int:
+	return _slice_carry
+
+
+func scheduler() -> WyrdScheduler:
+	return _queue
+
+
+func _game_tick(advance: int) -> void:
+	if advance > 0:
+		_minutes += advance
 	if _config != null and _config.compact_after > 0 and deeds.size() >= _config.compact_after:
 		deeds.compact()
 	facts.refresh_poll(now_minutes())
 	facts.decay_evidence(now_minutes())
-	if game_minutes > 0:
+	if advance > 0:
 		_mark_calls(_DEED_CALLS)
 	if not _always.is_empty():
 		_queue.mark(_always)
 	if sequences != null:
 		sequences.on_tick()
-	var budget := _config.scheduler_work_per_tick if _config != null else 0
-	_queue.tick(budget, _recheck)
+	_run_scheduler()
 	if quests != null:
 		quests.on_tick()
 	if dialogue != null:
 		dialogue.on_tick()
+
+
+func _run_scheduler() -> void:
+	var budget := 0
+	var weights := PackedInt32Array([0, 0, 0, 0])
+	var threshold := 0
+	if _config != null:
+		budget = maxi(_config.scheduler_work_per_tick, 0)
+		weights = PackedInt32Array([
+			_config.scheduler_share_waits,
+			_config.scheduler_share_rumor,
+			_config.scheduler_share_publish,
+			_config.scheduler_share_cache,
+		])
+		threshold = _config.scheduler_frame_warn_usec
+	var debug := OS.is_debug_build()
+	var started := 0
+	if debug:
+		started = Time.get_ticks_usec()
+	var report := _queue.run(budget, weights, Callable(self, &"_recheck"))
+	if not debug or threshold <= 0 or int(report.get("total", 0)) <= 0:
+		return
+	var elapsed := Time.get_ticks_usec() - started
+	if elapsed <= threshold:
+		return
+	var carry := 0
+	var left: Variant = report.get("carry", PackedInt32Array())
+	if left is PackedInt32Array:
+		for count in left as PackedInt32Array:
+			carry += int(count)
+	_trace_scheduler({
+		"carry": carry,
+		"key": "frame",
+		"queue": "frame",
+		"threshold": threshold,
+		"units": int(report.get("total", 0)),
+		"us": elapsed,
+	})
 
 
 func condition_count() -> int:
@@ -794,13 +866,15 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 	_clear_belief_cache()
 	var report := WyrdSave.apply(self, data)
 	if report.ok:
+		_slice_carry = 0
+		_queue.clear_carry()
 		_reset_event_memory()
 		_clear_belief_cache()
 	return report
 
 
 func last_rechecks() -> int:
-	return _queue.last_rechecks
+	return _queue.last_rechecks()
 
 
 func watch_condition(index: int) -> void:
@@ -813,6 +887,30 @@ func unwatch_condition(index: int) -> void:
 
 func note(row: Dictionary) -> void:
 	_trace.append(row)
+
+
+func _trace_scheduler(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("scheduler", fields)
+	var queue := str(fields.get("queue", ""))
+	if queue == "frame":
+		print(
+			"wyrd scheduler queue=frame units=%d carry=%d us=%d threshold=%d"
+			% [
+				int(fields.get("units", 0)),
+				int(fields.get("carry", 0)),
+				int(fields.get("us", 0)),
+				int(fields.get("threshold", 0)),
+			]
+		)
+		return
+	print(
+		"wyrd scheduler queue=%s units=%d carry=%d"
+		% [queue, int(fields.get("units", 0)), int(fields.get("carry", 0))]
+	)
 
 
 func trace_add(kind: String, fields: Dictionary) -> void:
