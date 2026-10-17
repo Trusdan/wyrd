@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The scale bench times director query, why-not, and storylet tie-lint. Budgets warn.
+- The scale bench times director query, why-not, storylet tie-lint, a full debug snapshot, a filtered snapshot page, and the same query with coverage counting on. Budgets warn.
 
 ## 0.5.0-m7 - 2026-10-16
 
