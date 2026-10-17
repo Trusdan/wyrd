@@ -23,6 +23,27 @@ func test_full_pack_hash_is_stable() -> void:
 	assert_eq(_storylet_count(first["dir"]), 4000)
 
 
+func test_m7_bench_metrics_are_registered() -> void:
+	var names: PackedStringArray = []
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		names.append(str(row["name"]))
+	assert_true(names.has("debug.snapshot"))
+	assert_true(names.has("debug.snapshot_page"))
+	assert_true(names.has("director.query_coverage"))
+	assert_eq(WyrdPerfScale.SNAPSHOT_PREFIX, "harbor.scale_000")
+	assert_eq(WyrdPerfScale.SNAPSHOT_OFFSET, 0)
+	assert_eq(WyrdPerfScale.SNAPSHOT_LIMIT, 50)
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		var name := str(row["name"])
+		if name != "debug.snapshot" and name != "debug.snapshot_page" and name != "director.query_coverage":
+			continue
+		assert_eq(str(row["stat"]), "median")
+		assert_eq(str(row["unit"]), "s")
+		assert_gt(float(row["budget"]), 0.0)
+
+
 func test_smoke_is_one_tenth_and_compiles_strict() -> void:
 	var written := _write("smoke")
 	assert_ne(written["hash"], FileAccess.get_file_as_string(_EXPECTED).strip_edges())

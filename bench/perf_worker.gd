@@ -163,10 +163,16 @@ func _sample(name: String) -> Dictionary:
 			row = _sample_memory(true)
 		"director.query":
 			row = _sample_query()
+		"director.query_coverage":
+			row = _sample_query_coverage()
 		"director.why_not":
 			row = _sample_why_not()
 		"compile.tie_lint":
 			row = _sample_tie_lint()
+		"debug.snapshot":
+			row = _sample_snapshot(false)
+		"debug.snapshot_page":
+			row = _sample_snapshot(true)
 		_:
 			return {"error": "unknown metric %s" % name, "metric": name, "ok": false}
 	if not str(row.get("error", "")).is_empty():
@@ -359,10 +365,22 @@ func _sample_compact() -> Dictionary:
 
 
 func _sample_query() -> Dictionary:
+	return _sample_query_batch(false)
+
+
+func _sample_query_coverage() -> Dictionary:
+	return _sample_query_batch(true)
+
+
+## Same 32-topic batch as [method _sample_query]. Coverage is on only for the
+## timed queries, then turned back off so later metrics stay on the default.
+func _sample_query_batch(count_hits: bool) -> Dictionary:
 	var err := _ensure_stories()
 	if not err.is_empty():
 		return {"error": err}
 	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_runtime.coverage.clear()
+	_runtime.coverage.enabled = count_hits
 	var digest := WyrdHash.of_int(WyrdPerfScale.QUERY_BATCH)
 	var candidates := 0
 	var started := Time.get_ticks_usec()
@@ -373,10 +391,48 @@ func _sample_query() -> Dictionary:
 		candidates = int(won["candidates"])
 		digest = WyrdHash.combine(digest, candidates)
 	var elapsed := Time.get_ticks_usec() - started
+	var hits := 0
+	if count_hits:
+		hits = _coverage_hits("storylet")
+	_runtime.coverage.enabled = false
+	_runtime.coverage.clear()
 	return {
 		"checksum": str(digest),
-		"extra": {"batch": WyrdPerfScale.QUERY_BATCH, "candidates": candidates},
+		"extra": {"batch": WyrdPerfScale.QUERY_BATCH, "candidates": candidates, "hits": hits},
 		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.QUERY_BATCH),
+	}
+
+
+## One inspector build. [param paged] applies the shared prefix and page window.
+## A new game plus the deed import and one write per scale fact run first, so
+## the document holds the pack's facts, roles, and deeds. The page still builds
+## every section, then slices.
+func _sample_snapshot(paged: bool) -> Dictionary:
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_import_deeds()
+	_fill_scale_facts()
+	var prefix := ""
+	var offset := 0
+	var limit := 0
+	if paged:
+		prefix = WyrdPerfScale.SNAPSHOT_PREFIX
+		offset = WyrdPerfScale.SNAPSHOT_OFFSET
+		limit = WyrdPerfScale.SNAPSHOT_LIMIT
+	var started := Time.get_ticks_usec()
+	var doc := _runtime.debug.snapshot(PackedStringArray(), prefix, offset, limit)
+	var elapsed := Time.get_ticks_usec() - started
+	return {
+		"checksum": _snapshot_checksum(doc),
+		"extra": {
+			"deeds": _section_total(doc, "deeds"),
+			"facts": _section_total(doc, "facts"),
+			"limit": limit,
+			"offset": offset,
+			"prefix": prefix,
+			"roles": _section_total(doc, "roles"),
+			"rows": _section_page_rows(doc),
+		},
+		"value": float(elapsed) / 1000000.0,
 	}
 
 
@@ -459,6 +515,59 @@ func _arm_beliefs() -> void:
 func _import_deeds() -> void:
 	var fixture := WyrdScalePack.load_deeds(_pack)
 	_runtime.deeds.import_state(fixture)
+
+
+func _fill_scale_facts() -> void:
+	for index in _facts:
+		_runtime.facts.set_in(_fact(index), index, &"world")
+
+
+func _coverage_hits(kind: String) -> int:
+	var counted := _runtime.coverage.counts()
+	var bag: Variant = counted.get(kind, {})
+	if not (bag is Dictionary):
+		return 0
+	var hits := 0
+	for id in (bag as Dictionary).keys():
+		hits += int((bag as Dictionary)[id])
+	return hits
+
+
+func _snapshot_checksum(doc: Dictionary) -> String:
+	var parts: PackedStringArray = []
+	for section_name in WyrdDebug.SECTIONS:
+		var name := String(section_name)
+		var total := _section_total(doc, name)
+		var rows := _section_rows(doc, name)
+		parts.append("%s:%d:%d" % [name, total, rows])
+	return "|".join(parts)
+
+
+func _section_total(doc: Dictionary, name: String) -> int:
+	var page := _section_page(doc, name)
+	return int(page.get("total", -1))
+
+
+func _section_rows(doc: Dictionary, name: String) -> int:
+	var page := _section_page(doc, name)
+	var rows: Variant = page.get("rows", [])
+	if rows is Array:
+		return (rows as Array).size()
+	return 0
+
+
+func _section_page_rows(doc: Dictionary) -> int:
+	var count := 0
+	for section_name in WyrdDebug.SECTIONS:
+		count += _section_rows(doc, String(section_name))
+	return count
+
+
+func _section_page(doc: Dictionary, name: String) -> Dictionary:
+	var section: Variant = doc.get(name, {})
+	if section is Dictionary:
+		return section
+	return {}
 
 
 func _save_path() -> String:

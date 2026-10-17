@@ -21,6 +21,11 @@ const WHY_BATCH := 32
 const MERGE_BUCKETS := 32
 const QUERY_SPEAKER := "dock_hand_000"
 const QUERY_TOPIC := "rumor.scale_00"
+## Filtered snapshot page. The prefix matches world facts `harbor.scale_00000`
+## and the following facts that share that stem. Limit 0 would return the rest.
+const SNAPSHOT_PREFIX := "harbor.scale_000"
+const SNAPSHOT_OFFSET := 0
+const SNAPSHOT_LIMIT := 50
 const HASH_FILE := "res://bench/scale_pack.sha256"
 const GROUP := "harbor_council"
 const DEPTH_GROUPS: PackedStringArray = ["harbor_watch", "ferry_crew", "harbor_council"]
@@ -77,6 +82,9 @@ static func metrics() -> Array:
 		{"budget": 268435456.0, "name": "memory.peak", "stat": "median", "unit": "B"},
 		{"budget": 268435456.0, "name": "memory.steady", "stat": "median", "unit": "B"},
 		{"budget": 0.02, "name": "director.query", "stat": "median", "unit": "s"},
+		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
 		{"budget": 0.05, "name": "director.why_not", "stat": "median", "unit": "s"},
 		{"budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
+		{"budget": 10.0, "name": "debug.snapshot", "stat": "median", "unit": "s"},
+		{"budget": 8.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
 	]
