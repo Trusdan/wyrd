@@ -1,0 +1,7 @@
+// [EXAMPLE CONTENT] Gullhaven gazette. An invented fishing village, not a host game.
+language 1
+
+document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day delay 1 hour
+  claim harbor.toll_fate
+  fact harbor.gazette
+  verb whispered

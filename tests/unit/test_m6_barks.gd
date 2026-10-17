@@ -67,7 +67,7 @@ func test_speaker_clock_save_load_and_a_wildcard_does_not_start_one() -> void:
 	var topic := runtime.director.query("topic", "rumor.ferry_toll", "ferry")
 	assert_eq(str(topic["id"]), "harbor.topic")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_eq(int(saved["bark_speakers"]["ferry"]["cooldown"]), 10)
 	assert_eq(int(saved["bark_speakers"]["ferry"]["last_minute"]), 0)
 	assert_eq(int(saved["storylets"]["harbor.ferry"]["seen"]), 1)

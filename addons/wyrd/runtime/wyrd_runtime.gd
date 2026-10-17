@@ -476,9 +476,14 @@ func tick(game_minutes: float) -> void:
 		_game_tick(length)
 
 
-## Units still waiting for the next whole game tick. Not saved.
+## Units still waiting for the next whole game tick.
+## Saved as [code]flight.scheduler.slice[/code] when it is not zero.
 func slice_remainder_units() -> int:
 	return _slice_carry
+
+
+func set_slice_remainder(units: int) -> void:
+	_slice_carry = maxi(units, 0)
 
 
 func scheduler() -> WyrdScheduler:
@@ -1045,12 +1050,6 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 	_clear_belief_cache()
 	var report := WyrdSave.apply(self, data)
 	if report.ok:
-		_slice_carry = 0
-		_queue.clear_carry()
-		if rumors != null:
-			rumors.clear_flight()
-		if publish != null:
-			publish.clear()
 		_reset_event_memory()
 		_clear_belief_cache()
 	return report

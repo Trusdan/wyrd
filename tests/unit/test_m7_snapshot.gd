@@ -103,7 +103,7 @@ func test_trace_filters_and_load_stays_quiet() -> void:
 	assert_eq(str(kept[0]["key"]), "harbor")
 	assert_eq(str(kept[0]["prefix"]), "harbor")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("snapshot"))
 	assert_false(saved.has("debug"))
 	assert_false(saved.has("dirty"))

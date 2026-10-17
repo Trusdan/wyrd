@@ -196,7 +196,7 @@ func test_in_flight_rumors_carry_in_order() -> void:
 	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"known/net_mender"))
 
 
-func test_load_drops_the_in_flight_queue() -> void:
+func test_load_keeps_the_in_flight_queue() -> void:
 	var runtime := _boot(_PLAIN, 4)
 	_one_unit(runtime)
 	_policy(runtime, 1, 1.0)
@@ -207,24 +207,25 @@ func test_load_drops_the_in_flight_queue() -> void:
 	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
 	assert_gt(runtime.scheduler().carry("rumor"), 0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("rumor"))
 	assert_false(saved.has("rumors"))
-	assert_eq(JSON.stringify(saved).find("1\tline_fisher\tferry_master\t1"), -1)
+	assert_true(_queue_has(saved, "rumor", "1\tline_fisher\tferry_master\t1"))
 	var loaded := _boot(_PLAIN, 1)
 	_policy(loaded, 1, 1.0)
 	loaded.trace.enabled = true
-	var report := loaded.load_state(saved)
+	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
+	var report := loaded.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_eq(loaded.scheduler().carry("rumor"), 0)
 	assert_eq(_rows(loaded, "rumor_hop").size(), 0)
 	assert_eq(_rows(loaded, "rumor_adopt").size(), 0)
 	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
 	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
-	for _step in 5:
-		loaded.tick(0)
-	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
-	assert_eq(_rows(loaded, "rumor_hop").size(), 0)
+	assert_true(_queue_has(loaded.save_state(), "rumor", "1\tline_fisher\tferry_master\t1"))
+	loaded.tick(0)
+	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"), &"stolen")
+	assert_eq(_rows(loaded, "rumor_hop").size(), 1)
+	assert_eq(String(_rows(loaded, "rumor_hop")[0]["to"]), "ferry_master")
 
 
 func test_new_game_drops_flight_and_keeps_the_policy() -> void:
@@ -525,6 +526,17 @@ func _rows(runtime: WyrdRuntime, kind: String) -> Array:
 		if String(row.get("kind", "")) == kind:
 			rows.append(row)
 	return rows
+
+
+func _queue_has(data: Dictionary, queue: String, token: String) -> bool:
+	var flight: Variant = data.get("flight", {})
+	if not (flight is Dictionary):
+		return false
+	var scheduler: Variant = (flight as Dictionary).get("scheduler", {})
+	if not (scheduler is Dictionary):
+		return false
+	var tokens: Variant = (scheduler as Dictionary).get(queue, [])
+	return tokens is Array and (tokens as Array).has(token)
 
 
 func _listener_of(token: String) -> String:

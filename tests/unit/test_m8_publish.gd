@@ -284,7 +284,7 @@ func test_save_keeps_the_frozen_fact_and_drops_the_queue() -> void:
 	runtime.tick(60)
 	var frozen := String(runtime.facts.get(&"harbor.gazette"))
 	var data := runtime.save_state()
-	assert_eq(int(data["schema_version"]), 2)
+	assert_eq(int(data["schema_version"]), 3)
 	assert_false(data.has("publish"))
 	assert_false(data.has("issues"))
 	var raw := JSON.stringify(data)
@@ -310,10 +310,10 @@ func test_save_keeps_the_frozen_fact_and_drops_the_queue() -> void:
 	assert_null(queued.facts.get(&"harbor.gazette"))
 	assert_gt(queued.scheduler().carry("publish"), 0)
 	var pending := queued.save_state()
-	assert_false(JSON.stringify(pending).contains("issue\t"))
+	assert_true(_publish_tokens(pending).has("issue\tharbor_gazette\t1\t60"))
 	var resumed := _boot(_HOUR, 1)
-	assert_true(resumed.load_state(pending).ok)
-	assert_eq(resumed.scheduler().carry("publish"), 0)
+	assert_true(resumed.load_state(JSON.parse_string(JSON.stringify(pending))).ok)
+	assert_gt(resumed.scheduler().carry("publish"), 0)
 	assert_null(resumed.facts.get(&"harbor.gazette"))
 	resumed.config().scheduler_work_per_tick = 64
 	_host(resumed).clock.set_minutes(60)
@@ -397,7 +397,10 @@ func test_a_materialized_coarse_believer_adds_the_deed() -> void:
 	var kept := runtime.save_state()
 	assert_false(kept.has("believers"))
 	var loaded := _boot(_HOUR, 1)
-	assert_true(loaded.load_state(kept).ok)
+	var report := loaded.load_state(kept)
+	assert_push_error("harbor_toll")
+	assert_true(report.ok, report.diagnostics.format())
+	assert_true(report.diagnostics.format().contains("deed 1"), report.diagnostics.format())
 	_guild(loaded, PackedStringArray(["dock_hand"]))
 	var restored := loaded.deeds_known_to(&"harbor_guild", 240, &"whispered")
 	assert_eq(_ids(restored), [1])
@@ -499,7 +502,7 @@ func test_skipped_issues_match_across_save() -> void:
 	var live := _jumped(4)
 	var paused := _jumped(4)
 	var data := paused.save_state()
-	assert_eq(int(data["schema_version"]), 2)
+	assert_eq(int(data["schema_version"]), 3)
 	assert_false(data.has("publish"))
 	assert_false(data.has("issues"))
 	assert_false(data.has("believers"))
@@ -699,6 +702,19 @@ func _waive(value: Variant, hop: int) -> StringName:
 	if hop < 0:
 		return value
 	return &"waived"
+
+
+func _publish_tokens(data: Dictionary) -> Array:
+	var flight: Variant = data.get("flight", {})
+	if not (flight is Dictionary):
+		return []
+	var scheduler: Variant = (flight as Dictionary).get("scheduler", {})
+	if not (scheduler is Dictionary):
+		return []
+	var tokens: Variant = (scheduler as Dictionary).get("publish", [])
+	if tokens is Array:
+		return tokens
+	return []
 
 
 func _fact_lines(runtime: WyrdRuntime) -> Array:

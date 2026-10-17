@@ -8,7 +8,9 @@ extends RefCounted
 ## oldest first, up to [member WyrdConfig.publish_catchup_max]. One token is one
 ## frozen issue. The handler builds it. Issues past the cap are numbered and
 ## written as [code]skip[/code] lines in the document fact, so they are not
-## published later. The in-memory counter and the queued tokens are not saved.
+## published later. The in-memory counter, the covered minute, and the queued
+## dues are saved in [code]flight.publish[/code]. The issue tokens ride with
+## the scheduler.
 ## [method deeds_known_to] reads the witness index and the believer index.
 ## A [code]saw[/code] witness counts as [code]known:[/code]. [code]heard[/code],
 ## [code]inferred[/code], and a rumor believer count as [code]believed:[/code].
@@ -32,6 +34,54 @@ func clear() -> void:
 	_covered.clear()
 	_memory_n.clear()
 	_queued.clear()
+
+
+## Counters, covered minutes, and dues already queued. Empty when nothing is in flight.
+func export_state() -> Dictionary:
+	var out := {}
+	var counters := _export_ints(_memory_n)
+	if not counters.is_empty():
+		out["counters"] = counters
+	var covered := _export_ints(_covered)
+	if not covered.is_empty():
+		out["covered"] = covered
+	var queued: Array = []
+	for key in _queued.keys():
+		queued.append(String(key))
+	queued.sort()
+	if not queued.is_empty():
+		out["queued"] = queued
+	return out
+
+
+## Replaces counters, covered minutes, and the queued-due set.
+## Issue tokens stay on the scheduler.
+func import_state(data: Dictionary) -> void:
+	clear()
+	_import_ints(_memory_n, data.get("counters", {}))
+	_import_ints(_covered, data.get("covered", {}))
+	var queued: Variant = data.get("queued", [])
+	if queued is Array:
+		for item in queued:
+			var key := String(item)
+			if not key.is_empty():
+				_queued[key] = true
+
+
+func _export_ints(bag: Dictionary) -> Dictionary:
+	var out := {}
+	var ids: Array = bag.keys()
+	ids.sort()
+	for id in ids:
+		out[String(id)] = int(bag[id])
+	return out
+
+
+func _import_ints(into: Dictionary, raw: Variant) -> void:
+	if not (raw is Dictionary):
+		return
+	for id in (raw as Dictionary).keys():
+		into[String(id)] = int((raw as Dictionary)[id])
 
 
 ## Deed rows any current member witnessed, or believes through a rumor, at or

@@ -34,7 +34,7 @@ func test_region_save_load_keeps_the_leaf_and_skips_entry() -> void:
 	_strike(runtime, "harbor_rope", "spliced")
 	assert_eq(runtime.facts.get(&"harbor.splices"), 1)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	var quest: Dictionary = saved["quests"]["bell_repair"]
 	assert_eq(str(quest["regions"]["rope"]["stage"]), "spliced")
 	assert_true(bool(quest["regions"]["rope"]["entered"]))
@@ -205,7 +205,7 @@ func test_done_wakes_a_quest_and_partial_progress_round_trips() -> void:
 	_strike(partial, "harbor_bell", "rung")
 	_strike(partial, "harbor_bell", "rung")
 	var saved := partial.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	var row: Dictionary = saved["sequences"]["harbor.bells"]
 	assert_eq(int(row["count"]), 2)
 	assert_false(bool(row["done"]))
@@ -308,7 +308,7 @@ func test_gullhaven_bell_repair_and_signal() -> void:
 	assert_eq(runtime.sequences.progress("bell_signal"), 3)
 	assert_true(runtime.sequences.done("bell_signal"))
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_true(saved.has("sequences"))
 	assert_eq(int(saved["sequences"]["bell_signal"]["count"]), 3)
 	runtime.events.emit(&"season_changed", {})

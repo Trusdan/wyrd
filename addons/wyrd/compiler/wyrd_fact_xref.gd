@@ -590,6 +590,17 @@ func _writers(units: Array) -> Array:
 				var id := item.choice.line_id if not item.choice.line_id.is_empty() else scene.id
 				for effect in item.choice.effects:
 					_write(rows, effect, id, path)
+		for document in file.documents:
+			if document.fact_key.is_empty():
+				continue
+			rows.append({
+				"col": document.col,
+				"file": path,
+				"id": document.id,
+				"kind": "document",
+				"line": document.line,
+				"reads": [StringName(document.fact_key)],
+			})
 	return rows
 
 

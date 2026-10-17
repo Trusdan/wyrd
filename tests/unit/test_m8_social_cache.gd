@@ -178,20 +178,23 @@ func test_social_cache_trace_filters_and_load_is_quiet() -> void:
 	assert_eq(str(hits[0]["path"]), "affinity")
 	assert_eq(str(hits[0]["cache"]), "axis")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	var packed := JSON.stringify(saved)
 	assert_false(packed.contains("social_cache"))
-	assert_false(packed.contains("cache_refresh"))
 	assert_false(packed.contains("axis\t"))
+	var flight: Dictionary = saved.get("flight", {})
+	var scheduler: Dictionary = flight.get("scheduler", {})
+	var refresh: Array = scheduler.get("cache_refresh", [])
+	assert_gt(refresh.size(), 0)
 	var loaded := _boot(_PATH)
 	loaded.trace.enabled = true
 	var report := loaded.load_state(saved)
 	assert_true(report.ok, report.diagnostics.format())
 	assert_eq(loaded.trace.events.size(), 0)
 	assert_eq(loaded.social.cache_entries(), 0)
-	assert_eq(loaded.scheduler().carry("cache_refresh"), 0)
+	assert_eq(loaded.scheduler().carry("cache_refresh"), refresh.size())
 	assert_eq(loaded.social.axis(&"ferry", &"player", &"affinity"), 5.0)
-	assert_eq(int(loaded.save_state()["schema_version"]), 2)
+	assert_eq(int(loaded.save_state()["schema_version"]), 3)
 
 
 func test_path_exists_follows_directed_kinds() -> void:

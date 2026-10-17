@@ -68,6 +68,8 @@ func _ready() -> void:
 	_runtime.quests.journal_entry_added.connect(func(_quest: String, _id: String, _text: String) -> void: _refresh())
 	var report := _runtime.load_content(load(_MANIFEST) as WyrdContentManifest)
 	_boot = "" if report.ok else report.diagnostics.format()
+	if _boot.is_empty():
+		_register_harbor_whisper()
 	_status.text = "Press New game." if _boot.is_empty() else _boot
 
 
@@ -334,6 +336,16 @@ func _apply_commands() -> void:
 	# New game reads facts while it is still starting, which caches world.season.
 	# The event drops that cache so the clock above is what the lines see.
 	_runtime.events.emit(&"season_changed", {})
+
+
+func _register_harbor_whisper() -> void:
+	var policy := WyrdRumorPolicy.new()
+	policy.id = &"harbor_whisper"
+	policy.kinds = PackedStringArray(["apprentice"])
+	policy.max_hops = 2
+	policy.verbs = PackedStringArray(["whispered"])
+	policy.pass_chance = 1.0
+	_runtime.register_rumor_policy(policy)
 
 
 func _arm_apprentice() -> void:

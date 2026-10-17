@@ -167,7 +167,7 @@ func test_pending_and_abolished_round_trip() -> void:
 	runtime.roles.vacate(&"dock_keeper", &"left")
 	runtime.roles.vacate(&"ferry_master", &"died")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
 	var fresh := WyrdRuntime.new()
 	var next := WyrdFakeHost.new()

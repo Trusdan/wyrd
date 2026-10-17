@@ -37,7 +37,6 @@ func test_exit_kill_reroutes_the_ferry() -> void:
 		"--cmd", "time 0",
 		"--cmd", "set harbor.bell_count 3",
 	]))
-	assert_push_error("time.season")
 	assert_eq(int(result["exit_code"]), 0, str(result["output"]))
 	assert_true(str(result["output"]).begins_with("killed ferry_master\ntime 0\nset harbor.bell_count = 3\n"))
 	var fresh := _load_out(after, false)
@@ -47,7 +46,7 @@ func test_exit_kill_reroutes_the_ferry() -> void:
 	assert_ne(fresh.quests.outcome("ferry_toll", "crossing"), "done")
 	assert_eq(String(fresh.roles.holder(&"ferry_master")), "")
 	var saved := fresh.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("coverage"))
 	var prov: Dictionary = fresh.effects.export_state()["harbor.bell_count"]
 	assert_eq(str(prov["scene"]), "console")
@@ -82,7 +81,6 @@ func test_console_kill_covers_each_holder_and_stage() -> void:
 			"--cmd", "kill %s" % role,
 			"--cmd", "time 0",
 		]))
-		assert_push_error("time.season")
 		if int(result["exit_code"]) != 0:
 			problems.append("%s %s exit %s" % [role, stage, str(result["output"])])
 			continue
@@ -132,7 +130,7 @@ func test_console_dash_o_writes_the_save() -> void:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	assert_true(data is Dictionary)
 	var saved: Dictionary = data
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("coverage"))
 	var prov: Dictionary = (saved["provenance"] as Dictionary)["harbor.bell_count"]
 	assert_eq(str(prov["scene"]), "console")
@@ -163,7 +161,7 @@ func test_coverage_replays_from_one_seed() -> void:
 	assert_eq(JSON.stringify(right["counts"]), JSON.stringify(left["counts"]))
 	var saved: Dictionary = left["saved"]
 	assert_false(saved.has("coverage"))
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 
 
 func test_choice_summary_keeps_the_recap_fact() -> void:
