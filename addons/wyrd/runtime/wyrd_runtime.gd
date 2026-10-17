@@ -99,6 +99,9 @@ func _init() -> void:
 	deeds.on_compact = Callable(self, &"_on_compact")
 	social.deeds = deeds
 	social.config_of = Callable(self, &"config")
+	social.enqueue_cache = Callable(self, &"_enqueue_cache")
+	social.on_cache = Callable(self, &"_trace_social_cache")
+	_queue.cache_handler = Callable(social, &"rebuild_cached")
 	social.members_of = Callable(self, &"_members")
 	social.on_reputation = Callable(self, &"_trace_reputation")
 	roles.social = social
@@ -460,6 +463,8 @@ func _game_tick(advance: int) -> void:
 
 
 func _run_scheduler() -> void:
+	if social != null:
+		social.sync_cache()
 	var budget := 0
 	var weights := PackedInt32Array([0, 0, 0, 0])
 	var threshold := 0
@@ -743,6 +748,29 @@ func _on_compact(info: Dictionary) -> void:
 	print(
 		"wyrd compact before=%s after=%s merged=%s dropped=%s"
 		% [str(fields["before"]), str(fields["after"]), str(fields["merged"]), str(fields["dropped"])]
+	)
+
+
+func _enqueue_cache(token: String) -> void:
+	_queue.push("cache_refresh", token)
+
+
+func _trace_social_cache(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("social_cache", fields)
+	print(
+		"wyrd social cache event=%s kind=%s who=%s key=%s bucket=%d entries=%d"
+		% [
+			str(fields.get("event", "")),
+			str(fields.get("cache", "")),
+			str(fields.get("who", "")),
+			str(fields.get("key", "")),
+			int(fields.get("bucket", 0)),
+			int(fields.get("entries", 0)),
+		]
 	)
 
 
@@ -1819,6 +1847,7 @@ func _on_role_vacant(_role: StringName) -> void:
 
 func _on_social() -> void:
 	_mark_calls(_DEED_CALLS)
+	_mark_calls(PackedStringArray(["path_exists"]))
 
 
 func _members(group: StringName) -> PackedStringArray:
@@ -1875,6 +1904,8 @@ func _tracked_calls() -> PackedStringArray:
 		names.append("progress")
 	if not names.has("done"):
 		names.append("done")
+	if not names.has("path_exists"):
+		names.append("path_exists")
 	return names
 
 

@@ -14,6 +14,10 @@ extends RefCounted
 ## may [method register_formula]; the callable receives [code](a, b, axes)[/code]
 ## and is not saved. [method reputation] is the mean disposition of a group's
 ## members toward the subject. It is derived, not saved.
+## Axes, disposition, reputation, and [method path_exists] are cached for the
+## current time bucket. [method set_cache] false recomputes and does not store.
+## A deed, relationship, membership, config, or bucket change drops the entries.
+## Each dropped entry is one [code]cache_refresh[/code] unit. The cache is not saved.
 
 var deeds: WyrdDeedLog
 var config_of: Callable = Callable()
@@ -26,21 +30,29 @@ var members_of: Callable = Callable():
 		members_of = value
 		if _booted:
 			_members_gen += 1
-			_drop_reputation()
+			_force_invalidate("members")
 ## [code](subject, group, value, members)[/code]. Not saved.
 var on_reputation: Callable = Callable()
+## [code](token: String)[/code]. One cache entry for the scheduler. Not saved.
+var enqueue_cache: Callable = Callable()
+## [code](fields: Dictionary)[/code]. Not saved. The runtime logs it when tracing is on.
+var on_cache: Callable = Callable()
 
 var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
 var _rev: int = 1
 var _members_gen: int = 1
-var _rep_token: int = 0
+var _cache_on: bool = true
+var _cache_ready: bool = false
+var _seen_bucket: int = 0
+var _seen_rev: int = 0
+var _seen_deed: int = 0
+var _seen_members: int = 0
+var _seen_config: int = 0
+var _axis_cache: Dictionary = {}
+var _disp_cache: Dictionary = {}
 var _rep_cache: Dictionary = {}
-var _rep_hot_ok: bool = false
-var _rep_hot_subject: StringName = &""
-var _rep_hot_group: StringName = &""
-var _rep_hot_value: float = 0.0
-var _rep_hot_count: int = 0
+var _path_cache: Dictionary = {}
 var _booted: bool = false
 
 
@@ -99,7 +111,8 @@ func clear_state() -> void:
 	_kinds.clear()
 	_baseline.clear()
 	_rev += 1
-	_drop_reputation()
+	_clear_entries()
+	_cache_ready = false
 
 
 func register_formula(fn: Callable) -> void:
@@ -107,7 +120,7 @@ func register_formula(fn: Callable) -> void:
 		push_error("WyrdSocial.register_formula: missing callable")
 		return
 	formula = fn
-	_touch()
+	_touch("formula")
 
 
 func set_kind(source: StringName, target: StringName, kind: StringName) -> void:
@@ -172,34 +185,101 @@ func clear_baseline(source: StringName, target: StringName, axis_name: StringNam
 	_touch()
 
 
-## Drops the reputation cache. Hosts call this when membership changes.
+## Drops cached reputation. Hosts call this when membership changes.
 ## [method WyrdRuntime.invalidate_groups] does that.
 func invalidate_members() -> void:
 	_members_gen += 1
-	_drop_reputation()
+	_force_invalidate("members")
 
 
-func _touch() -> void:
+## False recomputes axes, disposition, reputation, and [method path_exists].
+## The stored entries are dropped. Turning it back on fills them again on read.
+func set_cache(enabled: bool) -> void:
+	_cache_on = enabled
+	if not enabled:
+		_clear_entries()
+		_cache_ready = false
+
+
+func cache_enabled() -> bool:
+	return _cache_on
+
+
+func cache_entries() -> int:
+	return _axis_cache.size() + _disp_cache.size() + _rep_cache.size() + _path_cache.size()
+
+
+## Key text plus 8 bytes for an axis or reputation value, or 4 for disposition
+## and [method path_exists]. This is not process memory.
+func cache_bytes() -> int:
+	return _key_bytes(_axis_cache, 8) + _key_bytes(_disp_cache, 4) + _key_bytes(_rep_cache, 8) + _key_bytes(_path_cache, 4)
+
+
+## Writes the affinity and disposition keys for every ordered pair. No deeds run.
+func fill_pair_matrix(count: int) -> void:
+	for i in count:
+		var source := "dock_hand_%03d" % i
+		for j in count:
+			if i == j:
+				continue
+			var target := "dock_hand_%03d" % j
+			_axis_cache["axis\t%s\t%s\taffinity" % [source, target]] = 0.0
+			_disp_cache["disp\t%s\t%s" % [source, target]] = 50
+
+
+## Notices a deed, config, or time-bucket change and queues one unit per entry.
+func sync_cache() -> void:
+	_ensure()
+
+
+## Rebuilds one queued entry. A fresh entry is left as it is.
+func rebuild_cached(token: String) -> void:
+	if not _cache_on or token.is_empty():
+		return
+	_ensure()
+	if _contains(token):
+		return
+	_read_token(token)
+
+
+func _touch(reason: String = "relation") -> void:
 	_rev += 1
-	_drop_reputation()
+	_force_invalidate(reason)
 	if on_changed.is_valid():
 		on_changed.call()
 
 
-func _drop_reputation() -> void:
-	_rep_cache.clear()
-	_rep_hot_ok = false
-	_rep_token = 0
-
-
 func axis(source: StringName, target: StringName, axis_name: StringName) -> float:
+	if not _cache_on or source == &"" or target == &"" or axis_name == &"":
+		return _axis_raw(source, target, axis_name)
+	_ensure()
+	var key := "axis\t%s\t%s\t%s" % [String(source), String(target), String(axis_name)]
+	if _axis_cache.has(key):
+		_emit_cache("hit", "axis", String(target), String(source), String(axis_name), 0)
+		return float(_axis_cache[key])
+	var value := _axis_raw(source, target, axis_name)
+	_axis_cache[key] = value
+	_emit_cache("miss", "axis", String(target), String(source), String(axis_name), 0)
+	return value
+
+
+func _axis_raw(source: StringName, target: StringName, axis_name: StringName) -> float:
 	var total := _base(source, target, axis_name)
 	if deeds != null and source != &"" and target != &"":
 		var cfg := _config()
 		var scale := _kind_scale(source, target, axis_name)
-		for index in deeds.actor_indexes(target):
+		var rows := deeds.actor_indexes(target)
+		var witnessed := deeds.witness_indexes(source)
+		# Membership only. The add order stays the actor index so the rounded sum matches.
+		var use_index := _cache_on and witnessed.size() < rows.size()
+		var known := {}
+		if use_index:
+			for index in witnessed:
+				known[int(index)] = true
+		for index in rows:
 			var row := int(index)
-			if deeds.target_at(row) != source and not deeds.witnessed(row, source):
+			var saw := known.has(row) if use_index else deeds.witnessed(row, source)
+			if deeds.target_at(row) != source and not saw:
 				continue
 			var delta := 0.0
 			if cfg != null:
@@ -210,27 +290,31 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 
 ## Mean disposition of [param group]'s members toward [param subject].
 ## The subject is skipped. Duplicate members count once. No members returns 0.
-## The mean is cached until deeds, decay, baselines, kinds, the formula, the
-## config that scales them, [member members_of], or [method invalidate_members]
-## change. Membership inside a host is read again only after that signal.
-## [member WyrdRuntime.invalidate_groups] is the host signal.
+## The mean shares the social cache. Membership inside a host is read again
+## only after [method invalidate_members]. [member WyrdRuntime.invalidate_groups]
+## is the host signal.
 func reputation(subject: StringName, group: StringName) -> float:
 	if subject == &"" or group == &"":
 		return 0.0
-	var token := _rep_stamp()
-	if token != _rep_token:
-		_rep_cache.clear()
-		_rep_hot_ok = false
-		_rep_token = token
-	if _rep_hot_ok and _rep_hot_subject == subject and _rep_hot_group == group:
-		_emit_reputation(subject, group, _rep_hot_value, _rep_hot_count)
-		return _rep_hot_value
-	var cache_key := "%s\t%s" % [String(subject), String(group)]
-	if _rep_cache.has(cache_key):
-		var hit: Dictionary = _rep_cache[cache_key]
-		_remember_reputation(subject, group, float(hit["v"]), int(hit["n"]))
-		_emit_reputation(subject, group, _rep_hot_value, _rep_hot_count)
-		return _rep_hot_value
+	if not _cache_on:
+		var fresh := _reputation_raw(subject, group)
+		_emit_reputation(subject, group, float(fresh["v"]), int(fresh["n"]))
+		return float(fresh["v"])
+	_ensure()
+	var key := "rep\t%s\t%s" % [String(subject), String(group)]
+	if _rep_cache.has(key):
+		var hit: Dictionary = _rep_cache[key]
+		_emit_cache("hit", "reputation", String(group), String(subject), "", 0)
+		_emit_reputation(subject, group, float(hit["v"]), int(hit["n"]))
+		return float(hit["v"])
+	var computed := _reputation_raw(subject, group)
+	_rep_cache[key] = computed
+	_emit_cache("miss", "reputation", String(group), String(subject), "", 0)
+	_emit_reputation(subject, group, float(computed["v"]), int(computed["n"]))
+	return float(computed["v"])
+
+
+func _reputation_raw(subject: StringName, group: StringName) -> Dictionary:
 	var listed := PackedStringArray()
 	if members_of.is_valid():
 		var raw: Variant = members_of.call(group)
@@ -251,19 +335,192 @@ func reputation(subject: StringName, group: StringName) -> float:
 		total += float(disposition(who, subject))
 		count += 1
 	var value := 0.0 if count == 0 else WyrdDeedLog.round_sum(total / float(count))
-	_rep_cache[cache_key] = {"n": count, "v": value}
-	_remember_reputation(subject, group, value, count)
-	_emit_reputation(subject, group, value, count)
-	return value
+	return {"n": count, "v": value}
 
 
-func _rep_stamp() -> int:
-	var stamp := 0
+func _force_invalidate(reason: String) -> void:
+	_enqueue_current(reason)
+	_remember_seen()
+	_cache_ready = true
+
+
+func _ensure() -> void:
+	var snap := _snap()
+	if not _cache_ready:
+		_seen_bucket = int(snap["bucket"])
+		_seen_rev = int(snap["rev"])
+		_seen_deed = int(snap["deed"])
+		_seen_members = int(snap["members"])
+		_seen_config = int(snap["config"])
+		_cache_ready = true
+		return
+	var reason := _reason(snap)
+	if reason == "":
+		return
+	_enqueue_current(reason)
+	_seen_bucket = int(snap["bucket"])
+	_seen_rev = int(snap["rev"])
+	_seen_deed = int(snap["deed"])
+	_seen_members = int(snap["members"])
+	_seen_config = int(snap["config"])
+
+
+func _remember_seen() -> void:
+	var snap := _snap()
+	_seen_bucket = int(snap["bucket"])
+	_seen_rev = int(snap["rev"])
+	_seen_deed = int(snap["deed"])
+	_seen_members = int(snap["members"])
+	_seen_config = int(snap["config"])
+
+
+func _snap() -> Dictionary:
+	var deed := 0
 	if deeds != null:
-		stamp = deeds.weight_stamp()
-	stamp = WyrdHash.combine(stamp, _rev)
-	stamp = WyrdHash.combine(stamp, _members_gen)
-	return WyrdHash.combine(stamp, _config_stamp())
+		deed = deeds.weight_stamp()
+	return {
+		"bucket": _time_bucket(),
+		"config": _config_stamp(),
+		"deed": deed,
+		"members": _members_gen,
+		"rev": _rev,
+	}
+
+
+func _reason(snap: Dictionary) -> String:
+	if int(snap["bucket"]) != _seen_bucket:
+		return "time"
+	if int(snap["rev"]) != _seen_rev:
+		return "relation"
+	if int(snap["deed"]) != _seen_deed:
+		return "deed"
+	if int(snap["members"]) != _seen_members:
+		return "members"
+	if int(snap["config"]) != _seen_config:
+		return "config"
+	return ""
+
+
+func _time_bucket() -> int:
+	var now := 0
+	if deeds != null and deeds.clock.is_valid():
+		now = int(deeds.clock.call())
+	var size := 60
+	var cfg := _config()
+	if cfg != null:
+		size = maxi(cfg.hour_bucket_minutes, 0)
+	if size <= 0:
+		return now
+	return int(now / float(size)) * size
+
+
+func _enqueue_current(reason: String) -> void:
+	var keys: Array[String] = []
+	_collect_keys(_axis_cache, keys)
+	_collect_keys(_disp_cache, keys)
+	_collect_keys(_rep_cache, keys)
+	_collect_keys(_path_cache, keys)
+	var count := keys.size()
+	_clear_entries()
+	if count == 0:
+		return
+	_emit_cache("invalidate", reason, reason, "", "", count)
+	if not enqueue_cache.is_valid():
+		return
+	for key in keys:
+		enqueue_cache.call(key)
+
+
+func _collect_keys(table: Dictionary, into: Array[String]) -> void:
+	for key in table.keys():
+		into.append(String(key))
+
+
+func _clear_entries() -> void:
+	_axis_cache.clear()
+	_disp_cache.clear()
+	_rep_cache.clear()
+	_path_cache.clear()
+
+
+func _contains(token: String) -> bool:
+	var head := token.get_slice("\t", 0)
+	match head:
+		"axis":
+			return _axis_cache.has(token)
+		"disp":
+			return _disp_cache.has(token)
+		"rep":
+			return _rep_cache.has(token)
+		"path":
+			return _path_cache.has(token)
+		_:
+			return false
+
+
+func _read_token(token: String) -> void:
+	var parts := token.split("\t")
+	if parts.is_empty():
+		return
+	var head := String(parts[0])
+	if head == "axis" and parts.size() >= 4:
+		axis(StringName(parts[1]), StringName(parts[2]), StringName(parts[3]))
+	elif head == "disp" and parts.size() >= 3:
+		disposition(StringName(parts[1]), StringName(parts[2]))
+	elif head == "rep" and parts.size() >= 3:
+		reputation(StringName(parts[1]), StringName(parts[2]))
+	elif head == "path" and parts.size() >= 5:
+		var kinds := PackedStringArray()
+		if String(parts[3]) != "":
+			for kind in String(parts[3]).split(","):
+				kinds.append(kind)
+		path_exists(StringName(parts[1]), StringName(parts[2]), kinds, int(parts[4]))
+
+
+func _neighbors(source: StringName, allow: Dictionary) -> PackedStringArray:
+	var rows := PackedStringArray()
+	if not _kinds.has(source):
+		return rows
+	var outgoing: Dictionary = _kinds[source]
+	for target in outgoing.keys():
+		var bag: Dictionary = outgoing[target]
+		for kind in allow.keys():
+			if bag.has(kind):
+				rows.append(String(target))
+				break
+	rows.sort()
+	return rows
+
+
+func _kind_key(kinds: PackedStringArray) -> String:
+	var names: Array[String] = []
+	for kind in kinds:
+		var text := String(kind)
+		if text != "" and not names.has(text):
+			names.append(text)
+	names.sort()
+	return ",".join(names)
+
+
+func _key_bytes(table: Dictionary, value_bytes: int) -> int:
+	var total := 0
+	for key in table.keys():
+		total += String(key).length() + value_bytes
+	return total
+
+
+func _emit_cache(event: String, kind: String, key: String, who: String, path: String, entries: int) -> void:
+	if not on_cache.is_valid():
+		return
+	on_cache.call({
+		"bucket": _time_bucket(),
+		"cache": kind,
+		"entries": entries,
+		"event": event,
+		"key": key,
+		"path": path,
+		"who": who,
+	})
 
 
 func _config_stamp() -> int:
@@ -296,14 +553,6 @@ func _mix_floats(mixed: int, values: PackedFloat64Array) -> int:
 	return mixed
 
 
-func _remember_reputation(subject: StringName, group: StringName, value: float, count: int) -> void:
-	_rep_hot_ok = true
-	_rep_hot_subject = subject
-	_rep_hot_group = group
-	_rep_hot_value = value
-	_rep_hot_count = count
-
-
 func _emit_reputation(subject: StringName, group: StringName, value: float, count: int) -> void:
 	if on_reputation.is_valid():
 		on_reputation.call(subject, group, value, count)
@@ -314,6 +563,20 @@ func affinity(source: StringName, target: StringName) -> float:
 
 
 func disposition(source: StringName, target: StringName) -> int:
+	if not _cache_on or source == &"" or target == &"":
+		return _disposition_raw(source, target)
+	_ensure()
+	var key := "disp\t%s\t%s" % [String(source), String(target)]
+	if _disp_cache.has(key):
+		_emit_cache("hit", "disposition", String(target), String(source), "", 0)
+		return int(_disp_cache[key])
+	var value := _disposition_raw(source, target)
+	_disp_cache[key] = value
+	_emit_cache("miss", "disposition", String(target), String(source), "", 0)
+	return value
+
+
+func _disposition_raw(source: StringName, target: StringName) -> int:
 	var axes := _axes(source, target)
 	var raw := 0
 	if formula.is_valid():
@@ -325,6 +588,55 @@ func disposition(source: StringName, target: StringName) -> int:
 			base = cfg.disposition_default
 		raw = int(round(float(base) + float(axes[&"affinity"]) / 2.0))
 	return clampi(raw, 0, 100)
+
+
+## True when [param target] is reachable from [param source] in at most
+## [param max_hops] directed steps. A step may use any kind in [param kinds].
+## [param source] equals [param target] when [param max_hops] is at least 0.
+func path_exists(source: StringName, target: StringName, kinds: PackedStringArray, max_hops: int) -> bool:
+	if not _cache_on or source == &"" or target == &"":
+		return _path_raw(source, target, kinds, max_hops)
+	_ensure()
+	var key := "path\t%s\t%s\t%s\t%d" % [String(source), String(target), _kind_key(kinds), max_hops]
+	if _path_cache.has(key):
+		_emit_cache("hit", "path", String(target), String(source), _kind_key(kinds), 0)
+		return bool(_path_cache[key])
+	var value := _path_raw(source, target, kinds, max_hops)
+	_path_cache[key] = value
+	_emit_cache("miss", "path", String(target), String(source), _kind_key(kinds), 0)
+	return value
+
+
+func _path_raw(source: StringName, target: StringName, kinds: PackedStringArray, max_hops: int) -> bool:
+	if source == &"" or target == &"" or max_hops < 0:
+		return false
+	if source == target:
+		return true
+	var allow := {}
+	for kind in kinds:
+		var name := StringName(String(kind))
+		if name != &"":
+			allow[name] = true
+	if allow.is_empty():
+		return false
+	var queue: Array[StringName] = [source]
+	var dist := {source: 0}
+	var head := 0
+	while head < queue.size():
+		var node: StringName = queue[head]
+		head += 1
+		var steps := int(dist[node])
+		if steps >= max_hops:
+			continue
+		for nxt in _neighbors(node, allow):
+			var who := StringName(nxt)
+			if dist.has(who):
+				continue
+			if who == target:
+				return true
+			dist[who] = steps + 1
+			queue.append(who)
+	return false
 
 
 func _axes(source: StringName, target: StringName) -> Dictionary:

@@ -8,6 +8,7 @@ extends RefCounted
 ## [code]LOAD_FACT[/code] loads one const key. [code]LOAD_KEY[/code] joins [code]n[/code]
 ## segment values already on the stack. [code]CALL[/code] is a name const then an argument count.
 ## [code]IN_RANGE[/code] is inclusive. [code]IN_SET[/code]'s operand is the element count.
+## [code]MAKE_SET[/code]'s operand is the element count. It leaves the set on the stack.
 
 const PUSH_CONST := 1
 const PUSH_TRUE := 2
@@ -33,6 +34,7 @@ const CALL := 21
 const JUMP := 22
 const JUMP_IF_FALSE := 23
 const JUMP_IF_TRUE := 24
+const MAKE_SET := 25
 
 const NAMES: PackedStringArray = [
 	"",
@@ -60,6 +62,7 @@ const NAMES: PackedStringArray = [
 	"JUMP",
 	"JUMP_IF_FALSE",
 	"JUMP_IF_TRUE",
+	"MAKE_SET",
 ]
 
 
@@ -76,7 +79,7 @@ static func disasm(code: PackedInt32Array, consts: Array) -> PackedStringArray:
 		if op == PUSH_CONST or op == LOAD_FACT:
 			extra = " " + _show(consts[code[ip + 1]])
 			width = 2
-		elif op == LOAD_KEY or op == IN_SET:
+		elif op == LOAD_KEY or op == IN_SET or op == MAKE_SET:
 			extra = " %d" % code[ip + 1]
 			width = 2
 		elif op == CALL:

@@ -37,6 +37,7 @@ const _BUILTINS: PackedStringArray = [
 	"attr(id:entity, key:symbol)->symbol",
 	"display_name(id:entity)->symbol",
 	"rel(a:entity, b:entity, kind:symbol)->bool",
+	"path_exists(a:entity, b:entity, kinds:set, max_hops:int)->bool",
 	"affinity(a:entity, b:entity)->float",
 	"axis(a:entity, b:entity, name:symbol)->float",
 	"disposition(a:entity, b:entity)->int",

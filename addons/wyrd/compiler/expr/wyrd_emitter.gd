@@ -57,6 +57,11 @@ func _emit(node: WyrdExprNode) -> void:
 			_emit(node.a)
 		&"omit":
 			_op(WyrdOpcodes.PUSH_NIL)
+		&"set":
+			for kid in node.kids:
+				_emit(kid)
+			_op(WyrdOpcodes.MAKE_SET)
+			_operand(node.kids.size())
 		_:
 			_op(WyrdOpcodes.PUSH_FALSE)
 
