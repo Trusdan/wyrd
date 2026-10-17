@@ -1021,6 +1021,28 @@ func trace_director_candidate(fields: Dictionary) -> void:
 ## [code]ids[/code] is the count the index returned, before secrecy, when, and cooldown.
 ## [code]key[/code] is the scope id, empty for a bark. Load does not log one.
 ## Replay skips it. A null index does not log one.
+## One line per deed-index read from a snapshot section. Logged only while tracing is on.
+## [code]scope[/code] is [code]deeds[/code], [code]social[/code], or [code]precedence[/code].
+## [code]key[/code] is the caller prefix. [code]ids[/code] is the row count for deeds and
+## social, or the agent-name count for precedence. Load does not log one.
+## Replay skips it. A lookup that is off does not log one.
+func trace_deed_index(scope_name: String, prefix: String, count: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"ids": count,
+		"key": prefix,
+		"scope": scope_name,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("deed_index", fields)
+	var shown := prefix
+	if shown.is_empty():
+		shown = "-"
+	print("wyrd deed_index scope=%s key=%s ids=%d" % [scope_name, shown, count])
+
+
 func trace_storylet_index(scope_text: String, scope_id: String, speaker: String, count: int) -> void:
 	if trace == null or not trace.enabled:
 		return

@@ -35,6 +35,10 @@ var enabled: bool = false
 ## A console line is one playtest command. path is console. key is the target.
 ## role is set for kill, vacate, and replace. source is console.
 ## Replay skips it. Load does not log one.
+## A deed_index line is one snapshot read of the witness or time-bucket index.
+## scope is deeds, social, or precedence. key is the caller prefix.
+## ids is the deed-row count, or the agent-name count for precedence.
+## Replay skips it. Load does not log one. Lookup off does not log one.
 ## A storylet_index line is one index read. scope is the scope text.
 ## speaker is the query speaker. key is the scope id, empty for a bark.
 ## ids is the count returned before secrecy, when, and cooldown.
@@ -88,7 +92,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(int(row.get("minutes", 0)))
-			"console", "storylet_index":
+			"console", "storylet_index", "deed_index":
 				pass
 			_:
 				pass
