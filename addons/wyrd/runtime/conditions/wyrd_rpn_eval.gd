@@ -165,6 +165,9 @@ func _walk(code: PackedInt32Array, consts: Array, facts: Dictionary, values: Pac
 		elif op == WyrdOpcodes.IN_SET:
 			_stack.append(_in_set(code[ip]))
 			ip += 1
+		elif op == WyrdOpcodes.MAKE_SET:
+			_stack.append(_make_set(code[ip]))
+			ip += 1
 		elif op == WyrdOpcodes.IN_RANGE:
 			var hi: Variant = _pop()
 			var lo: Variant = _pop()
@@ -220,7 +223,7 @@ func _slot_fails(cmp: int, slot: int, values: PackedInt32Array, right: Variant) 
 func _width(op: int) -> int:
 	if op == WyrdOpcodes.CALL:
 		return 3
-	if op == WyrdOpcodes.PUSH_CONST or op == WyrdOpcodes.LOAD_FACT or op == WyrdOpcodes.LOAD_KEY or op == WyrdOpcodes.IN_SET or op == WyrdOpcodes.JUMP or op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
+	if op == WyrdOpcodes.PUSH_CONST or op == WyrdOpcodes.LOAD_FACT or op == WyrdOpcodes.LOAD_KEY or op == WyrdOpcodes.IN_SET or op == WyrdOpcodes.MAKE_SET or op == WyrdOpcodes.JUMP or op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
 		return 2
 	return 1
 
@@ -243,6 +246,14 @@ func _load_key(facts: Dictionary, count: int) -> Variant:
 	for i in range(count - 1, -1, -1):
 		parts[i] = str(_pop())
 	return _load(facts, ".".join(parts))
+
+
+func _make_set(count: int) -> Array:
+	var items: Array = []
+	items.resize(count)
+	for i in range(count - 1, -1, -1):
+		items[i] = _pop()
+	return items
 
 
 func _in_set(count: int) -> bool:

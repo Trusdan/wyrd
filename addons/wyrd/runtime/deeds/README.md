@@ -2,7 +2,7 @@
 
 `WyrdDeedLog` is an append-only log. `record` assigns a monotonic id and the current game minute, then emits `deed_recorded`.
 
-Rows are parallel packed arrays (`id`, `t`, `verb`, `actor`, `target`, `place`, `magnitude`, `visibility`, `memorable`) plus tag and witness pools. Indexes are by actor, target, and verb. A query scans the shortest of those indexes.
+Rows are parallel packed arrays (`id`, `t`, `verb`, `actor`, `target`, `place`, `magnitude`, `visibility`, `memorable`) plus tag and witness pools. Indexes are by actor, target, and verb. A query scans the shortest of those indexes. `witness_indexes` and `target_indexes` return those rows in log order. An axis uses the witness list as a membership set when that list is shorter than the actor's rows, and still adds in actor-log order.
 
 Decay is `magnitude × 0.5^((bucketed_now − t) / half_life)`. `bucketed_now` truncates to `hour_bucket_minutes`. Memorable rows and a half-life of 0 stay at full magnitude. `deed_score` rounds the sum to 6 decimal places.
 

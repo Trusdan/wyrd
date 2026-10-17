@@ -61,6 +61,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"progress": Callable(self, &"_progress"),
 		&"perceived": Callable(self, &"_perceived"),
 		&"knows": Callable(self, &"_knows"),
+		&"path_exists": Callable(self, &"_path_exists"),
 		&"rel": Callable(self, &"_rel"),
 		&"reputation": Callable(self, &"_reputation"),
 		&"slot_state": Callable(self, &"_slot_state"),
@@ -203,6 +204,15 @@ func _disposition(args: Array) -> int:
 	if not _pair(args):
 		return 0
 	return _runtime.social.disposition(StringName(str(args[0])), StringName(str(args[1])))
+
+
+func _path_exists(args: Array) -> bool:
+	if args.size() < 4 or not _pair(args) or _runtime == null:
+		return false
+	var hops := 0
+	if args[3] != null:
+		hops = int(args[3])
+	return _runtime.social.path_exists(StringName(str(args[0])), StringName(str(args[1])), _tags(args[2]), hops)
 
 
 func _rel(args: Array) -> bool:

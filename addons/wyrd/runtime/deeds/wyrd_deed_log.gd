@@ -72,10 +72,24 @@ func export_state() -> Dictionary:
 
 ## Rows for [param actor], in log order. The array is the live index: do not mutate it.
 func actor_indexes(actor: StringName) -> PackedInt32Array:
-	var text := String(actor)
-	if not _by_actor.has(text):
+	return _index_rows(_by_actor, actor)
+
+
+## Rows whose target is [param agent], in log order. The array is the live index.
+func target_indexes(agent: StringName) -> PackedInt32Array:
+	return _index_rows(_by_target, agent)
+
+
+## Rows [param agent] witnessed, in log order. The array is the live index.
+func witness_indexes(agent: StringName) -> PackedInt32Array:
+	return _index_rows(_by_witness, agent)
+
+
+func _index_rows(table: Dictionary, name: StringName) -> PackedInt32Array:
+	var text := String(name)
+	if not table.has(text):
 		return PackedInt32Array()
-	return _by_actor[text]
+	return table[text]
 
 
 ## Changes when a row is added, replaced, or dropped, or when decay can move.

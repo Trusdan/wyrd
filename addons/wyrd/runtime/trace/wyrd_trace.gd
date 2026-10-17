@@ -39,6 +39,13 @@ var enabled: bool = false
 ## scope is deeds, social, or precedence. key is the caller prefix.
 ## ids is the deed-row count, or the agent-name count for precedence.
 ## Replay skips it. Load does not log one. Lookup off does not log one.
+## A social_cache line is one cache invalidation, miss, or hit.
+## event is invalidate, miss, or hit. cache is axis, disposition, reputation, path,
+## or the invalidation reason, and the printed line labels it kind.
+## who is the source or subject. key is the other
+## party, or the reason on an invalidation. path is the axis name or kind list.
+## bucket is the time bucket. entries is how many entries were dropped.
+## Reads and hits log only when tracing is on. Replay skips the line. Load does not log one.
 ## A scheduler line is one queue's units for a game tick, or one enqueued item.
 ## key and queue are waits, rumor, publish, cache_refresh, or frame.
 ## units is the work done. carry is the unfinished count. A frame line is the
@@ -98,7 +105,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(float(row.get("minutes", 0)))
-			"console", "storylet_index", "deed_index", "scheduler":
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache":
 				pass
 			_:
 				pass
