@@ -102,6 +102,7 @@ const I_STORYLET_SCORE: StringName = &"I_STORYLET_SCORE"
 const W_STORYLET_TIE: StringName = &"W_STORYLET_TIE"
 const W_SUBSTATE_DEPTH: StringName = &"W_SUBSTATE_DEPTH"
 const E_SAVE_OPEN: StringName = &"E_SAVE_OPEN"
+const E_SAVE_POLICY: StringName = &"E_SAVE_POLICY"
 const E_SAVE_VERSION: StringName = &"E_SAVE_VERSION"
 const W_SAVE_MANIFEST: StringName = &"W_SAVE_MANIFEST"
 

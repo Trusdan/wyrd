@@ -23,6 +23,8 @@ extends RefCounted
 ## Jobs, the seen set, the queued set, reach rows, the once-set, and those
 ## copies are saved in [code]flight.rumor[/code]. Mutation callables are not.
 ## Load rebinds them from the registered policy with the same id.
+## A job or reach row whose policy is not registered is [code]push_error[/code]
+## and that deed's in-flight state is left out. Beliefs already written stay.
 
 ## Level at or above this is a certain materialize roll, because [code]randf[/code]
 ## is below 1. Chance is [code]level / REACH_FULL[/code]. Level 0 does not roll.
@@ -110,11 +112,19 @@ func export_state() -> Dictionary:
 
 ## Replaces in-flight state. [param data] empty clears it.
 ## Mutations come from the policy already registered under that id.
-func import_state(data: Dictionary) -> void:
+## Each returned row is a deed whose policy id was not registered.
+## That deed's jobs, reach rows, copies, and claim table are not loaded.
+## [method WyrdSave.apply] drops that deed's rumor tokens and records
+## [constant WyrdDiagnostic.E_SAVE_POLICY].
+func import_state(data: Dictionary) -> Array:
 	clear_flight()
+	var missing := _missing_policies(data)
+	var dropped := {}
+	for row in missing:
+		dropped[str(row.get("deed", ""))] = true
 	for item in _rows(data.get("jobs", [])):
 		var deed_id := str(item.get("deed", ""))
-		if deed_id.is_empty():
+		if deed_id.is_empty() or dropped.has(deed_id):
 			continue
 		var policy_id := str(item.get("policy", ""))
 		_jobs[deed_id] = {
@@ -127,12 +137,12 @@ func import_state(data: Dictionary) -> void:
 			"value": WyrdSave.unpack_claim(item.get("value")),
 			"verb": str(item.get("verb", "")),
 		}
-	_import_people(_seen, data.get("seen", []))
-	_import_people(_queued, data.get("queued", []))
+	_import_people(_seen, data.get("seen", []), dropped)
+	_import_people(_queued, data.get("queued", []), dropped)
 	for item in _rows(data.get("reach", [])):
 		var deed_id := str(item.get("deed", ""))
 		var place := str(item.get("place", ""))
-		if deed_id.is_empty() or place.is_empty():
+		if deed_id.is_empty() or place.is_empty() or dropped.has(deed_id):
 			continue
 		var policy_id := str(item.get("policy", ""))
 		_reach["%s\t%s" % [deed_id, place]] = {
@@ -149,20 +159,27 @@ func import_state(data: Dictionary) -> void:
 		}
 	for item in _list(data.get("drawn", [])):
 		var token := String(item)
-		if not token.is_empty():
-			_drawn[token] = true
+		if token.is_empty() or dropped.has(_deed_of_pair(token)):
+			continue
+		_drawn[token] = true
 	for item in _rows(data.get("held", [])):
 		var deed_id := str(item.get("deed", ""))
 		var who := str(item.get("who", ""))
-		if deed_id.is_empty() or who.is_empty():
+		if deed_id.is_empty() or who.is_empty() or dropped.has(deed_id):
 			continue
 		_held["%s\t%s" % [deed_id, who]] = WyrdSave.unpack_claim(item.get("value"))
 	for item in _rows(data.get("gone", [])):
 		var deed_id := str(item.get("deed", ""))
 		var who := str(item.get("who", ""))
-		if deed_id.is_empty() or who.is_empty():
+		if deed_id.is_empty() or who.is_empty() or dropped.has(deed_id):
 			continue
 		_gone["%s\t%s" % [deed_id, who]] = true
+	return missing
+
+
+## Names the policy id and the deed. Used by [code]push_error[/code] and [code]E_SAVE_POLICY[/code].
+static func missing_policy_message(policy_id: String, deed_id: String) -> String:
+	return "rumor policy \"%s\" is not registered for deed %s" % [policy_id, deed_id]
 
 
 ## Applied coarse ticks for [param deed_id] at [param place]. [code]-1[/code]
@@ -450,10 +467,10 @@ func _export_people(bag: Dictionary) -> Array:
 	return out
 
 
-func _import_people(into: Dictionary, raw: Variant) -> void:
+func _import_people(into: Dictionary, raw: Variant, dropped: Dictionary) -> void:
 	for item in _rows(raw):
 		var deed_id := str(item.get("deed", ""))
-		if deed_id.is_empty():
+		if deed_id.is_empty() or dropped.has(deed_id):
 			continue
 		var bag := {}
 		for person in _list(item.get("who", [])):
@@ -470,6 +487,47 @@ func _mutations_for(policy_id: String) -> Array:
 		if String(policy.id) == policy_id:
 			return policy.mutations
 	return []
+
+
+func _has_policy(policy_id: String) -> bool:
+	if policy_id.is_empty():
+		return false
+	for policy in _policies:
+		if String(policy.id) == policy_id:
+			return true
+	return false
+
+
+## One row per missing policy id and deed, jobs first, then reach rows.
+func _missing_policies(data: Dictionary) -> Array:
+	var seen := {}
+	var out: Array = []
+	_collect_missing(out, seen, data.get("jobs", []))
+	_collect_missing(out, seen, data.get("reach", []))
+	return out
+
+
+func _collect_missing(out: Array, seen: Dictionary, raw: Variant) -> void:
+	for item in _rows(raw):
+		var deed_id := str(item.get("deed", ""))
+		if deed_id.is_empty():
+			continue
+		var policy_id := str(item.get("policy", ""))
+		if _has_policy(policy_id):
+			continue
+		var key := "%s\t%s" % [policy_id, deed_id]
+		if seen.has(key):
+			continue
+		seen[key] = true
+		out.append({"deed": deed_id, "policy": policy_id})
+		push_error("WyrdRumor: %s" % missing_policy_message(policy_id, deed_id))
+
+
+func _deed_of_pair(token: String) -> String:
+	var cut := token.find("\t")
+	if cut < 0:
+		return token
+	return token.substr(0, cut)
 
 
 func _kind_list(raw: Variant) -> PackedStringArray:

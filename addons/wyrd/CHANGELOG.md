@@ -2,7 +2,7 @@
 
 ## 0.6.0-m8 - 2026-10-17
 
-M8 rumors, documents, and save schema 3. `VERSION` is `0.6.0-m8`. `plugin.cfg` version is `0.6.0-m8`. Corey cuts the tag `v0.6.0-m8` after the milestone benchmark. Save schema is 3. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when that set is empty too, and that load clears it. Schema 4 is refused.
+M8 rumors, documents, and save schema 3. `VERSION` is `0.6.0-m8`. `plugin.cfg` version is `0.6.0-m8`. Corey cuts the tag `v0.6.0-m8` after the milestone benchmark. Save schema is 3. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when that set is empty too, and that load clears it. A rumor whose policy id is not registered at load reports `error[E_SAVE_POLICY]` and `push_error`, naming the policy and the deed, and that deed's in-flight state is dropped. Other rumors load. Beliefs already written stay. Schema 4 is refused.
 
 - Gullhaven adds `harbor_gazette`, a daily document that writes `harbor.gazette`, and the playtest registers rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
 - `wyrd check` warns `W_RECAP_UNMARKED` when a concrete stored fact is `set` or `inc` in a stage that sets an outcome, or by a choice effect, and the declaration has no `recap:` key. `recap: true` keeps provenance through deed compaction. `recap: false` silences the warning and drops that provenance on compact. The warning exits 0. `wyrd check --strict` exits 1. Gullhaven marks the outcome and choice writes that the lint names.

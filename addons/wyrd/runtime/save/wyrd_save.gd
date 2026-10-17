@@ -201,7 +201,7 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.sequences.import_state(_dict(working.get("sequences", {})))
 		else:
 			runtime.sequences.clear()
-	_import_flight(runtime, working)
+	_import_flight(runtime, working, report)
 	report.ok = true
 	report.manifest_hash = content.manifest_hash
 	return report
@@ -238,7 +238,7 @@ static func _capture_flight(runtime: WyrdRuntime) -> Dictionary:
 	return out
 
 
-static func _import_flight(runtime: WyrdRuntime, data: Dictionary) -> void:
+static func _import_flight(runtime: WyrdRuntime, data: Dictionary, report: WyrdLoadReport) -> void:
 	if not data.has("flight"):
 		runtime.set_slice_remainder(0)
 		if runtime.scheduler() != null:
@@ -251,14 +251,55 @@ static func _import_flight(runtime: WyrdRuntime, data: Dictionary) -> void:
 			runtime.publish.clear()
 		return
 	var flight := _dict(data.get("flight", {}))
+	var dropped := {}
 	if runtime.rumors != null:
-		runtime.rumors.import_state(_dict(flight.get("rumor", {})))
+		for row in runtime.rumors.import_state(_dict(flight.get("rumor", {}))):
+			var policy_id := str(row.get("policy", ""))
+			var deed_id := str(row.get("deed", ""))
+			dropped[deed_id] = true
+			report.diagnostics.add(
+				WyrdDiagnostic.E_SAVE_POLICY,
+				WyrdRumor.missing_policy_message(policy_id, deed_id),
+				"",
+				1,
+				1
+			)
 	if runtime.publish != null:
 		runtime.publish.import_state(_dict(flight.get("publish", {})))
 	var scheduler := _dict(flight.get("scheduler", {}))
+	if not dropped.is_empty():
+		scheduler = _without_rumor_deeds(scheduler, dropped)
 	if runtime.scheduler() != null:
 		runtime.scheduler().import_carry(scheduler)
 	runtime.set_slice_remainder(_whole(scheduler.get("slice", 0), 0))
+
+
+## Drops rumor tokens whose deed was refused. Other queues stay in order.
+static func _without_rumor_deeds(scheduler: Dictionary, dropped: Dictionary) -> Dictionary:
+	var raw: Variant = scheduler.get("rumor", [])
+	if not (raw is Array):
+		return scheduler
+	var kept: Array = []
+	for item in raw:
+		var token := String(item)
+		if dropped.has(_rumor_token_deed(token)):
+			continue
+		kept.append(token)
+	var out := scheduler.duplicate()
+	if kept.is_empty():
+		out.erase("rumor")
+	else:
+		out["rumor"] = kept
+	return out
+
+
+static func _rumor_token_deed(token: String) -> String:
+	var parts := token.split("\t")
+	if parts.size() >= 2 and parts[0] == "reach":
+		return parts[1]
+	if parts.is_empty():
+		return ""
+	return parts[0]
 
 
 static func _dict(value: Variant) -> Dictionary:

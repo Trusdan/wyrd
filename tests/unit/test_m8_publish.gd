@@ -397,12 +397,15 @@ func test_a_materialized_coarse_believer_adds_the_deed() -> void:
 	var kept := runtime.save_state()
 	assert_false(kept.has("believers"))
 	var loaded := _boot(_HOUR, 1)
-	assert_true(loaded.load_state(kept).ok)
+	var report := loaded.load_state(kept)
+	assert_push_error("harbor_toll")
+	assert_true(report.ok, report.diagnostics.format())
+	assert_true(report.diagnostics.format().contains("deed 1"), report.diagnostics.format())
 	_guild(loaded, PackedStringArray(["dock_hand"]))
 	var restored := loaded.deeds_known_to(&"harbor_guild", 240, &"whispered")
 	assert_eq(_ids(restored), [1])
 	assert_eq(int(restored[0]["t"]), 240)
-	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), 4)
+	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), -1)
 
 
 func test_a_mutated_rumor_belief_is_the_claim() -> void:

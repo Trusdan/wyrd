@@ -59,26 +59,85 @@ func test_schema_2_fixture_loads_with_empty_flight() -> void:
 
 func test_mid_spread_save_matches_an_unsaved_run() -> void:
 	for mode in ["30", "144", "minute"]:
-		var live := _drive(mode, false)
-		var saved := _drive(mode, true)
-		assert_eq(_beliefs(saved), _beliefs(live), mode)
-		assert_eq(String(saved.facts.get(&"harbor.toll_fate")), String(live.facts.get(&"harbor.toll_fate")))
-		assert_eq(String(saved.facts.get(&"harbor.gazette")), String(live.facts.get(&"harbor.gazette")), mode)
-		assert_true(String(saved.facts.get(&"harbor.gazette")).contains("harbor_gazette#"), mode)
-		assert_eq(saved.rumors.reach_level("2", &"gullhaven"), live.rumors.reach_level("2", &"gullhaven"), mode)
-		assert_eq(JSON.stringify(_trace(saved)), JSON.stringify(_trace(live)), mode)
-		assert_eq(_beliefs(saved)["dock_hand"], "waived", mode)
-		var flags: Dictionary = saved.get_meta(&"flight_seen")
-		assert_true(bool(flags["rumor"]), mode)
-		assert_true(bool(flags["publish"]), mode)
-		assert_true(bool(flags["reach"]), mode)
-		assert_true(bool(flags["held"]), mode)
-		if mode != "minute":
-			assert_true(bool(flags["slice"]), mode)
+		_assert_matrix(mode, false)
+		_assert_matrix(mode, true)
 
 
-func _drive(mode: String, persist: bool) -> WyrdRuntime:
-	var runtime := _boot()
+func test_a_missing_policy_drops_only_that_rumor() -> void:
+	var saved := _two_rumors()
+	var full := _open_rumors(true)
+	var partial := _open_rumors(false)
+	var full_report := full.load_state(saved)
+	assert_true(full_report.ok, full_report.diagnostics.format())
+	assert_false(full_report.diagnostics.has_errors(), full_report.diagnostics.format())
+	var partial_report := partial.load_state(saved)
+	assert_push_error("harbor_toll")
+	assert_push_error("harbor_bell")
+	assert_true(partial_report.ok, partial_report.diagnostics.format())
+	var text := partial_report.diagnostics.format()
+	assert_true(text.contains("harbor_toll"), text)
+	assert_true(text.contains("deed 1"), text)
+	assert_true(text.contains("harbor_bell"), text)
+	assert_true(text.contains("deed 3"), text)
+	assert_eq(partial.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
+	assert_eq(partial.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
+	assert_eq(partial.facts.get(&"player.coins"), 4)
+	assert_false(_rumor_deeds(partial).has("1"))
+	assert_false(_token_deeds(partial).has("1"))
+	assert_eq(partial.rumors.reach_level("3", &"gullhaven"), -1)
+	assert_false(_token_deeds(partial).has("3"))
+	assert_true(_rumor_deeds(partial).has("2"))
+	assert_eq(_job_policy(partial, "2"), "harbor_whisper")
+	assert_eq(_job_policy(full, "2"), "harbor_whisper")
+	assert_eq(_token_rows(partial, "2"), _token_rows(full, "2"))
+	assert_eq(full.rumors.reach_level("3", &"gullhaven"), 0)
+	full.trace.clear()
+	partial.trace.clear()
+	full.config().scheduler_work_per_tick = 64
+	partial.config().scheduler_work_per_tick = 64
+	full.tick(0)
+	partial.tick(0)
+	assert_eq(partial.facts.get_in(&"harbor.toll_fate", &"believed/dock_apprentice"), &"waived")
+	assert_eq(
+		partial.facts.get_in(&"harbor.toll_fate", &"believed/dock_apprentice"),
+		full.facts.get_in(&"harbor.toll_fate", &"believed/dock_apprentice")
+	)
+	assert_null(partial.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
+	assert_eq(full.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"), &"waived")
+	assert_eq(partial.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
+	assert_eq(_rows_for(partial, "harbor_whisper"), _rows_for(full, "harbor_whisper"))
+	assert_eq(_job_policy(partial, "2"), "harbor_whisper")
+	assert_false(_rumor_deeds(partial).has("1"))
+	assert_false(_rumor_deeds(partial).has("3"))
+
+
+func _assert_matrix(mode: String, cache_on: bool) -> void:
+	var label := "%s cache=%s" % [mode, "on" if cache_on else "off"]
+	var live := _drive(mode, false, cache_on)
+	var saved := _drive(mode, true, cache_on)
+	assert_eq(_beliefs(saved), _beliefs(live), label)
+	assert_eq(String(saved.facts.get(&"harbor.toll_fate")), String(live.facts.get(&"harbor.toll_fate")), label)
+	assert_eq(String(saved.facts.get(&"harbor.gazette")), String(live.facts.get(&"harbor.gazette")), label)
+	assert_true(String(saved.facts.get(&"harbor.gazette")).contains("harbor_gazette#"), label)
+	assert_eq(saved.rumors.reach_level("2", &"gullhaven"), live.rumors.reach_level("2", &"gullhaven"), label)
+	if cache_on:
+		assert_eq(JSON.stringify(saved.facts.export_state()), JSON.stringify(live.facts.export_state()), label)
+		assert_eq(JSON.stringify(saved.publish.export_state()), JSON.stringify(live.publish.export_state()), label)
+		assert_eq(JSON.stringify(_trace(saved, true)), JSON.stringify(_trace(live, true)), label)
+	else:
+		assert_eq(JSON.stringify(_trace(saved)), JSON.stringify(_trace(live)), label)
+	assert_eq(_beliefs(saved)["dock_hand"], "waived", label)
+	var flags: Dictionary = saved.get_meta(&"flight_seen")
+	assert_true(bool(flags["rumor"]), label)
+	assert_true(bool(flags["publish"]), label)
+	assert_true(bool(flags["reach"]), label)
+	assert_true(bool(flags["held"]), label)
+	if mode != "minute":
+		assert_true(bool(flags["slice"]), label)
+
+
+func _drive(mode: String, persist: bool, cache_on: bool) -> WyrdRuntime:
+	var runtime := _boot(cache_on)
 	var flags := {"held": false, "publish": false, "reach": false, "rumor": false, "slice": false}
 	var step := 720
 	if mode == "30":
@@ -98,7 +157,7 @@ func _drive(mode: String, persist: bool) -> WyrdRuntime:
 			continue
 		_note(runtime, flags)
 		if persist:
-			_reload(runtime)
+			_reload(runtime, cache_on)
 	runtime.config().scheduler_work_per_tick = 64
 	runtime.config().scheduler_share_waits = 40
 	runtime.config().scheduler_share_rumor = 12
@@ -136,16 +195,17 @@ func _note(runtime: WyrdRuntime, flags: Dictionary) -> void:
 		flags["held"] = true
 
 
-func _reload(runtime: WyrdRuntime) -> void:
+func _reload(runtime: WyrdRuntime, cache_on: bool) -> void:
 	var before := runtime.trace.events.size()
 	var parsed: Variant = JSON.parse_string(JSON.stringify(runtime.save_state()))
 	var report := runtime.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
 	assert_eq(runtime.trace.events.size(), before)
-	runtime.social.set_cache(false)
+	if not cache_on:
+		runtime.social.set_cache(false)
 
 
-func _boot() -> WyrdRuntime:
+func _boot(cache_on: bool) -> WyrdRuntime:
 	var path := "user://wyrd_m8_schema3.wyrd"
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	assert_not_null(file)
@@ -162,7 +222,7 @@ func _boot() -> WyrdRuntime:
 	var report := runtime.load_content(manifest)
 	assert_true(report.ok, report.diagnostics.format())
 	runtime.start_new_game(4)
-	runtime.social.set_cache(false)
+	runtime.social.set_cache(cache_on)
 	runtime.config().rumor_coarse_minutes = 1
 	runtime.config().scheduler_work_per_tick = 1
 	runtime.config().scheduler_share_waits = 0
@@ -223,8 +283,164 @@ func _beliefs(runtime: WyrdRuntime) -> Dictionary:
 	return out
 
 
-func _trace(runtime: WyrdRuntime) -> Array:
-	return runtime.trace.events
+func _trace(runtime: WyrdRuntime, skip_cache: bool = false) -> Array:
+	if not skip_cache:
+		return runtime.trace.events
+	var out: Array = []
+	for row in runtime.trace.events:
+		if String(row.get("kind", "")) == "social_cache":
+			continue
+		out.append(row)
+	return out
+
+
+const _RUMORS := """
+language 1
+facts
+  harbor.toll_fate : symbol stored
+  player.coins : int stored
+quest harbor_guild "The Harbor Guild"
+  stage post
+"""
+
+
+func _two_rumors() -> Dictionary:
+	var runtime := _open_rumors(true)
+	runtime.config().scheduler_work_per_tick = 1
+	runtime.config().scheduler_share_waits = 0
+	runtime.config().scheduler_share_rumor = 1
+	runtime.config().scheduler_share_publish = 0
+	runtime.config().scheduler_share_cache = 0
+	runtime.facts.set(&"harbor.toll_fate", &"lost_at_sea")
+	runtime.facts.set(&"player.coins", 4)
+	_speak(runtime, &"whispered", &"line_fisher", &"dock")
+	runtime.tick(0)
+	_speak(runtime, &"arrived", &"storm_watcher", &"dock")
+	_speak(runtime, &"paid", &"storm_watcher", &"gullhaven")
+	return JSON.parse_string(JSON.stringify(runtime.save_state()))
+
+
+func _open_rumors(every_policy: bool) -> WyrdRuntime:
+	var path := "user://wyrd_m8_schema3_policy.wyrd"
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	assert_not_null(file)
+	file.store_string(_RUMORS)
+	file.close()
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"harbor"
+	manifest.language_version = 1
+	manifest.files = PackedStringArray([path])
+	var runtime := WyrdRuntime.new()
+	var host := WyrdFakeHost.new()
+	host.register_into(runtime)
+	runtime.set_meta(&"host", host)
+	var report := runtime.load_content(manifest)
+	assert_true(report.ok, report.diagnostics.format())
+	runtime.start_new_game(4)
+	runtime.social.set_cache(false)
+	host.spatial.set_precision(&"gullhaven", &"coarse")
+	host.spatial.set_precision(&"dock", &"precise")
+	host.spatial.set_place(&"line_fisher", &"dock")
+	host.spatial.set_place(&"dock_hand", &"dock")
+	host.spatial.set_place(&"ferry_master", &"dock")
+	host.spatial.set_place(&"storm_watcher", &"gullhaven")
+	host.spatial.set_place(&"dock_apprentice", &"dock")
+	runtime.social.set_kind(&"line_fisher", &"dock_hand", &"friend")
+	runtime.social.set_kind(&"dock_hand", &"ferry_master", &"friend")
+	runtime.social.set_kind(&"storm_watcher", &"dock_apprentice", &"friend")
+	if every_policy:
+		_policy(runtime, &"harbor_toll", PackedStringArray(["whispered"]), 2)
+		_policy(runtime, &"harbor_bell", PackedStringArray(["paid"]), 1)
+	_policy(runtime, &"harbor_whisper", PackedStringArray(["arrived"]), 1)
+	runtime.trace.enabled = true
+	return runtime
+
+
+func _policy(runtime: WyrdRuntime, id: StringName, verbs: PackedStringArray, hops: int) -> void:
+	var policy := WyrdRumorPolicy.new()
+	policy.id = id
+	policy.kinds = PackedStringArray(["friend"])
+	policy.max_hops = hops
+	policy.pass_chance = 1.0
+	policy.verbs = verbs
+	policy.mutations = [_change()]
+	runtime.register_rumor_policy(policy)
+
+
+func _speak(runtime: WyrdRuntime, verb: StringName, actor: StringName, place: StringName) -> void:
+	runtime.perception_claim("harbor.toll_fate", &"stolen")
+	runtime.deeds.record(verb, actor, &"", place)
+	runtime.clear_perception_claim()
+
+
+func _rumor_deeds(runtime: WyrdRuntime) -> Dictionary:
+	var found := {}
+	var flight: Dictionary = runtime.rumors.export_state()
+	for bag_name in ["jobs", "reach", "held", "gone", "seen", "queued"]:
+		var rows: Variant = flight.get(bag_name, [])
+		if not (rows is Array):
+			continue
+		for item in rows:
+			if item is Dictionary:
+				found[str((item as Dictionary).get("deed", ""))] = true
+	for token in _list_of(flight.get("drawn", [])):
+		found[_pair_deed(token)] = true
+	return found
+
+
+func _token_deeds(runtime: WyrdRuntime) -> Dictionary:
+	var found := {}
+	for token in runtime.scheduler().carry_tokens("rumor"):
+		found[_token_deed(token)] = true
+	return found
+
+
+func _token_rows(runtime: WyrdRuntime, deed_id: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for token in runtime.scheduler().carry_tokens("rumor"):
+		if _token_deed(token) == deed_id:
+			out.append(token)
+	return out
+
+
+func _token_deed(token: String) -> String:
+	var parts := token.split("\t")
+	if parts.size() >= 2 and parts[0] == "reach":
+		return parts[1]
+	if parts.is_empty():
+		return ""
+	return parts[0]
+
+
+func _pair_deed(token: String) -> String:
+	var cut := token.find("\t")
+	if cut < 0:
+		return token
+	return token.substr(0, cut)
+
+
+func _list_of(raw: Variant) -> Array:
+	if raw is Array:
+		return raw
+	return []
+
+
+func _job_policy(runtime: WyrdRuntime, deed_id: String) -> String:
+	for item in _list_of(runtime.rumors.export_state().get("jobs", [])):
+		if item is Dictionary and str((item as Dictionary).get("deed", "")) == deed_id:
+			return str((item as Dictionary).get("policy", ""))
+	return ""
+
+
+func _rows_for(runtime: WyrdRuntime, policy_id: String) -> Array:
+	var out: Array = []
+	for row in runtime.trace.events:
+		var kind := String(row.get("kind", ""))
+		if not kind.begins_with("rumor_"):
+			continue
+		if String(row.get("path", "")) == policy_id:
+			out.append(row)
+	return out
 
 
 func _compile(runtime: WyrdRuntime, text: String) -> WyrdCompiledCondition:
