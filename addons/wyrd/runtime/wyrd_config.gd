@@ -12,7 +12,8 @@ extends Resource
 ## [member scheduler_tick_minutes], [member scheduler_share_waits],
 ## [member scheduler_share_rumor], [member scheduler_share_publish],
 ## [member scheduler_share_cache], [member scheduler_frame_warn_usec],
-## [member rumor_coarse_minutes], [member credibility_threshold],
+## [member rumor_coarse_minutes], [member publish_catchup_max],
+## [member credibility_threshold],
 ## [member compact_after],
 ## [member secrecy_tiers], [member secrecy_fact], and [member trace_director].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
@@ -46,6 +47,10 @@ extends Resource
 ## Game minutes between coarse rumor rises. The default is 60, one game hour.
 ## [code]0[/code] or a negative value disables those rises. Not saved.
 @export var rumor_coarse_minutes: int = 60
+## Missed issues one visit may enqueue per document, oldest first.
+## The default is 3. [code]0[/code] or a negative value enqueues none.
+## Issues past the cap in that visit are skipped. Not saved.
+@export var publish_catchup_max: int = 3
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5
 ## 0 leaves the log until the host calls [method WyrdDeedLog.compact]. Not saved.

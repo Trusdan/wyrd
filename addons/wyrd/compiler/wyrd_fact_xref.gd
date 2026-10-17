@@ -458,6 +458,8 @@ func _readers(units: Array) -> Array:
 			for step in sequence.steps:
 				if step.where_cond != null:
 					_push(rows, step.where_cond.reads, "sequence", sequence.id, path, step.line, step.col)
+		for document in file.documents:
+			_push(rows, document.reads, "document", document.id, path, document.line, document.col)
 	return rows
 
 

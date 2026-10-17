@@ -1,7 +1,7 @@
 class_name WyrdStatements
 extends RefCounted
 
-## Walks a block tree and emits quest, scene, storylet, and effect records.
+## Walks a block tree and emits quest, scene, storylet, document, and effect records.
 ##
 ## @experimental
 ## Conditions reuse [WyrdCondition]. Prose reuses [WyrdInterp].
@@ -66,6 +66,7 @@ func compile(
 	var seen_roles := {}
 	var seen_storylets := {}
 	var seen_sequences := {}
+	var seen_documents := {}
 	for child in tree.children:
 		if child.keyword == "quest":
 			var quest := _quest(child)
@@ -105,7 +106,212 @@ func compile(
 			seen_sequences[sequence.id] = true
 			file.sequences.append(sequence)
 			WyrdStmtSpan.add_reads(file.reads, sequence.reads)
+		elif child.keyword == "document":
+			var document := _compile_document(child)
+			if document.id.is_empty():
+				continue
+			if seen_documents.has(document.id):
+				_error(WyrdDiagnostic.E_DOCUMENT_DUPLICATE, "duplicate document \"%s\"" % document.id, document.line, document.col)
+				continue
+			seen_documents[document.id] = true
+			file.documents.append(document)
+			WyrdStmtSpan.add_reads(file.reads, document.reads)
 	return file
+
+
+func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
+	var document := WyrdDocumentDef.new()
+	document.take_span(node)
+	document.title = node.title
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a line tag is not allowed on a document", node.start_line, node.start_col)
+	var items := node.head
+	var ident := _dotted_at(items, 0)
+	document.id = String(ident["name"])
+	var cursor := int(ident["next"])
+	if document.id.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs an id", node.start_line, node.start_col)
+		document.id = ""
+		return document
+	if not _is_word(items, cursor, "publishes_by"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs publishes_by", node.start_line, node.start_col)
+		document.id = ""
+		return document
+	cursor += 1
+	var group := _dotted_at(items, cursor)
+	document.group = String(group["name"])
+	cursor = int(group["next"])
+	if document.group.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs a group", node.start_line, node.start_col)
+		document.id = ""
+		return document
+	if not _is_word(items, cursor, "every"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs every", node.start_line, node.start_col)
+		document.id = ""
+		return document
+	cursor += 1
+	var period := _duration(items, cursor)
+	cursor = int(period["next"])
+	if not bool(period["ok"]):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, String(period["message"]), int(period["line"]), int(period["col"]))
+		document.id = ""
+		return document
+	document.period_minutes = int(period["minutes"])
+	if document.period_minutes <= 0:
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document period must be greater than zero", int(period["line"]), int(period["col"]))
+		document.id = ""
+		return document
+	if not _is_word(items, cursor, "delay"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs delay", node.start_line, node.start_col)
+		document.id = ""
+		return document
+	cursor += 1
+	var delay := _duration(items, cursor)
+	cursor = int(delay["next"])
+	if not bool(delay["ok"]):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, String(delay["message"]), int(delay["line"]), int(delay["col"]))
+		document.id = ""
+		return document
+	document.delay_minutes = int(delay["minutes"])
+	if cursor != items.size():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unexpected token on a document", items[cursor].line, items[cursor].col)
+		document.id = ""
+		return document
+	var seen := {}
+	for child in node.children:
+		if not child.line_tag.is_empty():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a line tag is not allowed on a document", child.start_line, child.start_col)
+		var field := child.keyword
+		if field == "fragment":
+			_document_fragment(child, document)
+			continue
+		if field != "claim" and field != "fact" and field != "verb":
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unknown document field \"%s\"" % field, child.start_line, child.start_col)
+			continue
+		if seen.has(field):
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "duplicate document field \"%s\"" % field, child.start_line, child.start_col)
+			continue
+		seen[field] = true
+		if not child.children.is_empty():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document field \"%s\" cannot contain a block" % field, child.start_line, child.start_col)
+			continue
+		var named := _dotted_at(child.head, 0)
+		var key := String(named["name"])
+		if key.is_empty() or int(named["next"]) != child.head.size():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document field \"%s\" needs a value" % field, child.start_line, child.start_col)
+			continue
+		if field == "verb":
+			document.verb_filter = key
+			continue
+		_document_fact(child, document, field, key)
+	return document
+
+
+func _document_fact(node: WyrdNode, document: WyrdDocumentDef, field: String, key: String) -> void:
+	var fact := _schema.lookup(key.split(".")) if _schema != null else null
+	if fact == null:
+		_error(WyrdDiagnostic.E_UNKNOWN_FACT, "unknown fact \"%s\"" % key, node.start_line, node.start_col)
+		return
+	if field == "fact" and (fact.origin != &"stored" or fact.type_name != &"symbol"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document fact \"%s\" must be a stored symbol" % key, node.start_line, node.start_col)
+		return
+	if field == "claim":
+		document.claim_key = key
+	else:
+		document.fact_key = key
+	if not document.reads.has(StringName(key)):
+		document.reads.append(StringName(key))
+
+
+func _document_fragment(node: WyrdNode, document: WyrdDocumentDef) -> void:
+	if node.head.is_empty() or not _is_word(node.head, 0, "when"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "fragment needs when", node.start_line, node.start_col)
+		return
+	var span := _span_text(node.head, 1, node.head.size())
+	var built := _expr(String(span["text"]), int(span["line"]), int(span["col"]), _STORY, true, &"", document.reads)
+	var slant := ""
+	var found := false
+	for child in node.children:
+		if child.keyword != "slant" or found:
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "fragment needs one slant", child.start_line, child.start_col)
+			continue
+		found = true
+		if not child.children.is_empty():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "slant cannot contain a block", child.start_line, child.start_col)
+			continue
+		var named := _dotted_at(child.head, 0)
+		slant = String(named["name"])
+		if slant.is_empty() or int(named["next"]) != child.head.size():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "slant needs a symbol", child.start_line, child.start_col)
+			slant = ""
+	if not found:
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "fragment needs slant", node.start_line, node.start_col)
+		return
+	if slant.is_empty() or built["compiled"] == null:
+		return
+	document.fragments.append({"slant": slant, "when": built["compiled"]})
+
+
+func _duration(items: Array[WyrdToken], start: int) -> Dictionary:
+	var line := 1
+	var col := 1
+	if start < items.size():
+		line = items[start].line
+		col = items[start].col
+	elif not items.is_empty():
+		line = items[items.size() - 1].line
+		col = items[items.size() - 1].col
+	var missing := {
+		"col": col,
+		"line": line,
+		"message": "duration needs a number and a unit",
+		"minutes": -1,
+		"next": start,
+		"ok": false,
+	}
+	if start >= items.size() or items[start].kind != &"int":
+		return missing
+	var count := int(items[start].text)
+	var unit_at := start + 1
+	if unit_at >= items.size() or items[unit_at].kind != &"ident":
+		missing["next"] = unit_at
+		missing["line"] = items[start].line
+		missing["col"] = items[start].col
+		return missing
+	var scale := _unit_scale(items[unit_at].text)
+	if scale < 0:
+		return {
+			"col": items[unit_at].col,
+			"line": items[unit_at].line,
+			"message": "unknown duration unit \"%s\"" % items[unit_at].text,
+			"minutes": -1,
+			"next": unit_at + 1,
+			"ok": false,
+		}
+	return {
+		"col": items[start].col,
+		"line": items[start].line,
+		"message": "",
+		"minutes": count * scale,
+		"next": unit_at + 1,
+		"ok": true,
+	}
+
+
+func _unit_scale(unit: String) -> int:
+	match unit:
+		"minute", "minutes":
+			return 1
+		"hour", "hours":
+			return 60
+		"day", "days":
+			return 1440
+		_:
+			return -1
+
+
+func _is_word(items: Array[WyrdToken], index: int, word: String) -> bool:
+	return index >= 0 and index < items.size() and items[index].kind == &"ident" and items[index].text == word
 
 
 func _compile_role(node: WyrdNode) -> WyrdRoleDef:

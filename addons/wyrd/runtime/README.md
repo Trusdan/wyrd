@@ -17,6 +17,7 @@ Exported games must include `*.wyrd` and the manifest in the export filter. Ther
 - `deeds` — `record(...)`. Decay, `deed_count`, and `deed_score` read the log.
 - `social` — baselines, kinds, `axis`, `disposition`, and an optional formula.
 - `rumors` — precise hops, coarse reach, and per-hop mutations for a registered `WyrdRumorPolicy`. One unit offers one deed to one listener, or raises one reach level. A heard rumor writes the mutated copy to `believed/<listener>` only. See `runtime/rumor/README.md`.
+- `publish` — periodic document issues. One unit freezes one issue. `deeds_known_to(group, since, filter)` reads the witness index. See `runtime/publish/README.md`.
 - `roles` — `assign`, `vacate`, `define`, `tell`, `begin_quest`, `enter_stage`, `holder`, and `slot_state`.
 - `quests` — status, stage, outcome, journal, `abandon`, `request_host_step`, `complete_host_step`, `register_date_formatter`. Signals: `quest_state_changed`, `stage_changed`, `journal_entry_added`, `content_unavailable`, `host_step_requested`.
 - `dialogue` — `open_scene`, `advance`, `choose`, `abort`, `register_line_audio`, `can_save`. Signals: `line_ready`, `choices_ready`, `scene_ended`.

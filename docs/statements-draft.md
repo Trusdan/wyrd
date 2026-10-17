@@ -308,6 +308,30 @@ role ferry_master
 | `E_ROLE_SYNTAX` | The role header or a field value is the wrong shape |
 | `E_ROLE_DUPLICATE` | The same role id is declared twice |
 
+## Document
+
+A top-level `document` block publishes a frozen issue on a period. `document` and `publishes_by` stay reserved as identifiers. `create document` stays `E_EFFECT_NOT_IN_SLICE`. Pages, read effects, and `Wyrd.documents.open` are not in this slice.
+
+```wyrd
+document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day delay 1 hour
+  claim harbor.toll_fate
+  fact harbor.gazette
+  verb whispered
+  fragment when held(harbor_guild, harbor.toll_fate)
+    slant lost_at_sea
+```
+
+The header is `document <id> ["<title>"] publishes_by <group> every <number> <unit> delay <number> <unit>`. The title is optional. Units are `minute` or `minutes`, `hour` or `hours`, and `day` or `days`. A minute is one game minute, an hour is 60, and a day is 1440. The period must be greater than zero. The delay may be zero. `claim` is the fact whose believed, known, or world value the issue copies. `fact` is a stored symbol that receives one line per issue. `verb` is the `deeds_known_to` filter. Each is optional and may appear once. A `fragment` is `when <condition>` and one `slant <symbol>` child. The first true fragment wins.
+
+| Code | When |
+|---|---|
+| `E_DOCUMENT_SYNTAX` | The header, a duration, a field, or a fragment is the wrong shape |
+| `E_DOCUMENT_DUPLICATE` | The same document id is declared twice |
+| `E_UNKNOWN_FACT` | `claim` or `fact` names a key the schema does not have |
+| `E_RESERVED_WORD` | `document` or `publishes_by` is used as an identifier |
+
+The runtime rules for the witness index, the claim pick, the catch-up cap, and the schema 2 fact are in `addons/wyrd/runtime/publish/README.md`.
+
 ## Not in this draft
 
 Role definitions are compiled from a `role` block. `unwilling`, `barred`, `locked_gone`, and `contested` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, `election`, and `vacancy: abolish` run. `cast(<condition>)` asks `WyrdWorldAdapter.candidates` once when the quest starts, keeps the ids the condition accepts, and freezes a seeded pick. No survivor leaves the slot `empty`. The freeze is saved with the other slot locks. One `cast` line is logged. `wyrd roles` prints a sorted table of every role (holder, status, strategy, pending or abolished, frozen slots). `--prefix` keeps ids that start with that text. Resolving `redirect beat` stays later. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

@@ -137,7 +137,7 @@ Approved by Corey, 2026-10-14. Items 1–4 and 6–9 are the frozen lexical and 
 6. **Prose escapes.** `{{` is the only escape for `{`. A stray `}` is literal. There is no `}}` escape and no backslash escape in prose.
 7. **Titles.** Inside double-quoted titles, `\"` escapes a quote and `\\` escapes a backslash.
 8. **Header.** `language 1` is required. Anything else is an error.
-9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. The word `await_host` stays reserved (it is not a legal identifier). Its statement form is in section 9. No syntax is defined here for the other reserved words.
+9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. The word `await_host` stays reserved (it is not a legal identifier). Its statement form is in section 9. `document` and `publishes_by` stay reserved as identifiers. Their block form is in section 10. No syntax is defined here for `tier`, `believe`, `declare`, or `retract`.
 10. **Examples.** The quest, scene, and facts examples remain illustrations until the slice compiler.
 
 ## 9. `await_host`
@@ -153,3 +153,7 @@ await_host <screen_id> returns { <field>, <field> }
 `<screen_id>` is an identifier. `<field>` names are identifiers. The braces are the returns list, not prose interpolation. There is no condition, no block, and no nested effects. An empty `{}` is allowed. A field name may appear only once.
 
 The compiler stores the step on the stage. At stage entry the runtime pauses remaining entry steps, calls `request_host_step`, and emits `host_step_requested`. `complete_host_step` stores the returned fields and resumes the steps that follow. A save is refused while a scene is open; a waiting host step is stored and resumed after load.
+
+## 10. `document`
+
+**Status: draft statement syntax. Sections 1–6 stay frozen.** `document` and `publishes_by` remain reserved words (section 6) and are not legal identifiers. A top-level block may use them. The shape, the duration units, and the fragment fields are in `docs/statements-draft.md`. `create document` is still not an effect in this slice.
