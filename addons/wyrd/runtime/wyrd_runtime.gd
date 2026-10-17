@@ -1017,6 +1017,28 @@ func trace_director_candidate(fields: Dictionary) -> void:
 	print(WyrdDirector.format_candidate(fields))
 
 
+## One line per index read. Logged only while tracing is on.
+## [code]ids[/code] is the count the index returned, before secrecy, when, and cooldown.
+## [code]key[/code] is the scope id, empty for a bark. Load does not log one.
+## Replay skips it. A null index does not log one.
+func trace_storylet_index(scope_text: String, scope_id: String, speaker: String, count: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"ids": count,
+		"key": scope_id,
+		"scope": scope_text,
+		"speaker": speaker,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("storylet_index", fields)
+	var spoken := speaker
+	if spoken.is_empty():
+		spoken = "-"
+	print("wyrd storylet_index scope=%s speaker=%s ids=%d" % [scope_text, spoken, count])
+
+
 func trace_director(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return

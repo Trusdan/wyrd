@@ -43,6 +43,10 @@ extends RefCounted
 ## filters. When [member WyrdConfig.trace_director] is true and tracing is on,
 ## each scope-and-speaker match logs one [code]director_candidate[/code] line
 ## before that summary. The line carries the score and the first failing clause.
+##
+## The id list comes from the link-time storylet index: one sorted list per
+## scope kind, scope id, and speaker, plus the [code]any[/code] speaker bucket.
+## A bark query still runs inside this call. A null index scans every storylet.
 
 const STREAM: StringName = &"storylet_director"
 const WILDCARD := "any"
@@ -209,10 +213,10 @@ func candidate_rows(scope_kind: String, scope_id: String = "", speaker: String =
 	if not _known_scope(kind):
 		return rows
 	var scope_text := _scope_text(kind, scope_id)
-	var ids: Array = _runtime.content().storylets.keys()
-	ids.sort()
-	for id in ids:
-		var found: Variant = _runtime.content().storylets[id]
+	var ids := _story_ids(kind, scope_id, speaker)
+	for raw_id in ids:
+		var id := String(raw_id)
+		var found: Variant = _runtime.content().storylets.get(id, null)
 		if not (found is WyrdStoryletDef):
 			continue
 		var story: WyrdStoryletDef = found
@@ -378,10 +382,10 @@ func _eligible(kind: StringName, scope_id: String, speaker: String) -> Array:
 	var matched: Array = []
 	if _runtime == null or _runtime.content() == null:
 		return matched
-	var ids: Array = _runtime.content().storylets.keys()
-	ids.sort()
-	for id in ids:
-		var found: Variant = _runtime.content().storylets[id]
+	var ids := _story_ids(kind, scope_id, speaker)
+	for raw_id in ids:
+		var id := String(raw_id)
+		var found: Variant = _runtime.content().storylets.get(id, null)
 		if not (found is WyrdStoryletDef):
 			continue
 		var story: WyrdStoryletDef = found
@@ -471,6 +475,28 @@ func _compare(a: WyrdStoryletDef, b: WyrdStoryletDef) -> int:
 	if last_a != last_b:
 		return 1 if last_a < last_b else -1
 	return 0
+
+
+func _story_ids(kind: StringName, scope_id: String, speaker: String) -> PackedStringArray:
+	var index: WyrdStoryletIndex = null
+	if _runtime != null and _runtime.content() != null:
+		index = _runtime.content().storylet_index
+	if index == null:
+		return _scan_ids()
+	var ids := index.ids_for(kind, scope_id, speaker)
+	_runtime.trace_storylet_index(_scope_text(kind, scope_id), "" if kind == &"bark" else scope_id, speaker, ids.size())
+	return ids
+
+
+func _scan_ids() -> PackedStringArray:
+	var ids := PackedStringArray()
+	if _runtime == null or _runtime.content() == null:
+		return ids
+	var names: Array = _runtime.content().storylets.keys()
+	names.sort()
+	for raw_id in names:
+		ids.append(String(raw_id))
+	return ids
 
 
 func _scope_matches(story: WyrdStoryletDef, kind: StringName, scope_id: String) -> bool:

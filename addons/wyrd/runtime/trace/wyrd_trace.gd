@@ -35,6 +35,10 @@ var enabled: bool = false
 ## A console line is one playtest command. path is console. key is the target.
 ## role is set for kill, vacate, and replace. source is console.
 ## Replay skips it. Load does not log one.
+## A storylet_index line is one index read. scope is the scope text.
+## speaker is the query speaker. key is the scope id, empty for a bark.
+## ids is the count returned before secrecy, when, and cooldown.
+## Replay skips it. Load does not log one. A null index does not log one.
 var prefix: String = ""
 var events: Array[Dictionary] = []
 
@@ -84,7 +88,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(int(row.get("minutes", 0)))
-			"console":
+			"console", "storylet_index":
 				pass
 			_:
 				pass
