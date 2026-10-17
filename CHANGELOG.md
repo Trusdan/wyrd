@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Deed rows are indexed by witness and by hour bucket. A witness is the knower of that deed, and `saw`, `heard`, and `inferred` share one list. Snapshot deed, social, and precedence reads use the indexes. A prefix visits only names that can start the row key. Precedence reads the name lists and does not walk every deed. The rows match a full scan. The indexes are not saved. Schema stays 2.
 - Storylet queries read a link-time index of sorted ids per scope kind, scope id, and speaker, plus a bucket for speaker `any`. The winners match a full scan. A bark query still runs inside the call. The index is not saved. Schema stays 2.
 - The proposed `memory.peak` warning budget is 384 MiB, sized for an 8 GB laptop. It still warns only.
 - The seeded scale pack adds a storylet sibling: 4,000 storylets across 80 topics and 20 speakers at full scale, one tenth of each count for smoke. `director.query`, `director.why_not`, and `compile.tie_lint` join the bench. `debug.snapshot` times one full inspector build after the scale facts are stored and the deed log is imported. `debug.snapshot_page` times one filtered page (`harbor.scale_000`, offset 0, limit 50) across every section, and `debug.snapshot_section` times that page for facts only. A snapshot builds only the requested sections and applies the prefix while collecting rows. `director.query_coverage` times the same 32-topic query with coverage counting on. Absolute budgets warn. Pull requests still do not run the suite. A base harness that does not know a metric records the head timing only.

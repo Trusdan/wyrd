@@ -12,6 +12,9 @@ extends RefCounted
 ## sorted and paged. [param offset] and [param limit] page those rows.
 ## [code]limit[/code] of 0 returns the rest.
 ## One [code]debug_snapshot[/code] line is logged when tracing is on.
+## Deed, social, and precedence reads use the witness and time-bucket indexes.
+## One [code]deed_index[/code] line is logged per section when tracing is on.
+## Turning deed lookup off walks every row and does not log that line.
 
 const SECTIONS: PackedStringArray = [
 	"facts",
@@ -245,7 +248,7 @@ func _dirty(prefix: String) -> Array:
 func _deeds(prefix: String) -> Array:
 	var rows: Array = []
 	var filtering := not prefix.is_empty()
-	for index in _runtime.deeds.size():
+	for index in _deed_rows(prefix):
 		if filtering:
 			var key := "%s/%s/%s" % [
 				String(_runtime.deeds.actor_at(index)),
@@ -288,7 +291,7 @@ func _social(prefix: String) -> Array:
 		if item is Dictionary:
 			var row: Dictionary = item
 			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")), prefix)
-	for index in _runtime.deeds.size():
+	for index in _pair_rows(prefix):
 		var actor := String(_runtime.deeds.actor_at(index))
 		if actor.is_empty():
 			continue
@@ -327,12 +330,18 @@ func _precedence(prefix: String) -> Array:
 		var binding: Variant = bindings[role]
 		if binding is Dictionary:
 			_note_agent(agents, String((binding as Dictionary).get("holder", "")), prefix)
-	for index in _runtime.deeds.size():
-		var actor := String(_runtime.deeds.actor_at(index))
-		_note_agent(agents, actor, prefix)
-		_note_agent(agents, String(_runtime.deeds.target_at(index)), prefix)
-		for witness in _runtime.deeds.witnesses_at(index):
-			_note_agent(agents, witness, prefix)
+	if _runtime.deeds.lookup_enabled():
+		var names := _runtime.deeds.agent_names(prefix)
+		_trace_deed_index("precedence", prefix, names.size())
+		for name in names:
+			_note_agent(agents, String(name), prefix)
+	else:
+		for index in _runtime.deeds.size():
+			var actor := String(_runtime.deeds.actor_at(index))
+			_note_agent(agents, actor, prefix)
+			_note_agent(agents, String(_runtime.deeds.target_at(index)), prefix)
+			for witness in _runtime.deeds.witnesses_at(index):
+				_note_agent(agents, witness, prefix)
 	var rows: Array = []
 	for agent in agents.keys():
 		var groups: Array = []
@@ -435,6 +444,34 @@ func _note_agent(agents: Dictionary, agent: String, prefix: String) -> void:
 	if agent.is_empty() or not _text_matches(agent, prefix):
 		return
 	agents[agent] = true
+
+
+func _deed_rows(prefix: String) -> PackedInt32Array:
+	if not _runtime.deeds.lookup_enabled():
+		return _every_deed_row()
+	var found := _runtime.deeds.rows_for_deed_prefix(prefix)
+	_trace_deed_index("deeds", prefix, found.size())
+	return found
+
+
+func _pair_rows(prefix: String) -> PackedInt32Array:
+	if not _runtime.deeds.lookup_enabled():
+		return _every_deed_row()
+	var found := _runtime.deeds.rows_for_pair_prefix(prefix)
+	_trace_deed_index("social", prefix, found.size())
+	return found
+
+
+func _every_deed_row() -> PackedInt32Array:
+	var rows := PackedInt32Array()
+	rows.resize(_runtime.deeds.size())
+	for index in rows.size():
+		rows[index] = index
+	return rows
+
+
+func _trace_deed_index(scope_name: String, prefix: String, count: int) -> void:
+	_runtime.trace_deed_index(scope_name, prefix, count)
 
 
 func _trace(all_sections: bool, names: Array, prefix: String, offset: int, limit: int, rows: int) -> void:

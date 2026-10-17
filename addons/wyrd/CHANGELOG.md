@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Deed rows are indexed by witness and by hour bucket. A witness is the knower of that deed, and `saw`, `heard`, and `inferred` share one list. Snapshot deed, social, and precedence reads use the indexes. A prefix visits only names that can start the row key. Precedence reads the name lists and does not walk every deed. The rows match a full scan. The indexes are not saved. Schema stays 2.
 - Storylet queries read a link-time index of sorted ids per scope kind, scope id, and speaker, plus a bucket for speaker `any`. The winners match a full scan. A bark query still runs inside the call. The index is not saved. Schema stays 2.
 - The proposed `memory.peak` warning budget is 384 MiB, sized for an 8 GB laptop. It still warns only.
 - The scale bench times director query, why-not, storylet tie-lint, a full debug snapshot, a filtered snapshot page, a single-section facts page, and the same query with coverage counting on. Budgets warn.

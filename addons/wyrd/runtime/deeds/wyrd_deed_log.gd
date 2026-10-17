@@ -5,6 +5,12 @@ extends RefCounted
 ##
 ## @experimental
 ## Rows are parallel packed arrays. Indexes are by actor, target, and verb.
+## A witness index stores each witness once per deed. That witness is the
+## knower of the deed. [code]saw[/code], [code]heard[/code], and
+## [code]inferred[/code] share the list. The mode stays on the row.
+## Time buckets use [member WyrdConfig.hour_bucket_minutes]. Each row is stored
+## once. [method set_lookup] false makes scans walk every row instead.
+## Neither index is saved.
 ## [code]now[/code] is bucketed with [member WyrdConfig.hour_bucket_minutes].
 ## Memorable rows keep full magnitude. A half-life of 0 does not decay.
 ## Sums are rounded to 6 decimal places before they are returned.
@@ -46,6 +52,13 @@ var _modes: PackedStringArray = PackedStringArray()
 var _by_actor: Dictionary = {}
 var _by_target: Dictionary = {}
 var _by_verb: Dictionary = {}
+## Witness name to deed rows. Each witness is a knower of that deed. Not saved.
+var _by_witness: Dictionary = {}
+## Hour bucket to deed rows. Not saved.
+var _by_time: Dictionary = {}
+var _time_width: int = -1
+## False selects a full row walk. The indexes stay built.
+var _lookup: bool = true
 ## Bumps when the rows change. Combined with the decay bucket for relationship caches.
 var _gen: int = 1
 
@@ -169,6 +182,8 @@ func _append_stored(row: Dictionary) -> void:
 	_index(_by_actor, StringName(_actor[index]), index)
 	_index(_by_target, StringName(_target[index]), index)
 	_index(_by_verb, StringName(_verb[index]), index)
+	_index_witnesses(index)
+	_note_time(index)
 
 
 func _compact_plan() -> Dictionary:
@@ -299,6 +314,9 @@ func clear() -> void:
 	_by_actor.clear()
 	_by_target.clear()
 	_by_verb.clear()
+	_by_witness.clear()
+	_by_time.clear()
+	_time_width = -1
 	_gen += 1
 
 
@@ -358,6 +376,8 @@ func record(
 	_index(_by_actor, actor, row)
 	_index(_by_target, target, row)
 	_index(_by_verb, verb, row)
+	_index_witnesses(row)
+	_note_time(row)
 	_gen += 1
 	var deed := row_at(row)
 	deed_recorded.emit(deed)
@@ -406,6 +426,82 @@ func witnessed(index: int, agent: StringName) -> bool:
 	return _has_in(_witnesses, _wit_at[index], _wit_n[index], String(agent))
 
 
+## False makes snapshot and [code]within[/code] scans walk rows instead of the indexes.
+func set_lookup(enabled: bool) -> void:
+	_lookup = enabled
+
+
+func lookup_enabled() -> bool:
+	return _lookup
+
+
+## UTF-8 size of witness names and time-bucket labels, plus 4 bytes per stored row ref.
+## Actor, target, and verb indexes are not included. Each deed row is stored once
+## per witness and once in its time bucket.
+func index_text_bytes() -> int:
+	_ensure_time()
+	return _table_text(_by_witness, false) + _table_text(_by_time, true)
+
+
+func witness_buckets() -> int:
+	return _by_witness.size()
+
+
+func witness_refs() -> int:
+	return _ref_count(_by_witness)
+
+
+func time_buckets() -> int:
+	_ensure_time()
+	return _by_time.size()
+
+
+func time_refs() -> int:
+	_ensure_time()
+	return _ref_count(_by_time)
+
+
+## Deed rows whose actor can start [code]actor/verb/target[/code] for [param prefix].
+## An empty prefix is every row, grouped by time bucket.
+func rows_for_deed_prefix(prefix: String) -> PackedInt32Array:
+	_ensure_time()
+	if prefix.is_empty():
+		return _all_time_rows()
+	var merged := _rows_for_names(_by_actor, prefix)
+	if prefix.begins_with("/"):
+		_append_empty_actors(merged)
+	return merged
+
+
+## Deed rows whose target or witness can start [code]source/actor[/code] for [param prefix].
+## An empty prefix is every row.
+func rows_for_pair_prefix(prefix: String) -> PackedInt32Array:
+	_ensure_time()
+	if prefix.is_empty():
+		return _all_time_rows()
+	var seen := {}
+	var merged := PackedInt32Array()
+	_collect_named(_by_target, prefix, seen, merged)
+	_collect_named(_by_witness, prefix, seen, merged)
+	return merged
+
+
+## Actor, target, and witness names that begin with [param prefix].
+func agent_names(prefix: String) -> PackedStringArray:
+	var seen := {}
+	var names := PackedStringArray()
+	for table in [_by_actor, _by_target, _by_witness]:
+		for key in (table as Dictionary).keys():
+			var name := String(key)
+			if name.is_empty() or seen.has(name):
+				continue
+			if not prefix.is_empty() and not name.begins_with(prefix):
+				continue
+			seen[name] = true
+			names.append(name)
+	return names
+
+
 func weight_at(index: int) -> float:
 	if _memorable[index] != 0:
 		return _magnitude[index]
@@ -440,6 +536,23 @@ func mode_of(agent: StringName, verb: StringName) -> StringName:
 	if agent == &"" or verb == &"":
 		return &""
 	var who := String(agent)
+	if not _lookup:
+		return _mode_of_scan(who, verb)
+	var rows := PackedInt32Array()
+	if _by_witness.has(who):
+		rows = _by_witness[who]
+	for step in range(rows.size() - 1, -1, -1):
+		var index := int(rows[step])
+		if StringName(_verb[index]) != verb:
+			continue
+		var at := int(_wit_at[index])
+		for offset in int(_wit_n[index]):
+			if _witnesses[at + offset] == who:
+				return StringName(_modes[at + offset])
+	return &""
+
+
+func _mode_of_scan(who: String, verb: StringName) -> StringName:
 	for index in range(size() - 1, -1, -1):
 		if StringName(_verb[index]) != verb:
 			continue
@@ -467,7 +580,7 @@ func _scan(
 	var target_name := _opt_name(target)
 	var place_name := _opt_name(place)
 	var now := _now()
-	var rows := _candidates(actor, verb_name, target_name)
+	var rows := _candidates(actor, verb_name, target_name, within, now)
 	var count := 0
 	var total := 0.0
 	for index in rows:
@@ -507,7 +620,7 @@ func _hit(
 	return true
 
 
-func _candidates(actor: StringName, verb: StringName, target: StringName) -> PackedInt32Array:
+func _candidates(actor: StringName, verb: StringName, target: StringName, within: Variant, now: int) -> PackedInt32Array:
 	var best := PackedInt32Array()
 	var chosen := false
 	if actor != &"":
@@ -523,11 +636,15 @@ func _candidates(actor: StringName, verb: StringName, target: StringName) -> Pac
 		if not chosen or rows.size() < best.size():
 			best = rows
 			chosen = true
-	if chosen:
+	if not chosen:
+		if _lookup and within != null:
+			return _rows_in_window(now, int(within))
+		best.resize(_id.size())
+		for i in _id.size():
+			best[i] = i
 		return best
-	best.resize(_id.size())
-	for i in _id.size():
-		best[i] = i
+	if _lookup and within != null:
+		return _intersect(best, _rows_in_window(now, int(within)))
 	return best
 
 
@@ -595,6 +712,140 @@ func _sorted(values: PackedStringArray) -> PackedStringArray:
 	return copy
 
 
+func _index_witnesses(index: int) -> void:
+	var at := int(_wit_at[index])
+	for offset in int(_wit_n[index]):
+		_index(_by_witness, StringName(_witnesses[at + offset]), index)
+
+
+func _note_time(index: int) -> void:
+	var width := _bucket()
+	if width != _time_width:
+		_ensure_time()
+		return
+	_push_time(index)
+
+
+func _ensure_time() -> void:
+	var width := _bucket()
+	if width == _time_width:
+		return
+	_time_width = width
+	_by_time.clear()
+	for i in size():
+		_push_time(i)
+
+
+func _push_time(index: int) -> void:
+	var bucket := _bucketed(int(_t[index]))
+	var rows := PackedInt32Array()
+	if _by_time.has(bucket):
+		rows = _by_time[bucket]
+	rows.append(index)
+	_by_time[bucket] = rows
+
+
+func _all_time_rows() -> PackedInt32Array:
+	var merged := PackedInt32Array()
+	merged.resize(size())
+	var at := 0
+	var buckets: Array = _by_time.keys()
+	buckets.sort()
+	for bucket in buckets:
+		var rows: PackedInt32Array = _by_time[bucket]
+		for row in rows:
+			merged[at] = int(row)
+			at += 1
+	if at != merged.size():
+		merged.resize(at)
+	return merged
+
+
+func _rows_in_window(now: int, within: int) -> PackedInt32Array:
+	_ensure_time()
+	var start := _bucketed(now - within)
+	var merged := PackedInt32Array()
+	for key in _by_time.keys():
+		if int(key) < start:
+			continue
+		var rows: PackedInt32Array = _by_time[key]
+		for row in rows:
+			merged.append(int(row))
+	return merged
+
+
+func _intersect(left: PackedInt32Array, right: PackedInt32Array) -> PackedInt32Array:
+	var gate := {}
+	var small := left
+	var large := right
+	if right.size() < left.size():
+		small = right
+		large = left
+	for row in small:
+		gate[int(row)] = true
+	var merged := PackedInt32Array()
+	for row in large:
+		var index := int(row)
+		if gate.has(index):
+			merged.append(index)
+	return merged
+
+
+func _rows_for_names(table: Dictionary, prefix: String) -> PackedInt32Array:
+	var seen := {}
+	var merged := PackedInt32Array()
+	_collect_named(table, prefix, seen, merged)
+	return merged
+
+
+func _collect_named(table: Dictionary, prefix: String, seen: Dictionary, merged: PackedInt32Array) -> void:
+	for key in table.keys():
+		var name := String(key)
+		if not _name_can_start(name, prefix):
+			continue
+		var rows: PackedInt32Array = table[key]
+		for row in rows:
+			var index := int(row)
+			if seen.has(index):
+				continue
+			seen[index] = true
+			merged.append(index)
+
+
+func _append_empty_actors(merged: PackedInt32Array) -> void:
+	var seen := {}
+	for row in merged:
+		seen[int(row)] = true
+	for index in size():
+		if not String(_actor[index]).is_empty() or seen.has(index):
+			continue
+		merged.append(index)
+
+
+func _name_can_start(name: String, prefix: String) -> bool:
+	if prefix.is_empty() or name.begins_with(prefix):
+		return true
+	if not prefix.begins_with(name):
+		return false
+	return prefix.length() == name.length() or prefix.substr(name.length(), 1) == "/"
+
+
+func _table_text(table: Dictionary, numeric_key: bool) -> int:
+	var total := 0
+	for key in table.keys():
+		var label := str(int(key)) if numeric_key else String(key)
+		total += label.to_utf8_buffer().size()
+		total += (table[key] as PackedInt32Array).size() * 4
+	return total
+
+
+func _ref_count(table: Dictionary) -> int:
+	var total := 0
+	for key in table.keys():
+		total += (table[key] as PackedInt32Array).size()
+	return total
+
+
 func _index(table: Dictionary, key: StringName, row: int) -> void:
 	if key == &"":
 		return
@@ -621,6 +872,8 @@ func _index_table(which: StringName) -> Dictionary:
 			return _by_target
 		"verb":
 			return _by_verb
+		"witness":
+			return _by_witness
 		_:
 			return {}
 
