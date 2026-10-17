@@ -340,6 +340,13 @@ static func _console(args: PackedStringArray) -> Dictionary:
 			failed = true
 		if bool(step["quit"]):
 			break
+	var save_error := _write_console_save(runtime, str(parsed["out"]), failed)
+	if not save_error.is_empty():
+		failed = true
+		if interactive:
+			print(save_error.trim_suffix("\n"))
+		else:
+			chunks.append(save_error.trim_suffix("\n"))
 	var lines := PackedStringArray()
 	if not chunks.is_empty():
 		lines.append("\n".join(chunks))
@@ -352,6 +359,25 @@ static func _console(args: PackedStringArray) -> Dictionary:
 	if not lines.is_empty():
 		output = "\n".join(lines) + "\n"
 	return {"exit_code": 1 if failed else 0, "output": output}
+
+
+## Writes the runtime save when [param out] is set and no command failed.
+## An open scene is refused here so [method WyrdRuntime.save_state] is not called.
+static func _write_console_save(runtime: WyrdRuntime, out: String, failed: bool) -> String:
+	if out.is_empty() or failed:
+		return ""
+	if runtime == null or not runtime.can_save():
+		return "wyrd: console could not write the save: a scene is open\n"
+	var saved := runtime.save_state()
+	if saved.is_empty():
+		return "wyrd: console could not write the save\n"
+	var path := out if out.begins_with("res://") or out.begins_with("user://") or out.begins_with("/") else "res://" + out
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return "wyrd: could not write %s\n" % out
+	file.store_string(JSON.stringify(saved))
+	file.close()
+	return ""
 
 
 static func _console_tool() -> RefCounted:
@@ -988,6 +1014,11 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --from needs a whole number of minutes\n")
 			from_minute = int(args[i])
 			from_set = true
+		elif command == "console" and arg == "--out":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --out needs a path\n")
+			out = args[i]
 		elif command == "console" and arg == "--cmd":
 			i += 1
 			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():

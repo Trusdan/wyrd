@@ -2,13 +2,17 @@
 
 ## Unreleased
 
-- `wyrd console <pack>` runs the playtest commands: set a fact, kill or vacate or replace a role holder, advance time, fire an event, and run a scene in a text UI. Every command records source `console` and, when tracing is on, one `wyrd console` line. A direct `set` stores provenance scene `console`. Release exports exclude `addons/wyrd/runtime/console/*`.
+- The scale bench times director query, why-not, and storylet tie-lint. Budgets warn.
 
+## 0.5.0-m7 - 2026-10-16
+
+M7 inspector data, choices, coverage, and the console. `VERSION` is `0.5.0-m7`. `plugin.cfg` version is `0.5.0-m7`. Corey cuts the tag `v0.5.0-m7` after the milestone benchmark. Save schema is 2.
+
+- `wyrd console <pack>` runs the playtest commands: set a fact, kill or vacate or replace a role holder, advance time, fire an event, and run a scene in a text UI. Every command records source `console` and, when tracing is on, one `wyrd console` line. A direct `set` stores provenance scene `console`. Release exports exclude `addons/wyrd/runtime/console/*`. `--out` writes the JSON save after those commands when every command succeeded. An open scene refuses that write.
 - `Wyrd.coverage` counts storylet draws, slot-variant entries, and shown line ids. Recording is off until `enabled` is set, including in a release build. Counts stay out of saves. `merge` adds them to `user://wyrd_coverage.json`. `wyrd coverage` lists never-hit ids by file:line. One `coverage` line is logged per hit when tracing is on, and one `coverage_report` line per report.
-
 - `Wyrd.facts.choice_summary` lists stored-fact writes from the provenance map. It filters by scene, choice, key prefix, and an inclusive time range. `wyrd choices` prints that table. A concrete stored fact may say `recap: true`. Deed compaction drops other provenance and keeps those rows. One `choice_summary` line is logged for a read when tracing is on, and one `choice_compact` line when compaction drops rows.
 - `Wyrd.debug.snapshot(sections)` reads live facts, role bindings and history, quest stages with waiting reasons, the dirty condition set, deeds with decayed weights, social axes and disposition, belief and group precedence, and fact provenance. The document is built on demand and is not saved. A prefix and a page window filter each section. One `wyrd debug snapshot` line is logged when tracing is on. Load does not log it.
-- The scale bench times director query, why-not, and storylet tie-lint. Budgets warn.
+- Gullhaven marks `ferry.toll_coins` with `recap: true`. A headless test kills each Gullhaven role holder with `wyrd console --cmd` and checks the example quest. The ferry lock re-routes through `ferry.locked_gone`.
 
 ## 0.4.0-m6 - 2026-10-16
 
