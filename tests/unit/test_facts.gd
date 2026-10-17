@@ -17,6 +17,7 @@ func test_stored_resolved_poll_and_doc() -> void:
 	assert_eq(coins.key, "player.coins")
 	assert_eq(String(coins.type_name), "int")
 	assert_eq(String(coins.origin), "stored")
+	assert_false(coins.recap_marked)
 	assert_eq(coins.doc, "How many coins are carried.")
 	assert_false(coins.is_pattern())
 	var tide := schema.entries[1]
@@ -46,8 +47,10 @@ func test_recap_is_only_a_concrete_stored_flag() -> void:
 	"""))
 	assert_eq(parsed.diagnostics.format(), "")
 	assert_true(parsed.schema.entries[0].recap)
+	assert_true(parsed.schema.entries[0].recap_marked)
 	assert_eq(parsed.schema.entries[0].doc, "Toll coins.")
 	assert_false(parsed.schema.entries[1].recap)
+	assert_true(parsed.schema.entries[1].recap_marked)
 	var resolved := _parse(_text("""
 	language 1
 	facts

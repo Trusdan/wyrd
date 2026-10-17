@@ -184,6 +184,8 @@ The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two
 
 `believe`, `declare`, `retract`, `learn`, and `forget` are reserved words. They are legal only as the effect verb immediately after `~`. As an identifier they stay `E_RESERVED_WORD`. `unbelieve` is not reserved.
 
+A concrete stored fact may carry `recap: true` or `recap: false`. `recap: true` keeps `set` and `inc` provenance when deeds compact. `recap: false` drops that provenance and records that the author chose it. A missing `recap:` key is unmarked. `set` or `inc` of an unmarked concrete stored fact warns `W_RECAP_UNMARKED` when the write sits in a stage that sets an outcome, or on a choice. The warning is one line per write, at the effect. `wyrd check` prints it and exits 0. `wyrd check --strict` exits 1. The code filters like the other warning lines.
+
 `reveals` names a stored fact and `claim` is the value. A witness in mode `saw` learns it (`known/`). `heard` and `inferred` believe it (`believed/`). Nobody else receives it. There is no rumour spread. A missing witness list writes nothing. `perceived(agent, verb)` reads the latest mode.
 
 `statement: true` is a statement deed (WFR4). Perception modes are still stored, but the mode does not write the fact. Each witness is a listener. The speaker is not added. The listener accepts when `credibility_score(listener, speaker) >= credibility_threshold`. The default score is `disposition(listener, speaker) / 100`. `WyrdConfig.credibility_threshold` defaults to `0.5` and the comparison is inclusive. `register_credibility` replaces that score and is not saved. The game seed is not an input. Acceptance writes `believed/<listener>` only. Rejection writes nothing. `known/`, `world`, and `held/` stay unchanged. One `credibility` line is logged per listener, including a rejection, even when the belief value does not change. `statement: false`, or a deed with no `statement` argument, keeps the perception write above. A statement with no `reveals` records the deed and makes no credibility decision. `deeds.record` does not run this gate.
@@ -256,6 +258,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
 | `W_FACT_UNUSED` | A fact is never read or written |
+| `W_RECAP_UNMARKED` | A concrete stored fact is `set` or `inc` in a stage that sets an outcome, or by a choice effect, and the declaration has no `recap:` key. `recap: true` and `recap: false` are silent. A pattern, a resolved fact, `believe`, `learn`, `declare`, `record deed`, an event `leaves` write, and a write on another stage stay silent |
 | `W_INTERP_UNSET` | Prose interpolates a stored fact's world value that no earlier write sets. A `belief`, `believes`, `held`, `knows`, or `known` key is not that world value |
 | `W_HOLDER_UNGUARDED` | Prose interpolates `holder(slot)` where that slot can be empty. A guard is a `when` that requires `filled(slot)`, or an `empty` variant that replaces the branch |
 | `W_STALE_BELIEF` | A scene `learn` writes `known/<agent>` while a contradicting `believe` of that agent and key remains and no `unbelieve` clears it |
@@ -264,7 +267,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `E_FACT_LEAK` | Prose interpolates a stored fact's world value, and a `when` or `{if}` reads that fact from the world without `knows` or `known` |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 
-Resolved facts are never "never set". A `record deed` without `reveals` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`.
+Resolved facts are never "never set". A `record deed` without `reveals` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`. A stage sets an outcome when one of its own effects, or an effect in one of its `on` handlers, is `outcome`. A variant body and a region stage are separate stages. A choice walks that choice's effects.
 
 ## Stage `on`
 

@@ -1,6 +1,14 @@
 {
   "diagnostics": [
     {
+      "code": "W_RECAP_UNMARKED",
+      "col": 5,
+      "line": 9,
+      "message": "stored fact \"player.coins\" is written in an outcome stage and has no recap key",
+      "path": "res://tests/golden/link/command_unknown/quest.wyrd",
+      "severity": "warning"
+    },
+    {
       "code": "E_COMMAND_UNKNOWN",
       "col": 5,
       "line": 10,

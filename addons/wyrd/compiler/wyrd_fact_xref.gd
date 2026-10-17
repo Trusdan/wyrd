@@ -12,6 +12,8 @@ extends RefCounted
 ## A scene [code]learn[/code] warns [code]W_STALE_BELIEF[/code] when a contradicting belief remains.
 ## Prose may interpolate a belief or a held value as [code]W_CLAIM[/code].
 ## A world value behind a world gate is [code]E_FACT_LEAK[/code].
+## A stored [code]set[/code] or [code]inc[/code] in a stage that sets an outcome, or on a choice,
+## warns [code]W_RECAP_UNMARKED[/code] when that fact has no [code]recap:[/code] key.
 
 var facts: Array = []
 var events: Array = []
@@ -62,6 +64,7 @@ func build(
 	_handler_events(units)
 	_warn_interps(schema, units, writers, diagnostics)
 	_warn_stale_beliefs(units, diagnostics)
+	_warn_unmarked_recap(schema, units, diagnostics)
 	facts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["key"]) < str(b["key"]))
 	events.sort_custom(_event_before)
 
@@ -622,6 +625,80 @@ func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> voi
 		"line": effect.line,
 		"reads": [StringName(effect.fact_key)],
 	})
+
+
+## One warning per [code]set[/code] or [code]inc[/code] of a concrete stored fact.
+## A stage sets an outcome when a direct effect or a handler effect is [code]outcome[/code].
+## Variant bodies and region stages are their own stages. A choice walks [code]choice.effects[/code].
+func _warn_unmarked_recap(schema: WyrdFactSchema, units: Array, diagnostics: WyrdDiagnostics) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_stage_recap(schema, stage, path, diagnostics)
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.choice == null:
+					continue
+				for effect in item.choice.effects:
+					_recap_write(schema, effect, path, diagnostics, false)
+
+
+func _stage_recap(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, diagnostics: WyrdDiagnostics) -> void:
+	if _stage_sets_outcome(stage):
+		for effect in stage.effects:
+			_recap_write(schema, effect, path, diagnostics, true)
+		for handler in stage.handlers:
+			for effect in handler.effects:
+				_recap_write(schema, effect, path, diagnostics, true)
+	for variant in stage.variants:
+		var body: WyrdStageDef = variant.body
+		if body == null:
+			continue
+		_stage_recap(schema, body, path, diagnostics)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_stage_recap(schema, child, path, diagnostics)
+
+
+func _stage_sets_outcome(stage: WyrdStageDef) -> bool:
+	for effect in stage.effects:
+		if effect.kind == &"outcome":
+			return true
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			if effect.kind == &"outcome":
+				return true
+	return false
+
+
+func _recap_write(
+	schema: WyrdFactSchema,
+	effect: WyrdEffectDef,
+	path: String,
+	diagnostics: WyrdDiagnostics,
+	outcome_stage: bool
+) -> void:
+	if effect.kind != &"set" and effect.kind != &"inc":
+		return
+	if effect.fact_key.is_empty():
+		return
+	var fact := schema.lookup(effect.fact_key.split("."))
+	if fact == null or fact.origin != &"stored" or fact.is_pattern() or fact.recap_marked:
+		return
+	var where := "in an outcome stage" if outcome_stage else "by a choice"
+	diagnostics.add(
+		WyrdDiagnostic.W_RECAP_UNMARKED,
+		"stored fact \"%s\" is written %s and has no recap key" % [fact.key, where],
+		path,
+		effect.line,
+		effect.col,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
 
 
 func _index(rows: Array) -> WyrdDepIndex:

@@ -183,17 +183,21 @@ func test_choice_summary_keeps_the_recap_fact() -> void:
 	assert_false(bool(coins["recap"]))
 	runtime.deeds.compact()
 	var kept: Array = runtime.facts.choice_summary()
-	assert_eq(kept.size(), 1)
+	assert_eq(kept.size(), 2)
 	assert_eq(str((kept[0] as Dictionary)["key"]), "ferry.toll_coins")
 	assert_true(bool((kept[0] as Dictionary)["recap"]))
+	assert_eq(str((kept[1] as Dictionary)["key"]), "harbor.room_taken")
+	assert_true(bool((kept[1] as Dictionary)["recap"]))
 	var saved := runtime.save_state()
 	var fresh: WyrdRuntime = _Harness.new().boot_gullhaven(false, 4, true)["runtime"]
 	assert_true(fresh.load_state(saved).ok)
 	fresh.deeds.compact()
 	var loaded: Array = fresh.facts.choice_summary()
-	assert_eq(loaded.size(), 1)
+	assert_eq(loaded.size(), 2)
 	assert_eq(str((loaded[0] as Dictionary)["key"]), "ferry.toll_coins")
 	assert_true(bool((loaded[0] as Dictionary)["recap"]))
+	assert_eq(str((loaded[1] as Dictionary)["key"]), "harbor.room_taken")
+	assert_true(bool((loaded[1] as Dictionary)["recap"]))
 
 
 func _cases() -> Array:
