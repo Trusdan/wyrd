@@ -21,7 +21,8 @@ extends RefCounted
 ## An accepted hop or materialize then evaluates [member WyrdRumorPolicy.mutations]
 ## on the claim value. The listener stores that copy. The deed row is unchanged.
 ## Jobs, the seen set, the queued set, reach rows, the once-set, and those
-## copies are not saved. Load drops them.
+## copies are saved in [code]flight.rumor[/code]. Mutation callables are not.
+## Load rebinds them from the registered policy with the same id.
 
 ## Level at or above this is a certain materialize roll, because [code]randf[/code]
 ## is below 1. Chance is [code]level / REACH_FULL[/code]. Level 0 does not roll.
@@ -37,7 +38,7 @@ var spatial_of: Callable = Callable()
 var score_of: Callable = Callable()
 var threshold_of: Callable = Callable()
 var trace_of: Callable = Callable()
-## [code](token: String)[/code]. One rumor unit. Not saved.
+## [code](token: String)[/code]. One rumor unit. The token is saved with the scheduler.
 var enqueue_hop: Callable = Callable()
 
 var _policies: Array[WyrdRumorPolicy] = []
@@ -77,6 +78,91 @@ func clear_flight() -> void:
 	_drawn.clear()
 	_held.clear()
 	_gone.clear()
+
+
+## Claim table, hop memory, reach rows, draws, and mutated copies.
+## Callables are omitted. An empty bag is omitted by the save.
+func export_state() -> Dictionary:
+	var out := {}
+	var drawn := _sorted_keys(_drawn)
+	if not drawn.is_empty():
+		out["drawn"] = drawn
+	var gone := _export_pairs(_gone)
+	if not gone.is_empty():
+		out["gone"] = gone
+	var held := _export_held()
+	if not held.is_empty():
+		out["held"] = held
+	var jobs := _export_jobs()
+	if not jobs.is_empty():
+		out["jobs"] = jobs
+	var queued := _export_people(_queued)
+	if not queued.is_empty():
+		out["queued"] = queued
+	var reach := _export_reach()
+	if not reach.is_empty():
+		out["reach"] = reach
+	var seen := _export_people(_seen)
+	if not seen.is_empty():
+		out["seen"] = seen
+	return out
+
+
+## Replaces in-flight state. [param data] empty clears it.
+## Mutations come from the policy already registered under that id.
+func import_state(data: Dictionary) -> void:
+	clear_flight()
+	for item in _rows(data.get("jobs", [])):
+		var deed_id := str(item.get("deed", ""))
+		if deed_id.is_empty():
+			continue
+		var policy_id := str(item.get("policy", ""))
+		_jobs[deed_id] = {
+			"chance": float(item.get("chance", 0.0)),
+			"key": str(item.get("key", "")),
+			"kinds": _kind_list(item.get("kinds", [])),
+			"max_hops": int(item.get("max_hops", 0)),
+			"mutations": _mutations_for(policy_id),
+			"policy": policy_id,
+			"value": WyrdSave.unpack_claim(item.get("value")),
+			"verb": str(item.get("verb", "")),
+		}
+	_import_people(_seen, data.get("seen", []))
+	_import_people(_queued, data.get("queued", []))
+	for item in _rows(data.get("reach", [])):
+		var deed_id := str(item.get("deed", ""))
+		var place := str(item.get("place", ""))
+		if deed_id.is_empty() or place.is_empty():
+			continue
+		var policy_id := str(item.get("policy", ""))
+		_reach["%s\t%s" % [deed_id, place]] = {
+			"born": int(item.get("born", 0)),
+			"deed": deed_id,
+			"key": str(item.get("key", "")),
+			"level": int(item.get("level", 0)),
+			"pending": int(item.get("pending", 0)),
+			"mutations": _mutations_for(policy_id),
+			"place": place,
+			"policy": policy_id,
+			"value": WyrdSave.unpack_claim(item.get("value")),
+			"verb": str(item.get("verb", "")),
+		}
+	for item in _list(data.get("drawn", [])):
+		var token := String(item)
+		if not token.is_empty():
+			_drawn[token] = true
+	for item in _rows(data.get("held", [])):
+		var deed_id := str(item.get("deed", ""))
+		var who := str(item.get("who", ""))
+		if deed_id.is_empty() or who.is_empty():
+			continue
+		_held["%s\t%s" % [deed_id, who]] = WyrdSave.unpack_claim(item.get("value"))
+	for item in _rows(data.get("gone", [])):
+		var deed_id := str(item.get("deed", ""))
+		var who := str(item.get("who", ""))
+		if deed_id.is_empty() or who.is_empty():
+			continue
+		_gone["%s\t%s" % [deed_id, who]] = true
 
 
 ## Applied coarse ticks for [param deed_id] at [param place]. [code]-1[/code]
@@ -285,6 +371,145 @@ func materialize(who: StringName, key: StringName) -> void:
 			accepted = false
 			_mark_gone(deed_id, who_text)
 	_trace_materialize(who_text, place_text, policy_id, fact, deed_id, level, chance, accepted)
+
+
+func _export_jobs() -> Array:
+	var out: Array = []
+	var ids := _sorted_keys(_jobs)
+	for deed_id in ids:
+		var job: Dictionary = _jobs[deed_id]
+		out.append({
+			"chance": float(job.get("chance", 0.0)),
+			"deed": String(deed_id),
+			"key": str(job.get("key", "")),
+			"kinds": _string_list(job.get("kinds", PackedStringArray())),
+			"max_hops": int(job.get("max_hops", 0)),
+			"policy": str(job.get("policy", "")),
+			"value": WyrdSave.pack_claim(job.get("value")),
+			"verb": str(job.get("verb", "")),
+		})
+	return out
+
+
+func _export_reach() -> Array:
+	var out: Array = []
+	var keys := _sorted_keys(_reach)
+	for key in keys:
+		var row: Dictionary = _reach[key]
+		out.append({
+			"born": int(row.get("born", 0)),
+			"deed": str(row.get("deed", "")),
+			"key": str(row.get("key", "")),
+			"level": int(row.get("level", 0)),
+			"pending": int(row.get("pending", 0)),
+			"place": str(row.get("place", "")),
+			"policy": str(row.get("policy", "")),
+			"value": WyrdSave.pack_claim(row.get("value")),
+			"verb": str(row.get("verb", "")),
+		})
+	return out
+
+
+func _export_held() -> Array:
+	var out: Array = []
+	var keys := _sorted_keys(_held)
+	for key in keys:
+		var parts := String(key).split("\t")
+		if parts.size() != 2:
+			continue
+		out.append({
+			"deed": parts[0],
+			"value": WyrdSave.pack_claim(_held[key]),
+			"who": parts[1],
+		})
+	return out
+
+
+func _export_pairs(bag: Dictionary) -> Array:
+	var out: Array = []
+	var keys := _sorted_keys(bag)
+	for key in keys:
+		var parts := String(key).split("\t")
+		if parts.size() != 2:
+			continue
+		out.append({"deed": parts[0], "who": parts[1]})
+	return out
+
+
+func _export_people(bag: Dictionary) -> Array:
+	var out: Array = []
+	var ids := _sorted_keys(bag)
+	for deed_id in ids:
+		var who: Array = []
+		var people: Variant = bag[deed_id]
+		if people is Dictionary:
+			for person in (people as Dictionary).keys():
+				who.append(String(person))
+		who.sort()
+		out.append({"deed": String(deed_id), "who": who})
+	return out
+
+
+func _import_people(into: Dictionary, raw: Variant) -> void:
+	for item in _rows(raw):
+		var deed_id := str(item.get("deed", ""))
+		if deed_id.is_empty():
+			continue
+		var bag := {}
+		for person in _list(item.get("who", [])):
+			var name := String(person)
+			if not name.is_empty():
+				bag[name] = true
+		into[deed_id] = bag
+
+
+func _mutations_for(policy_id: String) -> Array:
+	if policy_id.is_empty():
+		return []
+	for policy in _policies:
+		if String(policy.id) == policy_id:
+			return policy.mutations
+	return []
+
+
+func _kind_list(raw: Variant) -> PackedStringArray:
+	var kinds := PackedStringArray()
+	for item in _list(raw):
+		kinds.append(String(item))
+	return kinds
+
+
+func _string_list(raw: Variant) -> Array:
+	var out: Array = []
+	if raw is PackedStringArray:
+		for item in raw:
+			out.append(String(item))
+		return out
+	for item in _list(raw):
+		out.append(String(item))
+	return out
+
+
+func _sorted_keys(bag: Dictionary) -> Array:
+	var keys: Array = []
+	for key in bag.keys():
+		keys.append(String(key))
+	keys.sort()
+	return keys
+
+
+func _rows(raw: Variant) -> Array:
+	var out: Array = []
+	for item in _list(raw):
+		if item is Dictionary:
+			out.append(item)
+	return out
+
+
+func _list(raw: Variant) -> Array:
+	if raw is Array:
+		return raw
+	return []
 
 
 func _copy_mutations(items: Array) -> Array:

@@ -5,8 +5,8 @@ extends RefCounted
 ##
 ## @experimental
 ## A fixed budget, from [member WyrdConfig.scheduler_work_per_tick], re-checks
-## dirty indexes in ascending order. The rest stay dirty. The queue is rebuilt
-## from the content index and is never saved.
+## dirty indexes in ascending order. The rest stay dirty. Which indexes are
+## watched is rebuilt from the content index. The dirty set is saved.
 
 var last_rechecks: int = 0
 
@@ -43,6 +43,24 @@ func dirty_count() -> int:
 
 func is_dirty(index: int) -> bool:
 	return _dirty.has(index)
+
+
+func dirty_indexes() -> PackedInt32Array:
+	var keys: Array = _dirty.keys()
+	keys.sort()
+	var out := PackedInt32Array()
+	for key in keys:
+		out.append(int(key))
+	return out
+
+
+## Replaces the dirty set with [param indexes] that are still watched.
+func restore_dirty(indexes: Array) -> void:
+	_dirty.clear()
+	for index in indexes:
+		var at := int(index)
+		if _waiting.has(at):
+			_dirty[at] = true
 
 
 ## [param eval_one] receives a condition index and returns nothing.

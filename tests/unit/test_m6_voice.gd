@@ -133,7 +133,7 @@ func test_scene_picks_a_holder_variant_and_traces_it() -> void:
 	assert_eq(str(kept[0]["holder"]), "")
 	runtime.dialogue.advance()
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("voice"))
 	var loaded := _boot(_SCENE)
 	loaded.trace.enabled = true
@@ -153,7 +153,7 @@ func test_journal_freezes_the_chosen_line_and_load_does_not_repick() -> void:
 	assert_eq(str(rows[0]["text"]), "The ferry master keeps the crossing open.")
 	assert_eq(_trace_rows(runtime, "voice").size(), 1)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("voice"))
 	var loaded := _boot(_JOURNAL)
 	loaded.trace.enabled = true
@@ -186,7 +186,7 @@ func test_gullhaven_storylet_uses_the_role_holder() -> void:
 	assert_eq(heard[1].text, "The net mender keeps the crossing open.")
 	var saved := runtime.save_state()
 	assert_false(saved.has("voice"))
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 
 
 func test_voice_tools_report_script_and_audio() -> void:

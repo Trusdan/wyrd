@@ -45,7 +45,7 @@ func test_indexed_snapshot_matches_the_full_scan() -> void:
 	assert_false(_find(indexed["precedence"], "dock_hand").is_empty())
 	assert_false(_find(indexed["precedence"], "ferry").is_empty())
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(JSON.stringify(saved).contains("by_witness"))
 	assert_false(JSON.stringify(saved).contains("deed_index"))
 

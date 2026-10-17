@@ -100,7 +100,7 @@ func test_seeded_tie_save_load_and_new_game() -> void:
 	later.tick(100)
 	assert_eq(str(later.director.query("topic", "rumor.pair", "ferry")["id"]), _tied(5, 100))
 	var saved := left.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_true(saved.has("storylets"))
 	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
 	assert_true(parsed is Dictionary)

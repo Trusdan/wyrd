@@ -26,5 +26,6 @@ facts
   harbor.guild_signed   : bool stored recap: false doc: "Whether the harbor guild has signed the levy."
   harbor.levy_posted    : bool stored recap: false doc: "Whether the signed levy has been posted."
   harbor.toll_fate   : symbol stored doc: "What people say happened to the ferry toll."
+  harbor.gazette     : symbol stored doc: "Lines the harbor gazette has printed."
   world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
   npc.{id}.alive     : bool   source: world.is_alive  invalidate: on_event(entity_alive_changed)  doc: "Whether that person is alive in the host world."

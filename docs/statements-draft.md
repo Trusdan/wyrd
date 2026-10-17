@@ -333,7 +333,7 @@ The header is `document <id> ["<title>"] publishes_by <group> every <number> <un
 | `E_UNKNOWN_FACT` | `claim` or `fact` names a key the schema does not have |
 | `E_RESERVED_WORD` | `document` or `publishes_by` is used as an identifier |
 
-The runtime rules for witnesses, rumor believers, the claim pick, the catch-up cap, and the schema 2 fact are in `addons/wyrd/runtime/publish/README.md`. A skipped issue number is stored in that fact.
+The runtime rules for witnesses, rumor believers, the claim pick, the catch-up cap, and the schema 3 counter are in `addons/wyrd/runtime/publish/README.md`. A skipped issue number is stored in that fact. The counter rides in `flight`.
 
 ## Not in this draft
 

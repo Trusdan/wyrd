@@ -28,8 +28,8 @@ func test_json_round_trip_matches_and_continues() -> void:
 	assert_eq(runtime.facts.get(&"player.coins"), 2)
 	var first := runtime.draw_u32(&"play")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
-	assert_eq(WyrdSave.migrations.size(), 1)
+	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(WyrdSave.migrations.size(), 2)
 	assert_eq(String(saved["seed"]).length(), 16)
 	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
 	assert_true(parsed is Dictionary)
@@ -61,7 +61,7 @@ func test_manifest_mismatch_warns_and_a_future_version_is_refused() -> void:
 	assert_true(warned.ok)
 	assert_true(OS.is_debug_build())
 	assert_true(warned.diagnostics.has_warnings())
-	saved["schema_version"] = 3
+	saved["schema_version"] = 4
 	var blank := _blank()
 	var refused := blank.load_state(saved)
 	assert_false(refused.ok)

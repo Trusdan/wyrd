@@ -184,15 +184,18 @@ func test_scheduler_lines_filter_and_stay_out_of_saves() -> void:
 	for _frame in 15:
 		runtime.tick(1.0 / 30.0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("scheduler"))
+	assert_eq(runtime.slice_remainder_units(), 360)
 	runtime.trace.clear()
 	var loaded := _sample()
 	loaded.trace.enabled = true
-	var report := loaded.load_state(saved)
+	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
+	var report := loaded.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_eq(loaded.slice_remainder_units(), 0)
-	assert_eq(loaded.scheduler().carry("rumor"), 0)
+	assert_eq(loaded.slice_remainder_units(), 360)
+	assert_eq(loaded.scheduler().carry_tokens("rumor"), PackedStringArray(["hop"]))
+	assert_eq(loaded.scheduler().carry_tokens("publish"), PackedStringArray(["issue"]))
 	for row in loaded.trace.snapshot():
 		assert_ne(String(row.get("kind", "")), "scheduler")
 

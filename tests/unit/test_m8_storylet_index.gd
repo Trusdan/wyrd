@@ -83,7 +83,7 @@ func test_load_does_not_log_the_index_and_the_save_omits_it() -> void:
 	assert_eq(_index_rows(runtime).size(), 0)
 	runtime.start_new_game(5)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("storylet_index"))
 
 

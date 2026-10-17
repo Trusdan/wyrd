@@ -310,7 +310,7 @@ func test_trace_lines_filter_and_stay_quiet_when_off() -> void:
 	assert_eq(String(_rows(policy, "rumor_materialize")[0]["path"]), "harbor_toll")
 
 
-func test_load_drops_reach_and_keeps_a_written_belief() -> void:
+func test_load_keeps_reach_and_a_written_belief() -> void:
 	var runtime := _arm(_boot(4))
 	_host(runtime).spatial.set_place(&"ferry_master", &"gullhaven")
 	runtime.trace.enabled = true
@@ -319,11 +319,13 @@ func test_load_drops_reach_and_keeps_a_written_belief() -> void:
 		runtime.tick(1)
 	assert_eq(_belief(runtime, "dock_hand"), &"stolen")
 	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
+	var level := runtime.rumors.reach_level("1", &"gullhaven")
+	assert_gte(level, 1)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("reach"))
 	assert_false(saved.has("rumor"))
-	assert_eq(JSON.stringify(saved).find("reach\t"), -1)
+	assert_true(saved.has("flight"))
 	var loaded := _boot(1)
 	_policy(loaded, 1, 1.0)
 	var host := _host(loaded)
@@ -331,21 +333,23 @@ func test_load_drops_reach_and_keeps_a_written_belief() -> void:
 	host.spatial.set_place(&"dock_hand", &"gullhaven")
 	host.spatial.set_place(&"ferry_master", &"gullhaven")
 	loaded.trace.enabled = true
-	var report := loaded.load_state(saved)
+	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
+	var report := loaded.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), -1)
-	assert_eq(loaded.scheduler().carry("rumor"), 0)
+	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), level)
 	assert_eq(_rows(loaded, "rumor_reach").size(), 0)
 	assert_eq(_rows(loaded, "rumor_materialize").size(), 0)
 	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
-	assert_null(_belief(loaded, "ferry_master"))
-	assert_eq(_rows(loaded, "rumor_materialize").size(), 0)
-	for _step in 5:
+	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"known/dock_hand"))
+	var heard: Variant = _belief(runtime, "ferry_master")
+	assert_eq(_belief(loaded, "ferry_master"), heard)
+	_belief(loaded, "dock_hand")
+	assert_eq(_rows(loaded, "rumor_materialize").size(), 1)
+	assert_eq(String(_rows(loaded, "rumor_materialize")[0]["listener"]), "ferry_master")
+	for _step in 2:
+		runtime.tick(60)
 		loaded.tick(60)
-	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), -1)
-	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
-	assert_eq(_rows(loaded, "rumor_reach").size(), 0)
-	assert_eq(_rows(loaded, "rumor_materialize").size(), 0)
+	assert_eq(loaded.rumors.reach_level("1", &"gullhaven"), runtime.rumors.reach_level("1", &"gullhaven"))
 	assert_eq(loaded.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
 	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"known/dock_hand"))
 

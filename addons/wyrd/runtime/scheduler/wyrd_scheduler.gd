@@ -10,7 +10,8 @@ extends RefCounted
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
 ## still spends the whole budget. Unfinished items stay in queue order. The
-## round-robin starts at waits every tick. Nothing here is saved.
+## round-robin starts at waits every tick. Token queues and the dirty waits
+## are saved in [code]flight.scheduler[/code]. The leftover slice is saved there too.
 
 const QUEUE_COUNT := 4
 
@@ -47,6 +48,11 @@ func clear_carry() -> void:
 	_rumor.clear()
 	_publish.clear()
 	_cache.clear()
+
+
+## Drops the dirty set. Watched conditions stay watched.
+func clear_dirty() -> void:
+	_waits.restore_dirty([])
 
 
 func watch(index: int) -> void:
@@ -105,6 +111,39 @@ func carry(queue: String) -> int:
 			return _cache.size()
 		_:
 			return 0
+
+
+## Token queues and dirty waits. Empty arrays are omitted. The slice is added by the save.
+func export_carry() -> Dictionary:
+	var out := {}
+	var cache := _token_rows(_cache)
+	if not cache.is_empty():
+		out["cache_refresh"] = cache
+	var publish := _token_rows(_publish)
+	if not publish.is_empty():
+		out["publish"] = publish
+	var rumor := _token_rows(_rumor)
+	if not rumor.is_empty():
+		out["rumor"] = rumor
+	var waits: Array = []
+	for index in _waits.dirty_indexes():
+		waits.append(int(index))
+	if not waits.is_empty():
+		out["waits"] = waits
+	return out
+
+
+## Replaces rumor, publish, and cache tokens, and the dirty waits.
+## Does not log. Waiting conditions stay watched.
+func import_carry(data: Dictionary) -> void:
+	_cache = _as_tokens(data.get("cache_refresh", []))
+	_publish = _as_tokens(data.get("publish", []))
+	_rumor = _as_tokens(data.get("rumor", []))
+	var waits: Array = []
+	var raw: Variant = data.get("waits", [])
+	if raw is Array:
+		waits = raw
+	_waits.restore_dirty(waits)
 
 
 func carry_tokens(queue: String) -> PackedStringArray:
@@ -267,6 +306,21 @@ func _take(items: Array[String], handler: Callable) -> bool:
 	if handler.is_valid():
 		handler.call(token)
 	return true
+
+
+func _token_rows(items: Array[String]) -> Array:
+	var out: Array = []
+	for token in items:
+		out.append(token)
+	return out
+
+
+func _as_tokens(raw: Variant) -> Array[String]:
+	var out: Array[String] = []
+	if raw is Array:
+		for item in raw:
+			out.append(String(item))
+	return out
 
 
 func _emit(queue: String, units: int, left: int) -> void:

@@ -284,7 +284,7 @@ func test_single_line_and_scene_write_no_save_row() -> void:
 	assert_eq(str(scene["scene"]), "toll.offer_room")
 	assert_eq(str(scene["line_id"]), "")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("storylets"))
 	runtime.storylets.draw("missing.rumor")
 	assert_push_error("unknown storylet")
@@ -295,7 +295,7 @@ func test_line_set_save_load_and_json_round_trip() -> void:
 	var first := runtime.storylets.draw("harbor.rumor")
 	var saved := runtime.save_state()
 	assert_true(saved.has("storylets"))
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	var row: Dictionary = saved["storylets"]["harbor.rumor"]
 	assert_eq(int(row["cursor"]), 1)
 	assert_eq(int(row["cycle"]), 0)

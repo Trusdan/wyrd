@@ -58,7 +58,7 @@ godot --headless --path /path/to/host-project \
 
 Call `can_save()` before writing a save. It is false while a scene is open. Embed the dictionary from `save_state()` in the host save and pass that same dictionary to `load_state`. One shape is `save["wyrd"]`.
 
-The document is schema version 1. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, and each named RNG stream. 64-bit values are hex. The event log is not included. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. See `addons/wyrd/runtime/save/README.md`.
+The document is schema version 3. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, each named RNG stream, and `flight` when a rumor, a document issue, or the scheduler still has work. 64-bit values are hex. The event log is not included. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when nothing is in flight, and that load clears the dirty waits. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. See `addons/wyrd/runtime/save/README.md`.
 
 ## Events
 

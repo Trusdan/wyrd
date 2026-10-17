@@ -274,7 +274,7 @@ func test_trace_lines_filter_and_stay_quiet_when_off() -> void:
 	assert_eq(String(_rows(policy, "rumor_mutate")[0]["path"]), "harbor_toll")
 
 
-func test_load_drops_the_copy_and_keeps_the_written_belief() -> void:
+func test_load_keeps_the_copy_and_continues() -> void:
 	var runtime := _boot(4)
 	_one_unit(runtime)
 	_policy(runtime, 1, 1.0, [_change("harbor.toll_fate", Callable(self, &"_waive"), Callable(self, &"_keep_none"))])
@@ -286,22 +286,25 @@ func test_load_drops_the_copy_and_keeps_the_written_belief() -> void:
 	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
 	assert_gt(runtime.scheduler().carry("rumor"), 0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 2)
+	assert_eq(int(saved["schema_version"]), 3)
 	assert_false(saved.has("mutations"))
 	assert_eq(JSON.stringify(saved).find("mutate\t"), -1)
+	var raw := JSON.stringify(saved)
+	assert_true(raw.contains("\"t\":\"symbol\""))
+	assert_true(raw.contains("\"v\":\"waived\""))
 	var loaded := _boot(1)
 	_policy(loaded, 1, 1.0, [_change("harbor.toll_fate", Callable(self, &"_waive"), Callable(self, &"_keep_none"))])
 	loaded.trace.enabled = true
-	var report := loaded.load_state(saved)
+	var report := loaded.load_state(JSON.parse_string(raw))
 	assert_true(report.ok, report.diagnostics.format())
-	assert_eq(loaded.scheduler().carry("rumor"), 0)
 	assert_eq(_rows(loaded, "rumor_mutate").size(), 0)
 	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
 	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
-	for _step in 3:
-		loaded.tick(0)
-	assert_null(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"))
-	assert_eq(_rows(loaded, "rumor_mutate").size(), 0)
+	loaded.tick(0)
+	assert_eq(loaded.facts.get_in(&"harbor.toll_fate", &"believed/ferry_master"), &"waived")
+	assert_eq(_rows(loaded, "rumor_mutate").size(), 1)
+	assert_eq(String(_rows(loaded, "rumor_mutate")[0]["listener"]), "ferry_master")
+	assert_eq(String(_rows(loaded, "rumor_mutate")[0]["result"]), "mutate")
 	assert_eq(loaded.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
 	_assert_deed(loaded)
 

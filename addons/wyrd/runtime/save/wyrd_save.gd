@@ -1,7 +1,10 @@
 class_name WyrdSave
 extends RefCounted
 
-## JSON-safe snapshot of one runtime. Schema 2 fills belief bags on older saves.
+## JSON-safe snapshot of one runtime. Schema 3 stores in-flight rumors,
+## publish counters, and scheduler carry in [code]flight[/code] when any of
+## that exists. Schema 2 fills belief bags. A schema 2 document has no
+## [code]flight[/code] key and loads with empty in-flight state.
 ## Evidence deadlines, when any exist, ride in [code]facts.evidence[/code].
 ## Line-set draw state and director [code]seen[/code] / [code]last_minute[/code],
 ## when any of that exists, ride in [code]storylets[/code]. An unknown storylet
@@ -12,22 +15,28 @@ extends RefCounted
 ## sequence id is kept. A missing [code]sequences[/code] key clears that bag only.
 ## Quest region leaves ride inside the quest row and are omitted when empty.
 ## An older loader ignores those keys. The unlocked secrecy name is an ordinary
-## world fact. Schema stays 2 and the document has no secrecy key.
-## Scheduler queues and the unfinished tick slice are not in the document.
+## world fact. The document has no secrecy key.
 ##
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills
-## [code]facts.believed[/code] and [code]facts.held[/code]. 64-bit values are
-## lowercase hex. A scene must be closed. A manifest hash mismatch warns in a
-## debug build and is silent in a release.
+## [code]facts.believed[/code] and [code]facts.held[/code]. Step 1 leaves the
+## document as it is. A schema 2 file has no [code]flight[/code] key: token
+## queues and the slice come back empty, and the dirty waits stay armed.
+## A schema 3 file omits [code]flight[/code] only when that set was empty too,
+## so that load clears it.
+## 64-bit values are lowercase hex. A scene must be closed. A manifest hash
+## mismatch warns in a debug build and is silent in a release.
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 
 static var migrations: Array = []
 
 
 static func _static_init() -> void:
-	migrations = [Callable(WyrdSave, &"_fill_belief_bags")]
+	migrations = [
+		Callable(WyrdSave, &"_fill_belief_bags"),
+		Callable(WyrdSave, &"_keep_document"),
+	]
 
 
 static func _fill_belief_bags(data: Dictionary) -> Dictionary:
@@ -38,6 +47,39 @@ static func _fill_belief_bags(data: Dictionary) -> Dictionary:
 		facts["held"] = {}
 	data["facts"] = facts
 	return data
+
+
+## Schema 2 documents have no [code]flight[/code] key. Leaving the document
+## unchanged is the migration. Load treats the missing key as empty in-flight state.
+static func _keep_document(data: Dictionary) -> Dictionary:
+	return data
+
+
+## A [StringName] is [code]{"t": "symbol", "v": "..."}[/code].
+## A float is [code]{"t": "float", "v": n}[/code] so [code]1.0[/code] stays a float.
+## Bool, int, string, and null stay JSON values.
+static func pack_claim(value: Variant) -> Variant:
+	if value is StringName:
+		return {"t": "symbol", "v": String(value)}
+	if typeof(value) == TYPE_FLOAT:
+		return {"t": "float", "v": value}
+	return value
+
+
+## Inverse of [method pack_claim]. A whole JSON number that was not tagged
+## comes back as an int. A tagged float stays a float.
+static func unpack_claim(value: Variant) -> Variant:
+	if value is Dictionary:
+		var row: Dictionary = value
+		var tag := str(row.get("t", ""))
+		if tag == "symbol":
+			return StringName(str(row.get("v", "")))
+		if tag == "float":
+			return float(row.get("v", 0.0))
+	if typeof(value) == TYPE_FLOAT and value == floor(value):
+		if value >= -2147483648.0 and value <= 2147483647.0:
+			return int(value)
+	return value
 
 
 static func capture(runtime: WyrdRuntime) -> Dictionary:
@@ -75,6 +117,9 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 		var sequences := runtime.sequences.export_state()
 		if not sequences.is_empty():
 			data["sequences"] = sequences
+	var flight := _capture_flight(runtime)
+	if not flight.is_empty():
+		data["flight"] = flight
 	return data
 
 
@@ -156,9 +201,64 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.sequences.import_state(_dict(working.get("sequences", {})))
 		else:
 			runtime.sequences.clear()
+	_import_flight(runtime, working)
 	report.ok = true
 	report.manifest_hash = content.manifest_hash
 	return report
+
+
+static func _capture_flight(runtime: WyrdRuntime) -> Dictionary:
+	var out := {}
+	if runtime.publish != null:
+		var publish := runtime.publish.export_state()
+		if not publish.is_empty():
+			out["publish"] = publish
+	if runtime.rumors != null:
+		var rumor := runtime.rumors.export_state()
+		if not rumor.is_empty():
+			out["rumor"] = rumor
+	var scheduler := {}
+	if runtime.scheduler() != null:
+		scheduler = runtime.scheduler().export_carry()
+	var slice := runtime.slice_remainder_units()
+	if slice != 0:
+		var ordered := {}
+		if scheduler.has("cache_refresh"):
+			ordered["cache_refresh"] = scheduler["cache_refresh"]
+		if scheduler.has("publish"):
+			ordered["publish"] = scheduler["publish"]
+		if scheduler.has("rumor"):
+			ordered["rumor"] = scheduler["rumor"]
+		ordered["slice"] = slice
+		if scheduler.has("waits"):
+			ordered["waits"] = scheduler["waits"]
+		scheduler = ordered
+	if not scheduler.is_empty():
+		out["scheduler"] = scheduler
+	return out
+
+
+static func _import_flight(runtime: WyrdRuntime, data: Dictionary) -> void:
+	if not data.has("flight"):
+		runtime.set_slice_remainder(0)
+		if runtime.scheduler() != null:
+			runtime.scheduler().clear_carry()
+			if _whole(data.get("schema_version", -1), -1) >= SCHEMA_VERSION:
+				runtime.scheduler().clear_dirty()
+		if runtime.rumors != null:
+			runtime.rumors.clear_flight()
+		if runtime.publish != null:
+			runtime.publish.clear()
+		return
+	var flight := _dict(data.get("flight", {}))
+	if runtime.rumors != null:
+		runtime.rumors.import_state(_dict(flight.get("rumor", {})))
+	if runtime.publish != null:
+		runtime.publish.import_state(_dict(flight.get("publish", {})))
+	var scheduler := _dict(flight.get("scheduler", {}))
+	if runtime.scheduler() != null:
+		runtime.scheduler().import_carry(scheduler)
+	runtime.set_slice_remainder(_whole(scheduler.get("slice", 0), 0))
 
 
 static func _dict(value: Variant) -> Dictionary:
