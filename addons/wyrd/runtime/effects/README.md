@@ -6,7 +6,7 @@
 
 `believe` and `declare` write a stored fact into `believed/<agent>` or `held/<group>`. `unbelieve` and `retract` remove one key. Those writes do not change `world` or `known`, and they do not update provenance. A change logs one `belief` line when tracing is on. The same value again, or clearing a missing key, does not.
 
-`learn` writes `known/<agent>`. `forget` removes one key. Neither changes `world`, `believed`, or `held`, and learning does not clear a belief. A change logs one `knowledge` line. A deed with `reveals` and `claim` writes that fact for each witness: `saw` learns it, and `heard` or `inferred` believes it. Other agents are left alone.
+`learn` writes `known/<agent>`. `forget` removes one key. Neither changes `world`, `believed`, or `held`, and learning does not clear a belief. A change logs one `knowledge` line. A deed with `reveals` and `claim` writes that fact for each witness: `saw` learns it, and `heard` or `inferred` believes it. Other agents are left alone. A registered rumor policy may also offer that claim along relationship kinds. That offer writes `believed/<listener>` only. See `runtime/rumor/README.md`.
 
 `record deed` calls the deed log. Set literals in arguments are read from the argument's source text, because the expression emitter does not push a set value.
 

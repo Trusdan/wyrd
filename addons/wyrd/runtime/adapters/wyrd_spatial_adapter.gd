@@ -6,7 +6,9 @@ extends RefCounted
 ## @experimental
 ## Signatures follow the design sketch. A missing comparison returns [constant INF] once a host
 ## implements [method distance]. These default bodies are not implemented.
-## Precise versus coarse results are a later milestone.
+## [method precision] answers [code]precise[/code] or [code]coarse[/code] for a place.
+## The default is [code]precise[/code] and does not [code]push_error[/code].
+## Precise rumor hops read it. A coarse place does not spread in this slice.
 
 func nearby(center: StringName, radius_m: float, filter: WyrdEntityFilter) -> PackedStringArray:
 	var tag_name := &""
@@ -41,6 +43,12 @@ func can_reach(agent: StringName, place: StringName) -> bool:
 ## Entities that perceived a deed at [param place]. Empty when the host has no list.
 func witnesses_of(_actor: StringName, _target: StringName, _place: StringName) -> PackedStringArray:
 	return PackedStringArray()
+
+
+## [code]precise[/code] or [code]coarse[/code]. The default is [code]precise[/code].
+## It does not [code]push_error[/code]. An unknown place stays precise.
+func precision(_place: StringName) -> StringName:
+	return &"precise"
 
 
 ## How [param observer] perceived a deed. [code]saw[/code], [code]heard[/code],

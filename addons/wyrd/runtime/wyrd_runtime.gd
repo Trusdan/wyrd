@@ -22,6 +22,7 @@ var events: WyrdEvents
 var roles: WyrdRoles
 var deeds: WyrdDeedLog
 var social: WyrdSocial
+var rumors: WyrdRumor
 var effects: WyrdEffects
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
@@ -104,6 +105,18 @@ func _init() -> void:
 	_queue.cache_handler = Callable(social, &"rebuild_cached")
 	social.members_of = Callable(self, &"_members")
 	social.on_reputation = Callable(self, &"_trace_reputation")
+	rumors = WyrdRumor.new()
+	rumors.social = social
+	rumors.facts = facts
+	rumors.config_of = Callable(self, &"config")
+	rumors.seed_of = Callable(self, &"game_seed")
+	rumors.now_of = Callable(self, &"now_minutes")
+	rumors.spatial_of = Callable(self, &"_spatial")
+	rumors.score_of = Callable(self, &"credibility_score")
+	rumors.threshold_of = Callable(self, &"credibility_threshold")
+	rumors.trace_of = Callable(self, &"_trace_rumor")
+	rumors.enqueue_hop = Callable(self, &"_enqueue_rumor")
+	_queue.rumor_handler = Callable(rumors, &"hop")
 	roles.social = social
 	roles.deeds = deeds
 	roles.facts = facts
@@ -215,6 +228,15 @@ func register_credibility(fn: Callable) -> void:
 	_credibility = fn
 
 
+## Copies [param policy] into the precise rumor list. Not saved.
+## The first policy whose verb list matches the deed is the one that spreads.
+func register_rumor_policy(policy: WyrdRumorPolicy) -> void:
+	if rumors == null:
+		push_error("WyrdRuntime.register_rumor_policy: rumors are missing")
+		return
+	rumors.register(policy)
+
+
 ## Default is [code]disposition(listener, speaker) / 100[/code]. An override is used raw.
 func credibility_score(listener: StringName, speaker: StringName) -> float:
 	if _credibility.is_valid():
@@ -272,6 +294,8 @@ func start_new_game(seed_value: int) -> void:
 	_clear_belief_cache()
 	deeds.clear()
 	social.clear_state()
+	if rumors != null:
+		rumors.clear_flight()
 	roles.clear()
 	_reset_event_memory()
 	_arm_queue()
@@ -357,6 +381,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	facts.bind_schema(null)
 	deeds.clear()
 	social.clear_state()
+	if rumors != null:
+		rumors.clear_flight()
 	roles.bind_content(null)
 	roles.clear()
 	if manifest == null:
@@ -755,6 +781,46 @@ func _enqueue_cache(token: String) -> void:
 	_queue.push("cache_refresh", token)
 
 
+func _enqueue_rumor(token: String) -> void:
+	_queue.push("rumor", token)
+
+
+func _trace_rumor(kind: String, fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if kind == "rumor_adopt":
+		fields["score"] = _score_text(float(fields.get("score", 0.0)))
+	if not _trace_allows(fields):
+		return
+	trace_add(kind, fields)
+	if kind == "rumor_hop":
+		print(
+			"wyrd rumor hop deed=%s policy=%s from=%s to=%s hop=%d key=%s taken=%s reason=%s"
+			% [
+				str(fields.get("deed", "")),
+				str(fields.get("path", "")),
+				str(fields.get("from", "")),
+				str(fields.get("to", "")),
+				int(fields.get("hop", 0)),
+				str(fields.get("key", "")),
+				str(fields.get("taken", "")),
+				str(fields.get("reason", "")),
+			]
+		)
+	elif kind == "rumor_adopt":
+		print(
+			"wyrd rumor adopt listener=%s speaker=%s policy=%s key=%s score=%s accepted=%s"
+			% [
+				str(fields.get("listener", "")),
+				str(fields.get("speaker", "")),
+				str(fields.get("path", "")),
+				str(fields.get("key", "")),
+				str(fields.get("score", "")),
+				str(fields.get("accepted", "")),
+			]
+		)
+
+
 func _trace_social_cache(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -896,6 +962,8 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 	if report.ok:
 		_slice_carry = 0
 		_queue.clear_carry()
+		if rumors != null:
+			rumors.clear_flight()
 		_reset_event_memory()
 		_clear_belief_cache()
 	return report
@@ -1810,8 +1878,11 @@ func loaded_fact_key() -> String:
 	return _rpn.last_fact_key
 
 
-func _on_deed(_deed: Dictionary) -> void:
+func _on_deed(deed: Dictionary) -> void:
 	_mark_calls(_DEED_CALLS)
+	if rumors == null or _perception_key.is_empty():
+		return
+	rumors.note_deed(deed, _perception_key, _perception_value)
 
 
 func _on_perceived(agent: StringName, mode: StringName, verb: StringName) -> void:

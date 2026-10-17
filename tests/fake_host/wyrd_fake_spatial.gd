@@ -11,6 +11,7 @@ var _nearby: Dictionary = {}
 var nearby_calls: int = 0
 var _witnesses: Dictionary = {}
 var _perception: Dictionary = {}
+var _precision: Dictionary = {}
 
 
 func set_place(entity: StringName, place: StringName) -> void:
@@ -41,6 +42,17 @@ func set_nearby(
 
 func set_witnesses(place: StringName, ids: PackedStringArray) -> void:
 	_witnesses[place] = ids.duplicate()
+
+
+## [param mode] is [code]precise[/code] or [code]coarse[/code]. An unmarked place stays precise.
+func set_precision(place: StringName, mode: StringName) -> void:
+	_precision[place] = mode
+
+
+func precision(place: StringName) -> StringName:
+	if not _precision.has(place):
+		return &"precise"
+	return _precision[place] as StringName
 
 
 ## One mode for [param observer] at [param place]. An empty place applies at every place.
