@@ -21,6 +21,10 @@ func test_full_pack_hash_is_stable() -> void:
 	assert_eq(int(first["info"]["speakers"]), 20)
 	assert_eq(_deed_rows(first["dir"]), 50000)
 	assert_eq(_storylet_count(first["dir"]), 4000)
+	assert_false(DirAccess.dir_exists_absolute(WyrdScalePack.rumors_root(first["dir"])))
+	WyrdScalePack.write_rumors(first["dir"], "full")
+	assert_eq(WyrdScalePack.hash_release(first["dir"]), first["hash"])
+	_assert_rumors(first["dir"], "full", 500, 1000, 100)
 
 
 func test_m7_bench_metrics_are_registered() -> void:
@@ -42,14 +46,36 @@ func test_m7_bench_metrics_are_registered() -> void:
 	assert_eq(WyrdPerfScale.SNAPSHOT_PREFIX, "harbor.scale_000")
 	assert_eq(WyrdPerfScale.SNAPSHOT_OFFSET, 0)
 	assert_eq(WyrdPerfScale.SNAPSHOT_LIMIT, 50)
+	var developer: PackedStringArray = ["compile.strict", "compile.tie_lint"]
+	var added: PackedStringArray = [
+		"memory.quests",
+		"rumor.tick",
+		"scheduler.tick",
+		"publish.issue",
+		"deeds_known_to",
+		"memory.believers",
+		"memory.per_belief",
+		"save.believers",
+		"save.flight",
+		"save.flight_bytes",
+		"load.flight",
+		"deeds.index",
+		"deeds.scan",
+		"memory.resident",
+	]
 	for item in WyrdPerfScale.metrics():
 		var row: Dictionary = item
 		var name := str(row["name"])
-		if name != "debug.snapshot" and name != "debug.snapshot_page" and name != "debug.snapshot_section" and name != "director.query_coverage":
-			continue
-		assert_eq(str(row["stat"]), "median")
-		assert_eq(str(row["unit"]), "s")
-		assert_gt(float(row["budget"]), 0.0)
+		if developer.has(name):
+			assert_false(bool(row["absolute"]))
+		else:
+			assert_false(row.has("absolute"))
+		if added.has(name) or name == "debug.snapshot" or name == "debug.snapshot_page" or name == "debug.snapshot_section" or name == "director.query_coverage":
+			assert_eq(str(row["stat"]), "median")
+			assert_gt(float(row["budget"]), 0.0)
+		if name == "memory.resident":
+			assert_eq(float(row["budget"]), WyrdPerfScale.MEMORY_PEAK_BUDGET)
+			assert_eq(str(row["unit"]), "B")
 
 
 func test_smoke_is_one_tenth_and_compiles_strict() -> void:
@@ -69,6 +95,13 @@ func test_smoke_is_one_tenth_and_compiles_strict() -> void:
 	var stories := WyrdCli.execute(PackedStringArray(["check", "--strict", story_dir]))
 	assert_eq(int(stories["exit_code"]), 0, str(stories["output"]))
 	_assert_query(story_dir, 8)
+	WyrdScalePack.write_rumors(written["dir"], "smoke")
+	assert_eq(WyrdScalePack.hash_release(written["dir"]), written["hash"])
+	_assert_rumors(written["dir"], "smoke", 50, 100, 10)
+	var rumors := WyrdCli.execute(PackedStringArray([
+		"check", "--strict", WyrdScalePack.rumors_root(written["dir"]),
+	]))
+	assert_eq(int(rumors["exit_code"]), 0, str(rumors["output"]))
 
 
 func _write(profile_name: String) -> Dictionary:
@@ -122,8 +155,47 @@ func _deed_rows(dir: String) -> int:
 var _dirs: Array[String] = []
 
 
+func _assert_rumors(dir: String, profile_name: String, npcs: int, friends: int, coarse: int) -> void:
+	var root := WyrdScalePack.rumors_root(dir)
+	assert_eq(root, "%s_rumors" % dir)
+	var text := FileAccess.get_file_as_string(root.path_join("harbor.wyrd"))
+	assert_true(text.contains("document harbor_gazette"))
+	assert_true(text.contains("publishes_by harbor_council"))
+	assert_true(text.contains("harbor.gazette : symbol"))
+	var spec := WyrdScalePack.read_rumors(dir)
+	assert_eq(str(spec["profile"]), profile_name)
+	assert_eq(int(spec["npcs"]), npcs)
+	assert_eq(str(spec["coarse"]), "gullhaven")
+	assert_eq(str(spec["precise"]), "dock")
+	assert_eq((spec["friends"] as Array).size(), friends)
+	var first: PackedStringArray = (spec["friends"] as Array)[0]
+	assert_eq(String(first[0]), "dock_hand_000")
+	assert_eq(String(first[1]), "dock_hand_001")
+	var places: Dictionary = spec["places"]
+	assert_eq(places.size(), npcs)
+	assert_eq(str(places["dock_hand_000"]), "gullhaven")
+	assert_eq(str(places["dock_hand_%03d" % coarse]), "dock")
+	var ids: PackedStringArray = []
+	for item in spec["policies"]:
+		var row: Dictionary = item
+		ids.append(str(row["id"]))
+	assert_true(ids.has("harbor_whisper"))
+	assert_true(ids.has("harbor_reach"))
+	for item in spec["policies"]:
+		var row: Dictionary = item
+		if str(row["id"]) != "harbor_whisper":
+			continue
+		assert_eq(str(row["verb"]), "whispered")
+		assert_eq(str(row["field"]), "harbor.toll_fate")
+		assert_eq(str(row["to"]), "waived")
+		assert_eq(int(row["hops"]), 2)
+		assert_eq(float(row["keep"]), 0.0)
+		assert_eq(str(row["kind"]), "friend")
+
+
 func after_each() -> void:
 	for dir in _dirs:
+		WyrdScalePack.remove_dir(WyrdScalePack.rumors_root(dir))
 		WyrdScalePack.remove_dir(WyrdScalePack.storylets_root(dir))
 		WyrdScalePack.remove_dir(dir)
 	_dirs.clear()

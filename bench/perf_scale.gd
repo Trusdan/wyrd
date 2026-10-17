@@ -33,9 +33,25 @@ const OWN_AGENT := "dock_hand_000"
 const GROUP_AGENT := "dock_hand_001"
 const BELIEF_FACT := "harbor.scale_00000"
 const VERBS: PackedStringArray = ["paid", "arrived", "whispered"]
-## Proposed warning for memory.peak. 384 MiB, sized for an 8 GB laptop.
+## Proposed warning for memory.peak and memory.resident. 384 MiB, sized for an 8 GB laptop.
 ## The bench still only warns on this budget.
 const MEMORY_PEAK_BUDGET := 402653184.0
+## Deed [code]within[/code] window for the index-versus-scan pair. The clock sits
+## on the newest scale deed so the window is a slice of the log, not the whole log.
+const DEED_WITHIN := 180
+## Ticks spent draining the rumor pack when counting believers. The timed rumor
+## samples do not drain the queue.
+const RUMOR_DRAIN_TICKS := 64
+const COARSE_STRIDE := 5
+const COARSE_PLACE := "gullhaven"
+const PRECISE_PLACE := "dock"
+const RUMOR_KIND := "friend"
+const PRECISE_POLICY := "harbor_whisper"
+const REACH_POLICY := "harbor_reach"
+const MUTATION_FIELD := "harbor.toll_fate"
+const MUTATION_TO := "waived"
+const GAZETTE := "harbor_gazette"
+const GAZETTE_FACT := "harbor.gazette"
 
 
 static func profile(name: String) -> Dictionary:
@@ -69,9 +85,11 @@ static func samples_for(name: String) -> int:
 
 
 ## [code]stat[/code] is the value the budget and the regression ratio use.
+## [code]absolute[/code] false means the 20% regression gate is the only judge.
+## [code]compile.strict[/code] and [code]compile.tie_lint[/code] are developer-only.
 static func metrics() -> Array:
 	return [
-		{"budget": 20.0, "name": "compile.strict", "stat": "median", "unit": "s"},
+		{"absolute": false, "budget": 20.0, "name": "compile.strict", "stat": "median", "unit": "s"},
 		{"budget": 0.002, "name": "tick.recheck", "stat": "p95", "unit": "s"},
 		{"budget": 0.000005, "name": "believes.own", "stat": "median", "unit": "s"},
 		{"budget": 0.000005, "name": "believes.group", "stat": "median", "unit": "s"},
@@ -87,8 +105,29 @@ static func metrics() -> Array:
 		{"budget": 0.02, "name": "director.query", "stat": "median", "unit": "s"},
 		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
 		{"budget": 0.05, "name": "director.why_not", "stat": "median", "unit": "s"},
-		{"budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
+		{"absolute": false, "budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
 		{"budget": 9.0, "name": "debug.snapshot", "stat": "median", "unit": "s"},
 		{"budget": 2.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
 		{"budget": 0.1, "name": "debug.snapshot_section", "stat": "median", "unit": "s"},
+		# Proposed from the full-profile medians. They warn until Corey confirms them.
+		# memory.quests: 164.5 MiB measured, ceiling 256 MiB.
+		{"budget": 268435456.0, "name": "memory.quests", "stat": "median", "unit": "B"},
+		# rumor.tick and scheduler.tick: about 9.4 ms measured, ceiling 20 ms.
+		{"budget": 0.02, "name": "rumor.tick", "stat": "median", "unit": "s"},
+		{"budget": 0.02, "name": "scheduler.tick", "stat": "median", "unit": "s"},
+		# publish.issue 256 ms and deeds_known_to 224 ms, ceiling 0.5 s.
+		{"budget": 0.5, "name": "publish.issue", "stat": "median", "unit": "s"},
+		{"budget": 0.5, "name": "deeds_known_to", "stat": "median", "unit": "s"},
+		# Believer index 564 KiB, 363 B each, 54 KiB of JSON.
+		{"budget": 1048576.0, "name": "memory.believers", "stat": "median", "unit": "B"},
+		{"budget": 1024.0, "name": "memory.per_belief", "stat": "median", "unit": "B"},
+		{"budget": 131072.0, "name": "save.believers", "stat": "median", "unit": "B"},
+		# In-flight save 463 ms and 7.73 MiB, load 778 ms.
+		{"budget": 1.0, "name": "save.flight", "stat": "median", "unit": "s"},
+		{"budget": 10485760.0, "name": "save.flight_bytes", "stat": "median", "unit": "B"},
+		{"budget": 1.5, "name": "load.flight", "stat": "median", "unit": "s"},
+		# Indexed score 0.59 ms, full scan 14.4 ms.
+		{"budget": 0.002, "name": "deeds.index", "stat": "median", "unit": "s"},
+		{"budget": 0.05, "name": "deeds.scan", "stat": "median", "unit": "s"},
+		{"budget": MEMORY_PEAK_BUDGET, "name": "memory.resident", "stat": "median", "unit": "B"},
 	]

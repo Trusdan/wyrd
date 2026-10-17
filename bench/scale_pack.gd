@@ -37,6 +37,62 @@ static func storylets_root(pack_dir: String) -> String:
 	return "%s_storylets" % pack_dir
 
 
+## Sibling of the quest pack. [method hash_release] does not cover it.
+## [code]harbor.wyrd[/code] is the gazette. [code]graph.txt[/code] is the
+## relationship graph and the rumor policies. The worker attaches mutation
+## callables; the file only names the field.
+static func rumors_root(pack_dir: String) -> String:
+	return "%s_rumors" % pack_dir
+
+
+static func write_rumors(dir: String, profile_name: String) -> void:
+	var counts := WyrdPerfScale.profile(profile_name)
+	if counts.is_empty():
+		push_error("scale pack: unknown profile %s" % profile_name)
+		return
+	var root := rumors_root(dir)
+	remove_dir(root)
+	DirAccess.make_dir_recursive_absolute(root)
+	_store(root.path_join("harbor.wyrd"), _rumor_wyrd())
+	_store(root.path_join("graph.txt"), _rumor_graph(profile_name, counts))
+
+
+static func read_rumors(pack_dir: String) -> Dictionary:
+	var policies: Array = []
+	var friends: Array = []
+	var places := {}
+	var header := {}
+	for line in _read(rumors_root(pack_dir).path_join("graph.txt")).split("\n"):
+		var row := line.strip_edges()
+		if row.is_empty() or row.begins_with("#"):
+			continue
+		if row.begins_with("policy "):
+			policies.append(_policy_row(row))
+			continue
+		if row.begins_with("friend "):
+			var edge := row.split(" ", false)
+			if edge.size() == 3:
+				friends.append(PackedStringArray([edge[1], edge[2]]))
+			continue
+		if row.begins_with("at "):
+			var at := row.split(" ", false)
+			if at.size() == 3:
+				places[at[1]] = at[2]
+			continue
+		var pair := row.split("=", false, 1)
+		if pair.size() == 2:
+			header[pair[0]] = pair[1]
+	return {
+		"coarse": str(header.get("coarse", "")),
+		"friends": friends,
+		"npcs": int(str(header.get("npcs", "0"))),
+		"places": places,
+		"policies": policies,
+		"precise": str(header.get("precise", "")),
+		"profile": str(header.get("profile", "")),
+	}
+
+
 static func hash_release(pack_dir: String) -> String:
 	var ctx := HashingContext.new()
 	ctx.start(HashingContext.HASH_SHA256)
@@ -243,6 +299,95 @@ static func _pack_text(profile_name: String, counts: Dictionary) -> String:
 
 static func _banner() -> String:
 	return "%s\n// seed: %d\nlanguage 1\n" % [_HEADER_NOTE, WyrdPerfScale.SEED]
+
+
+static func _rumor_wyrd() -> String:
+	var lines := PackedStringArray()
+	lines.append(_banner())
+	lines.append("facts")
+	lines.append("  harbor.toll_fate : symbol stored doc: \"What people say happened to the ferry toll.\"")
+	lines.append("  harbor.gazette : symbol stored doc: \"Lines the harbor gazette has printed.\"")
+	lines.append(
+		"document %s \"Harbor Gazette\" publishes_by %s every 1 day delay 1 hour"
+		% [WyrdPerfScale.GAZETTE, WyrdPerfScale.GROUP]
+	)
+	lines.append("  claim harbor.toll_fate")
+	lines.append("  fact %s" % WyrdPerfScale.GAZETTE_FACT)
+	lines.append("  verb whispered")
+	lines.append("quest harbor_toll \"The Harbor Toll\"")
+	lines.append("  start when false")
+	lines.append("  stage note")
+	lines.append("    ~ set harbor.toll_fate = lost_at_sea")
+	lines.append("")
+	return "\n".join(lines)
+
+
+static func _rumor_graph(profile_name: String, counts: Dictionary) -> String:
+	var npcs := int(counts["npcs"])
+	var coarse_n := maxi(1, npcs / WyrdPerfScale.COARSE_STRIDE)
+	var lines := PackedStringArray()
+	lines.append("# Wyrd scale rumor pack. An invented fishing village, not a host game.")
+	lines.append("# This directory is not part of bench/scale_pack.sha256.")
+	lines.append("coarse=%s" % WyrdPerfScale.COARSE_PLACE)
+	lines.append("kind=%s" % WyrdPerfScale.RUMOR_KIND)
+	lines.append("npcs=%d" % npcs)
+	lines.append("precise=%s" % WyrdPerfScale.PRECISE_PLACE)
+	lines.append("profile=%s" % profile_name)
+	lines.append("seed=%d" % WyrdPerfScale.SEED)
+	lines.append(
+		"policy %s chance=1 hops=1 keep=1 kind=%s verb=arrived"
+		% [WyrdPerfScale.REACH_POLICY, WyrdPerfScale.RUMOR_KIND]
+	)
+	lines.append(
+		"policy %s chance=1 field=%s hops=2 keep=0 kind=%s to=%s verb=whispered"
+		% [
+			WyrdPerfScale.PRECISE_POLICY,
+			WyrdPerfScale.MUTATION_FIELD,
+			WyrdPerfScale.RUMOR_KIND,
+			WyrdPerfScale.MUTATION_TO,
+		]
+	)
+	for index in npcs:
+		var src := _npc(index)
+		for step in [1, 2]:
+			var dest := (index + int(step)) % npcs
+			if dest == index:
+				continue
+			lines.append("friend %s %s" % [src, _npc(dest)])
+	for index in npcs:
+		var place := WyrdPerfScale.COARSE_PLACE if index < coarse_n else WyrdPerfScale.PRECISE_PLACE
+		lines.append("at %s %s" % [_npc(index), place])
+	lines.append("")
+	return "\n".join(lines)
+
+
+static func _policy_row(row: String) -> Dictionary:
+	var out := {
+		"chance": 1.0,
+		"field": "",
+		"hops": 1,
+		"id": "",
+		"keep": 1.0,
+		"kind": "",
+		"to": "",
+		"verb": "",
+	}
+	var parts := row.split(" ", false)
+	if parts.size() >= 2:
+		out["id"] = parts[1]
+	for index in range(2, parts.size()):
+		var pair := String(parts[index]).split("=", false, 1)
+		if pair.size() == 2 and out.has(pair[0]):
+			out[pair[0]] = pair[1]
+	out["hops"] = int(str(out["hops"]))
+	out["chance"] = float(str(out["chance"]))
+	out["keep"] = float(str(out["keep"]))
+	out["field"] = str(out["field"])
+	out["id"] = str(out["id"])
+	out["kind"] = str(out["kind"])
+	out["to"] = str(out["to"])
+	out["verb"] = str(out["verb"])
+	return out
 
 
 static func _span(fact_count: int, quest_count: int, quest_index: int) -> Vector2i:
