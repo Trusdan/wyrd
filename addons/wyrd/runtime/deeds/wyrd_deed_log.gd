@@ -65,6 +65,13 @@ var _believers: Dictionary = {}
 var _by_believer: Dictionary = {}
 ## Hour bucket to deed rows. Not saved.
 var _by_time: Dictionary = {}
+## Social pair "source\ttarget" for snapshot. Not saved. Rebuilt with the rows.
+var _pairs: Dictionary = {}
+var _pairs_dirty := false
+var _stamp_gen: int = -1
+var _stamp_now: int = -1
+var _stamp_width: int = -2
+var _stamp_value: int = 0
 var _time_width: int = -1
 ## False selects a full row walk. The indexes stay built.
 var _lookup: bool = true
@@ -121,6 +128,38 @@ func note_believer(deed_id: int, who: StringName, minute: int) -> void:
 	_by_believer[text] = owned
 
 
+## Listener minutes for deeds any key of [param members] believes, copied at this call.
+## The copy does not follow later [method note_believer] writes.
+func believer_snapshot(members: Dictionary) -> Dictionary:
+	var out := {}
+	for deed_id in _believers.keys():
+		var live: Dictionary = _believers[deed_id]
+		var copy := {}
+		for who in live.keys():
+			var name := String(who)
+			if not members.has(name):
+				continue
+			copy[name] = int(live[who])
+		if not copy.is_empty():
+			out[int(deed_id)] = copy
+	return out
+
+
+## Live map of listener to adoption minute for [param deed_id]. Do not mutate it.
+func believer_minutes(deed_id: int) -> Dictionary:
+	if deed_id <= 0 or not _believers.has(deed_id):
+		return {}
+	return _believers[deed_id]
+
+
+## Live map of deed id to adoption minute for [param who]. Do not mutate it.
+func believer_index(who: StringName) -> Dictionary:
+	var text := String(who)
+	if who == &"" or not _by_believer.has(text):
+		return {}
+	return _by_believer[text]
+
+
 ## Deeds [param who] believes through a rumor, sorted by id.
 ## Each item is [code]{id, t}[/code]. [code]t[/code] is the adoption minute.
 func believer_deeds(who: StringName) -> Array:
@@ -145,7 +184,21 @@ func _index_rows(table: Dictionary, name: StringName) -> PackedInt32Array:
 
 ## Changes when a row is added, replaced, or dropped, or when decay can move.
 func weight_stamp() -> int:
-	return WyrdHash.combine(_gen, _bucketed(_now()))
+	var now := _now()
+	var width := _bucket()
+	if _stamp_gen == _gen and _stamp_now == now and _stamp_width == width:
+		return _stamp_value
+	var bucket := now if width <= 0 else int(now / float(width)) * width
+	_stamp_gen = _gen
+	_stamp_now = now
+	_stamp_width = width
+	_stamp_value = WyrdHash.combine(_gen, bucket)
+	return _stamp_value
+
+
+## Bumps when rows are replaced. A publish cursor restarts when this changes.
+func generation() -> int:
+	return _gen
 
 
 func import_state(data: Dictionary) -> void:
@@ -254,6 +307,7 @@ func _append_stored(row: Dictionary) -> void:
 	_index(_by_verb, StringName(_verb[index]), index)
 	_row_of[int(_id[index])] = index
 	_index_witnesses(index)
+	_pairs_dirty = true
 	_note_time(index)
 	for item in row.get("believers", []):
 		if item is Dictionary:
@@ -430,7 +484,10 @@ func clear() -> void:
 	_believers.clear()
 	_by_believer.clear()
 	_by_time.clear()
+	_pairs.clear()
+	_pairs_dirty = false
 	_time_width = -1
+	_stamp_gen = -1
 	_gen += 1
 
 
@@ -492,6 +549,8 @@ func record(
 	_index(_by_verb, verb, row)
 	_row_of[int(_id[row])] = row
 	_index_witnesses(row)
+	if not _pairs_dirty:
+		_index_pairs(row)
 	_note_time(row)
 	_gen += 1
 	var deed := row_at(row)
@@ -531,6 +590,69 @@ func actor_at(index: int) -> StringName:
 
 func target_at(index: int) -> StringName:
 	return StringName(_target[index])
+
+
+func id_at(index: int) -> int:
+	return int(_id[index])
+
+
+func minute_at(index: int) -> int:
+	return int(_t[index])
+
+
+func place_at(index: int) -> StringName:
+	return StringName(_place[index])
+
+
+func magnitude_at(index: int) -> float:
+	return _magnitude[index]
+
+
+func memorable_at(index: int) -> bool:
+	return _memorable[index] != 0
+
+
+## Rows whose verb is [param verb], in log order. The array is the live index.
+func verb_indexes(verb: StringName) -> PackedInt32Array:
+	return _index_rows(_by_verb, verb)
+
+
+## Rows in hour buckets at or after [param minute]. The caller still checks the minute.
+func rows_since(minute: int) -> PackedInt32Array:
+	_ensure_time()
+	var start := _bucketed(minute if minute > 0 else 0)
+	var merged := PackedInt32Array()
+	for key in _by_time.keys():
+		if int(key) < start:
+			continue
+		var bucket_rows: PackedInt32Array = _by_time[key]
+		for row in bucket_rows:
+			merged.append(int(row))
+	return merged
+
+
+func witness_count_at(index: int) -> int:
+	return int(_wit_n[index])
+
+
+func witness_name_at(index: int, offset: int) -> String:
+	return _witnesses[int(_wit_at[index]) + offset]
+
+
+func witness_mode_name_at(index: int, offset: int) -> String:
+	return _modes[int(_wit_at[index]) + offset]
+
+
+## Pair keys [code]source\ttarget[/code] from deed targets and witnesses. Not saved.
+func pair_keys() -> PackedStringArray:
+	_ensure_pairs()
+	var keys := PackedStringArray()
+	keys.resize(_pairs.size())
+	var at := 0
+	for key in _pairs.keys():
+		keys[at] = String(key)
+		at += 1
+	return keys
 
 
 func witnesses_at(index: int) -> PackedStringArray:
@@ -831,6 +953,30 @@ func _index_witnesses(index: int) -> void:
 	var at := int(_wit_at[index])
 	for offset in int(_wit_n[index]):
 		_index(_by_witness, StringName(_witnesses[at + offset]), index)
+
+
+func _ensure_pairs() -> void:
+	if not _pairs_dirty:
+		return
+	_pairs.clear()
+	for index in size():
+		_index_pairs(index)
+	_pairs_dirty = false
+
+
+func _index_pairs(index: int) -> void:
+	var actor := String(_actor[index])
+	if actor.is_empty():
+		return
+	var target := String(_target[index])
+	if not target.is_empty():
+		_pairs["%s\t%s" % [target, actor]] = true
+	var at := int(_wit_at[index])
+	for offset in int(_wit_n[index]):
+		var source := _witnesses[at + offset]
+		if source.is_empty():
+			continue
+		_pairs["%s\t%s" % [source, actor]] = true
 
 
 func _note_time(index: int) -> void:

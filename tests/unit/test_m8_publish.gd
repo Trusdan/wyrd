@@ -597,6 +597,144 @@ quest publishes_by "The Harbor Guild"
 	assert_eq(reserved.codes.count("E_RESERVED_WORD"), 2, str(reserved.messages))
 
 
+func test_indexed_known_to_matches_the_scan() -> void:
+	var runtime := _boot(_QUERY, 4)
+	_guild(runtime, PackedStringArray(["dock_hand", "ferry_master"]))
+	_host(runtime).spatial.set_perception(&"dock_hand", &"heard")
+	_host(runtime).spatial.set_perception(&"ferry_master", &"saw")
+	_witness(runtime, &"whispered", PackedStringArray(["dock_hand"]))
+	runtime.tick(10)
+	_witness(runtime, &"whispered", PackedStringArray(["ferry_master", "dock_hand"]))
+	runtime.tick(20)
+	runtime.deeds.note_believer(1, &"ferry_master", 25)
+	var indexed := runtime.deeds_known_to(&"harbor_guild", 10, &"whispered")
+	runtime.deeds.set_lookup(false)
+	var scanned := runtime.deeds_known_to(&"harbor_guild", 10, &"whispered")
+	assert_eq(JSON.stringify(indexed), JSON.stringify(scanned))
+	runtime.deeds.set_lookup(true)
+	var wider := runtime.deeds_known_to(&"harbor_guild", 0, &"")
+	runtime.deeds.set_lookup(false)
+	assert_eq(JSON.stringify(wider), JSON.stringify(runtime.deeds_known_to(&"harbor_guild", 0, &"")))
+	assert_gt(indexed.size(), 0)
+
+
+func test_sliced_issue_matches_one_shot_and_restarts_on_load() -> void:
+	var runtime := _arm(_boot(_HOUR, 4))
+	for _index in 6:
+		_witness(runtime, &"whispered", PackedStringArray(["dock_hand"]))
+	runtime.facts.set_in(&"harbor.toll_fate", &"waived", &"believed/dock_hand")
+	runtime.restore_clock(4, 60)
+	runtime.config().publish_slice_rows = 1
+	runtime.publish.enqueue_due()
+	var tokens := runtime.scheduler().carry_tokens("publish")
+	assert_eq(tokens.size(), 1)
+	var token := String(tokens[0])
+	runtime.trace.enabled = true
+	assert_false(runtime.publish.issue(token))
+	assert_eq(_lines(runtime).size(), 0)
+	var steps := 1
+	while steps < 30 and not runtime.publish.issue(token):
+		steps += 1
+	assert_gt(steps, 1)
+	var line: String = _lines(runtime)[0]
+	var phases: Array = []
+	for row in _rows(runtime, "publish_cursor"):
+		phases.append(String(row["phase"]))
+	assert_eq(String(phases[0]), "start")
+	assert_eq(String(phases[phases.size() - 1]), "done")
+	var whole := _arm(_boot(_HOUR, 4))
+	for _index in 6:
+		_witness(whole, &"whispered", PackedStringArray(["dock_hand"]))
+	whole.facts.set_in(&"harbor.toll_fate", &"waived", &"believed/dock_hand")
+	whole.tick(60)
+	assert_eq(_lines(whole), [line])
+	var paused := _arm(_boot(_HOUR, 4))
+	for _index in 6:
+		_witness(paused, &"whispered", PackedStringArray(["dock_hand"]))
+	paused.facts.set_in(&"harbor.toll_fate", &"waived", &"believed/dock_hand")
+	paused.restore_clock(4, 60)
+	paused.config().publish_slice_rows = 1
+	paused.publish.enqueue_due()
+	var paused_token := String(paused.scheduler().carry_tokens("publish")[0])
+	assert_false(paused.publish.issue(paused_token))
+	var data := paused.save_state()
+	assert_eq(int(data["schema_version"]), 3)
+	var flight: Dictionary = data["flight"]
+	var publish: Dictionary = flight["publish"]
+	assert_eq(String(publish["cursor"]), paused_token)
+	assert_true(publish.has("beliefs"))
+	assert_true(publish.has("claim"))
+	var loaded := _boot(_HOUR, 4)
+	assert_true(loaded.load_state(data).ok)
+	# Group membership lives on the host, so a load does not bring it back.
+	_guild(loaded, PackedStringArray(["dock_hand", "ferry_master"]))
+	loaded.config().publish_slice_rows = 1
+	loaded.trace.enabled = true
+	loaded.trace.clear()
+	var resumed := String(loaded.scheduler().carry_tokens("publish")[0])
+	var guard := 0
+	while guard < 30 and not loaded.publish.issue(resumed):
+		guard += 1
+	assert_eq(_lines(loaded), [line])
+	var restarted: Array = _rows(loaded, "publish_cursor")
+	assert_eq(String(restarted[0]["phase"]), "resume")
+	assert_eq(loaded.scheduler().carry("publish"), 1)
+	assert_false(String(loaded.facts.get(&"harbor.gazette")).contains("skip "))
+
+
+func test_mid_issue_save_keeps_the_frozen_snapshot() -> void:
+	var line := _late_belief_line(false, 1, false)
+	for point in [1, 2, 3]:
+		assert_eq(_late_belief_line(true, point, false), line, "slice %d" % point)
+	assert_ne(_late_belief_line(true, 1, true), line)
+
+
+func _late_belief_line(do_save: bool, point: int, drop_beliefs: bool) -> String:
+	var runtime := _arm(_boot(_HOUR, 4))
+	for _index in 6:
+		_witness(runtime, &"whispered", PackedStringArray(["dock_hand"]))
+	runtime.facts.set_in(&"harbor.toll_fate", &"waived", &"believed/dock_hand")
+	runtime.restore_clock(4, 60)
+	runtime.config().publish_slice_rows = 1
+	runtime.publish.enqueue_due()
+	var token := String(runtime.scheduler().carry_tokens("publish")[0])
+	var slices := 0
+	while slices < 30:
+		slices += 1
+		var done := runtime.publish.issue(token)
+		if slices == point and not done:
+			runtime.deeds.note_believer(1, &"ferry_master", 60)
+			runtime.facts.set_in(&"harbor.toll_fate", &"stolen", &"believed/dock_hand")
+			if do_save:
+				return _load_open_issue(runtime, drop_beliefs)
+		if done:
+			break
+	return String(_lines(runtime)[0])
+
+
+func _load_open_issue(runtime: WyrdRuntime, drop_beliefs: bool) -> String:
+	var data := runtime.save_state()
+	var publish: Dictionary = data["flight"]["publish"]
+	assert_true(publish.has("beliefs"))
+	if drop_beliefs:
+		publish.erase("beliefs")
+		publish.erase("claim")
+		data["flight"]["publish"] = publish
+	var loaded := _boot(_HOUR, 4)
+	assert_true(loaded.load_state(data).ok)
+	_guild(loaded, PackedStringArray(["dock_hand", "ferry_master"]))
+	loaded.config().publish_slice_rows = 1
+	loaded.trace.enabled = true
+	loaded.trace.clear()
+	var resumed := String(loaded.scheduler().carry_tokens("publish")[0])
+	var guard := 0
+	while guard < 30 and not loaded.publish.issue(resumed):
+		guard += 1
+	var phases: Array = _rows(loaded, "publish_cursor")
+	assert_eq(String(phases[0]["phase"]), "restart" if drop_beliefs else "resume")
+	return String(_lines(loaded)[0])
+
+
 func _arm(runtime: WyrdRuntime) -> WyrdRuntime:
 	_guild(runtime, PackedStringArray(["dock_hand", "ferry_master"]))
 	_host(runtime).spatial.set_perception(&"dock_hand", &"heard")

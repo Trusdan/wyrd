@@ -17,6 +17,19 @@ const TOP_BIT_SIX: Array[int] = [
 const DECISION_FOUR: Array[int] = [737177618, 2436667011, 2434477843, 1390521447]
 
 
+func test_decision_unit_matches_the_first_draw() -> void:
+	var keys: Array[StringName] = [
+		&"room",
+		&"1\tline_fisher\tdock_hand\t1",
+		&"mutate\t1\ta\tb\t1\tharbor.toll_fate\t0",
+	]
+	for seed_value in [0, 7, 11, 29]:
+		for key in keys:
+			for bucket in [0, 4, 60]:
+				var expected := WyrdRng.for_decision(seed_value, &"rumor", key, bucket).randf()
+				assert_eq(WyrdRng.decision_unit(seed_value, &"rumor", key, bucket), expected)
+
+
 func test_same_seed_matches_across_instances() -> void:
 	var first := WyrdRng.new(1)
 	var second := WyrdRng.new(1)

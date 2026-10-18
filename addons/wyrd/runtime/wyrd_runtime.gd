@@ -80,6 +80,7 @@ func _init() -> void:
 	_config = WyrdConfig.new()
 	_queue = WyrdScheduler.new()
 	_queue.trace_hook = Callable(self, &"_trace_scheduler")
+	_queue.tracing_of = Callable(self, &"_tracing_on")
 	_ctx = WyrdConditionCtx.new()
 	_rpn = WyrdRpnEval.new()
 	_signatures = WyrdSignatures.new()
@@ -87,6 +88,8 @@ func _init() -> void:
 	facts.on_keys = Callable(self, &"_mark_keys")
 	facts.tracer = Callable(self, &"note")
 	facts.on_belief = Callable(self, &"_trace_belief")
+	facts.on_belief_touch = Callable(self, &"_clear_belief_cache")
+	facts.belief_trace_of = Callable(self, &"_tracing_on")
 	facts.on_knowledge = Callable(self, &"_trace_knowledge")
 	deeds.on_perceived = Callable(self, &"_on_perceived")
 	facts.on_resolved = Callable(self, &"_on_resolved")
@@ -103,6 +106,7 @@ func _init() -> void:
 	social.config_of = Callable(self, &"config")
 	social.enqueue_cache = Callable(self, &"_enqueue_cache")
 	social.on_cache = Callable(self, &"_trace_social_cache")
+	social.tracing_of = Callable(self, &"_tracing_on")
 	_queue.cache_handler = Callable(social, &"rebuild_cached")
 	social.members_of = Callable(self, &"_members")
 	social.on_reputation = Callable(self, &"_trace_reputation")
@@ -117,6 +121,7 @@ func _init() -> void:
 	rumors.score_of = Callable(self, &"credibility_score")
 	rumors.threshold_of = Callable(self, &"credibility_threshold")
 	rumors.trace_of = Callable(self, &"_trace_rumor")
+	rumors.tracing_of = Callable(self, &"_tracing_on")
 	rumors.enqueue_hop = Callable(self, &"_enqueue_rumor")
 	_queue.rumor_handler = Callable(rumors, &"hop")
 	publish = WyrdPublish.new()
@@ -128,6 +133,7 @@ func _init() -> void:
 	publish.content_of = Callable(self, &"content")
 	publish.eval_of = Callable(self, &"eval_bool")
 	publish.trace_of = Callable(self, &"_trace_publish")
+	publish.cursor_trace_of = Callable(self, &"_trace_publish_cursor")
 	publish.enqueue_of = Callable(self, &"_enqueue_publish")
 	_queue.publish_handler = Callable(publish, &"issue")
 	roles.social = social
@@ -821,6 +827,28 @@ func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> 
 	if publish == null:
 		return []
 	return publish.deeds_known_to(group, since, filter)
+
+
+func _tracing_on() -> bool:
+	return trace != null and trace.enabled
+
+
+func _trace_publish_cursor(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("publish_cursor", fields)
+	print(
+		"wyrd publish cursor document=%s issue=%s phase=%s rows=%d budget=%d"
+		% [
+			str(fields.get("document", "")),
+			str(fields.get("issue", "")),
+			str(fields.get("phase", "")),
+			int(fields.get("rows", 0)),
+			int(fields.get("budget", 0)),
+		]
+	)
 
 
 func _trace_publish(fields: Dictionary) -> void:

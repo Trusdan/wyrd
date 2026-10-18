@@ -37,6 +37,10 @@ var on_reputation: Callable = Callable()
 var enqueue_cache: Callable = Callable()
 ## [code](fields: Dictionary)[/code]. Not saved. The runtime logs it when tracing is on.
 var on_cache: Callable = Callable()
+## [code]() -> bool[/code]. When this is valid and false, cache hits do not build a trace row.
+var tracing_of: Callable = Callable()
+var _target_cache: Dictionary = {}
+var _target_rev: int = -1
 
 var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
@@ -54,6 +58,19 @@ var _disp_cache: Dictionary = {}
 var _rep_cache: Dictionary = {}
 var _path_cache: Dictionary = {}
 var _booted: bool = false
+var _stamp_ready := false
+var _stamp_cfg: WyrdConfig
+var _stamp_default := 0
+var _stamp_hour := 0
+var _stamp_half_verbs := PackedStringArray()
+var _stamp_half_minutes := PackedFloat64Array()
+var _stamp_axis_verbs := PackedStringArray()
+var _stamp_axis_names := PackedStringArray()
+var _stamp_axis_deltas := PackedFloat64Array()
+var _stamp_kind_kinds := PackedStringArray()
+var _stamp_kind_axes := PackedStringArray()
+var _stamp_kind_values := PackedFloat64Array()
+var _stamp_value := 0
 
 
 func _init() -> void:
@@ -160,14 +177,22 @@ func has_kind(source: StringName, target: StringName, kind: StringName) -> bool:
 
 
 func targets(source: StringName, kind: StringName) -> PackedStringArray:
+	if _target_rev != _rev:
+		_target_cache.clear()
+		_target_rev = _rev
+	var key := "%s\t%s" % [String(source), String(kind)]
+	if _target_cache.has(key):
+		return _target_cache[key] as PackedStringArray
 	var rows := PackedStringArray()
 	if not _kinds.has(source):
+		_target_cache[key] = rows
 		return rows
 	var outgoing: Dictionary = _kinds[source]
 	for target in outgoing.keys():
 		if (outgoing[target] as Dictionary).has(kind):
 			rows.append(String(target))
 	rows.sort()
+	_target_cache[key] = rows
 	return rows
 
 
@@ -265,7 +290,7 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 
 func _axis_raw(source: StringName, target: StringName, axis_name: StringName) -> float:
 	var total := _base(source, target, axis_name)
-	if deeds != null and source != &"" and target != &"":
+	if deeds != null and source != &"" and target != &"" and _axis_has_delta(axis_name):
 		var cfg := _config()
 		var scale := _kind_scale(source, target, axis_name)
 		var rows := deeds.actor_indexes(target)
@@ -345,24 +370,40 @@ func _force_invalidate(reason: String) -> void:
 
 
 func _ensure() -> void:
-	var snap := _snap()
+	var bucket := _time_bucket()
+	var rev := _rev
+	var deed := 0
+	if deeds != null:
+		deed = deeds.weight_stamp()
+	var members := _members_gen
+	var config := _config_stamp()
 	if not _cache_ready:
-		_seen_bucket = int(snap["bucket"])
-		_seen_rev = int(snap["rev"])
-		_seen_deed = int(snap["deed"])
-		_seen_members = int(snap["members"])
-		_seen_config = int(snap["config"])
+		_seen_bucket = bucket
+		_seen_rev = rev
+		_seen_deed = deed
+		_seen_members = members
+		_seen_config = config
 		_cache_ready = true
 		return
-	var reason := _reason(snap)
+	var reason := ""
+	if bucket != _seen_bucket:
+		reason = "time"
+	elif rev != _seen_rev:
+		reason = "relation"
+	elif deed != _seen_deed:
+		reason = "deed"
+	elif members != _seen_members:
+		reason = "members"
+	elif config != _seen_config:
+		reason = "config"
 	if reason == "":
 		return
 	_enqueue_current(reason)
-	_seen_bucket = int(snap["bucket"])
-	_seen_rev = int(snap["rev"])
-	_seen_deed = int(snap["deed"])
-	_seen_members = int(snap["members"])
-	_seen_config = int(snap["config"])
+	_seen_bucket = bucket
+	_seen_rev = rev
+	_seen_deed = deed
+	_seen_members = members
+	_seen_config = config
 
 
 func _remember_seen() -> void:
@@ -512,6 +553,8 @@ func _key_bytes(table: Dictionary, value_bytes: int) -> int:
 func _emit_cache(event: String, kind: String, key: String, who: String, path: String, entries: int) -> void:
 	if not on_cache.is_valid():
 		return
+	if tracing_of.is_valid() and not bool(tracing_of.call()):
+		return
 	on_cache.call({
 		"bucket": _time_bucket(),
 		"cache": kind,
@@ -523,10 +566,38 @@ func _emit_cache(event: String, kind: String, key: String, who: String, path: St
 	})
 
 
+func _axis_has_delta(axis_name: StringName) -> bool:
+	var cfg := _config()
+	if cfg == null or axis_name == &"":
+		return false
+	var count := mini(cfg.axis_names.size(), cfg.axis_deltas.size())
+	for index in count:
+		if StringName(cfg.axis_names[index]) != axis_name:
+			continue
+		if cfg.axis_deltas[index] != 0.0:
+			return true
+	return false
+
+
 func _config_stamp() -> int:
 	var cfg := _config()
 	if cfg == null:
 		return 0
+	if (
+		_stamp_ready
+		and _stamp_cfg == cfg
+		and _stamp_default == cfg.disposition_default
+		and _stamp_hour == cfg.hour_bucket_minutes
+		and _stamp_half_verbs == cfg.half_life_verbs
+		and _stamp_half_minutes == cfg.half_life_minutes
+		and _stamp_axis_verbs == cfg.axis_verbs
+		and _stamp_axis_names == cfg.axis_names
+		and _stamp_axis_deltas == cfg.axis_deltas
+		and _stamp_kind_kinds == cfg.kind_scale_kinds
+		and _stamp_kind_axes == cfg.kind_scale_axes
+		and _stamp_kind_values == cfg.kind_scale_values
+	):
+		return _stamp_value
 	var mixed := WyrdHash.of_int(cfg.disposition_default)
 	mixed = WyrdHash.combine(mixed, cfg.hour_bucket_minutes)
 	mixed = _mix_strings(mixed, cfg.half_life_verbs)
@@ -536,7 +607,21 @@ func _config_stamp() -> int:
 	mixed = _mix_floats(mixed, cfg.axis_deltas)
 	mixed = _mix_strings(mixed, cfg.kind_scale_kinds)
 	mixed = _mix_strings(mixed, cfg.kind_scale_axes)
-	return _mix_floats(mixed, cfg.kind_scale_values)
+	mixed = _mix_floats(mixed, cfg.kind_scale_values)
+	_stamp_ready = true
+	_stamp_cfg = cfg
+	_stamp_default = cfg.disposition_default
+	_stamp_hour = cfg.hour_bucket_minutes
+	_stamp_half_verbs = cfg.half_life_verbs.duplicate()
+	_stamp_half_minutes = cfg.half_life_minutes.duplicate()
+	_stamp_axis_verbs = cfg.axis_verbs.duplicate()
+	_stamp_axis_names = cfg.axis_names.duplicate()
+	_stamp_axis_deltas = cfg.axis_deltas.duplicate()
+	_stamp_kind_kinds = cfg.kind_scale_kinds.duplicate()
+	_stamp_kind_axes = cfg.kind_scale_axes.duplicate()
+	_stamp_kind_values = cfg.kind_scale_values.duplicate()
+	_stamp_value = mixed
+	return mixed
 
 
 func _mix_strings(mixed: int, values: PackedStringArray) -> int:
@@ -577,15 +662,15 @@ func disposition(source: StringName, target: StringName) -> int:
 
 
 func _disposition_raw(source: StringName, target: StringName) -> int:
+	var base := 50
+	var cfg := _config()
+	if cfg != null:
+		base = cfg.disposition_default
 	var axes := _axes(source, target)
 	var raw := 0
 	if formula.is_valid():
 		raw = int(formula.call(source, target, axes))
 	else:
-		var base := 50
-		var cfg := _config()
-		if cfg != null:
-			base = cfg.disposition_default
 		raw = int(round(float(base) + float(axes[&"affinity"]) / 2.0))
 	return clampi(raw, 0, 100)
 
