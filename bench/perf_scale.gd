@@ -106,28 +106,29 @@ static func metrics() -> Array:
 		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
 		{"budget": 0.05, "name": "director.why_not", "stat": "median", "unit": "s"},
 		{"absolute": false, "budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
-		{"budget": 9.0, "name": "debug.snapshot", "stat": "median", "unit": "s"},
+		{"budget": 1.5, "name": "debug.snapshot", "stat": "median", "unit": "s"},
 		{"budget": 2.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
 		{"budget": 0.1, "name": "debug.snapshot_section", "stat": "median", "unit": "s"},
-		# Proposed from the full-profile medians. They warn until Corey confirms them.
-		# memory.quests: 164.5 MiB measured, ceiling 256 MiB.
-		{"budget": 268435456.0, "name": "memory.quests", "stat": "median", "unit": "B"},
-		# rumor.tick and scheduler.tick: about 9.4 ms measured, ceiling 20 ms.
-		{"budget": 0.02, "name": "rumor.tick", "stat": "median", "unit": "s"},
-		{"budget": 0.02, "name": "scheduler.tick", "stat": "median", "unit": "s"},
-		# publish.issue 256 ms and deeds_known_to 224 ms, ceiling 0.5 s.
-		{"budget": 0.5, "name": "publish.issue", "stat": "median", "unit": "s"},
-		{"budget": 0.5, "name": "deeds_known_to", "stat": "median", "unit": "s"},
+		# Proposed from the full-profile medians after the M8 perf pass. They warn until Corey confirms them.
+		# memory.quests: 164.5 MiB measured, ceiling 192 MiB.
+		{"budget": 201326592.0, "name": "memory.quests", "stat": "median", "unit": "B"},
+		# rumor.tick 8.03 ms and scheduler.tick 8.10 ms. A 64-hop tick does not fit in 2 ms.
+		# Ceiling 12 ms. Not the frame warning.
+		{"budget": 0.012, "name": "rumor.tick", "stat": "median", "unit": "s"},
+		{"budget": 0.012, "name": "scheduler.tick", "stat": "median", "unit": "s"},
+		# publish.issue 141 ms and deeds_known_to 112 ms.
+		{"budget": 0.25, "name": "publish.issue", "stat": "median", "unit": "s"},
+		{"budget": 0.2, "name": "deeds_known_to", "stat": "median", "unit": "s"},
 		# Believer index 564 KiB, 363 B each, 54 KiB of JSON.
-		{"budget": 1048576.0, "name": "memory.believers", "stat": "median", "unit": "B"},
-		{"budget": 1024.0, "name": "memory.per_belief", "stat": "median", "unit": "B"},
-		{"budget": 131072.0, "name": "save.believers", "stat": "median", "unit": "B"},
-		# In-flight save 463 ms and 7.73 MiB, load 778 ms.
-		{"budget": 1.0, "name": "save.flight", "stat": "median", "unit": "s"},
-		{"budget": 10485760.0, "name": "save.flight_bytes", "stat": "median", "unit": "B"},
-		{"budget": 1.5, "name": "load.flight", "stat": "median", "unit": "s"},
-		# Indexed score 0.59 ms, full scan 14.4 ms.
-		{"budget": 0.002, "name": "deeds.index", "stat": "median", "unit": "s"},
-		{"budget": 0.05, "name": "deeds.scan", "stat": "median", "unit": "s"},
+		{"budget": 786432.0, "name": "memory.believers", "stat": "median", "unit": "B"},
+		{"budget": 512.0, "name": "memory.per_belief", "stat": "median", "unit": "B"},
+		{"budget": 65536.0, "name": "save.believers", "stat": "median", "unit": "B"},
+		# In-flight save 467 ms and 7.73 MiB, load 885 ms.
+		{"budget": 0.75, "name": "save.flight", "stat": "median", "unit": "s"},
+		{"budget": 9437184.0, "name": "save.flight_bytes", "stat": "median", "unit": "B"},
+		{"budget": 1.2, "name": "load.flight", "stat": "median", "unit": "s"},
+		# Indexed score 0.61 ms, full scan 14.5 ms.
+		{"budget": 0.001, "name": "deeds.index", "stat": "median", "unit": "s"},
+		{"budget": 0.025, "name": "deeds.scan", "stat": "median", "unit": "s"},
 		{"budget": MEMORY_PEAK_BUDGET, "name": "memory.resident", "stat": "median", "unit": "B"},
 	]

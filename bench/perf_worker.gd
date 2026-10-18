@@ -735,14 +735,19 @@ func _sample_publish_issue() -> Dictionary:
 	if tokens.is_empty():
 		return {"error": "harbor gazette did not queue an issue"}
 	var started := Time.get_ticks_usec()
-	_runtime.publish.issue(tokens[0])
+	var slices := 0
+	var token := String(tokens[0])
+	while slices < 100000:
+		slices += 1
+		if _runtime.publish.issue(token):
+			break
 	var elapsed := Time.get_ticks_usec() - started
 	var gazette := _gazette_text()
 	if gazette.is_empty():
 		return {"error": "harbor gazette did not issue"}
 	return {
 		"checksum": gazette,
-		"extra": {"deeds": _runtime.deeds.size()},
+		"extra": {"deeds": _runtime.deeds.size(), "slices": slices},
 		"value": float(elapsed) / 1000000.0,
 	}
 

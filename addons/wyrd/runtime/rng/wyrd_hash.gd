@@ -24,11 +24,19 @@ const _DOMAIN_INT: int = 0x02
 const _DOMAIN_COMBINE: int = 0x03
 
 
+static var _short_hash: Dictionary = {}
+
+
 static func of_string_name(value: StringName) -> int:
+	var text := String(value)
+	if text.length() <= 16 and _short_hash.has(value):
+		return int(_short_hash[value])
 	var hash := _mix(FNV_OFFSET, _DOMAIN_STRING)
-	var body := String(value).to_utf8_buffer()
+	var body := text.to_utf8_buffer()
 	for i in body.size():
 		hash = _mix(hash, body[i])
+	if text.length() <= 16:
+		_short_hash[value] = hash
 	return hash
 
 

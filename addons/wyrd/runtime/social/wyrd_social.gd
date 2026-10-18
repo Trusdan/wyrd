@@ -37,6 +37,10 @@ var on_reputation: Callable = Callable()
 var enqueue_cache: Callable = Callable()
 ## [code](fields: Dictionary)[/code]. Not saved. The runtime logs it when tracing is on.
 var on_cache: Callable = Callable()
+## [code]() -> bool[/code]. When this is valid and false, cache hits do not build a trace row.
+var tracing_of: Callable = Callable()
+var _target_cache: Dictionary = {}
+var _target_rev: int = -1
 
 var _kinds: Dictionary = {}
 var _baseline: Dictionary = {}
@@ -160,14 +164,22 @@ func has_kind(source: StringName, target: StringName, kind: StringName) -> bool:
 
 
 func targets(source: StringName, kind: StringName) -> PackedStringArray:
+	if _target_rev != _rev:
+		_target_cache.clear()
+		_target_rev = _rev
+	var key := "%s\t%s" % [String(source), String(kind)]
+	if _target_cache.has(key):
+		return _target_cache[key] as PackedStringArray
 	var rows := PackedStringArray()
 	if not _kinds.has(source):
+		_target_cache[key] = rows
 		return rows
 	var outgoing: Dictionary = _kinds[source]
 	for target in outgoing.keys():
 		if (outgoing[target] as Dictionary).has(kind):
 			rows.append(String(target))
 	rows.sort()
+	_target_cache[key] = rows
 	return rows
 
 
@@ -345,24 +357,40 @@ func _force_invalidate(reason: String) -> void:
 
 
 func _ensure() -> void:
-	var snap := _snap()
+	var bucket := _time_bucket()
+	var rev := _rev
+	var deed := 0
+	if deeds != null:
+		deed = deeds.weight_stamp()
+	var members := _members_gen
+	var config := _config_stamp()
 	if not _cache_ready:
-		_seen_bucket = int(snap["bucket"])
-		_seen_rev = int(snap["rev"])
-		_seen_deed = int(snap["deed"])
-		_seen_members = int(snap["members"])
-		_seen_config = int(snap["config"])
+		_seen_bucket = bucket
+		_seen_rev = rev
+		_seen_deed = deed
+		_seen_members = members
+		_seen_config = config
 		_cache_ready = true
 		return
-	var reason := _reason(snap)
+	var reason := ""
+	if bucket != _seen_bucket:
+		reason = "time"
+	elif rev != _seen_rev:
+		reason = "relation"
+	elif deed != _seen_deed:
+		reason = "deed"
+	elif members != _seen_members:
+		reason = "members"
+	elif config != _seen_config:
+		reason = "config"
 	if reason == "":
 		return
 	_enqueue_current(reason)
-	_seen_bucket = int(snap["bucket"])
-	_seen_rev = int(snap["rev"])
-	_seen_deed = int(snap["deed"])
-	_seen_members = int(snap["members"])
-	_seen_config = int(snap["config"])
+	_seen_bucket = bucket
+	_seen_rev = rev
+	_seen_deed = deed
+	_seen_members = members
+	_seen_config = config
 
 
 func _remember_seen() -> void:
@@ -511,6 +539,8 @@ func _key_bytes(table: Dictionary, value_bytes: int) -> int:
 
 func _emit_cache(event: String, kind: String, key: String, who: String, path: String, entries: int) -> void:
 	if not on_cache.is_valid():
+		return
+	if tracing_of.is_valid() and not bool(tracing_of.call()):
 		return
 	on_cache.call({
 		"bucket": _time_bucket(),

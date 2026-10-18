@@ -105,11 +105,28 @@ static func stream_id(name: StringName) -> int:
 
 
 static func for_decision(game_seed: int, stream: StringName, decision_key: StringName, time_bucket: int) -> WyrdRng:
+	return WyrdRng.new(_decision_seed(game_seed, stream, decision_key, time_bucket), stream_id(stream))
+
+
+## First [method randf] of [method for_decision] without allocating a generator.
+static func decision_unit(game_seed: int, stream: StringName, decision_key: StringName, time_bucket: int) -> float:
+	var mixed := _decision_seed(game_seed, stream, decision_key, time_bucket)
+	var inc := (stream_id(stream) << 1) | 1
+	var state := _advance(0, inc)
+	state += mixed
+	state = _advance(state, inc)
+	return float(_output(state)) * (1.0 / 4294967296.0)
+
+
+static func _decision_seed(game_seed: int, stream: StringName, decision_key: StringName, time_bucket: int) -> int:
 	var mixed := WyrdHash.of_int(game_seed)
 	mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(stream))
 	mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(decision_key))
-	mixed = WyrdHash.combine(mixed, WyrdHash.of_int(time_bucket))
-	return WyrdRng.new(mixed, stream_id(stream))
+	return WyrdHash.combine(mixed, WyrdHash.of_int(time_bucket))
+
+
+static func _advance(state: int, inc: int) -> int:
+	return state * _MUL + inc
 
 
 func to_state() -> Dictionary:
@@ -154,7 +171,11 @@ func _apply(parsed: Dictionary) -> void:
 
 func _step() -> int:
 	var old := _state
-	_state = old * _MUL + _inc
+	_state = _advance(old, _inc)
+	return _output(old)
+
+
+static func _output(old: int) -> int:
 	var xorshifted := _lsr(_lsr(old, 18) ^ old, 27) & 0xFFFFFFFF
 	var rot := _lsr(old, 59)
 	return ((xorshifted >> rot) | (xorshifted << ((-rot) & 31))) & 0xFFFFFFFF

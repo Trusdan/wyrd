@@ -40,6 +40,8 @@ var spatial_of: Callable = Callable()
 var score_of: Callable = Callable()
 var threshold_of: Callable = Callable()
 var trace_of: Callable = Callable()
+## [code]() -> bool[/code]. When this is valid and false, hop traces are not built.
+var tracing_of: Callable = Callable()
 ## [code](token: String)[/code]. One rumor unit. The token is saved with the scheduler.
 var enqueue_hop: Callable = Callable()
 
@@ -364,7 +366,7 @@ func materialize(who: StringName, key: StringName) -> void:
 	var level := int(best.get("level", 0))
 	var chance := clampf(float(level) / float(REACH_FULL), 0.0, 1.0)
 	var decision := StringName("materialize\t%s\t%s\t%s\t%d" % [deed_id, place_text, who_text, level])
-	var roll := WyrdRng.for_decision(_seed(), &"rumor", decision, _time_bucket()).randf()
+	var roll := WyrdRng.decision_unit(_seed(), &"rumor", decision, _time_bucket())
 	var accepted := roll < chance
 	_drawn["%s\t%s" % [deed_id, who_text]] = true
 	var policy_id := str(best.get("policy", ""))
@@ -699,7 +701,7 @@ func _mutate_kept(
 	chance: float
 ) -> bool:
 	var key := StringName("mutate\t%s\t%s\t%s\t%d\t%s\t%d" % [deed_id, from_who, to_who, hop_n, field, index])
-	return WyrdRng.for_decision(_seed(), &"rumor", key, _time_bucket()).randf() < chance
+	return WyrdRng.decision_unit(_seed(), &"rumor", key, _time_bucket()) < chance
 
 
 func _policy_for(verb: StringName) -> WyrdRumorPolicy:
@@ -804,7 +806,7 @@ func _apply_reach(deed_id: String, place: String, seq: int) -> void:
 
 func _roll(deed_id: String, from_who: String, to_who: String, hop_n: int, chance: float) -> bool:
 	var key := StringName(_token(deed_id, from_who, to_who, hop_n))
-	return WyrdRng.for_decision(_seed(), &"rumor", key, _time_bucket()).randf() < chance
+	return WyrdRng.decision_unit(_seed(), &"rumor", key, _time_bucket()) < chance
 
 
 func _seed() -> int:
@@ -886,6 +888,12 @@ func _spatial() -> WyrdSpatialAdapter:
 	return null
 
 
+func _wants_trace() -> bool:
+	if tracing_of.is_valid():
+		return bool(tracing_of.call())
+	return trace_of.is_valid()
+
+
 func _trace_hop(
 	deed_id: String,
 	from_who: String,
@@ -897,7 +905,7 @@ func _trace_hop(
 	taken: bool,
 	reason: String
 ) -> void:
-	if not trace_of.is_valid():
+	if not _wants_trace():
 		return
 	trace_of.call("rumor_hop", {
 		"deed": deed_id,
@@ -923,7 +931,7 @@ func _trace_adopt(
 	score: float,
 	accepted: bool
 ) -> void:
-	if not trace_of.is_valid():
+	if not _wants_trace():
 		return
 	trace_of.call("rumor_adopt", {
 		"accepted": "true" if accepted else "false",
@@ -938,7 +946,7 @@ func _trace_adopt(
 
 
 func _trace_reach(row: Dictionary) -> void:
-	if not trace_of.is_valid():
+	if not _wants_trace():
 		return
 	var place := str(row.get("place", ""))
 	trace_of.call("rumor_reach", {
@@ -962,7 +970,7 @@ func _trace_mutate(
 	result: String,
 	shown: Variant
 ) -> void:
-	if not trace_of.is_valid():
+	if not _wants_trace():
 		return
 	trace_of.call("rumor_mutate", {
 		"deed": deed_id,
@@ -989,7 +997,7 @@ func _trace_materialize(
 	chance: float,
 	accepted: bool
 ) -> void:
-	if not trace_of.is_valid():
+	if not _wants_trace():
 		return
 	trace_of.call("rumor_materialize", {
 		"accepted": "true" if accepted else "false",

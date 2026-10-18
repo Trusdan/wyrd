@@ -5,8 +5,10 @@ extends RefCounted
 ##
 ## @experimental
 ## Queues, in round-robin order: waits, rumor, publish, cache_refresh.
-## A unit is one waiting-condition recheck, one rumor hop, one frozen issue,
-## or one cache-entry rebuild. [code]run[/code] spends at most the tick budget.
+## A unit is one waiting-condition recheck, one rumor hop, one slice of a
+## frozen issue, or one cache-entry rebuild. [code]run[/code] spends at most
+## the tick budget. Token queues keep a read cursor so a unit does not shift
+## the array. The saved tokens are the ones still waiting.
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
 ## still spends the whole budget. Unfinished items stay in queue order. The
@@ -25,6 +27,8 @@ const SLICE_UNITS_PER_MINUTE := 720
 var last_units: int = 0
 
 var trace_hook: Callable = Callable()
+## [code]() -> bool[/code]. When this is valid and false, queue traces are not built.
+var tracing_of: Callable = Callable()
 var rumor_handler: Callable = Callable()
 var publish_handler: Callable = Callable()
 var cache_handler: Callable = Callable()
@@ -33,6 +37,9 @@ var _waits := WyrdTickQueue.new()
 var _rumor: Array[String] = []
 var _publish: Array[String] = []
 var _cache: Array[String] = []
+var _rumor_at: int = 0
+var _publish_at: int = 0
+var _cache_at: int = 0
 
 
 func clear() -> void:
@@ -40,6 +47,9 @@ func clear() -> void:
 	_rumor.clear()
 	_publish.clear()
 	_cache.clear()
+	_rumor_at = 0
+	_publish_at = 0
+	_cache_at = 0
 	last_units = 0
 
 
@@ -48,6 +58,9 @@ func clear_carry() -> void:
 	_rumor.clear()
 	_publish.clear()
 	_cache.clear()
+	_rumor_at = 0
+	_publish_at = 0
+	_cache_at = 0
 
 
 ## Drops the dirty set. Watched conditions stay watched.
@@ -88,13 +101,13 @@ func push(queue: String, token: String) -> void:
 	match queue:
 		"rumor":
 			_rumor.append(token)
-			_emit(queue, 0, _rumor.size())
+			_emit(queue, 0, _live(_rumor, _rumor_at))
 		"publish":
 			_publish.append(token)
-			_emit(queue, 0, _publish.size())
+			_emit(queue, 0, _live(_publish, _publish_at))
 		"cache_refresh":
 			_cache.append(token)
-			_emit(queue, 0, _cache.size())
+			_emit(queue, 0, _live(_cache, _cache_at))
 		_:
 			push_error("WyrdScheduler.push: unknown queue \"%s\"" % queue)
 
@@ -104,11 +117,11 @@ func carry(queue: String) -> int:
 		"waits":
 			return _waits.dirty_count()
 		"rumor":
-			return _rumor.size()
+			return _live(_rumor, _rumor_at)
 		"publish":
-			return _publish.size()
+			return _live(_publish, _publish_at)
 		"cache_refresh":
-			return _cache.size()
+			return _live(_cache, _cache_at)
 		_:
 			return 0
 
@@ -116,13 +129,13 @@ func carry(queue: String) -> int:
 ## Token queues and dirty waits. Empty arrays are omitted. The slice is added by the save.
 func export_carry() -> Dictionary:
 	var out := {}
-	var cache := _token_rows(_cache)
+	var cache := _token_rows(_cache, _cache_at)
 	if not cache.is_empty():
 		out["cache_refresh"] = cache
-	var publish := _token_rows(_publish)
+	var publish := _token_rows(_publish, _publish_at)
 	if not publish.is_empty():
 		out["publish"] = publish
-	var rumor := _token_rows(_rumor)
+	var rumor := _token_rows(_rumor, _rumor_at)
 	if not rumor.is_empty():
 		out["rumor"] = rumor
 	var waits: Array = []
@@ -139,6 +152,9 @@ func import_carry(data: Dictionary) -> void:
 	_cache = _as_tokens(data.get("cache_refresh", []))
 	_publish = _as_tokens(data.get("publish", []))
 	_rumor = _as_tokens(data.get("rumor", []))
+	_cache_at = 0
+	_publish_at = 0
+	_rumor_at = 0
 	var waits: Array = []
 	var raw: Variant = data.get("waits", [])
 	if raw is Array:
@@ -148,23 +164,28 @@ func import_carry(data: Dictionary) -> void:
 
 func carry_tokens(queue: String) -> PackedStringArray:
 	var items: Array[String] = []
+	var at := 0
 	match queue:
 		"rumor":
 			items = _rumor
+			at = _rumor_at
 		"publish":
 			items = _publish
+			at = _publish_at
 		"cache_refresh":
 			items = _cache
+			at = _cache_at
 		_:
 			return PackedStringArray()
 	var out := PackedStringArray()
-	for token in items:
-		out.append(token)
+	for index in range(at, items.size()):
+		out.append(items[index])
 	return out
 
 
 ## [param weights] match [method queues]. [param waits_eval] receives a condition index.
 func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictionary:
+	_compact_queues()
 	var cap := budget if budget > 0 else 0
 	var shares: Array[int] = []
 	var split := apportion(_weights(weights), cap)
@@ -193,9 +214,9 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 	last_units = total
 	var left := PackedInt32Array([
 		_waits.dirty_count(),
-		_rumor.size(),
-		_publish.size(),
-		_cache.size(),
+		_live(_rumor, _rumor_at),
+		_live(_publish, _publish_at),
+		_live(_cache, _cache_at),
 	])
 	var names := queues()
 	for index in QUEUE_COUNT:
@@ -276,11 +297,11 @@ func _has_work(index: int) -> bool:
 		0:
 			return _waits.dirty_count() > 0
 		1:
-			return not _rumor.is_empty()
+			return _rumor_at < _rumor.size()
 		2:
-			return not _publish.is_empty()
+			return _publish_at < _publish.size()
 		3:
-			return not _cache.is_empty()
+			return _cache_at < _cache.size()
 		_:
 			return false
 
@@ -290,28 +311,81 @@ func _run_one(index: int, waits_eval: Callable) -> bool:
 		0:
 			return _waits.tick(1, waits_eval) == 1
 		1:
-			return _take(_rumor, rumor_handler)
+			return _take_rumor()
 		2:
-			return _take(_publish, publish_handler)
+			return _take_publish()
 		3:
-			return _take(_cache, cache_handler)
+			return _take_cache()
 		_:
 			return false
 
 
-func _take(items: Array[String], handler: Callable) -> bool:
-	if items.is_empty():
+func _take_rumor() -> bool:
+	if _rumor_at >= _rumor.size():
 		return false
-	var token := String(items.pop_front())
-	if handler.is_valid():
-		handler.call(token)
+	var token := String(_rumor[_rumor_at])
+	_rumor_at += 1
+	if rumor_handler.is_valid():
+		rumor_handler.call(token)
 	return true
 
 
-func _token_rows(items: Array[String]) -> Array:
+## A publish handler that returns false keeps the token for the next unit.
+func _take_publish() -> bool:
+	if _publish_at >= _publish.size():
+		return false
+	var token := String(_publish[_publish_at])
+	var done := true
+	if publish_handler.is_valid():
+		var result: Variant = publish_handler.call(token)
+		if result is bool:
+			done = bool(result)
+	if done:
+		_publish_at += 1
+	return true
+
+
+func _take_cache() -> bool:
+	if _cache_at >= _cache.size():
+		return false
+	var token := String(_cache[_cache_at])
+	_cache_at += 1
+	if cache_handler.is_valid():
+		cache_handler.call(token)
+	return true
+
+
+func _live(items: Array[String], at: int) -> int:
+	return maxi(items.size() - at, 0)
+
+
+func _compact_queues() -> void:
+	if _rumor_at >= 512 and _rumor_at * 2 >= _rumor.size():
+		_rumor = _tail(_rumor, _rumor_at)
+		_rumor_at = 0
+	if _publish_at >= 512 and _publish_at * 2 >= _publish.size():
+		_publish = _tail(_publish, _publish_at)
+		_publish_at = 0
+	if _cache_at >= 512 and _cache_at * 2 >= _cache.size():
+		_cache = _tail(_cache, _cache_at)
+		_cache_at = 0
+
+
+func _tail(items: Array[String], at: int) -> Array[String]:
+	var next: Array[String] = []
+	var count := items.size() - at
+	if count <= 0:
+		return next
+	next.resize(count)
+	for index in count:
+		next[index] = items[at + index]
+	return next
+
+
+func _token_rows(items: Array[String], at: int) -> Array:
 	var out: Array = []
-	for token in items:
-		out.append(token)
+	for index in range(maxi(at, 0), items.size()):
+		out.append(items[index])
 	return out
 
 
@@ -324,6 +398,8 @@ func _as_tokens(raw: Variant) -> Array[String]:
 
 
 func _emit(queue: String, units: int, left: int) -> void:
+	if tracing_of.is_valid() and not bool(tracing_of.call()):
+		return
 	if not trace_hook.is_valid():
 		return
 	trace_hook.call({

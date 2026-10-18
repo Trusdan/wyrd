@@ -13,6 +13,7 @@ extends Resource
 ## [member scheduler_share_rumor], [member scheduler_share_publish],
 ## [member scheduler_share_cache], [member scheduler_frame_warn_usec],
 ## [member rumor_coarse_minutes], [member publish_catchup_max],
+## [member publish_slice_rows],
 ## [member credibility_threshold],
 ## [member compact_after],
 ## [member secrecy_tiers], [member secrecy_fact], and [member trace_director].
@@ -51,6 +52,10 @@ extends Resource
 ## The default is 3. [code]0[/code] or a negative value enqueues none.
 ## Issues past the cap are numbered in the document fact and are not published later.
 @export var publish_catchup_max: int = 3
+## Candidate deed rows one publish unit reads while a frozen issue is open.
+## The default is 128. The publish share still caps how many units run in a tick.
+## Not saved.
+@export var publish_slice_rows: int = 128
 ## Inclusive minimum score for a statement deed. Not saved.
 @export var credibility_threshold: float = 0.5
 ## 0 leaves the log until the host calls [method WyrdDeedLog.compact]. Not saved.

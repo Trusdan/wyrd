@@ -249,29 +249,24 @@ func _deeds(prefix: String) -> Array:
 	var rows: Array = []
 	var filtering := not prefix.is_empty()
 	for index in _deed_rows(prefix):
-		if filtering:
-			var key := "%s/%s/%s" % [
-				String(_runtime.deeds.actor_at(index)),
-				String(_runtime.deeds.verb_at(index)),
-				String(_runtime.deeds.target_at(index)),
-			]
-			if not key.begins_with(prefix):
-				continue
-		var deed := _runtime.deeds.row_at(index)
-		var actor := str(deed.get("actor", ""))
-		var verb := str(deed.get("verb", ""))
-		var target := str(deed.get("target", ""))
+		var actor := String(_runtime.deeds.actor_at(index))
+		var verb := String(_runtime.deeds.verb_at(index))
+		var target := String(_runtime.deeds.target_at(index))
+		var key := "%s/%s/%s" % [actor, verb, target]
+		if filtering and not key.begins_with(prefix):
+			continue
 		var witnesses: Array = []
-		for witness in deed.get("witnesses", []):
-			witnesses.append(str(witness))
+		var count := _runtime.deeds.witness_count_at(index)
+		for offset in count:
+			witnesses.append(_runtime.deeds.witness_name_at(index, offset))
 		rows.append({
 			"actor": actor,
-			"id": int(deed.get("id", 0)),
-			"key": "%s/%s/%s" % [actor, verb, target],
-			"magnitude": float(deed.get("magnitude", 0.0)),
-			"memorable": bool(deed.get("memorable", false)),
-			"place": str(deed.get("place", "")),
-			"t": int(deed.get("t", 0)),
+			"id": _runtime.deeds.id_at(index),
+			"key": key,
+			"magnitude": _runtime.deeds.magnitude_at(index),
+			"memorable": _runtime.deeds.memorable_at(index),
+			"place": String(_runtime.deeds.place_at(index)),
+			"t": _runtime.deeds.minute_at(index),
 			"target": target,
 			"verb": verb,
 			"weight": _runtime.deeds.weight_at(index),
@@ -291,13 +286,22 @@ func _social(prefix: String) -> Array:
 		if item is Dictionary:
 			var row: Dictionary = item
 			_note_pair(pairs, str(row.get("source", "")), str(row.get("target", "")), prefix)
-	for index in _pair_rows(prefix):
-		var actor := String(_runtime.deeds.actor_at(index))
-		if actor.is_empty():
-			continue
-		_note_pair(pairs, String(_runtime.deeds.target_at(index)), actor, prefix)
-		for witness in _runtime.deeds.witnesses_at(index):
-			_note_pair(pairs, witness, actor, prefix)
+	if _runtime.deeds.lookup_enabled() and prefix.is_empty():
+		var keys := _runtime.deeds.pair_keys()
+		_trace_deed_index("social", prefix, keys.size())
+		for key in keys:
+			var cut := key.find("\t")
+			if cut < 0:
+				continue
+			_note_pair(pairs, key.substr(0, cut), key.substr(cut + 1), prefix)
+	else:
+		for index in _pair_rows(prefix):
+			var actor := String(_runtime.deeds.actor_at(index))
+			if actor.is_empty():
+				continue
+			_note_pair(pairs, String(_runtime.deeds.target_at(index)), actor, prefix)
+			for witness in _runtime.deeds.witnesses_at(index):
+				_note_pair(pairs, witness, actor, prefix)
 	var names := _axis_names()
 	var rows: Array = []
 	for key in pairs.keys():
@@ -378,7 +382,7 @@ func _page(rows: Array, prefix: String, offset: int, limit: int, also_fact: bool
 	for item in rows:
 		if item is Dictionary and _matches(item, prefix, also_fact):
 			filtered.append(item)
-	filtered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _before(a, b))
+	filtered = _ordered(filtered)
 	var total := filtered.size()
 	var start := mini(offset, total)
 	var ending := total if limit <= 0 else mini(start + limit, total)
@@ -405,6 +409,36 @@ func _fact_kept(layer: String, owner: String, fact: String, prefix: String) -> b
 		return true
 	var key := "world/%s" % fact if layer == "world" else "%s/%s/%s" % [layer, owner, fact]
 	return key.begins_with(prefix)
+
+
+static func _ordered(rows: Array) -> Array:
+	var count := rows.size()
+	if count < 2:
+		return rows
+	var mode := 0
+	var first: Dictionary = rows[0]
+	if first.has("id"):
+		mode = 1
+	elif first.has("index"):
+		mode = 2
+	var packed := PackedStringArray()
+	packed.resize(count)
+	for index in count:
+		var row: Dictionary = rows[index]
+		var tie := 0
+		if mode == 1:
+			tie = int(row.get("id", 0))
+		elif mode == 2:
+			tie = int(row.get("index", 0))
+		packed[index] = "%s\u0001%020d\u0001%07d" % [str(row.get("key", "")), tie, index]
+	packed.sort()
+	var ordered: Array = []
+	ordered.resize(count)
+	for index in count:
+		var text := packed[index]
+		var cut := text.rfind("\u0001")
+		ordered[index] = rows[int(text.substr(cut + 1))]
+	return ordered
 
 
 static func _before(a: Dictionary, b: Dictionary) -> bool:
