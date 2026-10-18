@@ -119,6 +119,53 @@ func test_waits_match_the_old_tick_queue() -> void:
 	assert_eq(scheduler.is_dirty(5), old.is_dirty(5))
 
 
+func test_dirty_waits_sort_once_and_stay_ascending() -> void:
+	var stepped := WyrdTickQueue.new()
+	var once := WyrdTickQueue.new()
+	for index in [4, 1, 3]:
+		stepped.watch(index)
+		once.watch(index)
+	var by_one: Array[int] = []
+	while stepped.dirty_count() > 0:
+		stepped.tick(1, func(index: int) -> void: by_one.append(index))
+	var by_budget: Array[int] = []
+	assert_eq(once.tick(8, func(index: int) -> void: by_budget.append(index)), 3)
+	assert_eq(by_one, [1, 3, 4])
+	assert_eq(by_budget, [1, 3, 4])
+	var marked := WyrdTickQueue.new()
+	for index in [8, 2, 6]:
+		marked.watch(index)
+	var ran: Array[int] = []
+	assert_eq(marked.tick(1, func(index: int) -> void:
+		ran.append(index)
+		marked.watch(0)
+		marked.watch(7)
+		marked.mark(PackedInt32Array([0, 7]))
+	), 1)
+	assert_eq(ran, [2])
+	assert_eq(marked.dirty_count(), 4)
+	assert_eq(marked.tick(1, func(index: int) -> void: ran.append(index)), 1)
+	assert_eq(ran, [2, 0])
+	while marked.dirty_count() > 0:
+		marked.tick(1, func(index: int) -> void: ran.append(index))
+	assert_eq(ran, [2, 0, 6, 7, 8])
+	var batch := WyrdTickQueue.new()
+	for index in [8, 2, 6]:
+		batch.watch(index)
+	var during: Array[int] = []
+	assert_eq(batch.tick(8, func(index: int) -> void:
+		during.append(index)
+		if index == 2:
+			batch.watch(0)
+			batch.watch(7)
+	), 3)
+	assert_eq(during, [2, 6, 8])
+	assert_eq(batch.dirty_count(), 2)
+	var later: Array[int] = []
+	assert_eq(batch.tick(8, func(index: int) -> void: later.append(index)), 2)
+	assert_eq(later, [0, 7])
+
+
 func test_runtime_waits_match_the_old_queue() -> void:
 	var runtime := _harbor()
 	var mirror := WyrdTickQueue.new()

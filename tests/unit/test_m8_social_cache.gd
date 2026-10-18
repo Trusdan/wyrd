@@ -224,6 +224,29 @@ func test_path_exists_follows_directed_kinds() -> void:
 	assert_false(runtime.social.path_exists(&"ada", &"missing", PackedStringArray(["friend"]), 4))
 
 
+func test_reputation_fills_the_same_cache_keys() -> void:
+	var direct := _reputation_tokens(true, true)
+	var filled := _reputation_tokens(false, true)
+	var bypass := _reputation_tokens(false, false)
+	assert_eq(float(direct["score"]), float(filled["score"]))
+	assert_eq(float(bypass["score"]), float(filled["score"]))
+	assert_gt((filled["keys"] as PackedStringArray).size(), 0)
+	assert_eq(direct["keys"], filled["keys"])
+	assert_eq(filled["keys"], PackedStringArray([
+		"axis\tada\tplayer\taffinity",
+		"axis\tada\tplayer\trespect",
+		"axis\tbea\tplayer\taffinity",
+		"axis\tbea\tplayer\trespect",
+		"axis\tcy\tplayer\taffinity",
+		"axis\tcy\tplayer\trespect",
+		"disp\tada\tplayer",
+		"disp\tbea\tplayer",
+		"disp\tcy\tplayer",
+		"rep\tplayer\tharbor_guild",
+	]))
+	assert_eq(bypass["keys"], PackedStringArray())
+
+
 func test_full_scale_cache_stays_lean() -> void:
 	# Key text plus 8 bytes for an axis value, or 4 for disposition. Not process memory.
 	var social := WyrdSocial.new()
@@ -238,6 +261,24 @@ func test_full_scale_cache_stays_lean() -> void:
 	assert_eq(bytes, 21207500)
 	assert_lt(bytes, 32 * 1024 * 1024)
 	assert_lt(bytes, 384 * 1024 * 1024)
+
+
+func _reputation_tokens(direct: bool, cache_on: bool) -> Dictionary:
+	var runtime := _open()
+	var host := _host(runtime)
+	for who in ["ada", "bea", "cy"]:
+		host.world.add_member(&"harbor_guild", StringName(who))
+	runtime.config().set_axis_delta(&"paid", &"affinity", 4.0)
+	runtime.config().set_axis_delta(&"paid", &"respect", 2.0)
+	runtime.deeds.record(&"paid", &"player", &"ada", &"", PackedStringArray(), 1.0, PackedStringArray([&"ada", &"bea"]))
+	assert_eq(runtime.social.cache_entries(), 0)
+	runtime.social.set_cache(cache_on)
+	if direct:
+		for who in host.world.members(&"harbor_guild"):
+			runtime.social.disposition(StringName(who), &"player")
+	var score := runtime.social.reputation(&"player", &"harbor_guild")
+	runtime.social.set_baseline(&"ada", &"player", &"affinity", 1.0)
+	return {"keys": runtime.scheduler().carry_tokens("cache_refresh"), "score": score}
 
 
 func _scripted() -> WyrdRuntime:

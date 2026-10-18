@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1-m8 - 2026-10-18
+
+Perf fixes for the v0.6.0-m8 regression gate. `VERSION` is `0.6.1-m8`. `plugin.cfg` version is `0.6.1-m8`. Save schema stays 3. Seeded checksums stay the same. Corey cuts the tag `v0.6.1-m8` after this merges.
+
+- An empty reach list returns the belief hot cache before the agent and key are built. The hot path reads `WyrdRumor.reach_any`, kept in step by `on_reach`, so it does not call into the rumor table. A reach row still calls `materialize` before that cache, so a later rise can write. `has_reach` reads `reach_any` and is true for a level 0 row.
+- Hour buckets stay a PackedInt32Array in append order. An Array bucket, packed lazily on read, left `load.time` next to the v0.6.0-m8 tag and made `tick.recheck` about three times that tag in the same three-way job, so the buckets stay packed. The witness index is still built at import.
+- `reputation` checks the social cache stamp once per call, then fills the same axis and disposition keys a direct read would store, in the same order.
+- Dirty waits are sorted once per `tick` call and popped in ascending order. A mark during that call joins the next call. The number of rechecks is unchanged.
+
 ## 0.6.0-m8 - 2026-10-17
 
 M8 rumors, documents, and save schema 3. `VERSION` is `0.6.0-m8`. `plugin.cfg` version is `0.6.0-m8`. Corey cuts the tag `v0.6.0-m8` after the milestone benchmark. Save schema is 3. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when that set is empty too, and that load clears it. A rumor whose policy id is not registered at load reports `error[E_SAVE_POLICY]` and `push_error`, naming the policy and the deed, and that deed's in-flight state is dropped. Other rumors load. Beliefs already written stay. Schema 4 is refused.
