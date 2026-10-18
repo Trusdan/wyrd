@@ -338,6 +338,7 @@ func _sample_perceive() -> Dictionary:
 	}
 
 
+## Cold times the miss. Cached primes once, then times a burst of hits and divides.
 func _sample_reputation(cached: bool) -> Dictionary:
 	_import_deeds()
 	_runtime.invalidate_groups()
@@ -345,13 +346,18 @@ func _sample_reputation(cached: bool) -> Dictionary:
 	var group := StringName(WyrdPerfScale.GROUP)
 	if cached:
 		_runtime.social.reputation(subject, group)
+	var calls := 1
+	if cached:
+		calls = WyrdPerfScale.REPUTATION_CACHE_BATCH
 	var started := Time.get_ticks_usec()
-	var score := _runtime.social.reputation(subject, group)
+	var score := 0.0
+	for _call in calls:
+		score = _runtime.social.reputation(subject, group)
 	var elapsed := Time.get_ticks_usec() - started
 	return {
 		"checksum": "%.6f" % score,
-		"extra": {"members": _npcs},
-		"value": float(elapsed) / 1000000.0,
+		"extra": {"calls": calls, "members": _npcs},
+		"value": (float(elapsed) / 1000000.0) / float(calls),
 	}
 
 

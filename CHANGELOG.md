@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.2-m8 - 2026-10-18
+
+Bench measurement fix. `addons/wyrd/VERSION` is `0.6.2-m8`. `plugin.cfg` version is `0.6.2-m8`. Save schema stays 3. Seeded checksums stay the same. No runtime code changed. Corey cuts the tag `v0.6.2-m8` after this merges.
+
+- `reputation.cached` still primes `reputation(player, harbor_council)` once, untimed. It then times `REPUTATION_CACHE_BATCH` hits (32) and divides, the same way `believes.own` divides `BELIEVE_CALLS`. The old sample timed one hit immediately after that fill. That hit was cold: the fill checks the social-cache stamp once, so `_ensure` is not warm. Later hits in the same burst match the steady call. The checksum stays `50.000000`. `reputation.cold` still times the miss. The tag job runs each checkout's own harness, so `v0.6.2-m8` compares this average with `v0.6.1-m8`'s single call. That delta is the measurement change. The following tag compares two averages.
+
 ## 0.6.1-m8 - 2026-10-18
 
 Perf fixes for the v0.6.0-m8 regression gate. `addons/wyrd/VERSION` is `0.6.1-m8`. `plugin.cfg` version is `0.6.1-m8`. Save schema stays 3. Seeded checksums stay the same. Corey cuts the tag `v0.6.1-m8` after this merges.
