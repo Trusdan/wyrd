@@ -9,6 +9,13 @@ Perf fixes for the v0.6.0-m8 regression gate. `VERSION` is `0.6.1-m8`. `plugin.c
 - `reputation` checks the social cache stamp once per call, then fills the same axis and disposition keys a direct read would store, in the same order.
 - Dirty waits are sorted once per `tick` call and popped in ascending order. A mark during that call joins the next call. The number of rechecks is unchanged.
 
+### Accepted regressions vs v0.5.0-m7
+
+Corey accepted these two remaining costs against v0.5.0-m7. The numbers are the same-machine full-profile medians. Budgets stay as they are.
+
+- `reputation.cold` is 19.222 ms on this branch and 10.875 ms on v0.5.0-m7, +76.8%. That is the cost of filling the M8 social cache in one pass. It keeps `save.bytes` stable and makes `reputation.cached` about 65% faster than v0.5.0-m7.
+- `load.time` is 985 ms on this branch and 754 ms on v0.5.0-m7, +30.7%. That is the cost of building the M8 witness, believer, and time indexes at import. They make deed lookups about 24× faster and the full snapshot about 65% faster.
+
 ## 0.6.0-m8 - 2026-10-17
 
 M8 rumors, documents, and save schema 3. `VERSION` is `0.6.0-m8`. `plugin.cfg` version is `0.6.0-m8`. Corey cuts the tag `v0.6.0-m8` after the milestone benchmark. Save schema is 3. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when that set is empty too, and that load clears it. A rumor whose policy id is not registered at load reports `error[E_SAVE_POLICY]` and `push_error`, naming the policy and the deed, and that deed's in-flight state is dropped. Other rumors load. Beliefs already written stay. Schema 4 is refused.
