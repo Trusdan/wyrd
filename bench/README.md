@@ -21,8 +21,8 @@ Proposed ceilings, from the full-profile medians on the milestone run. Each one 
 | metric | proposed ceiling | measured median | why |
 | --- | --- | --- | --- |
 | `memory.quests` | 192 MiB | 164.5 MiB | The compiled 700-quest pack. About 17% over the median. |
-| `rumor.tick` | 12 ms | 4.21 ms | About 64 hops at 66 µs. Not the 2 ms frame warning. The ceiling stays 12 ms. |
-| `scheduler.tick` | 12 ms | 4.44 ms | Same busy tick, with the default shares and a gazette issue. The ceiling stays 12 ms. |
+| `rumor.tick` | 8 ms | 4.21 ms | About 64 hops at 66 µs, about 2× the median. Warn-only until Corey confirms it. Not the 2 ms frame warning. |
+| `scheduler.tick` | 8 ms | 4.44 ms | Same busy tick, with the default shares and a gazette issue. About 2× the median. Warn-only until Corey confirms it. |
 | `publish.issue` | 0.25 s | 170 ms | About 1.5× the sum of the slices for one issue. |
 | `deeds_known_to` | 0.20 s | 122 ms | About 1.6× the indexed walk. |
 | `memory.believers` | 768 KiB | 564 KiB | Index growth for 1,590 adoption pairs. |

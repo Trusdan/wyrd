@@ -114,9 +114,9 @@ static func metrics() -> Array:
 		# memory.quests: 164.5 MiB measured, ceiling 192 MiB.
 		{"budget": 201326592.0, "name": "memory.quests", "stat": "median", "unit": "B"},
 		# rumor.tick 4.21 ms and scheduler.tick 4.44 ms. A 64-hop tick is still over 2 ms.
-		# Ceiling stays 12 ms. Not the frame warning.
-		{"budget": 0.012, "name": "rumor.tick", "stat": "median", "unit": "s"},
-		{"budget": 0.012, "name": "scheduler.tick", "stat": "median", "unit": "s"},
+		# Warn-only ceiling is 8 ms, about 2× those medians, until Corey confirms it. Not the frame warning.
+		{"budget": 0.008, "name": "rumor.tick", "stat": "median", "unit": "s"},
+		{"budget": 0.008, "name": "scheduler.tick", "stat": "median", "unit": "s"},
 		# publish.issue 170 ms and deeds_known_to 122 ms.
 		{"budget": 0.25, "name": "publish.issue", "stat": "median", "unit": "s"},
 		{"budget": 0.2, "name": "deeds_known_to", "stat": "median", "unit": "s"},
