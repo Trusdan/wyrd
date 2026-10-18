@@ -21,19 +21,19 @@ Proposed ceilings, from the full-profile medians on the milestone run. Each one 
 | metric | proposed ceiling | measured median | why |
 | --- | --- | --- | --- |
 | `memory.quests` | 192 MiB | 164.5 MiB | The compiled 700-quest pack. About 17% over the median. |
-| `rumor.tick` | 12 ms | 8.03 ms | About 1.5× a busy tick. Not the 2 ms frame warning: 64 hops do not fit in 2 ms. |
-| `scheduler.tick` | 12 ms | 8.10 ms | Same busy tick, with the default shares and a gazette issue. |
-| `publish.issue` | 0.25 s | 141 ms | About 1.8× the sum of the slices for one issue. |
-| `deeds_known_to` | 0.20 s | 112 ms | About 1.8× the indexed walk. |
+| `rumor.tick` | 12 ms | 4.21 ms | About 64 hops at 66 µs. Not the 2 ms frame warning. The ceiling stays 12 ms. |
+| `scheduler.tick` | 12 ms | 4.44 ms | Same busy tick, with the default shares and a gazette issue. The ceiling stays 12 ms. |
+| `publish.issue` | 0.25 s | 170 ms | About 1.5× the sum of the slices for one issue. |
+| `deeds_known_to` | 0.20 s | 122 ms | About 1.6× the indexed walk. |
 | `memory.believers` | 768 KiB | 564 KiB | Index growth for 1,590 adoption pairs. |
 | `memory.per_belief` | 512 B | 363 B | That growth divided by the pair count. |
 | `save.believers` | 64 KiB | 54 KiB | UTF-8 bytes added by the `believers` field. |
 | `save.flight` | 0.75 s | 467 ms | About 1.6× a schema 3 save with jobs, reach rows, and one gazette token queued. |
 | `save.flight_bytes` | 9 MiB | 7.73 MiB | About 16% over that save. |
-| `load.flight` | 1.2 s | 885 ms | About 1.4× the load of that save. |
+| `load.flight` | 1.2 s | 961 ms | Above the measured max of 970 ms. Pair indexing is deferred; the witness, hour, and believer indexes still build during import. |
 | `deeds.index` | 1 ms | 0.61 ms | One indexed `score_matching` inside a 180-minute window. |
 | `deeds.scan` | 25 ms | 14.5 ms | The same call with lookup off. |
-| `debug.snapshot` | 1.5 s | 860 ms | About 1.7× a full snapshot. |
+| `debug.snapshot` | 1.5 s | 767 ms | About 2× a full snapshot. The deferred pair index is included. |
 | `memory.resident` | 384 MiB | 325 MiB | Same laptop warning as `memory.peak`. The full-run high water stayed under it. |
 | `memory.peak` | 384 MiB | 272 MiB | Unchanged. This sample is still taken before the rumor metrics. |
 

@@ -700,6 +700,11 @@ func _mutate_kept(
 	index: int,
 	chance: float
 ) -> bool:
+	# decision_unit is in [0, 1). A chance outside that range does not need a roll.
+	if chance <= 0.0:
+		return false
+	if chance >= 1.0:
+		return true
 	var key := StringName("mutate\t%s\t%s\t%s\t%d\t%s\t%d" % [deed_id, from_who, to_who, hop_n, field, index])
 	return WyrdRng.decision_unit(_seed(), &"rumor", key, _time_bucket()) < chance
 
@@ -805,6 +810,11 @@ func _apply_reach(deed_id: String, place: String, seq: int) -> void:
 
 
 func _roll(deed_id: String, from_who: String, to_who: String, hop_n: int, chance: float) -> bool:
+	# decision_unit is in [0, 1). A chance outside that range does not need a roll.
+	if chance <= 0.0:
+		return false
+	if chance >= 1.0:
+		return true
 	var key := StringName(_token(deed_id, from_who, to_who, hop_n))
 	return WyrdRng.decision_unit(_seed(), &"rumor", key, _time_bucket()) < chance
 

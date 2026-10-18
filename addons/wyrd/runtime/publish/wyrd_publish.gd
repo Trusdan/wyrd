@@ -13,10 +13,12 @@ extends RefCounted
 ## moment. Issues past the cap are numbered and written as [code]skip[/code]
 ## lines in the document fact, so they are not published later. The in-memory
 ## counter, the covered minute, and the queued dues are saved in
-## [code]flight.publish[/code]. A half-built issue is not. The save keeps the
-## optional [code]cursor[/code] token so the next slice starts over and can log
-## [code]phase=restart[/code]. The gathered rows are dropped. Issue tokens ride
-## with the scheduler. Schema stays 3.
+## [code]flight.publish[/code]. A half-built issue also stores [code]cursor[/code],
+## the optional [code]beliefs[/code] snapshot from the first slice, and the
+## optional [code]claim[/code] frozen with it. Load continues that issue from
+## the snapshot. A save that has [code]cursor[/code] and no [code]beliefs[/code]
+## starts the issue over and can log [code]phase=restart[/code]. The gathered
+## rows are dropped. Issue tokens ride with the scheduler. Schema stays 3.
 ## [method deeds_known_to] reads the verb index, the witness index, the hour
 ## buckets, and the believer field. Lookup off walks every row instead.
 ## A [code]saw[/code] witness counts as [code]known[/code]. [code]heard[/code],
@@ -52,6 +54,10 @@ var _build_gen := 0
 var _build_limit := 0
 var _build_beliefs: Dictionary = {}
 var _restart := ""
+var _resume := false
+var _saved_beliefs: Dictionary = {}
+var _saved_claim: Dictionary = {}
+var _saved_claim_ok := false
 
 
 func clear() -> void:
@@ -60,6 +66,10 @@ func clear() -> void:
 	_queued.clear()
 	_clear_build()
 	_restart = ""
+	_resume = false
+	_saved_beliefs = {}
+	_saved_claim = {}
+	_saved_claim_ok = false
 
 
 ## Counters, covered minutes, and dues already queued. Empty when nothing is in flight.
@@ -79,14 +89,24 @@ func export_state() -> Dictionary:
 		out["queued"] = queued
 	if not _build_token.is_empty():
 		out["cursor"] = _build_token
+		out["beliefs"] = _export_beliefs(_build_beliefs)
+		out["claim"] = {
+			"source": str(_build_claim.get("source", "none")),
+			"value": str(_build_claim.get("value", "")),
+		}
 	elif not _restart.is_empty():
 		out["cursor"] = _restart
+		if _resume:
+			out["beliefs"] = _export_beliefs(_saved_beliefs)
+			if _saved_claim_ok:
+				out["claim"] = _saved_claim
 	return out
 
 
 ## Replaces counters, covered minutes, and the queued-due set.
-## Issue tokens stay on the scheduler. A saved [code]cursor[/code] token
-## restarts that issue on the next slice. The gathered rows are not restored.
+## Issue tokens stay on the scheduler. A saved [code]cursor[/code] with
+## [code]beliefs[/code] resumes that issue. Without [code]beliefs[/code] the
+## next slice starts over. The gathered rows are not restored.
 func import_state(data: Dictionary) -> void:
 	clear()
 	_import_ints(_memory_n, data.get("counters", {}))
@@ -98,6 +118,54 @@ func import_state(data: Dictionary) -> void:
 			if not key.is_empty():
 				_queued[key] = true
 	_restart = String(data.get("cursor", ""))
+	_resume = data.has("beliefs")
+	if _resume:
+		_saved_beliefs = _import_beliefs(data.get("beliefs", []))
+		_saved_claim_ok = data.has("claim")
+		if _saved_claim_ok and data["claim"] is Dictionary:
+			var claim: Dictionary = data["claim"]
+			_saved_claim = {
+				"source": str(claim.get("source", "none")),
+				"value": str(claim.get("value", "")),
+			}
+		else:
+			_saved_claim_ok = false
+			_saved_claim = {}
+
+
+func _export_beliefs(beliefs: Dictionary) -> Array:
+	var rows: Array = []
+	var ids: Array = beliefs.keys()
+	ids.sort()
+	for deed_id in ids:
+		var bag: Dictionary = beliefs[deed_id]
+		var names: Array = bag.keys()
+		names.sort()
+		for who in names:
+			rows.append({
+				"deed": int(deed_id),
+				"t": int(bag[who]),
+				"who": String(who),
+			})
+	return rows
+
+
+func _import_beliefs(raw: Variant) -> Dictionary:
+	var out := {}
+	if not (raw is Array):
+		return out
+	for item in raw:
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var deed_id := int(row.get("deed", 0))
+		var who := str(row.get("who", ""))
+		if deed_id <= 0 or who.is_empty():
+			continue
+		var bag: Dictionary = out[deed_id] if out.has(deed_id) else {}
+		bag[who] = int(row.get("t", 0))
+		out[deed_id] = bag
+	return out
 
 
 func _export_ints(bag: Dictionary) -> Dictionary:
@@ -167,10 +235,20 @@ func issue(token: String) -> bool:
 	var phase := "continue"
 	if _build_token != token:
 		phase = "start"
-		if token == _restart or _build_token != "":
+		if token == _restart and _resume:
+			phase = "resume"
+		elif token == _restart or _build_token != "":
 			phase = "restart"
 		_restart = ""
 		_open_build(token, doc, int(parts[2]), int(parts[3]))
+		if phase == "resume":
+			_build_beliefs = _saved_beliefs
+			if _saved_claim_ok:
+				_build_claim = _saved_claim
+		_resume = false
+		_saved_beliefs = {}
+		_saved_claim = {}
+		_saved_claim_ok = false
 	elif deeds != null and deeds.generation() != _build_gen:
 		phase = "restart"
 		_open_build(token, doc, int(parts[2]), int(parts[3]))
@@ -186,8 +264,8 @@ func issue(token: String) -> bool:
 	if _build_at < _build_rows.size():
 		_trace_slice(phase, consumed)
 		return false
-	if phase == "restart":
-		_trace_slice("restart", consumed)
+	if phase == "restart" or phase == "resume":
+		_trace_slice(phase, consumed)
 	_commit_build(doc, consumed)
 	return true
 

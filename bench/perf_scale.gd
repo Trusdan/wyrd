@@ -106,24 +106,25 @@ static func metrics() -> Array:
 		{"budget": 0.02, "name": "director.query_coverage", "stat": "median", "unit": "s"},
 		{"budget": 0.05, "name": "director.why_not", "stat": "median", "unit": "s"},
 		{"absolute": false, "budget": 40.0, "name": "compile.tie_lint", "stat": "median", "unit": "s"},
+		# Full snapshot 767 ms, including the deferred pair index.
 		{"budget": 1.5, "name": "debug.snapshot", "stat": "median", "unit": "s"},
 		{"budget": 2.0, "name": "debug.snapshot_page", "stat": "median", "unit": "s"},
 		{"budget": 0.1, "name": "debug.snapshot_section", "stat": "median", "unit": "s"},
 		# Proposed from the full-profile medians after the M8 perf pass. They warn until Corey confirms them.
 		# memory.quests: 164.5 MiB measured, ceiling 192 MiB.
 		{"budget": 201326592.0, "name": "memory.quests", "stat": "median", "unit": "B"},
-		# rumor.tick 8.03 ms and scheduler.tick 8.10 ms. A 64-hop tick does not fit in 2 ms.
-		# Ceiling 12 ms. Not the frame warning.
+		# rumor.tick 4.21 ms and scheduler.tick 4.44 ms. A 64-hop tick is still over 2 ms.
+		# Ceiling stays 12 ms. Not the frame warning.
 		{"budget": 0.012, "name": "rumor.tick", "stat": "median", "unit": "s"},
 		{"budget": 0.012, "name": "scheduler.tick", "stat": "median", "unit": "s"},
-		# publish.issue 141 ms and deeds_known_to 112 ms.
+		# publish.issue 170 ms and deeds_known_to 122 ms.
 		{"budget": 0.25, "name": "publish.issue", "stat": "median", "unit": "s"},
 		{"budget": 0.2, "name": "deeds_known_to", "stat": "median", "unit": "s"},
 		# Believer index 564 KiB, 363 B each, 54 KiB of JSON.
 		{"budget": 786432.0, "name": "memory.believers", "stat": "median", "unit": "B"},
 		{"budget": 512.0, "name": "memory.per_belief", "stat": "median", "unit": "B"},
 		{"budget": 65536.0, "name": "save.believers", "stat": "median", "unit": "B"},
-		# In-flight save 467 ms and 7.73 MiB, load 885 ms.
+		# In-flight save 567 ms and 7.73 MiB, load 961 ms. Pair index is not built during import.
 		{"budget": 0.75, "name": "save.flight", "stat": "median", "unit": "s"},
 		{"budget": 9437184.0, "name": "save.flight_bytes", "stat": "median", "unit": "B"},
 		{"budget": 1.2, "name": "load.flight", "stat": "median", "unit": "s"},

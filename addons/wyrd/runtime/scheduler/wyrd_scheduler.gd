@@ -11,7 +11,10 @@ extends RefCounted
 ## the array. The saved tokens are the ones still waiting.
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
-## still spends the whole budget. Unfinished items stay in queue order. The
+## still spends the whole budget. A pass that would only run rumor is handled
+## in one loop, including a spill onto rumor from an earlier idle queue. The
+## loop stops when another queue would run, after finishing any later queue
+## that the hop just gave work. Unfinished items stay in queue order. The
 ## round-robin starts at waits every tick. Token queues and the dirty waits
 ## are saved in [code]flight.scheduler[/code]. The leftover slice is saved there too.
 
@@ -196,6 +199,11 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 	var guard := cap * 3 + 4
 	while total < cap and guard > 0:
 		guard -= 1
+		if _pass_is_rumor_only(shares):
+			var extra := _drain_rumor(shares, spent, cap, total, waits_eval)
+			total += extra
+			if extra > 0:
+				continue
 		var ran := false
 		for index in QUEUE_COUNT:
 			if total >= cap or shares[index] <= 0:
@@ -270,6 +278,54 @@ static func _weight_at(weights: PackedInt32Array, index: int) -> int:
 	if index < 0 or index >= weights.size():
 		return 0
 	return maxi(int(weights[index]), 0)
+
+
+## True when this pass would run a rumor hop and no other queue, or when the
+## pass would run nothing and the spill would land on rumor.
+func _pass_is_rumor_only(shares: Array[int]) -> bool:
+	for index in QUEUE_COUNT:
+		if index == 1:
+			continue
+		if shares[index] > 0 and _has_work(index):
+			return false
+	var rumor_work := _rumor_at < _rumor.size()
+	if shares[1] > 0 and rumor_work:
+		return true
+	if not rumor_work or shares[1] > 0:
+		return false
+	return _waits.dirty_count() == 0
+
+
+## Rumor hops, in queue order, while each pass would only run rumor.
+## Idle share moves the same way [method _spill_one] does. A hop that gives a
+## later queue work runs that queue before the loop stops.
+func _drain_rumor(
+	shares: Array[int],
+	spent: PackedInt32Array,
+	cap: int,
+	total: int,
+	waits_eval: Callable
+) -> int:
+	var ran := 0
+	while total + ran < cap and _pass_is_rumor_only(shares):
+		if shares[1] <= 0:
+			if not _spill_one(shares):
+				break
+			continue
+		if not _take_rumor():
+			break
+		shares[1] = int(shares[1]) - 1
+		spent[1] = int(spent[1]) + 1
+		ran += 1
+		for index in range(2, QUEUE_COUNT):
+			if total + ran >= cap or shares[index] <= 0:
+				continue
+			if not _run_one(index, waits_eval):
+				continue
+			shares[index] = int(shares[index]) - 1
+			spent[index] = int(spent[index]) + 1
+			ran += 1
+	return ran
 
 
 func _spill_one(shares: Array[int]) -> bool:

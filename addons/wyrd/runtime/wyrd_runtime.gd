@@ -88,6 +88,8 @@ func _init() -> void:
 	facts.on_keys = Callable(self, &"_mark_keys")
 	facts.tracer = Callable(self, &"note")
 	facts.on_belief = Callable(self, &"_trace_belief")
+	facts.on_belief_touch = Callable(self, &"_clear_belief_cache")
+	facts.belief_trace_of = Callable(self, &"_tracing_on")
 	facts.on_knowledge = Callable(self, &"_trace_knowledge")
 	deeds.on_perceived = Callable(self, &"_on_perceived")
 	facts.on_resolved = Callable(self, &"_on_resolved")

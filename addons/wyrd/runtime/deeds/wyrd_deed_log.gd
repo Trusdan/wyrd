@@ -67,6 +67,7 @@ var _by_believer: Dictionary = {}
 var _by_time: Dictionary = {}
 ## Social pair "source\ttarget" for snapshot. Not saved. Rebuilt with the rows.
 var _pairs: Dictionary = {}
+var _pairs_dirty := false
 var _stamp_gen: int = -1
 var _stamp_now: int = -1
 var _stamp_width: int = -2
@@ -306,7 +307,7 @@ func _append_stored(row: Dictionary) -> void:
 	_index(_by_verb, StringName(_verb[index]), index)
 	_row_of[int(_id[index])] = index
 	_index_witnesses(index)
-	_index_pairs(index)
+	_pairs_dirty = true
 	_note_time(index)
 	for item in row.get("believers", []):
 		if item is Dictionary:
@@ -484,6 +485,7 @@ func clear() -> void:
 	_by_believer.clear()
 	_by_time.clear()
 	_pairs.clear()
+	_pairs_dirty = false
 	_time_width = -1
 	_stamp_gen = -1
 	_gen += 1
@@ -547,7 +549,8 @@ func record(
 	_index(_by_verb, verb, row)
 	_row_of[int(_id[row])] = row
 	_index_witnesses(row)
-	_index_pairs(row)
+	if not _pairs_dirty:
+		_index_pairs(row)
 	_note_time(row)
 	_gen += 1
 	var deed := row_at(row)
@@ -642,6 +645,7 @@ func witness_mode_name_at(index: int, offset: int) -> String:
 
 ## Pair keys [code]source\ttarget[/code] from deed targets and witnesses. Not saved.
 func pair_keys() -> PackedStringArray:
+	_ensure_pairs()
 	var keys := PackedStringArray()
 	keys.resize(_pairs.size())
 	var at := 0
@@ -949,6 +953,15 @@ func _index_witnesses(index: int) -> void:
 	var at := int(_wit_at[index])
 	for offset in int(_wit_n[index]):
 		_index(_by_witness, StringName(_witnesses[at + offset]), index)
+
+
+func _ensure_pairs() -> void:
+	if not _pairs_dirty:
+		return
+	_pairs.clear()
+	for index in size():
+		_index_pairs(index)
+	_pairs_dirty = false
 
 
 func _index_pairs(index: int) -> void:

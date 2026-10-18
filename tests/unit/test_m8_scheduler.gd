@@ -59,6 +59,46 @@ func test_unfinished_rumor_stays_in_order() -> void:
 	assert_eq(scheduler.carry("rumor"), 0)
 
 
+func test_idle_publish_token_does_not_steal_the_rumor_spill() -> void:
+	var scheduler := WyrdScheduler.new()
+	var order: Array[String] = []
+	scheduler.rumor_handler = func(token: String) -> void: order.append(token)
+	scheduler.publish_handler = func(token: String) -> void: order.append("publish:" + token)
+	for token in ["a", "b", "c", "d", "e"]:
+		scheduler.push("rumor", token)
+	scheduler.push("publish", "issue")
+	var report: Dictionary = scheduler.run(4, PackedInt32Array([3, 1, 0, 0]), func(_index: int) -> void: pass)
+	var spent: PackedInt32Array = report["spent"]
+	assert_eq(spent, PackedInt32Array([0, 4, 0, 0]))
+	assert_eq(order, ["a", "b", "c", "d"])
+	assert_eq(scheduler.carry_tokens("publish"), PackedStringArray(["issue"]))
+	assert_eq(scheduler.carry_tokens("rumor"), PackedStringArray(["e"]))
+
+
+func test_a_hop_that_queues_publish_runs_it_in_the_same_pass() -> void:
+	var scheduler := WyrdScheduler.new()
+	var order: Array[String] = []
+	scheduler.watch(0)
+	scheduler.clear_dirty()
+	scheduler.rumor_handler = func(token: String) -> void:
+		order.append(token)
+		if token == "b":
+			scheduler.push("publish", "late")
+			scheduler.mark(PackedInt32Array([0]))
+	scheduler.publish_handler = func(token: String) -> void: order.append(token)
+	for token in ["a", "b", "c", "d"]:
+		scheduler.push("rumor", token)
+	var waits: Array[int] = []
+	var report: Dictionary = scheduler.run(5, PackedInt32Array([4, 2, 2, 0]), func(index: int) -> void:
+		waits.append(index)
+		order.append("wait")
+	)
+	var spent: PackedInt32Array = report["spent"]
+	assert_eq(order, ["a", "b", "late", "wait", "c"])
+	assert_eq(spent, PackedInt32Array([1, 3, 1, 0]))
+	assert_eq(waits, [0])
+
+
 func test_waits_match_the_old_tick_queue() -> void:
 	var old := WyrdTickQueue.new()
 	var scheduler := WyrdScheduler.new()

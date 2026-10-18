@@ -22,6 +22,10 @@ var tracer: Callable = Callable()
 ## Called after a [code]believed/[/code] or [code]held/[/code] value changes.
 ## [code]op[/code] is [code]believe[/code], [code]unbelieve[/code], [code]declare[/code], or [code]retract[/code].
 var on_belief: Callable = Callable()
+## [code]() -> void[/code]. The same change, with no row. Used to drop a cache without a trace.
+var on_belief_touch: Callable = Callable()
+## [code]() -> bool[/code]. When this is valid and false, [member on_belief] is not called.
+var belief_trace_of: Callable = Callable()
 ## Called after a [code]known/[/code] value changes. [code]op[/code] is [code]learn[/code] or [code]forget[/code].
 var on_knowledge: Callable = Callable()
 var on_resolved: Callable = Callable()
@@ -43,6 +47,8 @@ var _reasons: Dictionary = {}
 var _subs: PackedStringArray = PackedStringArray()
 var _once: Dictionary = {}
 var _quiet: bool = false
+var _find_text := ""
+var _find_fact: WyrdFact
 ## Evidence deadlines. Each row is actor, event, key, place, target, until, value.
 ## [code]until[/code] is the game minute that clears the world fact, or [code]-1[/code].
 var _evidence: Array = []
@@ -50,6 +56,8 @@ var _evidence: Array = []
 
 func bind_schema(schema: WyrdFactSchema) -> void:
 	_schema = schema
+	_find_text = ""
+	_find_fact = null
 	clear_values()
 
 
@@ -663,9 +671,16 @@ func _call_resolver(fact: WyrdFact, concrete: String) -> Variant:
 
 
 func _find(concrete: String) -> WyrdFact:
+	if concrete == _find_text:
+		return _find_fact
 	if _schema == null or concrete.is_empty():
+		_find_text = concrete
+		_find_fact = null
 		return null
-	return _schema.lookup(concrete.split("."))
+	var found := _schema.lookup(concrete.split("."))
+	_find_text = concrete
+	_find_fact = found
+	return found
 
 
 func _kind(perspective: StringName) -> String:
@@ -712,7 +727,13 @@ func _layer_bag(layers: Dictionary, who: String, create: bool) -> Dictionary:
 
 
 func _log_belief(op: String, who: String, key: String, value: Variant) -> void:
-	if _quiet or not on_belief.is_valid():
+	if _quiet:
+		return
+	if on_belief_touch.is_valid():
+		on_belief_touch.call()
+	if not on_belief.is_valid():
+		return
+	if belief_trace_of.is_valid() and not bool(belief_trace_of.call()):
 		return
 	on_belief.call({"key": key, "op": op, "value": value, "who": who})
 

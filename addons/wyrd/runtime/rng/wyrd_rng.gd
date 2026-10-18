@@ -118,11 +118,26 @@ static func decision_unit(game_seed: int, stream: StringName, decision_key: Stri
 	return float(_output(state)) * (1.0 / 4294967296.0)
 
 
+static var _prefix_ready := false
+static var _prefix_seed := 0
+static var _prefix_stream: StringName = &""
+static var _prefix_value := 0
+
+
 static func _decision_seed(game_seed: int, stream: StringName, decision_key: StringName, time_bucket: int) -> int:
-	var mixed := WyrdHash.of_int(game_seed)
-	mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(stream))
-	mixed = WyrdHash.combine(mixed, WyrdHash.of_string_name(decision_key))
+	var mixed := WyrdHash.combine(_seed_prefix(game_seed, stream), WyrdHash.of_string_name(decision_key))
 	return WyrdHash.combine(mixed, WyrdHash.of_int(time_bucket))
+
+
+static func _seed_prefix(game_seed: int, stream: StringName) -> int:
+	if _prefix_ready and _prefix_seed == game_seed and _prefix_stream == stream:
+		return _prefix_value
+	var mixed := WyrdHash.combine(WyrdHash.of_int(game_seed), WyrdHash.of_string_name(stream))
+	_prefix_ready = true
+	_prefix_seed = game_seed
+	_prefix_stream = stream
+	_prefix_value = mixed
+	return mixed
 
 
 static func _advance(state: int, inc: int) -> int:

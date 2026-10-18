@@ -29,13 +29,23 @@ static var _short_hash: Dictionary = {}
 
 static func of_string_name(value: StringName) -> int:
 	var text := String(value)
-	if text.length() <= 16 and _short_hash.has(value):
+	var count := text.length()
+	if count <= 16 and _short_hash.has(value):
 		return int(_short_hash[value])
-	var hash := _mix(FNV_OFFSET, _DOMAIN_STRING)
-	var body := text.to_utf8_buffer()
-	for i in body.size():
-		hash = _mix(hash, body[i])
-	if text.length() <= 16:
+	var hash := (FNV_OFFSET ^ _DOMAIN_STRING) * FNV_PRIME
+	var ascii := true
+	for index in count:
+		var code := text.unicode_at(index)
+		if code > 127:
+			ascii = false
+			break
+		hash = (hash ^ code) * FNV_PRIME
+	if not ascii:
+		hash = (FNV_OFFSET ^ _DOMAIN_STRING) * FNV_PRIME
+		var body := text.to_utf8_buffer()
+		for index in body.size():
+			hash = (hash ^ (int(body[index]) & 0xFF)) * FNV_PRIME
+	if count <= 16:
 		_short_hash[value] = hash
 	return hash
 

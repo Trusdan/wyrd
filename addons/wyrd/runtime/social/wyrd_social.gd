@@ -58,6 +58,19 @@ var _disp_cache: Dictionary = {}
 var _rep_cache: Dictionary = {}
 var _path_cache: Dictionary = {}
 var _booted: bool = false
+var _stamp_ready := false
+var _stamp_cfg: WyrdConfig
+var _stamp_default := 0
+var _stamp_hour := 0
+var _stamp_half_verbs := PackedStringArray()
+var _stamp_half_minutes := PackedFloat64Array()
+var _stamp_axis_verbs := PackedStringArray()
+var _stamp_axis_names := PackedStringArray()
+var _stamp_axis_deltas := PackedFloat64Array()
+var _stamp_kind_kinds := PackedStringArray()
+var _stamp_kind_axes := PackedStringArray()
+var _stamp_kind_values := PackedFloat64Array()
+var _stamp_value := 0
 
 
 func _init() -> void:
@@ -277,7 +290,7 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 
 func _axis_raw(source: StringName, target: StringName, axis_name: StringName) -> float:
 	var total := _base(source, target, axis_name)
-	if deeds != null and source != &"" and target != &"":
+	if deeds != null and source != &"" and target != &"" and _axis_has_delta(axis_name):
 		var cfg := _config()
 		var scale := _kind_scale(source, target, axis_name)
 		var rows := deeds.actor_indexes(target)
@@ -553,10 +566,38 @@ func _emit_cache(event: String, kind: String, key: String, who: String, path: St
 	})
 
 
+func _axis_has_delta(axis_name: StringName) -> bool:
+	var cfg := _config()
+	if cfg == null or axis_name == &"":
+		return false
+	var count := mini(cfg.axis_names.size(), cfg.axis_deltas.size())
+	for index in count:
+		if StringName(cfg.axis_names[index]) != axis_name:
+			continue
+		if cfg.axis_deltas[index] != 0.0:
+			return true
+	return false
+
+
 func _config_stamp() -> int:
 	var cfg := _config()
 	if cfg == null:
 		return 0
+	if (
+		_stamp_ready
+		and _stamp_cfg == cfg
+		and _stamp_default == cfg.disposition_default
+		and _stamp_hour == cfg.hour_bucket_minutes
+		and _stamp_half_verbs == cfg.half_life_verbs
+		and _stamp_half_minutes == cfg.half_life_minutes
+		and _stamp_axis_verbs == cfg.axis_verbs
+		and _stamp_axis_names == cfg.axis_names
+		and _stamp_axis_deltas == cfg.axis_deltas
+		and _stamp_kind_kinds == cfg.kind_scale_kinds
+		and _stamp_kind_axes == cfg.kind_scale_axes
+		and _stamp_kind_values == cfg.kind_scale_values
+	):
+		return _stamp_value
 	var mixed := WyrdHash.of_int(cfg.disposition_default)
 	mixed = WyrdHash.combine(mixed, cfg.hour_bucket_minutes)
 	mixed = _mix_strings(mixed, cfg.half_life_verbs)
@@ -566,7 +607,21 @@ func _config_stamp() -> int:
 	mixed = _mix_floats(mixed, cfg.axis_deltas)
 	mixed = _mix_strings(mixed, cfg.kind_scale_kinds)
 	mixed = _mix_strings(mixed, cfg.kind_scale_axes)
-	return _mix_floats(mixed, cfg.kind_scale_values)
+	mixed = _mix_floats(mixed, cfg.kind_scale_values)
+	_stamp_ready = true
+	_stamp_cfg = cfg
+	_stamp_default = cfg.disposition_default
+	_stamp_hour = cfg.hour_bucket_minutes
+	_stamp_half_verbs = cfg.half_life_verbs.duplicate()
+	_stamp_half_minutes = cfg.half_life_minutes.duplicate()
+	_stamp_axis_verbs = cfg.axis_verbs.duplicate()
+	_stamp_axis_names = cfg.axis_names.duplicate()
+	_stamp_axis_deltas = cfg.axis_deltas.duplicate()
+	_stamp_kind_kinds = cfg.kind_scale_kinds.duplicate()
+	_stamp_kind_axes = cfg.kind_scale_axes.duplicate()
+	_stamp_kind_values = cfg.kind_scale_values.duplicate()
+	_stamp_value = mixed
+	return mixed
 
 
 func _mix_strings(mixed: int, values: PackedStringArray) -> int:
@@ -607,15 +662,15 @@ func disposition(source: StringName, target: StringName) -> int:
 
 
 func _disposition_raw(source: StringName, target: StringName) -> int:
+	var base := 50
+	var cfg := _config()
+	if cfg != null:
+		base = cfg.disposition_default
 	var axes := _axes(source, target)
 	var raw := 0
 	if formula.is_valid():
 		raw = int(formula.call(source, target, axes))
 	else:
-		var base := 50
-		var cfg := _config()
-		if cfg != null:
-			base = cfg.disposition_default
 		raw = int(round(float(base) + float(axes[&"affinity"]) / 2.0))
 	return clampi(raw, 0, 100)
 
