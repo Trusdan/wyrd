@@ -278,6 +278,10 @@ func axis(source: StringName, target: StringName, axis_name: StringName) -> floa
 	if not _cache_on or source == &"" or target == &"" or axis_name == &"":
 		return _axis_raw(source, target, axis_name)
 	_ensure()
+	return _remember_axis(source, target, axis_name)
+
+
+func _remember_axis(source: StringName, target: StringName, axis_name: StringName) -> float:
 	var key := "axis\t%s\t%s\t%s" % [String(source), String(target), String(axis_name)]
 	if _axis_cache.has(key):
 		_emit_cache("hit", "axis", String(target), String(source), String(axis_name), 0)
@@ -315,9 +319,11 @@ func _axis_raw(source: StringName, target: StringName, axis_name: StringName) ->
 
 ## Mean disposition of [param group]'s members toward [param subject].
 ## The subject is skipped. Duplicate members count once. No members returns 0.
-## The mean shares the social cache. Membership inside a host is read again
-## only after [method invalidate_members]. [member WyrdRuntime.invalidate_groups]
-## is the host signal.
+## The mean shares the social cache. The stamp is checked once per call, then
+## each member's axis and disposition entries are filled with the same keys a
+## direct read would store. Membership inside a host is read again only after
+## [method invalidate_members]. [member WyrdRuntime.invalidate_groups] is the
+## host signal.
 func reputation(subject: StringName, group: StringName) -> float:
 	if subject == &"" or group == &"":
 		return 0.0
@@ -332,7 +338,7 @@ func reputation(subject: StringName, group: StringName) -> float:
 		_emit_cache("hit", "reputation", String(group), String(subject), "", 0)
 		_emit_reputation(subject, group, float(hit["v"]), int(hit["n"]))
 		return float(hit["v"])
-	var computed := _reputation_raw(subject, group)
+	var computed := _reputation_sum(subject, group, true)
 	_rep_cache[key] = computed
 	_emit_cache("miss", "reputation", String(group), String(subject), "", 0)
 	_emit_reputation(subject, group, float(computed["v"]), int(computed["n"]))
@@ -340,6 +346,12 @@ func reputation(subject: StringName, group: StringName) -> float:
 
 
 func _reputation_raw(subject: StringName, group: StringName) -> Dictionary:
+	return _reputation_sum(subject, group, false)
+
+
+## [param warmed] fills axis and disposition entries without another stamp check.
+## The keys match a direct [method axis] and [method disposition] for each member.
+func _reputation_sum(subject: StringName, group: StringName, warmed: bool) -> Dictionary:
 	var listed := PackedStringArray()
 	if members_of.is_valid():
 		var raw: Variant = members_of.call(group)
@@ -357,7 +369,10 @@ func _reputation_raw(subject: StringName, group: StringName) -> Dictionary:
 		if who == &"" or who == subject or seen.has(who):
 			continue
 		seen[who] = true
-		total += float(disposition(who, subject))
+		if warmed:
+			total += float(_remember_disposition(who, subject))
+		else:
+			total += float(disposition(who, subject))
 		count += 1
 	var value := 0.0 if count == 0 else WyrdDeedLog.round_sum(total / float(count))
 	return {"n": count, "v": value}
@@ -651,6 +666,10 @@ func disposition(source: StringName, target: StringName) -> int:
 	if not _cache_on or source == &"" or target == &"":
 		return _disposition_raw(source, target)
 	_ensure()
+	return _remember_disposition(source, target)
+
+
+func _remember_disposition(source: StringName, target: StringName) -> int:
 	var key := "disp\t%s\t%s" % [String(source), String(target)]
 	if _disp_cache.has(key):
 		_emit_cache("hit", "disposition", String(target), String(source), "", 0)
@@ -733,7 +752,11 @@ func _axes(source: StringName, target: StringName) -> Dictionary:
 				names.append(axis_name)
 	var axes := {}
 	for axis_name in names:
-		axes[StringName(axis_name)] = axis(source, target, StringName(axis_name))
+		var axis_id := StringName(axis_name)
+		if _cache_on:
+			axes[axis_id] = _remember_axis(source, target, axis_id)
+		else:
+			axes[axis_id] = _axis_raw(source, target, axis_id)
 	return axes
 
 

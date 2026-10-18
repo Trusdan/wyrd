@@ -29,6 +29,9 @@ var _belief_hot_left: Variant = null
 var _belief_hot_right: Variant = null
 var _belief_hot: Dictionary = {}
 var _belief_cache: Dictionary = {}
+## True while a coarse reach row is stored. The runtime sets this from the rumor
+## list, so an empty list can return the hot cache without asking the rumor table.
+var _belief_reach: bool = false
 var _builtins: Dictionary = {}
 
 
@@ -398,6 +401,10 @@ func _held(args: Array) -> bool:
 	return _truthy(_runtime.facts.get_in(key, StringName("held/%s" % String(group))))
 
 
+func set_belief_reach(present: bool) -> void:
+	_belief_reach = present
+
+
 func clear_belief_cache() -> void:
 	_belief_hot_ok = false
 	_belief_hot_agent = &""
@@ -412,16 +419,19 @@ func clear_belief_cache() -> void:
 ## order. A present value, including explicit false, stops the walk. Null is no
 ## opinion. [code]known/[/code] and [code]world[/code] are not read.
 ## Repeated lookups are cached while tracing is off. A belief write or
-## [method WyrdRuntime.invalidate_groups] drops the cache. A coarse reach draw
-## runs before that cache, so a later rise can still write.
+## [method WyrdRuntime.invalidate_groups] drops the cache. An empty reach list
+## returns that hot cache before the agent and key are built. A reach row still
+## draws before the cache, so a later rise can write.
 func _resolve_belief(args: Array) -> Dictionary:
 	if args.size() < 2 or args[0] == null or _runtime == null:
 		return {"source": "none", "value": null}
+	var traced := _runtime.trace != null and _runtime.trace.enabled
+	if not _belief_reach and not traced and _belief_hot_ok and _belief_hot_left == args[0] and _belief_hot_right == args[1]:
+		return _belief_hot
 	var agent := StringName(str(args[0]))
 	var key := _known_key(args[1])
-	if _runtime.rumors != null:
+	if _belief_reach and _runtime.rumors != null:
 		_runtime.rumors.materialize(agent, key)
-	var traced := _runtime.trace != null and _runtime.trace.enabled
 	if not traced and _belief_hot_ok and _belief_hot_left == args[0] and _belief_hot_right == args[1]:
 		return _belief_hot
 	if not traced and _belief_hot_ok and _belief_hot_agent == agent and _belief_hot_key == key:

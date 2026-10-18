@@ -98,6 +98,33 @@ func test_time_window_follows_the_hour_bucket() -> void:
 	assert_eq(runtime.deeds.score_matching(&"player", &"paid", null, null, 40, PackedStringArray()), widened)
 
 
+func test_hour_bucket_keeps_append_order() -> void:
+	var runtime := _runtime()
+	runtime.deeds.import_state({
+		"next": 5,
+		"rows": [
+			{"actor": "ada", "id": 1, "perception": ["saw"], "t": 20, "verb": "paid", "witnesses": ["bea"]},
+			{"actor": "ada", "id": 2, "perception": ["saw"], "t": 5, "verb": "paid", "witnesses": ["bea"]},
+			{"actor": "ada", "id": 3, "perception": ["saw"], "t": 40, "verb": "paid", "witnesses": ["bea"]},
+			{"actor": "ada", "id": 4, "perception": ["saw"], "t": 80, "verb": "paid", "witnesses": ["bea"]},
+		],
+	})
+	assert_eq(runtime.deeds.rows_for_deed_prefix(""), PackedInt32Array([0, 1, 2, 3]))
+	var hour: Variant = runtime.deeds._by_time[0]
+	assert_true(hour is PackedInt32Array)
+	assert_eq(hour, PackedInt32Array([0, 1, 2]))
+	var witness: Variant = runtime.deeds._by_witness["bea"]
+	assert_true(witness is PackedInt32Array)
+	assert_eq(witness, PackedInt32Array([0, 1, 2, 3]))
+	runtime.deeds.record(&"paid", &"ada")
+	assert_eq(runtime.deeds.rows_for_deed_prefix(""), PackedInt32Array([0, 1, 2, 4, 3]))
+	assert_true(runtime.deeds._by_time[0] is PackedInt32Array)
+	assert_eq(runtime.deeds._by_time[0], PackedInt32Array([0, 1, 2, 4]))
+	assert_true(runtime.deeds._by_witness["bea"] is PackedInt32Array)
+	assert_eq(runtime.deeds.time_buckets(), 2)
+	assert_eq(runtime.deeds.time_refs(), 5)
+
+
 func test_full_scale_index_stays_lean() -> void:
 	# Mirrors bench/scale_pack.gd witness and minute assignment for the full profile.
 	# text_bytes is witness names, bucket labels, and 4 bytes per row ref.

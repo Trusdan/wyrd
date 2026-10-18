@@ -123,6 +123,7 @@ func _init() -> void:
 	rumors.trace_of = Callable(self, &"_trace_rumor")
 	rumors.tracing_of = Callable(self, &"_tracing_on")
 	rumors.enqueue_hop = Callable(self, &"_enqueue_rumor")
+	rumors.on_reach = Callable(self, &"_on_rumor_reach")
 	_queue.rumor_handler = Callable(rumors, &"hop")
 	publish = WyrdPublish.new()
 	publish.facts = facts
@@ -2097,6 +2098,11 @@ func _tracked_calls() -> PackedStringArray:
 func _clear_belief_cache() -> void:
 	if _ctx != null:
 		_ctx.clear_belief_cache()
+
+
+func _on_rumor_reach(present: bool) -> void:
+	if _ctx != null:
+		_ctx.set_belief_reach(present)
 
 
 func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:

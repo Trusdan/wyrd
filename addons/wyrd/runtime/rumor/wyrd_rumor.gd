@@ -44,6 +44,12 @@ var trace_of: Callable = Callable()
 var tracing_of: Callable = Callable()
 ## [code](token: String)[/code]. One rumor unit. The token is saved with the scheduler.
 var enqueue_hop: Callable = Callable()
+## [code](present: bool)[/code]. Fired when the reach list goes from empty to
+## occupied, or back. The belief cache reads this so an empty list can return
+## without calling in here.
+var on_reach: Callable = Callable()
+## True when any coarse reach row is stored, including level 0.
+var reach_any: bool = false
 
 var _policies: Array[WyrdRumorPolicy] = []
 var _jobs: Dictionary = {}
@@ -79,6 +85,7 @@ func clear_flight() -> void:
 	_seen.clear()
 	_queued.clear()
 	_reach.clear()
+	_reach_changed(false)
 	_drawn.clear()
 	_held.clear()
 	_gone.clear()
@@ -176,6 +183,7 @@ func import_state(data: Dictionary) -> Array:
 		if deed_id.is_empty() or who.is_empty() or dropped.has(deed_id):
 			continue
 		_gone["%s\t%s" % [deed_id, who]] = true
+	_reach_changed(not _reach.is_empty())
 	return missing
 
 
@@ -325,6 +333,19 @@ func hop(token: String) -> void:
 		return
 	if hop_n < int(job.get("max_hops", 0)):
 		_enqueue_from(deed_id, to_who, hop_n + 1)
+
+
+## True when any coarse reach row is stored, including a row still at level 0.
+func has_reach() -> bool:
+	return reach_any
+
+
+func _reach_changed(present: bool) -> void:
+	if reach_any == present:
+		return
+	reach_any = present
+	if on_reach.is_valid():
+		on_reach.call(present)
 
 
 ## Rolls once for the lowest undrawn reach row at [param who]'s coarse place.
@@ -793,6 +814,7 @@ func _note_reach(
 		"value": claim_value,
 		"verb": String(verb),
 	}
+	_reach_changed(true)
 
 
 func _apply_reach(deed_id: String, place: String, seq: int) -> void:

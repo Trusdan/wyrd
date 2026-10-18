@@ -71,6 +71,49 @@ func test_level_zero_does_not_draw_and_one_hour_matches_the_roll() -> void:
 	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"lost_at_sea")
 
 
+func test_empty_reach_reuses_the_hot_belief_cache() -> void:
+	var runtime := _boot(4)
+	var host := _host(runtime)
+	host.world.set_groups(&"line_fisher", PackedStringArray([&"harbor_guild"]))
+	assert_false(runtime.rumors.has_reach())
+	runtime.facts.set_in(&"harbor.toll_fate", &"stolen", &"believed/dock_hand")
+	runtime.facts.set_in(&"harbor.toll_fate", &"stolen", &"held/harbor_guild")
+	assert_true(_believes(runtime, "dock_hand"))
+	assert_true(_believes(runtime, "line_fisher"))
+	runtime.facts.on_belief_touch = Callable()
+	assert_true(runtime.facts.clear_in(&"harbor.toll_fate", &"believed/dock_hand"))
+	assert_true(runtime.facts.clear_in(&"harbor.toll_fate", &"held/harbor_guild"))
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"))
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"held/harbor_guild"))
+	assert_true(_believes(runtime, "dock_hand"))
+	assert_true(_believes(runtime, "line_fisher"))
+	runtime.facts.on_belief_touch = Callable(runtime, &"_clear_belief_cache")
+	runtime.facts.set_in(&"harbor.toll_fate", &"stolen", &"believed/dock_hand")
+	runtime.facts.clear_in(&"harbor.toll_fate", &"believed/dock_hand")
+	assert_false(_believes(runtime, "dock_hand"))
+	runtime.facts.set_in(&"harbor.toll_fate", &"stolen", &"held/harbor_guild")
+	runtime.facts.clear_in(&"harbor.toll_fate", &"held/harbor_guild")
+	assert_false(_believes(runtime, "line_fisher"))
+
+
+func test_a_reach_row_draws_before_the_belief_cache() -> void:
+	var seed_value := _seed_for(true)
+	var runtime := _arm(_boot(seed_value))
+	_whisper(runtime)
+	runtime.tick(0)
+	assert_true(runtime.rumors.has_reach())
+	assert_eq(runtime.rumors.reach_level("1", &"gullhaven"), 0)
+	assert_false(_believes(runtime, "dock_hand"))
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"))
+	runtime.tick(60)
+	assert_eq(runtime.rumors.reach_level("1", &"gullhaven"), 1)
+	assert_null(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"))
+	assert_true(_believes(runtime, "dock_hand"))
+	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+	assert_true(_believes(runtime, "dock_hand"))
+	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
+
+
 func test_a_reject_is_once_and_the_next_deed_can_roll() -> void:
 	var seed_value := _seed_for(false)
 	var runtime := _arm(_boot(seed_value))
