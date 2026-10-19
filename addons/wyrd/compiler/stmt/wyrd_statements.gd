@@ -1304,22 +1304,39 @@ func _choice(node: WyrdNode, scene: WyrdSceneDef) -> void:
 			return
 		choice.label = _interp(_slice(items, i + 1, close), choice.reads)
 		i = close + 1
-	if i < items.size() and items[i].kind == &"ident" and items[i].text == "disabled_when":
+	var saw_disabled := false
+	while i < items.size() and _disabled_word(items[i]):
+		if items[i].text == "disabled_when":
+			_diagnostics.add(
+				WyrdDiagnostic.W_DISABLED_WHEN_DEPRECATED,
+				"disabled_when is deprecated; use show_disabled_when",
+				_path,
+				items[i].line,
+				items[i].col,
+				WyrdDiagnostic.SEVERITY_WARNING
+			)
+		if saw_disabled:
+			_choice_error(node, "a choice has one show_disabled_when")
+			return
+		saw_disabled = true
 		if label_at < 0:
-			_choice_error(node, "disabled_when follows the label")
+			_choice_error(node, "show_disabled_when follows the label")
 			return
 		if i + 1 >= items.size() or items[i + 1].kind != &"lbrace":
-			_choice_error(node, "disabled_when needs {<condition>} \"<reason>\"")
+			_choice_error(node, "show_disabled_when needs {<condition>} \"<reason>\"")
 			return
 		var close := _closing(items, i + 1, &"lbrace", &"rbrace")
 		if close < 0 or node.title.is_empty():
-			_choice_error(node, "disabled_when needs {<condition>} \"<reason>\"")
+			_choice_error(node, "show_disabled_when needs {<condition>} \"<reason>\"")
 			return
-		choice.disabled_when = _span_text(items, i + 2, close)["text"]
+		var span := _span_text(items, i + 2, close)
+		choice.disabled_when = span["text"]
 		choice.disabled_reason = node.title
+		var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _STORY, true, &"", choice.reads)
+		choice.disabled_condition = compiled["compiled"]
 		i = close + 1
-	elif not node.title.is_empty():
-		_choice_error(node, "choice reason needs disabled_when")
+	if not saw_disabled and not node.title.is_empty():
+		_choice_error(node, "choice reason needs show_disabled_when")
 		return
 	if i >= items.size() or items[i].kind != &"arrow":
 		_choice_error(node, "choice needs -> <target>")
@@ -1334,8 +1351,20 @@ func _choice(node: WyrdNode, scene: WyrdSceneDef) -> void:
 	choice.secrecy = node.secrecy
 	_lint_voiced(choice.label, choice.tags, choice.line, choice.col)
 	_note_label(choice.target, items[i + 1].line, items[i + 1].col)
-	for child in node.children:
-		_keep_effect(child, choice.effects, choice.reads)
+	var saw_check := false
+	for index in node.children.size():
+		var child: WyrdNode = node.children[index]
+		if child.keyword != "check":
+			_keep_effect(child, choice.effects, choice.reads)
+			continue
+		if saw_check:
+			_check_error(child, "a choice has one check")
+			continue
+		if index != 0:
+			_check_error(child, "check must be the first line of a choice")
+			continue
+		saw_check = true
+		_choice_check(child, choice)
 	var item := WyrdSceneItem.new()
 	item.kind = &"choice"
 	item.choice = choice
@@ -2746,6 +2775,83 @@ func _unknown_msg(node: WyrdNode, message: String) -> void:
 
 func _unknown_msg_at(effect: WyrdEffectDef, message: String) -> void:
 	_error(WyrdDiagnostic.E_STMT_UNKNOWN, message, effect.line, effect.col)
+
+
+func _disabled_word(token: WyrdToken) -> bool:
+	return token.kind == &"ident" and (token.text == "show_disabled_when" or token.text == "disabled_when")
+
+
+func _choice_check(node: WyrdNode, choice: WyrdChoiceDef) -> void:
+	var items := node.head
+	if items.size() < 3 or items[0].kind != &"ident" or items[1].kind != &"lparen":
+		_check_error(node, "check needs <skill>(...) on_fail -> <target>")
+		return
+	var close := _closing(items, 1, &"lparen", &"rparen")
+	if close < 0:
+		_check_error(node, "check needs <skill>(...) on_fail -> <target>")
+		return
+	var skill := items[0].text
+	var args: Array = []
+	var reads: Array[StringName] = []
+	var seen := {}
+	for row in _arg_rows(items, 2, close):
+		var name := String(row["name"])
+		if not name.is_empty() and seen.has(name):
+			_error(WyrdDiagnostic.E_ARG_NAME, "command argument \"%s\" is duplicated" % name, int(row["line"]), int(row["col"]))
+			continue
+		if not name.is_empty():
+			seen[name] = true
+		var expected := _command_expected(items, int(row["from"]), int(row["to"]))
+		var compiled := _expr(String(row["text"]), int(row["line"]), int(row["col"]), _STORY, false, expected, reads)
+		args.append({"compiled": compiled["compiled"], "name": name, "text": String(row["text"])})
+	var on_fail := ""
+	var fail_line := 0
+	var fail_col := 0
+	var i := close + 1
+	if i < items.size():
+		if i + 2 >= items.size() or items[i].text != "on_fail" or items[i + 1].kind != &"arrow":
+			_check_error(node, "check needs <skill>(...) on_fail -> <target>")
+			return
+		var target := _dotted_at(items, i + 2)
+		if String(target["name"]).is_empty() or int(target["next"]) != items.size() or String(target["name"]).contains("."):
+			_check_error(node, "check needs <skill>(...) on_fail -> <target>")
+			return
+		on_fail = String(target["name"])
+		fail_line = items[i + 2].line
+		fail_col = items[i + 2].col
+	for child in node.children:
+		if child.keyword != "on_fail":
+			_unknown(child)
+			continue
+		if not on_fail.is_empty():
+			_check_error(child, "check has one on_fail")
+			continue
+		var child_items := child.head
+		if child_items.size() < 2 or child_items[0].kind != &"arrow":
+			_check_error(child, "check needs on_fail -> <target>")
+			continue
+		var child_target := _dotted_at(child_items, 1)
+		if String(child_target["name"]).is_empty() or int(child_target["next"]) != child_items.size() or String(child_target["name"]).contains("."):
+			_check_error(child, "check needs on_fail -> <target>")
+			continue
+		on_fail = String(child_target["name"])
+		fail_line = child_items[1].line
+		fail_col = child_items[1].col
+	if on_fail.is_empty():
+		_check_error(node, "check needs on_fail -> <target>")
+		return
+	choice.check_skill = skill
+	choice.check_args = args
+	choice.check_on_fail = on_fail
+	choice.check_line = items[0].line
+	choice.check_col = items[0].col
+	WyrdStmtSpan.add_reads(choice.reads, reads)
+	_note_label(on_fail, fail_line, fail_col)
+
+
+func _check_error(node: WyrdNode, message: String) -> void:
+	_error(WyrdDiagnostic.E_CHECK_SYNTAX, message, node.start_line, node.start_col)
+	_no_block(node)
 
 
 func _choice_error(node: WyrdNode, message: String) -> void:

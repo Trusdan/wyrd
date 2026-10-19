@@ -134,14 +134,15 @@ scene toll.gate
 	assert_false(file.unit.quests[0].stages[2].waits_until.uses_chance)
 
 
-func test_disabled_when_is_parsed_and_not_type_checked() -> void:
+func test_disabled_when_is_type_checked() -> void:
 	var file := _compile("""
 language 1
 scene toll.gate
   * [Stay] disabled_when {not_a_function(1)} "short on coins" -> stay #line:c1
   - (stay)
 """)
-	assert_eq(file.codes, [])
+	assert_true(file.codes.has("E_UNKNOWN_FUNCTION"))
+	assert_true(file.codes.has("W_DISABLED_WHEN_DEPRECATED"))
 	var choice: WyrdChoiceDef = file.unit.scenes[0].items[0].choice
 	assert_eq(choice.disabled_when, "not_a_function(1)")
 	assert_eq(choice.disabled_reason, "short on coins")

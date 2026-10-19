@@ -1,5 +1,14 @@
 {
-  "diagnostics": [],
+  "diagnostics": [
+    {
+      "code": "W_DISABLED_WHEN_DEPRECATED",
+      "col": 40,
+      "line": 17,
+      "message": "disabled_when is deprecated; use show_disabled_when",
+      "path": "res://tests/golden/statements/st_scene.wyrd",
+      "severity": "warning"
+    }
+  ],
   "quests": [],
   "reads": [
     "player.coins",
@@ -283,6 +292,19 @@
               "uses_chance": false
             },
             "condition_text": "player.coins >= 2",
+            "disabled_condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 55,
+                "end_col": 71,
+                "end_line": 17,
+                "line": 17
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
             "disabled_reason": "short on coins",
             "disabled_when": "player.coins < 2",
             "effects": [],

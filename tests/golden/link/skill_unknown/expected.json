@@ -1,0 +1,120 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_SKILL_UNKNOWN",
+      "col": 11,
+      "line": 11,
+      "message": "unknown skill \"missing\"",
+      "path": "res://tests/golden/link/skill_unknown/quest.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "4e927dae6cff2fa0",
+        "path": "res://tests/golden/link/skill_unknown/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/skill_unknown/quest.wyrd",
+        "id": "skill_unknown/c_lift",
+        "kind": "choice",
+        "scene": "dock.talk",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/skill_unknown/quest.wyrd",
+        "id": "skill_unknown/c_known",
+        "kind": "choice",
+        "scene": "dock.talk",
+        "speaker": "",
+        "tags": []
+      }
+    ],
+    "pack_id": "skill_unknown",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/skill_unknown/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": []
+              }
+            ],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "start": {
+          "code": [
+            3
+          ],
+          "consts": [],
+          "reads": [],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "title": "Gate"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/skill_unknown/quest.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "check": {
+              "args": [],
+              "on_fail": "end",
+              "skill": "missing"
+            },
+            "choice_id": "c_lift",
+            "divert": "",
+            "effects": [],
+            "kind": "choice",
+            "label": "",
+            "target": "end"
+          },
+          {
+            "check": {
+              "args": [],
+              "on_fail": "end",
+              "skill": "strength"
+            },
+            "choice_id": "c_known",
+            "divert": "",
+            "effects": [],
+            "kind": "choice",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

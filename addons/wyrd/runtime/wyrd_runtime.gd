@@ -1243,6 +1243,25 @@ func trace_topic_open(npc: String, count: int) -> void:
 	}, "topic_open", "wyrd topic_open npc=%s topics=%d" % [npc, count])
 
 
+## One line for a choice skill check. [code]key[/code] is the skill and [code]path[/code] is the scene id.
+## Logged only when tracing is on. Load does not call it. Replay skips the row.
+func trace_skill_check(scene_id: String, choice_id: String, skill: String, roll: float, ok: bool, reason: String) -> void:
+	var flag := "true" if ok else "false"
+	var shown := reason if not reason.is_empty() else "-"
+	_trace_quest_line({
+		"choice": choice_id,
+		"key": skill,
+		"ok": flag,
+		"path": scene_id,
+		"reason": shown,
+		"roll": _score_text(roll),
+		"scene": scene_id,
+		"skill": skill,
+	}, "skill_check", "wyrd skill_check scene=%s choice=%s skill=%s roll=%s ok=%s reason=%s" % [
+		scene_id, choice_id, skill, _score_text(roll), flag, shown,
+	])
+
+
 ## One line for a storylet or scene-line effect. [param source] is [code]storylet[/code] or [code]scene[/code].
 func trace_effect_run(source: String, id: String, kind: String) -> void:
 	_trace_quest_line({

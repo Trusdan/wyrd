@@ -1,0 +1,393 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_DISABLED_WHEN_DEPRECATED",
+      "col": 12,
+      "line": 8,
+      "message": "disabled_when is deprecated; use show_disabled_when",
+      "path": "res://tests/golden/statements/st_choices.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_DISABLED_WHEN_DEPRECATED",
+      "col": 45,
+      "line": 9,
+      "message": "disabled_when is deprecated; use show_disabled_when",
+      "path": "res://tests/golden/statements/st_choices.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_CHOICE_SYNTAX",
+      "col": 3,
+      "line": 9,
+      "message": "a choice has one show_disabled_when",
+      "path": "res://tests/golden/statements/st_choices.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [
+    {
+      "id": "dock.talk",
+      "items": [
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 31,
+                "end_col": 47,
+                "end_line": 7,
+                "line": 7
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "disabled_reason": "short on coins",
+            "disabled_when": "player.coins < 2",
+            "effects": [],
+            "id": "c_pay",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 7,
+                  "text": "Pay"
+                }
+              ],
+              "kind": "prose",
+              "line": 7
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 73,
+              "end_line": 7,
+              "line": 7
+            },
+            "tags": [],
+            "target": "paid"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 73,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 27,
+                "end_col": 43,
+                "end_line": 8,
+                "line": 8
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "disabled_reason": "wait",
+            "disabled_when": "player.coins < 1",
+            "effects": [],
+            "id": "c_stay",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 8,
+                  "text": "Stay"
+                }
+              ],
+              "kind": "prose",
+              "line": 8
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 59,
+              "end_line": 8,
+              "line": 8
+            },
+            "tags": [],
+            "target": "stay"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 59,
+            "end_line": 8,
+            "line": 8
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "check": {
+              "args": [
+                {
+                  "name": "weight",
+                  "text": "2"
+                }
+              ],
+              "on_fail": "dropped",
+              "skill": "strength"
+            },
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_lift",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 10,
+                  "text": "Lift"
+                }
+              ],
+              "kind": "prose",
+              "line": 10
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 49,
+              "end_line": 11,
+              "line": 10
+            },
+            "tags": [],
+            "target": "lifted"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 49,
+            "end_line": 11,
+            "line": 10
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "check": {
+              "args": [
+                {
+                  "name": "weight",
+                  "text": "1"
+                }
+              ],
+              "on_fail": "dropped",
+              "skill": "strength"
+            },
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_next",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 12,
+                  "text": "Next"
+                }
+              ],
+              "kind": "prose",
+              "line": 12
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 25,
+              "end_line": 14,
+              "line": 12
+            },
+            "tags": [],
+            "target": "lifted"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 25,
+            "end_line": 14,
+            "line": 12
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "check": {
+              "args": [],
+              "on_fail": "end",
+              "skill": "strength"
+            },
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_stop",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 15,
+                  "text": "Stop"
+                }
+              ],
+              "kind": "prose",
+              "line": 15
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 36,
+              "end_line": 16,
+              "line": 15
+            },
+            "tags": [],
+            "target": "lifted"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 36,
+            "end_line": 16,
+            "line": 15
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "paid",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 17,
+            "line": 17
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "stay",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 18,
+            "line": 18
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "both",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 19,
+            "line": 19
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "lifted",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 13,
+            "end_line": 20,
+            "line": 20
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "dropped",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 14,
+            "end_line": 21,
+            "line": 21
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 14,
+        "end_line": 21,
+        "line": 6
+      }
+    }
+  ]
+}

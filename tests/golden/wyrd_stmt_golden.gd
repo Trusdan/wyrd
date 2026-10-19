@@ -202,7 +202,7 @@ static func _line(line: WyrdLineDef) -> Dictionary:
 
 
 static func _choice(choice: WyrdChoiceDef) -> Dictionary:
-	return {
+	var data := {
 		"condition": _cond(choice.condition),
 		"condition_text": choice.condition_text,
 		"disabled_reason": choice.disabled_reason,
@@ -216,6 +216,18 @@ static func _choice(choice: WyrdChoiceDef) -> Dictionary:
 		"tags": _strings(choice.tags),
 		"target": choice.target,
 	}
+	if choice.disabled_condition != null:
+		data["disabled_condition"] = _cond(choice.disabled_condition)
+	if not choice.check_skill.is_empty():
+		var args: Array = []
+		for arg in choice.check_args:
+			args.append({"name": String(arg["name"]), "text": String(arg["text"])})
+		data["check"] = {
+			"args": args,
+			"on_fail": choice.check_on_fail,
+			"skill": choice.check_skill,
+		}
+	return data
 
 
 static func _effects(effects: Array) -> Array:

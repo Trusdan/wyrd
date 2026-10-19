@@ -1,0 +1,418 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_NOT_BOOL",
+      "col": 31,
+      "line": 7,
+      "message": "condition is int, expected bool",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHECK_SYNTAX",
+      "col": 5,
+      "line": 9,
+      "message": "check needs on_fail -> <target>",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHECK_SYNTAX",
+      "col": 5,
+      "line": 12,
+      "message": "check must be the first line of a choice",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHECK_SYNTAX",
+      "col": 5,
+      "line": 15,
+      "message": "a choice has one check",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHECK_SYNTAX",
+      "col": 5,
+      "line": 17,
+      "message": "check needs <skill>(...) on_fail -> <target>",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 18,
+      "message": "unknown statement \"check\"",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_LABEL_UNKNOWN",
+      "col": 33,
+      "line": 20,
+      "message": "unknown label \"missing\"",
+      "path": "res://tests/golden/statements/st_err_choices.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [
+    {
+      "id": "dock.talk",
+      "items": [
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_condition": {
+              "reads": [],
+              "source_span": {
+                "col": 31,
+                "end_col": 32,
+                "end_line": 7,
+                "line": 7
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "disabled_reason": "no",
+            "disabled_when": "1",
+            "effects": [],
+            "id": "c_bad",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 7,
+                  "text": "Bad"
+                }
+              ],
+              "kind": "prose",
+              "line": 7
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 45,
+              "end_line": 7,
+              "line": 7
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 45,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_bare",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 8,
+                  "text": "Bare"
+                }
+              ],
+              "kind": "prose",
+              "line": 8
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 21,
+              "end_line": 9,
+              "line": 8
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 9,
+            "line": 8
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "reads": [
+                  "player.coins"
+                ],
+                "span": {
+                  "col": 5,
+                  "end_col": 27,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "target": {
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "source_span": {
+                    "col": 11,
+                    "end_col": 23,
+                    "end_line": 11,
+                    "line": 11
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "target_text": "player.coins",
+                "topic": "",
+                "value": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 26,
+                    "end_col": 27,
+                    "end_line": 11,
+                    "line": 11
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "value_text": "1",
+                "verb": ""
+              }
+            ],
+            "id": "c_late",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 10,
+                  "text": "Late"
+                }
+              ],
+              "kind": "prose",
+              "line": 10
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 36,
+              "end_line": 12,
+              "line": 10
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 36,
+            "end_line": 12,
+            "line": 10
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "check": {
+              "args": [],
+              "on_fail": "end",
+              "skill": "strength"
+            },
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_two",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 13,
+                  "text": "Two"
+                }
+              ],
+              "kind": "prose",
+              "line": 13
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 35,
+              "end_line": 15,
+              "line": 13
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 35,
+            "end_line": 15,
+            "line": 13
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_shape",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 16,
+                  "text": "Shape"
+                }
+              ],
+              "kind": "prose",
+              "line": 16
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 10,
+              "end_line": 17,
+              "line": 16
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 10,
+            "end_line": 17,
+            "line": 16
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "check": {
+              "args": [],
+              "on_fail": "missing",
+              "skill": "strength"
+            },
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "c_miss",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 19,
+                  "text": "Miss"
+                }
+              ],
+              "kind": "prose",
+              "line": 19
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 40,
+              "end_line": 20,
+              "line": 19
+            },
+            "tags": [],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 20,
+            "line": 19
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 40,
+        "end_line": 20,
+        "line": 6
+      }
+    }
+  ]
+}
