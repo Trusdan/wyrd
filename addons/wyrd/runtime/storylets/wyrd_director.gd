@@ -70,6 +70,31 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 	if _wants_candidate_trace():
 		candidate_rows(scope_kind, scope_id, speaker)
 	var matched := _eligible(kind, scope_id, speaker)
+	return _commit(kind, scope_text, speaker, matched, true)
+
+
+## Ranks storylets whose speaker is [param entity], a role that entity holds, or [code]any[/code].
+## One pool, the same rank and tie-break as [method query]. The decision key uses [param entity].
+## Does not log [code]director_candidate[/code] lines and does not present a bark.
+func query_for_entity(scope_kind: String, scope_id: String, entity: String) -> Dictionary:
+	var kind := StringName(scope_kind)
+	var scope_text := _scope_text(kind, scope_id)
+	if _runtime == null or _runtime.content() == null or _runtime.storylets == null:
+		push_error("Wyrd.director.query_for_entity: load content before a storylet query")
+		return _finish(scope_text, entity, [], null, {}, 0)
+	if not _known_scope(kind):
+		push_error("Wyrd.director.query_for_entity: unknown scope \"%s\"" % scope_kind)
+		return _finish(scope_text, entity, [], null, {}, 0)
+	var matched := eligible_for_entity(kind, scope_id, entity)
+	return _commit(kind, scope_text, entity, matched, false)
+
+
+## Eligible storylets for [param entity]. Does not record a selection or draw a body.
+func eligible_for_entity(scope_kind: StringName, scope_id: String, entity: String) -> Array:
+	return _eligible_entity(scope_kind, scope_id, entity)
+
+
+func _commit(kind: StringName, scope_text: String, speaker: String, matched: Array, present: bool) -> Dictionary:
 	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
 	var drawn := {}
 	var seen_before := 0
@@ -79,9 +104,26 @@ func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> D
 		_runtime.storylets.note_selected(winner.id, minute)
 		_note_speaker(winner, speaker, minute)
 		drawn = _runtime.storylets.draw(winner.id, _allow_for(winner))
-		if kind == &"bark":
+		_run_storylet_effects(winner)
+		if present and kind == &"bark":
 			_runtime.present_bark(winner, drawn)
 	return _finish(scope_text, speaker, matched, winner, drawn, seen_before)
+
+
+func _run_storylet_effects(winner: WyrdStoryletDef) -> void:
+	if winner == null or winner.effects.is_empty() or _runtime == null or _runtime.effects == null:
+		return
+	var saved_scene := _runtime.effects.scene_id
+	var saved_choice := _runtime.effects.choice_id
+	_runtime.effects.scene_id = "storylet:%s" % winner.id
+	_runtime.effects.choice_id = ""
+	for effect in winner.effects:
+		_runtime.trace_effect_run("storylet", winner.id, String(effect.kind))
+		var divert := _runtime.effects.run_one(effect)
+		if divert != "":
+			break
+	_runtime.effects.scene_id = saved_scene
+	_runtime.effects.choice_id = saved_choice
 
 
 func _finish(
@@ -376,6 +418,64 @@ func _finish_why(
 	if _runtime != null:
 		_runtime.trace_why_not(row)
 	return row
+
+
+func _eligible_entity(kind: StringName, scope_id: String, entity: String) -> Array:
+	var matched: Array = []
+	if _runtime == null or _runtime.content() == null:
+		return matched
+	var ids := _entity_ids(kind, scope_id, entity)
+	for raw_id in ids:
+		var id := String(raw_id)
+		var found: Variant = _runtime.content().storylets.get(id, null)
+		if not (found is WyrdStoryletDef):
+			continue
+		var story: WyrdStoryletDef = found
+		if not _scope_matches(story, kind, scope_id):
+			continue
+		if not _entity_speaker(story, entity):
+			continue
+		if _blocked(story):
+			_trace_blocked(story)
+			continue
+		if not _when_passes(story):
+			continue
+		if _cooling(story):
+			continue
+		if _speaker_cooling(story, entity):
+			continue
+		matched.append(story)
+	return matched
+
+
+func _entity_ids(kind: StringName, scope_id: String, entity: String) -> PackedStringArray:
+	var index: WyrdStoryletIndex = null
+	if _runtime != null and _runtime.content() != null:
+		index = _runtime.content().storylet_index
+	if index == null:
+		return _scan_ids()
+	var seen := {}
+	var ids := PackedStringArray()
+	var speakers: Array = [entity]
+	if _runtime.roles != null and not entity.is_empty():
+		for role_id in _runtime.roles.roles_of(StringName(entity)):
+			speakers.append(String(role_id))
+	for speaker in speakers:
+		for raw_id in index.ids_for(kind, scope_id, String(speaker)):
+			var id := String(raw_id)
+			if seen.has(id):
+				continue
+			seen[id] = true
+			ids.append(id)
+	return ids
+
+
+func _entity_speaker(story: WyrdStoryletDef, entity: String) -> bool:
+	if story.speaker == WILDCARD or story.speaker == entity:
+		return true
+	if entity.is_empty() or _runtime == null or _runtime.roles == null:
+		return false
+	return _runtime.roles.roles_of(StringName(entity)).has(story.speaker)
 
 
 func _eligible(kind: StringName, scope_id: String, speaker: String) -> Array:

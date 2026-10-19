@@ -11,13 +11,16 @@ extends RefCounted
 ## runs [code]on_abort[/code] from the inside out. [method can_save] is false
 ## while a scene is open. A bound holder who dies, or whose slot holder
 ## changes, aborts with [code]holder_died[/code] or [code]holder_left[/code].
-## A choice effect that changes this scene's own holder does not abort it.
-## Its remaining lines keep the speakers bound when the scene opened.
+## A choice effect, or a scene-line effect, that changes this scene's own holder
+## does not abort it. Its remaining lines keep the speakers bound when the scene opened.
 ## Every other open scene still aborts.
+## [method open] lists unlocked topics with an eligible storylet.
+## [method ask_topic] runs that storylet. A line or set emits [signal topic_answered].
 
 signal line_ready(line: WyrdLineView)
 signal choices_ready(choices: Array[WyrdChoiceView])
 signal scene_ended(scene_id: String, status: StringName, reason: StringName)
+signal topic_answered(npc: StringName, topic: StringName, line: WyrdLineView)
 
 var runtime: WyrdRuntime
 var locale: String = ""
@@ -31,6 +34,7 @@ var _pending: Array[WyrdChoiceDef] = []
 var _line_audio: Callable = Callable()
 var _disabled: Dictionary = {}
 var _aborting: bool = false
+var _in_step: bool = false
 
 
 class Frame extends RefCounted:
@@ -68,6 +72,95 @@ func open_quest_id() -> String:
 
 func can_save() -> bool:
 	return not is_open()
+
+
+## Sorted unlocked topics that have an eligible storylet for [param npc] now.
+## Does not record a selection, run effects, or open a scene.
+func open(npc: String) -> PackedStringArray:
+	if runtime != null:
+		runtime.trace_add("open_topic", {"npc": npc})
+	if not _npc_known(npc):
+		push_error("WyrdSceneRunner.open: unknown npc \"%s\"" % npc)
+		return PackedStringArray()
+	var listed := _topics_for(npc)
+	if runtime != null:
+		runtime.trace_topic_open(npc, listed.size())
+	return listed
+
+
+## Asks [param topic] of [param npc]. Refusals, in order, are an unknown npc,
+## an open scene, a locked topic, then no eligible storylet.
+func ask_topic(npc: String, topic: String) -> Dictionary:
+	if runtime != null:
+		runtime.trace_add("ask_topic", {"npc": npc, "topic": topic})
+	if not _npc_known(npc):
+		push_error("WyrdSceneRunner.ask_topic: unknown npc \"%s\"" % npc)
+		return _ask_row({}, "")
+	if is_open():
+		push_warning("WyrdSceneRunner.ask_topic: a scene is open")
+		_trace_ask(npc, topic, "", false, "scene_open")
+		return _ask_row({}, "scene_open")
+	if runtime == null or runtime.topics == null or not runtime.topics.is_unlocked(StringName(topic)):
+		push_warning("WyrdSceneRunner.ask_topic: \"%s\" is locked" % topic)
+		_trace_ask(npc, topic, "", false, "locked")
+		return _ask_row({}, "locked")
+	var row: Dictionary = runtime.director.query_for_entity("topic", topic, npc)
+	if str(row.get("id", "")).is_empty():
+		_trace_ask(npc, topic, "", false, "no_storylet")
+		return _ask_row(row, "no_storylet")
+	var storylet_id := str(row.get("id", ""))
+	_trace_ask(npc, topic, storylet_id, true, "answered")
+	var story: WyrdStoryletDef = runtime.content().storylets.get(storylet_id) as WyrdStoryletDef
+	var drawn := {"line_id": str(row.get("line_id", "")), "scene": str(row.get("scene", ""))}
+	if str(row.get("body", "")) == "scene":
+		open_scene(str(row.get("scene", "")))
+	elif story != null:
+		var view := runtime.present_topic_line(story, drawn, npc)
+		topic_answered.emit(StringName(npc), StringName(topic), view)
+	return _ask_row(row, "answered")
+
+
+func _npc_known(npc: String) -> bool:
+	if npc.is_empty() or runtime == null:
+		return false
+	var world := runtime.adapter(WyrdWorldAdapter) as WyrdWorldAdapter
+	if world == null:
+		return false
+	return world.exists(StringName(npc))
+
+
+func _topics_for(npc: String) -> PackedStringArray:
+	var listed := PackedStringArray()
+	if runtime == null or runtime.topics == null or runtime.director == null:
+		return listed
+	for topic in runtime.topics.unlocked():
+		if runtime.director.eligible_for_entity(&"topic", topic, npc).is_empty():
+			continue
+		listed.append(topic)
+	return listed
+
+
+func _trace_ask(npc: String, topic: String, storylet_id: String, ok: bool, reason: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_topic_ask(npc, topic, storylet_id, ok, reason)
+
+
+func _ask_row(row: Dictionary, reason: String) -> Dictionary:
+	var out := {
+		"body": str(row.get("body", "")),
+		"candidates": int(row.get("candidates", 0)),
+		"id": str(row.get("id", "")),
+		"line_id": str(row.get("line_id", "")),
+		"priority": int(row.get("priority", 0)),
+		"reason": reason,
+		"scene": str(row.get("scene", "")),
+		"score": str(row.get("score", "-")),
+		"seen": int(row.get("seen", 0)),
+		"specificity": int(row.get("specificity", 0)),
+		"weight": int(row.get("weight", 0)),
+	}
+	return out
 
 
 func line() -> WyrdLineView:
@@ -193,9 +286,10 @@ func note_role(role_id: StringName, _old_holder: StringName, _new_holder: String
 	if not is_open() or _aborting or runtime == null:
 		return
 	var skip := -1
-	if runtime.effects != null and runtime.effects.choice_id != "" and not _stack.is_empty():
+	if runtime.effects != null and not _stack.is_empty():
 		var top := _top()
-		if top != null and top.scene_id == runtime.effects.scene_id:
+		var own := runtime.effects.choice_id != "" or _in_step
+		if own and top != null and top.scene_id == runtime.effects.scene_id:
 			skip = _stack.size() - 1
 	for i in _stack.size():
 		if i == skip:
@@ -223,6 +317,7 @@ func force_close() -> void:
 	_pending.clear()
 	_disabled.clear()
 	_aborting = false
+	_in_step = false
 
 
 func _pump() -> void:
@@ -271,7 +366,37 @@ func _pump() -> void:
 		if item.kind == &"divert":
 			_divert(frame, scene, item)
 			continue
+		if item.kind == &"effect":
+			var divert := _run_scene_effect(frame, item)
+			if not is_open():
+				return
+			if divert != "":
+				_go(frame, divert)
+				continue
+			frame.index += 1
+			continue
 		frame.index += 1
+
+
+func _run_scene_effect(frame: Frame, item: WyrdSceneItem) -> String:
+	if item.effect == null or runtime == null or runtime.effects == null:
+		return ""
+	var saved_scene := runtime.effects.scene_id
+	var saved_choice := runtime.effects.choice_id
+	var saved_quest := runtime.effects.quest_id
+	runtime.effects.scene_id = frame.scene_id
+	runtime.effects.choice_id = ""
+	runtime.effects.quest_id = frame.quest_id
+	_in_step = true
+	runtime.trace_effect_run("scene", frame.scene_id, String(item.effect.kind))
+	var divert := runtime.effects.run_one(item.effect)
+	_in_step = false
+	runtime.effects.scene_id = saved_scene
+	runtime.effects.choice_id = saved_choice
+	runtime.effects.quest_id = saved_quest
+	if not is_open():
+		return ""
+	return divert
 
 
 func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:

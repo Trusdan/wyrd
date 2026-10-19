@@ -5,7 +5,7 @@ extends WyrdStmtSpan
 ##
 ## @experimental
 ## [member kind] is [code]set[/code], [code]inc[/code], [code]record_deed[/code],
-## [code]unlock_topic[/code], [code]do[/code], [code]outcome[/code],
+## [code]unlock_topic[/code], [code]lock_topic[/code], [code]do[/code], [code]outcome[/code],
 ## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code],
 ## [code]retract[/code], [code]learn[/code], [code]forget[/code],
 ## [code]start_quest[/code], [code]advance[/code], [code]assign_role[/code],

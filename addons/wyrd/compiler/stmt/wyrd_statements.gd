@@ -1216,6 +1216,10 @@ func _scene_stmt(node: WyrdNode, scene: WyrdSceneDef) -> void:
 			_unknown(node)
 		"on":
 			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", node.start_line, node.start_col)
+		"~":
+			_scene_effect(node, scene)
+		"on_fail":
+			_unknown_msg(node, "on_fail belongs on the do line")
 		_:
 			var spoken := _speaker(node)
 			if int(spoken["colon"]) >= 0:
@@ -1255,6 +1259,9 @@ func _spoken(node: WyrdNode, scene: WyrdSceneDef, speaker: String, colon: int, c
 
 
 func _when_line(node: WyrdNode, scene: WyrdSceneDef) -> void:
+	if _when_effect(node.head):
+		_unknown_msg(node, "when is not valid on an effect")
+		return
 	var split := _when_split(node.head)
 	if split < 0:
 		_unknown_msg(node, "line condition needs when <cond>: <speaker>:")
@@ -1386,6 +1393,38 @@ func _label(node: WyrdNode, scene: WyrdSceneDef) -> void:
 	_no_block(node)
 
 
+func _scene_effect(node: WyrdNode, scene: WyrdSceneDef) -> void:
+	var effect := _effect(node)
+	if effect == null:
+		return
+	for child in node.children:
+		if child.keyword == "on_fail":
+			_unknown_msg(child, "on_fail belongs on the do line")
+		else:
+			_unknown(child)
+	var item := WyrdSceneItem.new()
+	item.kind = &"effect"
+	item.effect = effect
+	item.take_span(node)
+	WyrdStmtSpan.add_reads(item.reads, effect.reads)
+	scene.items.append(item)
+	WyrdStmtSpan.add_reads(scene.reads, effect.reads)
+
+
+func _when_effect(items: Array[WyrdToken]) -> bool:
+	var depth := 0
+	for i in items.size():
+		var kind := items[i].kind
+		if kind == &"lparen" or kind == &"lbrace" or kind == &"lbracket":
+			depth += 1
+		elif kind == &"rparen" or kind == &"rbrace" or kind == &"rbracket":
+			depth = maxi(depth - 1, 0)
+		elif depth == 0 and kind == &"colon":
+			if i + 1 < items.size() and items[i + 1].kind == &"tilde":
+				return true
+	return false
+
+
 func _keep_effect(node: WyrdNode, effects: Array[WyrdEffectDef], into: Array[StringName]) -> void:
 	if node.keyword == "on_fail":
 		_attach_on_fail(node, effects)
@@ -1469,6 +1508,15 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 		"unlock":
 			effect.kind = &"unlock_topic"
 			if not _unlock(effect, items):
+				_no_block(node)
+				return null
+		"lock":
+			if items.size() < 2 or items[1].text != "topic":
+				_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
+				_no_block(node)
+				return null
+			effect.kind = &"lock_topic"
+			if not _lock(effect, items):
 				_no_block(node)
 				return null
 		"do":
@@ -1562,8 +1610,6 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 func _rejected(items: Array[WyrdToken]) -> String:
 	var first := items[0].text
 	var second := items[1].text if items.size() > 1 and items[1].kind == &"ident" else ""
-	if first == "lock" and second == "topic":
-		return "lock topic"
 	if first == "create" and second == "document":
 		return "create document"
 	if first == "record" and second != "deed":
@@ -1853,6 +1899,18 @@ func _unlock(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
 	var topic := _dotted_at(items, 2)
 	if String(topic["name"]).is_empty() or int(topic["next"]) != items.size():
 		_unknown_msg_at(effect, "unlock needs topic <id>")
+		return false
+	effect.topic = String(topic["name"])
+	return true
+
+
+func _lock(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	if items.size() < 2 or items[1].text != "topic":
+		_unknown_msg_at(effect, "lock topic needs a topic id")
+		return false
+	var topic := _dotted_at(items, 2)
+	if String(topic["name"]).is_empty() or int(topic["next"]) != items.size():
+		_unknown_msg_at(effect, "lock topic needs a topic id")
 		return false
 	effect.topic = String(topic["name"])
 	return true
@@ -2335,6 +2393,13 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 	var bodies := 0
 	for child in node.children:
 		var field := child.keyword
+		if field == "~":
+			_storylet_effect(child, story)
+			continue
+		if field == "on_fail":
+			_story_error(child, "on_fail is not valid in a storylet")
+			_no_story_block(child)
+			continue
 		if field == "lines" and seen.has("lines"):
 			_story_error(child, "duplicate storylet field \"lines\"")
 			_no_story_block(child)
@@ -2388,6 +2453,26 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 			WyrdDiagnostic.SEVERITY_INFO
 		)
 	return story
+
+
+func _storylet_effect(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var effect := _effect(node)
+	if effect == null:
+		return
+	var reject := false
+	if not effect.on_fail.is_empty():
+		_story_error(node, "on_fail is not valid in a storylet")
+		reject = true
+	for child in node.children:
+		if child.keyword == "on_fail":
+			_story_error(child, "on_fail is not valid in a storylet")
+		else:
+			_story_error(child, "unknown storylet field \"%s\"" % child.keyword)
+		reject = true
+	if reject:
+		return
+	story.effects.append(effect)
+	WyrdStmtSpan.add_reads(story.reads, effect.reads)
 
 
 func _storylet_field(node: WyrdNode, story: WyrdStoryletDef, field: String) -> void:

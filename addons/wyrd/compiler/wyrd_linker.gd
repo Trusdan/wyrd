@@ -5,7 +5,8 @@ extends RefCounted
 ##
 ## @experimental
 ## Files are already sorted. Diagnostics are added to the shared collector;
-## [WyrdPack] sorts them. Topics are collected and are not errors.
+## [WyrdPack] sorts them. An [code]unlock topic[/code] or [code]lock topic[/code]
+## with no [code]scope: topic[/code] storylet warns [code]W_TOPIC_NO_STORYLET[/code].
 
 var _pack_id: String = ""
 var _commands: WyrdCommandSchema
@@ -44,6 +45,7 @@ func link(
 	_quests(units, pack)
 	_quest_flow(units)
 	_role_refs(units)
+	_topic_refs(units)
 	_scenes_of(units)
 	_commands_of(units)
 	_warn_holder_gaps(units)
@@ -289,10 +291,15 @@ func _role_refs(units: Array) -> void:
 			for effect in scene.on_abort:
 				_role_effect(effect, path)
 			for item in scene.items:
+				if item.effect != null:
+					_role_effect(item.effect, path)
 				if item.choice == null:
 					continue
 				for effect in item.choice.effects:
 					_role_effect(effect, path)
+		for story in file.storylets:
+			for effect in story.effects:
+				_role_effect(effect, path)
 
 
 func _role_stage(stage: WyrdStageDef, path: String) -> void:
@@ -312,6 +319,70 @@ func _role_stage(stage: WyrdStageDef, path: String) -> void:
 			continue
 		for child in region.stages:
 			_role_stage(child, path)
+
+
+func _topic_refs(units: Array) -> void:
+	var known := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		for story in file.storylets:
+			if story.scope_kind == &"topic" and not story.scope_id.is_empty():
+				known[story.scope_id] = true
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_topic_stage(stage, path, known)
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_topic_effect(effect, path, known)
+			for item in scene.items:
+				if item.effect != null:
+					_topic_effect(item.effect, path, known)
+				if item.choice == null:
+					continue
+				for effect in item.choice.effects:
+					_topic_effect(effect, path, known)
+		for story in file.storylets:
+			for effect in story.effects:
+				_topic_effect(effect, path, known)
+
+
+func _topic_stage(stage: WyrdStageDef, path: String, known: Dictionary) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		_topic_effect(effect, path, known)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_topic_effect(effect, path, known)
+	for variant in stage.variants:
+		if variant.body != null:
+			_topic_stage(variant.body, path, known)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_topic_stage(child, path, known)
+
+
+func _topic_effect(effect: WyrdEffectDef, path: String, known: Dictionary) -> void:
+	if effect == null:
+		return
+	if effect.kind != &"unlock_topic" and effect.kind != &"lock_topic":
+		return
+	if effect.topic.is_empty() or known.has(effect.topic):
+		return
+	_diagnostics.add(
+		WyrdDiagnostic.W_TOPIC_NO_STORYLET,
+		"topic \"%s\" has no storylet" % effect.topic,
+		path,
+		effect.line,
+		effect.col,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
 
 
 func _role_effect(effect: WyrdEffectDef, path: String) -> void:

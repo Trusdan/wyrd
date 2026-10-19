@@ -20,6 +20,7 @@ const _GROUPS_CHANGED: StringName = &"groups_changed"
 var facts: WyrdFactStore
 var events: WyrdEvents
 var roles: WyrdRoles
+var topics: WyrdTopics
 var deeds: WyrdDeedLog
 var social: WyrdSocial
 var rumors: WyrdRumor
@@ -70,6 +71,8 @@ func _init() -> void:
 	facts = WyrdFactStore.new()
 	events = WyrdEvents.new()
 	roles = WyrdRoles.new()
+	topics = WyrdTopics.new()
+	topics.trace_of = Callable(self, &"trace_topic")
 	storylets = WyrdStoryletDeck.new()
 	storylets.on_coverage = Callable(self, &"_cover_draw")
 	sequences = WyrdSequences.new()
@@ -320,6 +323,8 @@ func start_new_game(seed_value: int) -> void:
 	if publish != null:
 		publish.clear()
 	roles.clear()
+	if topics != null:
+		topics.clear()
 	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
@@ -410,6 +415,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 		publish.clear()
 	roles.bind_content(null)
 	roles.clear()
+	if topics != null:
+		topics.clear()
 	if manifest == null:
 		report.diagnostics.add(WyrdDiagnostic.E_HEADER_MISSING, "missing content manifest", "", 1, 1)
 		return report
@@ -1201,6 +1208,51 @@ func _trace_role_change(kind: String, fields: Dictionary) -> void:
 
 ## One line for [method WyrdSocial.adjust_baseline]. [code]who[/code] is [param a].
 ## Load does not call it.
+## One line for [method WyrdTopics.unlock] or [method WyrdTopics.lock].
+## [param kind] is [code]topic_unlock[/code] or [code]topic_lock[/code].
+func trace_topic(kind: String, fields: Dictionary) -> void:
+	var topic := str(fields.get("topic", ""))
+	var ok := str(fields.get("ok", ""))
+	var reason := str(fields.get("reason", ""))
+	var line := ""
+	if kind == "topic_unlock":
+		line = "wyrd topic_unlock topic=%s ok=%s reason=%s" % [topic, ok, reason]
+	elif kind == "topic_lock":
+		line = "wyrd topic_lock topic=%s ok=%s reason=%s" % [topic, ok, reason]
+	else:
+		return
+	_trace_quest_line(fields, kind, line)
+
+
+## One line for [method WyrdSceneRunner.ask_topic]. Load does not call it.
+func trace_topic_ask(npc: String, topic: String, storylet_id: String, ok: bool, reason: String) -> void:
+	var flag := "true" if ok else "false"
+	_trace_quest_line({
+		"key": topic,
+		"ok": flag,
+		"reason": reason,
+		"scope": storylet_id,
+		"speaker": npc,
+	}, "topic_ask", "wyrd topic_ask npc=%s topic=%s storylet=%s ok=%s reason=%s" % [npc, topic, storylet_id, flag, reason])
+
+
+## One line for [method WyrdSceneRunner.open]. Logged only when tracing is on.
+func trace_topic_open(npc: String, count: int) -> void:
+	_trace_quest_line({
+		"speaker": npc,
+	}, "topic_open", "wyrd topic_open npc=%s topics=%d" % [npc, count])
+
+
+## One line for a storylet or scene-line effect. [param source] is [code]storylet[/code] or [code]scene[/code].
+func trace_effect_run(source: String, id: String, kind: String) -> void:
+	_trace_quest_line({
+		"effect": kind,
+		"id": id,
+		"scope": id,
+		"source": source,
+	}, "effect_run", "wyrd effect_run source=%s id=%s kind=%s" % [source, id, kind])
+
+
 func trace_baseline_adjust(fields: Dictionary) -> void:
 	var line := "wyrd baseline_adjust a=%s b=%s axis=%s from=%s to=%s ok=%s reason=%s" % [
 		str(fields.get("a", "")),
@@ -2182,14 +2234,23 @@ func _on_rumor_reach(present: bool) -> void:
 func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
 	if story == null:
 		return
-	var view := WyrdLineView.new()
-	var line_id := str(drawn.get("line_id", ""))
-	view.id = line_id
 	var entity := story.speaker
 	if roles != null:
 		var held := roles.holder(StringName(story.speaker))
 		if held != &"":
 			entity = String(held)
+	bark_ready.emit(_story_line_view(story, drawn, entity))
+
+
+## A topic answer spoken by [param npc]. Does not emit [signal bark_ready].
+func present_topic_line(story: WyrdStoryletDef, drawn: Dictionary, npc: String) -> WyrdLineView:
+	return _story_line_view(story, drawn, npc)
+
+
+func _story_line_view(story: WyrdStoryletDef, drawn: Dictionary, entity: String) -> WyrdLineView:
+	var view := WyrdLineView.new()
+	var line_id := str(drawn.get("line_id", ""))
+	view.id = line_id
 	view.speaker = StringName(entity)
 	var shown := ""
 	var world := _world()
@@ -2210,7 +2271,7 @@ func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
 			view.audio = dialogue.audio_for(view.id)
 	if coverage != null and not view.id.is_empty() and view.id != line_id:
 		coverage.hit("line", view.id)
-	bark_ready.emit(view)
+	return view
 
 
 func _wake_spatial(event_name: StringName) -> void:

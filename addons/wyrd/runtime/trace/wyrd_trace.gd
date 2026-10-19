@@ -126,7 +126,11 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(float(row.get("minutes", 0)))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust":
+			"ask_topic":
+				runtime.dialogue.ask_topic(str(row.get("npc", "")), str(row.get("topic", "")))
+			"open_topic":
+				runtime.dialogue.open(str(row.get("npc", "")))
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run":
 				pass
 			_:
 				pass

@@ -1,0 +1,78 @@
+class_name WyrdTopics
+extends RefCounted
+
+## The player's unlocked topic ids.
+##
+## @experimental
+## There is no topic declaration. An id is whatever [code]unlock topic[/code],
+## [code]lock topic[/code], or [code]scope: topic[/code] uses. A repeat unlock
+## traces [code]already[/code] and does not signal again. A lock of a topic
+## that is not unlocked traces [code]not_unlocked[/code] and does not warn.
+## The save bag is a sorted id list, omitted when empty. Unknown ids are kept.
+
+signal topic_unlocked(topic: StringName)
+signal topic_locked(topic: StringName)
+
+var trace_of: Callable = Callable()
+
+var _ids: Dictionary = {}
+
+
+func is_unlocked(id: StringName) -> bool:
+	return _ids.has(id)
+
+
+func unlocked() -> PackedStringArray:
+	var names := PackedStringArray()
+	for id in _ids.keys():
+		names.append(String(id))
+	names.sort()
+	return names
+
+
+func unlock(id: StringName) -> String:
+	if _ids.has(id):
+		_trace("topic_unlock", id, false, "already")
+		return "already"
+	_ids[id] = true
+	topic_unlocked.emit(id)
+	_trace("topic_unlock", id, true, "unlocked")
+	return "unlocked"
+
+
+func lock(id: StringName) -> String:
+	if not _ids.has(id):
+		_trace("topic_lock", id, false, "not_unlocked")
+		return "not_unlocked"
+	_ids.erase(id)
+	topic_locked.emit(id)
+	_trace("topic_lock", id, true, "locked")
+	return "locked"
+
+
+func clear() -> void:
+	_ids.clear()
+
+
+func export_state() -> PackedStringArray:
+	return unlocked()
+
+
+func import_state(ids: Array) -> void:
+	_ids.clear()
+	for item in ids:
+		var name := String(item).strip_edges()
+		if name.is_empty():
+			continue
+		_ids[StringName(name)] = true
+
+
+func _trace(kind: String, id: StringName, ok: bool, reason: String) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call(kind, {
+		"key": String(id),
+		"ok": "true" if ok else "false",
+		"reason": reason,
+		"topic": String(id),
+	})

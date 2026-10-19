@@ -1,0 +1,115 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 5,
+      "line": 5,
+      "message": "on_fail belongs on the do line",
+      "path": "res://tests/golden/statements/st_err_scene_effects.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 6,
+      "message": "when is not valid on an effect",
+      "path": "res://tests/golden/statements/st_err_scene_effects.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [
+    {
+      "id": "dock.talk",
+      "items": [
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "take_coin",
+            "fact_key": "",
+            "kind": "do",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [],
+            "span": {
+              "col": 3,
+              "end_col": 19,
+              "end_line": 5,
+              "line": 4
+            },
+            "target": null,
+            "target_text": "",
+            "topic": "",
+            "value": null,
+            "value_text": "",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 19,
+            "end_line": 5,
+            "line": 4
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "hi_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 11,
+              "kids": [
+                {
+                  "col": 11,
+                  "kind": "text",
+                  "line": 7,
+                  "text": "Hello."
+                }
+              ],
+              "kind": "prose",
+              "line": 7
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 18,
+              "end_line": 7,
+              "line": 7
+            },
+            "speaker": "tavern",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 18,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 18,
+        "end_line": 7,
+        "line": 3
+      }
+    }
+  ]
+}

@@ -21,12 +21,18 @@ static func compile(source: WyrdSource) -> Dictionary:
 	var scenes: Array = []
 	for scene in file.scenes:
 		scenes.append(_scene(scene))
-	return {
+	var data := {
 		"diagnostics": _diagnostics(diagnostics),
 		"quests": quests,
 		"reads": _reads(file.reads),
 		"scenes": scenes,
 	}
+	if not file.storylets.is_empty():
+		var storylets: Array = []
+		for story in file.storylets:
+			storylets.append(_storylet(story))
+		data["storylets"] = storylets
+	return data
 
 
 static func write_expected() -> int:
@@ -157,6 +163,26 @@ static func _item(item: WyrdSceneItem) -> Dictionary:
 		data["line"] = _line(item.line_def)
 	if item.choice != null:
 		data["choice"] = _choice(item.choice)
+	if item.effect != null:
+		data["effect"] = _effect(item.effect)
+	return data
+
+
+static func _storylet(story: WyrdStoryletDef) -> Dictionary:
+	var line_ids: Array = []
+	for line_def in story.lines:
+		line_ids.append(line_def.line_id)
+	var data := {
+		"body": String(story.body_kind),
+		"effects": _effects(story.effects),
+		"id": story.id,
+		"line_ids": line_ids,
+		"reads": _reads(story.reads),
+		"scene": story.scene_id,
+		"scope": story.scope_text(),
+		"span": story.span_data(),
+		"speaker": story.speaker,
+	}
 	return data
 
 

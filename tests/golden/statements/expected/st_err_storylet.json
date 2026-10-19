@@ -1,0 +1,77 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 6,
+      "message": "on_fail is not valid in a storylet",
+      "path": "res://tests/golden/statements/st_err_storylet.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "storylet \"harbor.bad\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/st_err_storylet.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 5,
+      "line": 13,
+      "message": "on_fail is not valid in a storylet",
+      "path": "res://tests/golden/statements/st_err_storylet.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 9,
+      "message": "storylet \"harbor.sibling\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/st_err_storylet.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [],
+  "storylets": [
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.bad",
+      "line_ids": [
+        "bad_line"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "topic harbor_toll",
+      "span": {
+        "col": 1,
+        "end_col": 25,
+        "end_line": 7,
+        "line": 3
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.sibling",
+      "line_ids": [
+        "sib_line"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "topic harbor_other",
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 14,
+        "line": 9
+      },
+      "speaker": "any"
+    }
+  ]
+}

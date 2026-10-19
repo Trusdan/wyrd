@@ -13,6 +13,8 @@ extends RefCounted
 ## [method WyrdQuestRunner.start] and [method WyrdQuestRunner.advance].
 ## [code]assign_role[/code] and [code]vacate_role[/code] call the content role
 ## entry points. [code]adjust_baseline[/code] calls [method WyrdSocial.adjust_baseline].
+## [code]unlock_topic[/code] and [code]lock_topic[/code] call [WyrdTopics].
+## A repeat unlock does not emit [signal topic_unlocked] again.
 ## Out-of-slice effects cannot appear here; the compiler rejects them.
 
 signal topic_unlocked(topic: StringName)
@@ -119,8 +121,19 @@ func run_one(effect: WyrdEffectDef) -> String:
 		&"unlock_topic":
 			if effect.topic.is_empty():
 				push_error("WyrdEffects: unlock topic needs an id")
+			elif runtime.topics == null:
+				push_error("WyrdEffects: no topic store")
 			else:
-				topic_unlocked.emit(StringName(effect.topic))
+				var reason := runtime.topics.unlock(StringName(effect.topic))
+				if reason == "unlocked":
+					topic_unlocked.emit(StringName(effect.topic))
+		&"lock_topic":
+			if effect.topic.is_empty():
+				push_error("WyrdEffects: lock topic needs an id")
+			elif runtime.topics == null:
+				push_error("WyrdEffects: no topic store")
+			else:
+				runtime.topics.lock(StringName(effect.topic))
 		&"do":
 			return _command(effect)
 		&"outcome":

@@ -12,6 +12,8 @@ Gullhaven is a fishing village invented for Wyrd. Its people and places are not 
 - `harbor_guild.wyrd` is The Harbor Guild. It starts on `asked_guild` and runs a guild-assigned factor, an elected reeve, a barred visitor, an unwilling factor, and abolish.
 - `harbor_scenes.wyrd` is `toll.offer_room` (slot, entity, and narrator lines, choices, a nested `do`, and `on_abort`). After `-> scene toll.depart` the success path is `-> end`, so it does not fall into `no_room`. The choice that starts `dock_errand` also adjusts the tavern affinity baseline and assigns `dock_runner`. Another choice advances the errand.
 - `dock_errand.wyrd` is a two-stage quest with `start when false`. Reaching `sent` vacates `dock_runner`.
+- `harbor_storylets.wyrd` includes `harbor_gossip.storm` (`scope: topic storm_rumour`, speaker `any`). Its effect starts `dock_rumour`.
+- `dock_rumour.wyrd` is the dock rumour. It starts with `start when false`, casts the tavern slot from `tavern_owner`, and runs `dock.rumour_talk`, which locks `storm_rumour`.
 - `dock_scenes.wyrd` is `toll.depart`, reached with `-> scene` from the other file.
 - `harbor_bell.wyrd` is the harbor bell quest.
 - `harbor_gazette.wyrd` is the harbor gazette. It publishes `harbor.gazette` once a day after a one-hour delay.

@@ -59,3 +59,9 @@ storylet harbor_ledger.sealed
   priority: 1
   when: player.clearance == sealed
   - The sealed page names the late cargo. #line:lg03
+
+storylet harbor_gossip.storm
+  scope: topic storm_rumour
+  speaker: any
+  ~ start quest dock_rumour
+  - The storm took a skiff off the bar. #line:sg_storm

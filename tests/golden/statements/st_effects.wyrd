@@ -18,6 +18,7 @@ quest ferry_toll "The Ferry Toll"
     ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
     ~ record deed waved(actor: player, witnesses: [clerk, ferry])
     ~ unlock topic harbor_toll
+    ~ lock topic harbor_toll
     ~ outcome crossing = route_closed
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> nowhere
     ~ start quest ferry_toll
