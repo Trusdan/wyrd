@@ -18,6 +18,9 @@ const BELIEVE_CALLS := 10000
 const PERCEIVE_BATCH := 32
 const QUERY_BATCH := 32
 const WHY_BATCH := 32
+## Hits timed after one untimed reputation() prime. The first hit after that
+## fill is not the sample.
+const REPUTATION_CACHE_BATCH := 32
 const MERGE_BUCKETS := 32
 const QUERY_SPEAKER := "dock_hand_000"
 const QUERY_TOPIC := "rumor.scale_00"
