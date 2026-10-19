@@ -1,0 +1,14 @@
+language 1
+
+storylet harbor.bad
+  scope: topic harbor_toll
+  speaker: any
+  ~ do take_coin() on_fail -> nowhere
+  - The toll is closed. #line:bad_line
+
+storylet harbor.sibling
+  scope: topic harbor_other
+  speaker: any
+  ~ do take_coin()
+    on_fail -> nowhere
+  - The other toll is closed. #line:sib_line

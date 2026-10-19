@@ -10,7 +10,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
 5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
 6. `record deed` also accepts `visibility:` and `memorable:`.
-7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, `advance`, `assign role`, `vacate role`, and `adjust baseline` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
+7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, `advance`, `assign role`, `vacate role`, `adjust baseline`, and `lock topic` are compiled. A storylet and a scene line may list `~` effects. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
 9. The separate S1b-perf pass is not part of this draft. It landed as its own change before linking.
 
@@ -120,6 +120,8 @@ Line conditions and choice conditions use `storylet_or_choice`. The first depth-
 
 `-> end` leaves the scene. `-> scene <id>` calls a sub-scene. The target must be a scene in the pack, or the linker reports `E_SCENE_UNKNOWN`.
 
+A scene-level `~` line is a step. The runner runs it when it is reached and does not wait for input. Inline `on_fail -> <label>` diverts like a choice. A sibling `on_fail` line is `E_STMT_UNKNOWN` with `on_fail belongs on the do line`. A `when <cond>:` prefix on an effect is `E_STMT_UNKNOWN` with `when is not valid on an effect`. Provenance uses the scene id and an empty choice. If the effect closes the scene, the runner stops. An `assign role` from that step does not abort the scene for its own holder change. Every other open scene still aborts. An `advance` of the scene's own quest still refuses `scene_open`.
+
 ## Storylet
 
 ```wyrd
@@ -141,7 +143,7 @@ storylet <id>
   -> scene <id>
 ```
 
-A storylet has one body: one prose line, a `lines:` set, or `-> scene <id>`. Field order is free. `when` uses `storylet_or_choice`, so `chance` is allowed. An omitted `when` scores 0 and is generic. `when: true` scores 1 and is not generic. `wyrd check` prints `info[I_STORYLET_SCORE]` with the specificity, the priority, and `generic=true` or `generic=false`.
+A storylet has one body: one prose line, a `lines:` set, or `-> scene <id>`. `~` effects may sit among the fields, in any position, and are not a body. Inline or sibling `on_fail` is `E_STORYLET_SYNTAX` with `on_fail is not valid in a storylet`, and that effect is not stored. Effects do not change specificity, priority, the score line, or the tie lint. Field order is free. `when` uses `storylet_or_choice`, so `chance` is allowed. An omitted `when` scores 0 and is generic. `when: true` scores 1 and is not generic. `wyrd check` prints `info[I_STORYLET_SCORE]` with the specificity, the priority, and `generic=true` or `generic=false`.
 
 `priority` defaults to 0 and may be negative. `weight` defaults to 1. `0` is allowed. A negative weight is `E_STORYLET_SYNTAX`. `cooldown` defaults to 0 minutes. It is a duration (`m`, `h`, or `d`, with a day of 1440 minutes). The director treats a positive cooldown as a filter. `speaker_cooldown` uses the same duration and defaults to 0. The director consults it only for `scope: bark`. A duplicate id is `E_STORYLET_DUPLICATE`. A `-> scene` target the pack does not declare is `E_SCENE_UNKNOWN`. An `event` scope the pack does not declare is `E_EVENT_UNKNOWN`. A `topic` scope and a `beat` scope are stored and not checked against topics or quests.
 
@@ -153,7 +155,7 @@ A storylet is on cooldown when it has been selected, its cooldown is greater tha
 
 A bark speaker clock is separate. The key is the query speaker when that name is non-empty and not `any`, otherwise the storylet speaker when that name is concrete, otherwise none. `any` and an empty name do not start a clock. A bark win with `speaker_cooldown` greater than 0 stores that duration and the current minute for the key. A bark candidate is cooling while `now - last` is still below the stored duration. A later win replaces that stored duration. Topic, event, and beat queries ignore the clock.
 
-A win records `seen` and `last_minute`, then draws the body. A bark win also emits `bark_ready` with one `WyrdLineView`. The speaker token is passed through `roles.holder`; a resolved holder becomes the view's entity, and a vacant token stays the entity id. `display_name` comes from the world adapter, or the entity id when that name is empty. `roles` lists world role bindings held by that entity, sorted. A scene body emits an empty line id and empty text. Audio uses the scene runner's `line_audio` callback. `draw` alone does not record a selection and does not emit `bark_ready`. `seen` and `last_minute` share the schema 2 `storylets` bag with the line-set `cursor`, `cycle`, and `order`, and they are omitted when nothing has been selected. Speaker clocks share schema 2 as `bark_speakers` and are omitted when none are stored. A storylet id the pack no longer has is kept in the storylet bag and ignored, so it returns if the content comes back. An unknown speaker id is kept in `bark_speakers`. A save entry that is not an object is dropped. A missing `bark_speakers` key clears the clocks and leaves the storylet rows. The storylet `when` is not added to the tick queue. `chance` in that `when` is keyed by the storylet id and the site `when`.
+A win records `seen` and `last_minute`, then draws the body, then runs the storylet effects. Provenance uses scene `storylet:<id>` and an empty choice, then the previous scene and choice are restored. `why_not`, `candidate_rows`, and `Wyrd.dialogue.open` do not run them. A bark win still emits `bark_ready` after the effects. A bark win also emits `bark_ready` with one `WyrdLineView`. The speaker token is passed through `roles.holder`; a resolved holder becomes the view's entity, and a vacant token stays the entity id. `display_name` comes from the world adapter, or the entity id when that name is empty. `roles` lists world role bindings held by that entity, sorted. A scene body emits an empty line id and empty text. Audio uses the scene runner's `line_audio` callback. `draw` alone does not record a selection and does not emit `bark_ready`. `seen` and `last_minute` share the schema 2 `storylets` bag with the line-set `cursor`, `cycle`, and `order`, and they are omitted when nothing has been selected. Speaker clocks share schema 2 as `bark_speakers` and are omitted when none are stored. A storylet id the pack no longer has is kept in the storylet bag and ignored, so it returns if the content comes back. An unknown speaker id is kept in `bark_speakers`. A save entry that is not an object is dropped. A missing `bark_speakers` key clears the clocks and leaves the storylet rows. The storylet `when` is not added to the tick queue. `chance` in that `when` is keyed by the storylet id and the site `when`.
 
 One `director` line is logged per query when tracing is on: scope, speaker, candidate count, winner, and score `priority/specificity/weight/seen`. Candidates are the rows that passed the filters. The score uses `seen` from before this selection. When `WyrdConfig.trace_director` is true and tracing is on, each scope-and-speaker match also logs `wyrd director_candidate scope=%s speaker=%s storylet=%s score=%s eligible=%s clause="%s"`. `eligible` is true when that match passed secrecy, `when`, and cooldown. `clause` is the first failing text, or `-`. A quote in that text is stored as itself and printed as `'`. `path` is the storylet id. `key` is the scope id, empty for a bark. The prefix matches either, and it also matches `scope` and `speaker`. The lines are not saved. Load does not log them. A line set is still drawn by `WyrdStoryletDeck`: one seeded shuffle per cycle, no repeat until the set is exhausted, then a new cycle.
 
@@ -163,6 +165,18 @@ The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two
 
 `WyrdDirector.why_not(storylet_id, scope_kind, scope_id, speaker)` explains one storylet. It does not record a selection, draw a line, or advance a random stream. Reasons, in order, are `missing`, `scope`, `speaker`, `secrecy`, `when`, `cooldown`, `ok`, and `outranked`. `eligible` is true only for `ok`. The `when` reason names the first failing top-level `and` clause. Secrecy is checked before `when`. The storylet clock is checked before the bark speaker clock. `cooldown` is the authored storylet minutes, or the stored speaker-clock minutes when that clock is the blocker. `remaining` is the minutes left, or 0 when the storylet was never selected, the cooldown is 0, or the cooldown has elapsed. When the storylet would win the seeded rank, the reason is `ok` and `winner` is that id. When another storylet would win, the reason is `outranked` and `winner` is that id. `tier` is the storylet secrecy name, or the line name when every line is locked and the storylet field is empty, or `-`. `unlocked` is the world fact named by `WyrdConfig.secrecy_fact`, or `-` when that fact is unset. One `why_not` line is logged when tracing is on. `wyrd why-not --manifest <path> [--scope kind] [--scope-id id] [--speaker id] [--save path] <storylet-id>` prints the same line. Omitted flags use the storylet's own scope, scope id, and speaker. An explicit `--speaker` replaces that default, and an empty speaker matches every storylet in the scope. The command exits 0 when it can explain the storylet, including an ineligible one, and exits 1 when the id is unknown or the pack does not load. `--tiers a,b,c` sets `WyrdConfig.secrecy_tiers` for that run, lowest first. Spaces around commas are ignored. An empty name is an error and the command exits 1. A repeated name stays in the list and the first copy is the one the unlock uses. Omitted `--tiers` leaves the list empty, which locks every named tier. `--secrecy-fact <key>` replaces `WyrdConfig.secrecy_fact` for that run. The default key is `player.clearance`. Neither flag is saved. `--trace-director` prints one candidate line per scope-and-speaker match, then the why-not line. `wyrd storylets --manifest <path> [--scope kind] [--scope-id id] [--speaker id] [--filter text] [--prefix text] [--tiers list] [--secrecy-fact key] [--save path] [--trace-director]` lists storylets in id order. `--filter` is a case-sensitive substring of the id. `--prefix` keeps ids that start with that text. `--speaker` uses the same wildcard as a query, and rows that do not match are omitted. A bark ignores `--scope-id`. Each row is `wyrd storylet id=%s scope=%s speaker=%s priority=%s specificity=%s weight=%s cooldown=%s secrecy=%s seen=%s block=%s clause="%s"`. `block` is `-` when the row passes secrecy, `when`, and cooldown, otherwise `secrecy`, `when`, or `cooldown`. The dump does not record a selection and does not roll. `--trace-director` on `storylets` needs `--scope` and appends candidate lines for that query. An omitted `--scope-id` matches only an empty scope id. `wyrd cooldowns --manifest <path> [--save path] [--prefix text]` lists exported storylet rows and speaker clocks: `wyrd cooldown storylet=%s seen=%s last=%s cooldown=%s remaining=%s` and `wyrd cooldown speaker=%s last=%s cooldown=%s remaining=%s`. `--prefix` keeps a storylet id or a speaker key that starts with that text. A storylet that has never been selected is omitted. Schema stays 2.
 
+## Topics
+
+There is no topic declaration. An id is whatever `unlock topic`, `lock topic`, or `scope: topic` uses. `Wyrd.topics` holds the unlocked ids. `is_unlocked(id)` and `unlocked()` (sorted) are the host reads. There is no host write. No condition built-in reads the set. The facade relays `topic_unlocked` and `topic_locked`. `runtime.effects.topic_unlocked` still fires once, on a new unlock.
+
+`Wyrd.dialogue.open(npc)` returns the sorted unlocked topics that have at least one eligible storylet for that npc now. Eligibility is scope, speaker (the entity, a role that entity holds, or `any`, in one pool), secrecy, `when`, and cooldown. It records nothing, runs no effects, and does not open a scene. `can_save` stays as it was. An unknown npc, including a missing world adapter or an empty id, is `push_error` and an empty list, with no trace. With tracing on, the line is `wyrd topic_open npc=%s topics=%d`.
+
+`Wyrd.dialogue.ask_topic(npc, topic)` refuses, in order: unknown npc (`push_error`, no trace), an open scene (`scene_open`), a locked topic (`locked`), then no winner (`no_storylet`, trace only). A win records the selection, draws the body, runs the storylet effects, then presents. A line or set emits `topic_answered(npc, topic, line)` on the scene runner. The line uses that npc as the speaker. A `-> scene` body calls `dialogue.open_scene`. The reason on a win is `answered`, including a scene body. With tracing on, the line is `wyrd topic_ask npc=%s topic=%s storylet=%s ok=%s reason=%s`.
+
+`WyrdDirector.query` is unchanged and does not require the topic to be unlocked. `query_for_entity(scope_kind, scope_id, entity)` is the entity pool above. Its decision key is the scope text and the entity. It does not log `director_candidate` lines.
+
+With tracing on, unlock logs `wyrd topic_unlock topic=%s ok=%s reason=%s` (`unlocked`, `already`) and lock logs `wyrd topic_lock topic=%s ok=%s reason=%s` (`locked`, `not_unlocked`). Each storylet or scene-line effect logs `wyrd effect_run source=%s id=%s kind=%s`. Load does not log these lines. The unlocked ids ride in the save bag `topics` when any exist. A missing key clears the set. Unknown ids are kept. Save schema stays 3.
+
 ## Effects
 
 | Form | Notes |
@@ -170,7 +184,8 @@ The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two
 | `~ set <fact> = <expr>` | The fact must be stored. `{id}` patterns use `WyrdFactSchema.lookup`. |
 | `~ inc <fact> by <expr>` | The fact and the value are `int` or `float`. `int` widens to `float`. |
 | `~ record deed <verb>(...)` | Named arguments. `actor` is required. Optional: `target`, `place`, `tags`, `magnitude`, `witnesses`, `visibility`, `memorable`, `reveals`, `claim`, `statement`. |
-| `~ unlock topic <id>` | Parsed and stored. |
+| `~ unlock topic <id>` | Stores the id. A repeat unlock does not signal again. |
+| `~ lock topic <id>` | Removes a stored id. A topic that is not unlocked is a no-op. |
 | `~ do <command>(...)` | Arguments are type-checked. The linker checks the name against `wyrd_commands.json` beside the manifest. A missing file skips that check with `I_COMMANDS_SKIPPED` when a `do` exists. |
 | `~ outcome <branch> = route_closed \| done \| failed` | Also accepted without the `~` inside a stage. |
 | `~ believe <agent> <fact> = <expr>` | Stored schema fact only. `<agent>` is a dotted id. |
@@ -205,7 +220,7 @@ A concrete stored fact may carry `recap: true` or `recap: false`. `recap: true` 
 
 A bad shape is `E_STMT_UNKNOWN`: `assign role needs <role> to <entity>`, `vacate role needs a role id`, or `adjust baseline needs <axis>(a, b) by <n>`. A non-numeric `<n>` is `E_WRITE_TYPE` with `adjust baseline needs an int or float`. A role that no `role` block declares warns `W_ROLE_UNKNOWN`, because a host may `define()` it. Name paths and `<n>` that read a fact are fact reads. Save schema stays 3.
 
-`lock topic` and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
+`create document` is `E_EFFECT_NOT_IN_SLICE`. `lock` without `topic` is the same, for the word `lock`. `lock topic` without an id is `E_STMT_UNKNOWN` with `lock topic needs a topic id`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
 ## `#line:`
 
@@ -227,7 +242,7 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_STATE` | The variant state is not one of the eight names, or its condition shape is wrong |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
-| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>` |
+| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>`. `lock topic` without an id says `lock topic needs a topic id`. A sibling scene `on_fail` says `on_fail belongs on the do line`. A `when` prefix on a scene effect says `when is not valid on an effect` |
 | `E_LABEL_UNKNOWN` | A divert, choice, or scene `on_fail` names a label that is not in the scene |
 | `E_LABEL_DUPLICATE` | A label is repeated in one scene |
 | `E_CHOICE_SYNTAX` | A choice line is not one of the forms above |
@@ -247,7 +262,7 @@ Existing condition codes (`E_CHANCE_CONTEXT`, `E_RESOLVER_INVALIDATION`, `E_UNKN
 
 Still draft. `check` links a pack after statements. A directory with no manifest is one pack named after the folder. `--manifest` loads a `WyrdContentManifest` (`pack_id`, `files`, `language_version`). Files are linked in sorted path order. Diagnostics are sorted by file, line, column, then code. `check` exits 1 on an error. Warnings still exit 0 unless `--strict`. Info does not fail `--strict`.
 
-`requires: [pack.<id>]` warns with `W_PACK_UNKNOWN` when the id is not this pack. Topics from `unlock topic` are collected and are not errors. `on_event(...)` names are recorded as plain symbols. There is no event schema here.
+`requires: [pack.<id>]` warns with `W_PACK_UNKNOWN` when the id is not this pack. `unlock topic` and `lock topic` warn `W_TOPIC_NO_STORYLET` when no storylet uses `scope: topic` for that id. There is no reverse warning. `on_event(...)` names are recorded as plain symbols. There is no event schema here.
 
 `export-json` writes a debug document (`wyrd_export` 1) with a per-file content hash. It is not the runtime load format. `facts` prints the cross-reference. `tag-lines` is the only command that edits source.
 
@@ -272,6 +287,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_ROUTE_CLOSED` | Every reachable assignment of a branch is `route_closed` |
 | `W_PACK_UNKNOWN` | `requires` names a pack that is not loaded |
 | `W_ROLE_UNKNOWN` | `assign role` or `vacate role` names a role that no `role` block in the pack declares. A host may `define()` it |
+| `W_TOPIC_NO_STORYLET` | `unlock topic` or `lock topic` names an id that no storylet uses as `scope: topic`. The message is `topic "<id>" has no storylet` |
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
 | `W_FACT_UNUSED` | A fact is never read or written |

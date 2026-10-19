@@ -11,9 +11,13 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [member roles], [member quests], [member dialogue], [member storylets],
 ## [member sequences], [member director], [member debug], and [member coverage] are the runtime's sub-objects. [member dialogue] is
 ## the scene runner. [member storylets] draws a line set. [member director]
-## ranks one. [signal bark_ready] repeats the runtime signal for a bark win.
+## ranks one. [member topics] is the unlocked topic set.
+## [signal bark_ready] repeats the runtime signal for a bark win.
+## [signal topic_unlocked] and [signal topic_locked] repeat the topic store.
 
 signal bark_ready(line: WyrdLineView)
+signal topic_unlocked(topic: StringName)
+signal topic_locked(topic: StringName)
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -22,6 +26,7 @@ var social: WyrdSocial
 var rumors: WyrdRumor
 var publish: WyrdPublish
 var roles: WyrdRoles
+var topics: WyrdTopics
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
@@ -43,6 +48,7 @@ func _init() -> void:
 	rumors = _runtime.rumors
 	publish = _runtime.publish
 	roles = _runtime.roles
+	topics = _runtime.topics
 	quests = _runtime.quests
 	dialogue = _runtime.dialogue
 	storylets = _runtime.storylets
@@ -52,10 +58,21 @@ func _init() -> void:
 	debug = _runtime.debug
 	coverage = _runtime.coverage
 	_runtime.bark_ready.connect(_relay_bark)
+	if topics != null:
+		topics.topic_unlocked.connect(_relay_topic_unlocked)
+		topics.topic_locked.connect(_relay_topic_locked)
 
 
 func _relay_bark(line: WyrdLineView) -> void:
 	bark_ready.emit(line)
+
+
+func _relay_topic_unlocked(topic: StringName) -> void:
+	topic_unlocked.emit(topic)
+
+
+func _relay_topic_locked(topic: StringName) -> void:
+	topic_locked.emit(topic)
 
 
 func get_version() -> String:

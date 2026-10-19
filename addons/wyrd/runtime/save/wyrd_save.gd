@@ -13,6 +13,8 @@ extends RefCounted
 ## [code]bark_speakers[/code] key clears those clocks and leaves storylet rows.
 ## Sequence progress, when any exists, rides in [code]sequences[/code]. An unknown
 ## sequence id is kept. A missing [code]sequences[/code] key clears that bag only.
+## Unlocked topic ids, when any exist, ride in [code]topics[/code] as a sorted
+## list. An unknown id is kept. A missing [code]topics[/code] key clears that set.
 ## Quest region leaves ride inside the quest row and are omitted when empty.
 ## An older loader ignores those keys. The unlocked secrecy name is an ordinary
 ## world fact. The document has no secrecy key.
@@ -117,6 +119,13 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 		var sequences := runtime.sequences.export_state()
 		if not sequences.is_empty():
 			data["sequences"] = sequences
+	if runtime.topics != null:
+		var topics := runtime.topics.export_state()
+		if not topics.is_empty():
+			var names: Array = []
+			for topic in topics:
+				names.append(String(topic))
+			data["topics"] = names
 	var flight := _capture_flight(runtime)
 	if not flight.is_empty():
 		data["flight"] = flight
@@ -201,6 +210,11 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.sequences.import_state(_dict(working.get("sequences", {})))
 		else:
 			runtime.sequences.clear()
+	if runtime.topics != null:
+		if working.has("topics") and working.get("topics") is Array:
+			runtime.topics.import_state(working.get("topics"))
+		else:
+			runtime.topics.clear()
 	_import_flight(runtime, working, report)
 	report.ok = true
 	report.manifest_hash = content.manifest_hash

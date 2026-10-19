@@ -10,4 +10,4 @@
 
 `record deed` calls the deed log. Set literals in arguments are read from the argument's source text, because the expression emitter does not push a set value.
 
-`unlock topic` emits `topic_unlocked`. `outcome` emits `outcome_changed`. A failed `do` returns the `on_fail` target and later effects in that list do not run. A missing action adapter fails the command.
+`unlock topic` stores the id and emits `topic_unlocked` once. A repeat unlock does not emit again. `lock topic` removes a stored id. `outcome` emits `outcome_changed`. A failed `do` returns the `on_fail` target and later effects in that list do not run. A missing action adapter fails the command.

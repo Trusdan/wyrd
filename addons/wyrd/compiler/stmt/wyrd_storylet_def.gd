@@ -33,6 +33,8 @@ var secrecy: String = ""
 var body_kind: StringName = &""
 var lines: Array[WyrdLineDef] = []
 var scene_id: String = ""
+## Slice effects, in source order. They do not change the score.
+var effects: Array[WyrdEffectDef] = []
 
 
 func scope_text() -> String:

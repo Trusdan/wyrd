@@ -306,6 +306,10 @@ static func _item(item: WyrdSceneItem) -> Dictionary:
 		data["choice_id"] = item.choice.line_id
 		data["effects"] = _effects(item.choice.effects)
 		data["target"] = item.choice.target
+	if item.effect != null:
+		var rows := _effects([item.effect])
+		if not rows.is_empty():
+			data["effect"] = rows[0]
 	return data
 
 
@@ -337,6 +341,8 @@ static func _storylets(pack: WyrdLinkedPack) -> Array:
 			}
 			if not story.secrecy.is_empty():
 				row["secrecy"] = story.secrecy
+			if not story.effects.is_empty():
+				row["effects"] = _effects(story.effects)
 			rows.append(row)
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
 	return rows

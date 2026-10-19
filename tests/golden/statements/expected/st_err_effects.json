@@ -3,7 +3,7 @@
     {
       "code": "E_RESERVED_WORD",
       "col": 14,
-      "line": 24,
+      "line": 23,
       "message": "reserved word \"document\"",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -33,18 +33,18 @@
       "severity": "error"
     },
     {
-      "code": "E_EFFECT_NOT_IN_SLICE",
+      "code": "E_NO_SET_DISPOSITION",
       "col": 7,
       "line": 13,
-      "message": "effect \"lock topic\" is not in this slice",
+      "message": "record deeds or use adjust baseline (§2.5)",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
     },
     {
-      "code": "E_NO_SET_DISPOSITION",
-      "col": 7,
+      "code": "E_STMT_UNKNOWN",
+      "col": 5,
       "line": 14,
-      "message": "record deeds or use adjust baseline (§2.5)",
+      "message": "start quest needs a quest id",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
     },
@@ -60,7 +60,7 @@
       "code": "E_STMT_UNKNOWN",
       "col": 5,
       "line": 16,
-      "message": "start quest needs a quest id",
+      "message": "advance needs <quest> to <stage>",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
     },
@@ -92,14 +92,6 @@
       "code": "E_STMT_UNKNOWN",
       "col": 5,
       "line": 20,
-      "message": "advance needs <quest> to <stage>",
-      "path": "res://tests/golden/statements/st_err_effects.wyrd",
-      "severity": "error"
-    },
-    {
-      "code": "E_STMT_UNKNOWN",
-      "col": 5,
-      "line": 21,
       "message": "assign role needs <role> to <entity>",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -107,7 +99,7 @@
     {
       "code": "E_STMT_UNKNOWN",
       "col": 5,
-      "line": 22,
+      "line": 21,
       "message": "vacate role needs a role id",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -115,7 +107,7 @@
     {
       "code": "E_STMT_UNKNOWN",
       "col": 5,
-      "line": 23,
+      "line": 22,
       "message": "adjust baseline needs <axis>(a, b) by <n>",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -123,7 +115,7 @@
     {
       "code": "E_EFFECT_NOT_IN_SLICE",
       "col": 7,
-      "line": 24,
+      "line": 23,
       "message": "effect \"create document\" is not in this slice",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -131,7 +123,7 @@
     {
       "code": "E_ARG_TYPE",
       "col": 5,
-      "line": 25,
+      "line": 24,
       "message": "deed missing argument \"actor\"",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -139,7 +131,7 @@
     {
       "code": "E_ARG_NAME",
       "col": 46,
-      "line": 26,
+      "line": 25,
       "message": "deed argument \"actor\" is duplicated",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -147,7 +139,7 @@
     {
       "code": "E_EFFECT_NOT_IN_SLICE",
       "col": 7,
-      "line": 27,
+      "line": 26,
       "message": "effect \"frobnicate\" is not in this slice",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
@@ -167,7 +159,7 @@
       "span": {
         "col": 1,
         "end_col": 17,
-        "end_line": 27,
+        "end_line": 26,
         "line": 8
       },
       "stages": [
@@ -323,8 +315,8 @@
                     "source_span": {
                       "col": 32,
                       "end_col": 37,
-                      "end_line": 25,
-                      "line": 25
+                      "end_line": 24,
+                      "line": 24
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -343,8 +335,8 @@
               "span": {
                 "col": 5,
                 "end_col": 38,
-                "end_line": 25,
-                "line": 25
+                "end_line": 24,
+                "line": 24
               },
               "target": null,
               "target_text": "",
@@ -362,8 +354,8 @@
                     "source_span": {
                       "col": 31,
                       "end_col": 37,
-                      "end_line": 26,
-                      "line": 26
+                      "end_line": 25,
+                      "line": 25
                     },
                     "specificity": 1,
                     "uses_chance": false
@@ -382,8 +374,8 @@
               "span": {
                 "col": 5,
                 "end_col": 52,
-                "end_line": 26,
-                "line": 26
+                "end_line": 25,
+                "line": 25
               },
               "target": null,
               "target_text": "",
@@ -404,7 +396,7 @@
           "span": {
             "col": 3,
             "end_col": 17,
-            "end_line": 27,
+            "end_line": 26,
             "line": 9
           },
           "transitions": [],

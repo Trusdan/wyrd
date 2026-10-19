@@ -1,0 +1,89 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/st_storylet.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [],
+  "storylets": [
+    {
+      "body": "line",
+      "effects": [
+        {
+          "agent": "",
+          "args": [],
+          "branch": "",
+          "command": "",
+          "fact_key": "player.coins",
+          "kind": "set",
+          "on_fail": "",
+          "outcome": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 8,
+            "line": 8
+          },
+          "target": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 9,
+              "end_col": 21,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "target_text": "player.coins",
+          "topic": "",
+          "value": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 24,
+              "end_col": 40,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "value_text": "player.coins + 1",
+          "verb": ""
+        }
+      ],
+      "id": "harbor.news",
+      "line_ids": [
+        "news_line"
+      ],
+      "reads": [
+        "player.coins"
+      ],
+      "scene": "",
+      "scope": "topic harbor_toll",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 10,
+        "line": 6
+      },
+      "speaker": "any"
+    }
+  ]
+}

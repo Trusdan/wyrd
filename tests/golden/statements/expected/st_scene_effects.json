@@ -1,0 +1,228 @@
+{
+  "diagnostics": [],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [
+    {
+      "id": "dock.talk",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "talk_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 11,
+              "kids": [
+                {
+                  "col": 11,
+                  "kind": "text",
+                  "line": 7,
+                  "text": "The stew is hot."
+                }
+              ],
+              "kind": "prose",
+              "line": 7
+            },
+            "reads": [],
+            "scene_id": "dock.talk",
+            "span": {
+              "col": 3,
+              "end_col": 28,
+              "end_line": 7,
+              "line": 7
+            },
+            "speaker": "tavern",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 28,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "player.coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [
+              "player.coins"
+            ],
+            "span": {
+              "col": 3,
+              "end_col": 40,
+              "end_line": 8,
+              "line": 8
+            },
+            "target": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 9,
+                "end_col": 21,
+                "end_line": 8,
+                "line": 8
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "target_text": "player.coins",
+            "topic": "",
+            "value": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 24,
+                "end_col": 40,
+                "end_line": 8,
+                "line": 8
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "value_text": "player.coins - 1",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 8,
+            "line": 8
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "",
+            "kind": "lock_topic",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [],
+            "span": {
+              "col": 3,
+              "end_col": 27,
+              "end_line": 9,
+              "line": 9
+            },
+            "target": null,
+            "target_text": "",
+            "topic": "harbor_toll",
+            "value": null,
+            "value_text": "",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 27,
+            "end_line": 9,
+            "line": 9
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "take_coin",
+            "fact_key": "",
+            "kind": "do",
+            "on_fail": "skip",
+            "outcome": "",
+            "reads": [],
+            "span": {
+              "col": 3,
+              "end_col": 35,
+              "end_line": 10,
+              "line": 10
+            },
+            "target": null,
+            "target_text": "",
+            "topic": "",
+            "value": null,
+            "value_text": "",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 35,
+            "end_line": 10,
+            "line": 10
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "label",
+          "label": "skip",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 11,
+            "line": 11
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 12,
+            "line": 12
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 12,
+        "line": 6
+      }
+    }
+  ]
+}

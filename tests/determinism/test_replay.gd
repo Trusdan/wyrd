@@ -26,6 +26,17 @@ func test_replay_reproduces_the_dock_errand() -> void:
 	assert_true(_has(recorded, "baseline_adjust"))
 
 
+func test_replay_reproduces_the_dock_rumour() -> void:
+	var recorded := _rumour()
+	var again := _rumour(recorded)
+	assert_eq(WyrdTrace.diff(recorded, again), PackedStringArray())
+	assert_true(_has(recorded, "topic_unlock"))
+	assert_true(_has(recorded, "topic_open"))
+	assert_true(_has(recorded, "topic_ask"))
+	assert_true(_has(recorded, "topic_lock"))
+	assert_true(_has(recorded, "effect_run"))
+
+
 func test_a_changed_host_answer_is_detected() -> void:
 	var recorded := _play(false)
 	var changed := _play(true, recorded)
@@ -70,6 +81,26 @@ func _errand(recorded: Array = []) -> Array:
 		runtime.dialogue.open_scene("toll.offer_room")
 		harness.line_rows(runtime)
 		harness.choose_text(runtime, "Send the errand on")
+		harness.line_rows(runtime)
+	else:
+		WyrdTrace.replay(runtime, recorded)
+	return runtime.trace.snapshot()
+
+
+func _rumour(recorded: Array = []) -> Array:
+	var opened := _Harness.new().boot_gullhaven(false, 4)
+	var runtime: WyrdRuntime = opened["runtime"]
+	runtime.trace.enabled = true
+	runtime.trace.clear()
+	if recorded.is_empty():
+		var harness := _Harness.new()
+		runtime.dialogue.open_scene("toll.offer_room")
+		harness.line_rows(runtime)
+		harness.choose_text(runtime, "Take the room")
+		harness.line_rows(runtime)
+		runtime.dialogue.open("tavern_owner")
+		runtime.dialogue.ask_topic("tavern_owner", "storm_rumour")
+		runtime.dialogue.open_scene("dock.rumour_talk")
 		harness.line_rows(runtime)
 	else:
 		WyrdTrace.replay(runtime, recorded)

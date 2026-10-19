@@ -1,0 +1,18 @@
+// [EXAMPLE CONTENT] Gullhaven dock rumour. An invented fishing village, not a host game.
+language 1
+
+quest dock_rumour "The Dock Rumour"
+  start when false
+  on_empty: wait
+
+  slot tavern = tavern_owner mode: live
+
+  stage told
+    scene dock.rumour_talk with tavern
+    journal: The innkeeper has a word about the storm. #line:j_dock_rumour
+    waits_until false
+
+scene dock.rumour_talk
+  tavern: The bar took a skiff in the last storm. #line:rumour_line
+  ~ lock topic storm_rumour
+  -> end

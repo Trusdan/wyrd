@@ -1,0 +1,13 @@
+language 1
+
+storylet known.topic
+  scope: topic harbor_toll
+  speaker: any
+  - The toll is known. #line:known_line
+
+quest gate "Gate"
+  stage pay
+    ~ unlock topic harbor_toll
+    ~ unlock topic missing_topic
+    ~ lock topic missing_topic
+    waits_until false

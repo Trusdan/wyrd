@@ -1,0 +1,12 @@
+language 1
+
+facts
+  player.coins : int stored
+
+scene dock.talk
+  tavern: The stew is hot. #line:talk_line
+  ~ set player.coins = player.coins - 1
+  ~ lock topic harbor_toll
+  ~ do take_coin() on_fail -> skip
+  - (skip)
+  -> end

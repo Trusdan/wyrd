@@ -10,7 +10,6 @@ quest ferry_toll "The Ferry Toll"
     ~ set world.weather = calm
     ~ set player.coins = true
     ~ inc season by 1
-    ~ lock topic harbor
     ~ set_disposition player ferry
     ~ start quest
     ~ start quest other extra

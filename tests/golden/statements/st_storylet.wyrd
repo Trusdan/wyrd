@@ -1,0 +1,10 @@
+language 1
+
+facts
+  player.coins : int stored
+
+storylet harbor.news
+  scope: topic harbor_toll
+  ~ set player.coins = player.coins + 1
+  speaker: any
+  - The harbor has news. #line:news_line

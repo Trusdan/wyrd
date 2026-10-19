@@ -1,0 +1,7 @@
+language 1
+
+scene dock.talk
+  ~ do take_coin()
+    on_fail -> end
+  when false: ~ lock topic harbor
+  tavern: Hello. #line:hi_line
