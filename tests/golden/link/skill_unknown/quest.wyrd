@@ -1,0 +1,13 @@
+language 1
+
+quest gate "Gate"
+  start when false
+  stage arrive
+    scene dock.talk
+    waits_until false
+
+scene dock.talk
+  * [Lift] -> end #line:c_lift
+    check missing() on_fail -> end
+  * [Known] -> end #line:c_known
+    check strength() on_fail -> end

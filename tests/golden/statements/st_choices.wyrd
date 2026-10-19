@@ -1,0 +1,21 @@
+language 1
+
+facts
+  player.coins : int stored
+
+scene dock.talk
+  * [Pay] show_disabled_when {player.coins < 2} "short on coins" -> paid #line:c_pay
+  * [Stay] disabled_when {player.coins < 1} "wait" -> stay #line:c_stay
+  * [Both] show_disabled_when {false} "one" disabled_when {true} "two" -> both #line:c_both
+  * [Lift] -> lifted #line:c_lift
+    check strength(weight: 2) on_fail -> dropped
+  * [Next] -> lifted #line:c_next
+    check strength(weight: 1)
+      on_fail -> dropped
+  * [Stop] -> lifted #line:c_stop
+    check strength() on_fail -> end
+  - (paid)
+  - (stay)
+  - (both)
+  - (lifted)
+  - (dropped)

@@ -8,7 +8,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 2. Choice labels need `#line:` ids. A choice with no label does not.
 3. The only quest-level slot-state default is `on_empty:`.
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
-5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
+5. `show_disabled_when {<cond>} "<reason>"` sits after the choice label. The condition is compiled in storylet context (`chance` allowed, bool required). `disabled_when` is a deprecated alias and warns `W_DISABLED_WHEN_DEPRECATED`.
 6. `record deed` also accepts `visibility:` and `memorable:`.
 7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, `advance`, `assign role`, `vacate role`, `adjust baseline`, and `lock topic` are compiled. A storylet and a scene line may list `~` effects. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
@@ -87,7 +87,9 @@ scene <id>
   <speaker>: <prose> #line:<id>
   when <cond>: <speaker>: <prose> #line:<id>
   * [<label>] -> <target> #line:<id>
+  * [<label>] show_disabled_when {<cond>} "<reason>" -> <target> #line:<id>
   * {<condition>} [<label>] -> <target> #line:<id>
+    check <skill>(<name>: <value>) on_fail -> <label>
     ~ <effect>
   - (<label>)
   -> <label>
@@ -116,7 +118,9 @@ Each variant has its own line id. The parent line is the name-free fallback. An 
 
 Line conditions and choice conditions use `storylet_or_choice`. The first depth-zero `: <speaker> :` ends a line condition, so a ternary colon inside that condition needs parentheses: `when (a ? b : c): ferry: ...`.
 
-`disabled_when` stores the condition text and the quoted reason. The reason is not interpolated. `on_fail -> <target>` may sit on a `do` effect or on the following line. Inside a scene, that target is a label or `end`. A stage-level `on_fail` target must name a stage of that quest, or the linker reports `E_STAGE_UNKNOWN`.
+`show_disabled_when` stores the condition text, the compiled condition, and the quoted reason. The reason is not interpolated and has no line id. `disabled_when` is the same form and warns `W_DISABLED_WHEN_DEPRECATED`. Both spellings on one choice are `E_CHOICE_SYNTAX`. A false `{condition}` hides the choice. Otherwise a true disabled condition shows it greyed out with the reason. `on_fail -> <target>` may sit on a `do` effect or on the following line. Inside a scene, that target is a label or `end`. A stage-level `on_fail` target must name a stage of that quest, or the linker reports `E_STAGE_UNKNOWN`.
+
+A choice may start with one `check <skill>(...) on_fail -> <label>` line. `on_fail` may sit on that line or on the next indented line. `check` is not a reserved word. A check anywhere else is `E_STMT_UNKNOWN`. A bad check, a check that is not the first child, a second check, or a missing `on_fail` is `E_CHECK_SYNTAX`. When `wyrd_commands.json` has a `skills` list, an unknown skill is `E_SKILL_UNKNOWN`. Without that key, skills are not checked. The host answers the check through `WyrdSkillAdapter` before the choice effects run. A failure runs no choice effects and diverts to `on_fail`. The effect context is restored after the choice effects, so a later host role change for a bound slot aborts that scene `holder_left`.
 
 `-> end` leaves the scene. `-> scene <id>` calls a sub-scene. The target must be a scene in the pack, or the linker reports `E_SCENE_UNKNOWN`.
 
@@ -245,7 +249,10 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>`. `lock topic` without an id says `lock topic needs a topic id`. A sibling scene `on_fail` says `on_fail belongs on the do line`. A `when` prefix on a scene effect says `when is not valid on an effect` |
 | `E_LABEL_UNKNOWN` | A divert, choice, or scene `on_fail` names a label that is not in the scene |
 | `E_LABEL_DUPLICATE` | A label is repeated in one scene |
-| `E_CHOICE_SYNTAX` | A choice line is not one of the forms above |
+| `E_CHOICE_SYNTAX` | A choice line is not one of the forms above. Error text names `show_disabled_when` |
+| `E_CHECK_SYNTAX` | A choice check is malformed, is not the first child, is repeated, or has no `on_fail` |
+| `E_SKILL_UNKNOWN` | `wyrd_commands.json` lists `skills` and the check names one that is not in that list |
+| `W_DISABLED_WHEN_DEPRECATED` | A choice uses the `disabled_when` alias. `show_disabled_when` is the spelling |
 | `E_SPEAKER_SHAPE` | A speaker is not a dotted identifier |
 | `E_WRITE_RESOLVED` | `set`, `inc`, or a belief effect targets a resolved fact |
 | `E_WRITE_TYPE` | A write value does not match the stored fact, `inc` is not numeric, or `adjust baseline` `<n>` is not an int or float |

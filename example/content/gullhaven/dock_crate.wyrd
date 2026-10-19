@@ -1,0 +1,25 @@
+// [EXAMPLE CONTENT] Gullhaven dock crate. An invented fishing village, not a host game.
+language 1
+
+quest dock_crate "The Dock Crate"
+  start when false
+  on_empty: wait
+
+  slot tavern = tavern_owner mode: live
+
+  stage asked
+    scene dock.crate_talk with tavern
+    journal: The innkeeper wants a crate moved. #line:j_dock_crate
+    waits_until false
+
+scene dock.crate_talk
+  tavern: That crate's been on the dock since the storm. #line:crate_line
+  * [Lift the crate] -> lifted #line:c_crate_lift
+    check strength(weight: 2) on_fail -> dropped
+  * [Leave it] -> end #line:c_crate_leave
+  - (lifted)
+  tavern: Strong arms. Put it by the door. #line:crate_lifted
+  -> end
+  - (dropped)
+  tavern: Leave it, before you drop it twice. #line:crate_dropped
+  -> end

@@ -32,7 +32,6 @@ var _line: WyrdLineView
 var _choices: Array[WyrdChoiceView] = []
 var _pending: Array[WyrdChoiceDef] = []
 var _line_audio: Callable = Callable()
-var _disabled: Dictionary = {}
 var _aborting: bool = false
 var _in_step: bool = false
 
@@ -232,12 +231,28 @@ func choose(index: int) -> void:
 	_choices.clear()
 	_pending.clear()
 	_wait = &""
-	if frame == null:
+	if frame == null or runtime == null:
 		return
+	if not choice.check_skill.is_empty():
+		var result := _skill_check(frame, choice)
+		if not is_open():
+			return
+		if result == null or not result.is_ok():
+			_go(frame, choice.check_on_fail)
+			_pump()
+			return
+	var saved_quest := runtime.effects.quest_id
+	var saved_scene := runtime.effects.scene_id
+	var saved_choice := runtime.effects.choice_id
 	runtime.effects.quest_id = frame.quest_id
 	runtime.effects.scene_id = frame.scene_id
 	runtime.effects.choice_id = choice.line_id
 	var divert := runtime.effects.run_all(choice.effects)
+	runtime.effects.quest_id = saved_quest
+	runtime.effects.scene_id = saved_scene
+	runtime.effects.choice_id = saved_choice
+	if not is_open():
+		return
 	_go(frame, divert if divert != "" else choice.target)
 	_pump()
 
@@ -315,7 +330,6 @@ func force_close() -> void:
 	_line = null
 	_choices.clear()
 	_pending.clear()
-	_disabled.clear()
 	_aborting = false
 	_in_step = false
 
@@ -351,12 +365,15 @@ func _pump() -> void:
 			if runtime != null:
 				var rows: Array = []
 				for view in views:
-					rows.append({
+					var row := {
 						"enabled": view.enabled,
 						"index": view.index,
 						"reason": view.reason,
 						"text": view.text,
-					})
+					}
+					if not view.check.is_empty():
+						row["check"] = String(view.check)
+					rows.append(row)
 				runtime.trace_add("choices", {"rows": rows})
 			choices_ready.emit(views)
 			return
@@ -444,6 +461,8 @@ func _present(frame: Frame, group: Array[WyrdSceneItem]) -> Array[WyrdChoiceView
 		view.enabled = not disabled
 		view.reason = choice.disabled_reason if disabled else ""
 		view.tags = choice.tags.duplicate()
+		view.check = StringName(choice.check_skill)
+		view.check_args = _check_args(choice)
 		if runtime != null and runtime.coverage != null:
 			runtime.coverage.hit("line", view.id)
 		views.append(view)
@@ -568,28 +587,51 @@ func _secrecy_ok(name: String, line_id: String, speaker: String) -> bool:
 
 
 func _is_disabled(choice: WyrdChoiceDef) -> bool:
-	if choice.disabled_when.is_empty() or runtime == null or runtime.content() == null:
+	if choice.disabled_condition == null or runtime == null:
 		return false
-	var key := choice.disabled_when
-	if not _disabled.has(key):
-		var diagnostics := WyrdDiagnostics.new()
-		var compiled := WyrdCondition.new().compile(
-			key,
-			runtime.content().schema,
-			diagnostics,
-			"",
-			choice.line,
-			choice.col
-		)
-		if diagnostics.has_errors():
-			push_error("WyrdSceneRunner: disabled_when failed to compile")
-			_disabled[key] = null
-		else:
-			_disabled[key] = compiled
-	var cached: Variant = _disabled[key]
-	if cached == null or not (cached is WyrdCompiledCondition):
-		return false
-	return runtime.eval_bool(cached)
+	return runtime.eval_bool(choice.disabled_condition)
+
+
+func _check_args(choice: WyrdChoiceDef) -> Dictionary:
+	var out := {}
+	if runtime == null or choice.check_skill.is_empty():
+		return out
+	for row in choice.check_args:
+		out[String(row["name"])] = runtime.eval_value(row.get("compiled"))
+	return out
+
+
+func _skill_check(frame: Frame, choice: WyrdChoiceDef) -> WyrdCommandResult:
+	var bucket := 0
+	var size := runtime.config().hour_bucket_minutes
+	if size > 0:
+		bucket = int(runtime.now_minutes() / float(size))
+	var roll := WyrdRng.decision_unit(
+		runtime.game_seed(),
+		&"skill",
+		StringName("%s:%s" % [frame.scene_id, choice.line_id]),
+		bucket
+	)
+	var request := WyrdSkillCheck.new()
+	request.skill = StringName(choice.check_skill)
+	request.args = _check_args(choice)
+	request.scene_id = frame.scene_id
+	request.choice_id = choice.line_id
+	request.roll = roll
+	var adapter := runtime.adapter(WyrdSkillAdapter) as WyrdSkillAdapter
+	var result: WyrdCommandResult
+	if adapter == null:
+		push_error("WyrdSceneRunner.choose: no skill adapter")
+		result = WyrdCommandResult.failed(&"no_adapter")
+	else:
+		result = adapter.check(request)
+		if result == null:
+			result = WyrdCommandResult.failed(&"not_implemented")
+	var reason := String(result.reason)
+	if reason.is_empty():
+		reason = "-"
+	runtime.trace_skill_check(frame.scene_id, choice.line_id, choice.check_skill, roll, result.is_ok(), reason)
+	return result
 
 
 func _who(token: String, quest_id: String) -> Dictionary:

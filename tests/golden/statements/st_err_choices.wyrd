@@ -1,0 +1,20 @@
+language 1
+
+facts
+  player.coins : int stored
+
+scene dock.talk
+  * [Bad] show_disabled_when {1} "no" -> end #line:c_bad
+  * [Bare] -> end #line:c_bare
+    check strength()
+  * [Late] -> end #line:c_late
+    ~ set player.coins = 1
+    check strength() on_fail -> end
+  * [Two] -> end #line:c_two
+    check strength() on_fail -> end
+    check agility() on_fail -> end
+  * [Shape] -> end #line:c_shape
+    check
+  check strength() on_fail -> missing
+  * [Miss] -> end #line:c_miss
+    check strength() on_fail -> missing

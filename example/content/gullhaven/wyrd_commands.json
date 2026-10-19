@@ -1,3 +1,4 @@
 {
-  "commands": ["assign_lodging", "post_notice"]
+  "commands": ["assign_lodging", "post_notice"],
+  "skills": ["strength"]
 }

@@ -89,6 +89,14 @@ static func read_commands(path: String, diagnostics: WyrdDiagnostics) -> Diction
 	var schema := WyrdCommandSchema.new()
 	for name in names:
 		schema.add_command(StringName(str(name)))
+	if data.has("skills"):
+		var skills: Variant = data.get("skills")
+		if not (skills is Array):
+			diagnostics.add(WyrdDiagnostic.E_COMMANDS_FILE, "could not read command schemas", path, 1, 1)
+			return {"schema": null, "skip_note": true}
+		schema.checks_skills = true
+		for name in skills:
+			schema.add_skill(StringName(str(name)))
 	return {"schema": schema, "skip_note": true}
 
 

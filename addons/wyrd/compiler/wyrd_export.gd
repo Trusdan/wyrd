@@ -306,6 +306,19 @@ static func _item(item: WyrdSceneItem) -> Dictionary:
 		data["choice_id"] = item.choice.line_id
 		data["effects"] = _effects(item.choice.effects)
 		data["target"] = item.choice.target
+		if not item.choice.disabled_when.is_empty():
+			data["show_disabled_when"] = item.choice.disabled_when
+		if not item.choice.disabled_reason.is_empty():
+			data["disabled_reason"] = item.choice.disabled_reason
+		if not item.choice.check_skill.is_empty():
+			var check_args: Array = []
+			for arg in item.choice.check_args:
+				check_args.append({"name": str(arg["name"]), "text": str(arg["text"])})
+			data["check"] = {
+				"args": check_args,
+				"on_fail": item.choice.check_on_fail,
+				"skill": item.choice.check_skill,
+			}
 	if item.effect != null:
 		var rows := _effects([item.effect])
 		if not rows.is_empty():

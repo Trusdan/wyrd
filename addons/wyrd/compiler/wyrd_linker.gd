@@ -725,6 +725,7 @@ func _commands_of(units: Array) -> void:
 			for item in scene.items:
 				if item.choice == null:
 					continue
+				_skill(item.choice, path)
 				for effect in item.choice.effects:
 					if _command(effect, path):
 						saw = true
@@ -758,6 +759,20 @@ func _command_stage(stage: WyrdStageDef, path: String) -> bool:
 			if _command_stage(child, path):
 				saw = true
 	return saw
+
+
+func _skill(choice: WyrdChoiceDef, path: String) -> void:
+	if choice.check_skill.is_empty() or _commands == null or not _commands.checks_skills:
+		return
+	if _commands.has_skill(StringName(choice.check_skill)):
+		return
+	_diagnostics.add(
+		WyrdDiagnostic.E_SKILL_UNKNOWN,
+		"unknown skill \"%s\"" % choice.check_skill,
+		path,
+		choice.check_line,
+		choice.check_col
+	)
 
 
 func _command(effect: WyrdEffectDef, path: String) -> bool:

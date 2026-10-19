@@ -14,10 +14,11 @@ Gullhaven is a fishing village invented for Wyrd. Its people and places are not 
 - `dock_errand.wyrd` is a two-stage quest with `start when false`. Reaching `sent` vacates `dock_runner`.
 - `harbor_storylets.wyrd` includes `harbor_gossip.storm` (`scope: topic storm_rumour`, speaker `any`). Its effect starts `dock_rumour`.
 - `dock_rumour.wyrd` is the dock rumour. It starts with `start when false`, casts the tavern slot from `tavern_owner`, and runs `dock.rumour_talk`, which locks `storm_rumour`.
+- `dock_crate.wyrd` is the dock crate. It starts with `start when false` and runs `dock.crate_talk`. Lifting the crate is a `strength` check. `wyrd_commands.json` lists that skill.
 - `dock_scenes.wyrd` is `toll.depart`, reached with `-> scene` from the other file.
 - `harbor_bell.wyrd` is the harbor bell quest.
 - `harbor_gazette.wyrd` is the harbor gazette. It publishes `harbor.gazette` once a day after a one-hour delay.
-- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`. `playtest/harbor_election.gd` is the no-op election adapter New game registers. New game also registers the rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
+- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`, and the skill `strength`. `playtest/harbor_election.gd` is the no-op election adapter New game registers. New game also registers the rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
 
 ```bash
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres
