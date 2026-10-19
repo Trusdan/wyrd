@@ -11,6 +11,9 @@ extends RefCounted
 ## runs [code]on_abort[/code] from the inside out. [method can_save] is false
 ## while a scene is open. A bound holder who dies, or whose slot holder
 ## changes, aborts with [code]holder_died[/code] or [code]holder_left[/code].
+## A choice effect that changes this scene's own holder does not abort it.
+## Its remaining lines keep the speakers bound when the scene opened.
+## Every other open scene still aborts.
 
 signal line_ready(line: WyrdLineView)
 signal choices_ready(choices: Array[WyrdChoiceView])
@@ -189,9 +192,16 @@ func on_tick() -> void:
 func note_role(role_id: StringName, _old_holder: StringName, _new_holder: StringName) -> void:
 	if not is_open() or _aborting or runtime == null:
 		return
-	for entry in _stack:
-		var frame := entry as Frame
-		if frame.quest_id.is_empty():
+	var skip := -1
+	if runtime.effects != null and runtime.effects.choice_id != "" and not _stack.is_empty():
+		var top := _top()
+		if top != null and top.scene_id == runtime.effects.scene_id:
+			skip = _stack.size() - 1
+	for i in _stack.size():
+		if i == skip:
+			continue
+		var frame := _stack[i] as Frame
+		if frame == null or frame.quest_id.is_empty():
 			continue
 		for slot_name in frame.slots:
 			var slot := _slot(frame.quest_id, String(slot_name))
@@ -465,7 +475,7 @@ func _who(token: String, quest_id: String) -> Dictionary:
 		for slot in quest.slots:
 			if slot.name != token:
 				continue
-			var holder := runtime.roles.slot_holder(quest_id, StringName(token))
+			var holder := _bound_holder(token, quest_id)
 			var name := _display(holder)
 			if name.is_empty():
 				name = String(holder)
@@ -487,7 +497,7 @@ func _roles_held(entity: StringName, frame: Frame) -> PackedStringArray:
 	for slot in quest.slots:
 		if not frame.slots.has(slot.name) or slot.role.is_empty():
 			continue
-		if runtime.roles.slot_holder(frame.quest_id, StringName(slot.name)) != entity:
+		if _bound_holder(slot.name, frame.quest_id) != entity:
 			continue
 		if seen.has(slot.role):
 			continue
@@ -495,6 +505,13 @@ func _roles_held(entity: StringName, frame: Frame) -> PackedStringArray:
 		found.append(slot.role)
 	found.sort()
 	return found
+
+
+func _bound_holder(token: String, quest_id: String) -> StringName:
+	var frame := _top()
+	if frame != null and frame.quest_id == quest_id and frame.holders.has(token):
+		return StringName(frame.holders[token])
+	return runtime.roles.slot_holder(quest_id, StringName(token))
 
 
 func _display(id: StringName) -> String:

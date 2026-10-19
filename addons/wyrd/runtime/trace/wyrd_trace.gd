@@ -21,6 +21,8 @@ var enabled: bool = false
 ## A director_candidate line uses the same fields. Its path is the storylet id.
 ## A region line uses quest and path. A quest_start, quest_advance, or quest_status
 ## line uses quest. Replay skips them. Load does not log them.
+## A role_assign or role_vacate line uses role. A baseline_adjust line uses who,
+## which is a. Replay skips them. Load does not log them.
 ## A sequence line's key is the sequence id.
 ## A voice line's key is the name-free line id, and its who is the holder.
 ## A secrecy line's key is the storylet id, or the line id when there is no storylet.
@@ -124,7 +126,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.open_scene(String(row.get("id", "")))
 			"tick":
 				runtime.tick(float(row.get("minutes", 0)))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status":
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust":
 				pass
 			_:
 				pass

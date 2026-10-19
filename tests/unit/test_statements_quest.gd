@@ -341,7 +341,7 @@ quest ferry_toll "The Ferry Toll"
     ~ start quest
     ~ advance
     ~ assign role ferry
-    ~ vacate role ferry
+    ~ vacate role
     ~ adjust baseline player
     ~ set_disposition player ferry
 """)
@@ -349,13 +349,16 @@ quest ferry_toll "The Ferry Toll"
 		"E_EFFECT_NOT_IN_SLICE",
 		"E_STMT_UNKNOWN",
 		"E_STMT_UNKNOWN",
-		"E_EFFECT_NOT_IN_SLICE",
-		"E_EFFECT_NOT_IN_SLICE",
-		"E_EFFECT_NOT_IN_SLICE",
+		"E_STMT_UNKNOWN",
+		"E_STMT_UNKNOWN",
+		"E_STMT_UNKNOWN",
 		"E_NO_SET_DISPOSITION",
 	])
 	assert_eq(file.messages[1], "start quest needs a quest id")
 	assert_eq(file.messages[2], "advance needs <quest> to <stage>")
+	assert_eq(file.messages[3], "assign role needs <role> to <entity>")
+	assert_eq(file.messages[4], "vacate role needs a role id")
+	assert_eq(file.messages[5], "adjust baseline needs <axis>(a, b) by <n>")
 	assert_eq(file.messages[6], "record deeds or use adjust baseline (§2.5)")
 	assert_eq(file.unit.quests[0].stages[0].effects.size(), 0)
 

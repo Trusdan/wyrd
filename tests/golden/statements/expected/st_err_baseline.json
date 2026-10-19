@@ -1,0 +1,110 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_WRITE_TYPE",
+      "col": 57,
+      "line": 5,
+      "message": "adjust baseline needs an int or float",
+      "path": "res://tests/golden/statements/st_err_baseline.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "gate",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 61,
+        "end_line": 5,
+        "line": 3
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "a": {
+                "reads": [],
+                "source_span": {
+                  "col": 32,
+                  "end_col": 44,
+                  "end_line": 5,
+                  "line": 5
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "a_text": "tavern_owner",
+              "agent": "",
+              "args": [],
+              "axis": "affinity",
+              "b": {
+                "reads": [],
+                "source_span": {
+                  "col": 46,
+                  "end_col": 52,
+                  "end_line": 5,
+                  "line": 5
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "b_text": "player",
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "adjust_baseline",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 61,
+                "end_line": 5,
+                "line": 5
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 57,
+                  "end_col": 61,
+                  "end_line": 5,
+                  "line": 5
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "true",
+              "verb": ""
+            }
+          ],
+          "id": "pay",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 61,
+            "end_line": 5,
+            "line": 4
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Gate"
+    }
+  ],
+  "reads": [],
+  "scenes": []
+}

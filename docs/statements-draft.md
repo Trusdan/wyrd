@@ -10,7 +10,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
 5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
 6. `record deed` also accepts `visibility:` and `memorable:`.
-7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, and `advance` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
+7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, `advance`, `assign role`, `vacate role`, and `adjust baseline` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
 9. The separate S1b-perf pass is not part of this draft. It landed as its own change before linking.
 
@@ -42,7 +42,7 @@ A role id is a symbol (`ferry_master`). A role and a slot have no title or displ
 
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
 
-Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `contested` is the exception: no `contested` variant uses the `empty` variant, and the state stays `contested`. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
+Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `contested` is the exception: no `contested` variant uses the `empty` variant, and the state stays `contested`. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. A departure whose history reason is `assign` is not a vacate, for a host `assign` or a content `assign role`, so the frozen person stays bound and the slot stays usable. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
 
 ## Sub-states
 
@@ -181,6 +181,9 @@ The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two
 | `~ retract <group> <fact>` | Removes that group's held fact. A missing fact is a no-op. |
 | `~ start quest <id>` | Starts that quest even when `start when` is false. `dormant` and `available` become `active` at the first stage. `active`, `completed`, `failed`, and `abandoned` warn and stay. `unavailable` stays `unavailable`. |
 | `~ advance <quest> to <stage>` | Moves an `active` quest to a top-level stage, even if `waits_until` is false or a held-empty slot is waiting. The offered scene and the waiting reason are cleared. A pending host step or an open scene for that quest warns and stays. The current stage is a no-op. Any other status warns and stays. |
+| `~ assign role <role> to <entity>` | Assigns the role from content. `<entity>` is a name path: an entity id, `player`, a slot of the running quest, or `holder(<role>)`. The status is `default` when the entity is the role's `default_holder`, otherwise `successor`. |
+| `~ vacate role <role>` | Vacates the role from content and runs its succession. |
+| `~ adjust baseline <axis>(a, b) by <n>` | Adds `<n>` to the stored baseline. `<n>` is an int or float, and may be negative. `<axis>` is any symbol. |
 
 `witnesses` is `auto` or a set. A `do` argument that is only a name path is an entity id when lookup misses, and a fact read when lookup hits. Any other argument is an expression.
 
@@ -194,7 +197,15 @@ A concrete stored fact may carry `recap: true` or `recap: false`. `recap: true` 
 
 `start quest <id>` and `advance <quest> to <stage>` run in source order and share the 24 stage-hop limit. If the target quest's own step list is running, an `advance` is applied after that list, like a divert. A bad shape is `E_STMT_UNKNOWN`: `start quest needs a quest id`, or `advance needs <quest> to <stage>`. With tracing on, a start logs `wyrd quest_start quest=%s ok=%s reason=%s` (`started`, `active`, `completed`, `failed`, `abandoned`, or `unavailable`). An advance logs `wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s` (`moved`, `not_active`, `same_stage`, `host_step`, or `scene_open`). A pending host step is reported ahead of an open scene. The current stage is reported ahead of both. Every status change logs `wyrd quest_status quest=%s from=%s to=%s`. The existing `transition` line stays. Neither effect reads or writes a fact. Save schema stays 3.
 
-`lock topic`, `assign role`, `vacate role`, `adjust baseline`, and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
+`assign role <role> to <entity>` calls `WyrdRoles.assign_from_content`. An unknown role is `push_error` with no trace. An abolished role, a contested role, a missing or dead entity, and a failed eligibility check warn. The same holder traces and does not warn. On success the previous holder is history with reason `assign`, a public `role_changed` deed records old to new when both exist, and `role_holder_changed` fires. The trace is `wyrd role_assign role=%s from=%s to=%s ok=%s reason=%s` (`assigned`, `abolished`, `contested`, `no_entity`, `ineligible`, `same_holder`).
+
+`vacate role <role>` calls `WyrdRoles.vacate(role, content)` after the same unknown, abolished, and contested checks, and after an empty role. Succession then runs in declared order. The trace is `wyrd role_vacate role=%s from=%s to=%s ok=%s reason=%s` (`vacated`, `abolished`, `contested`, `empty`). `to` is the successor, or empty.
+
+`adjust baseline <axis>(a, b) by <n>` calls `WyrdSocial.adjust_baseline`. A missing baseline counts as 0. There is no clamp and no kind scale. `n` of 0 does not touch the cache. An unresolved party, a self edge, and zero warn. The trace is `wyrd baseline_adjust a=%s b=%s axis=%s from=%s to=%s ok=%s reason=%s` (`adjusted`, `zero`, `self_edge`, `no_entity`). The fields carry `who` as `a`. Nothing writes a fact or a deed. Reputation stays derived.
+
+A bad shape is `E_STMT_UNKNOWN`: `assign role needs <role> to <entity>`, `vacate role needs a role id`, or `adjust baseline needs <axis>(a, b) by <n>`. A non-numeric `<n>` is `E_WRITE_TYPE` with `adjust baseline needs an int or float`. A role that no `role` block declares warns `W_ROLE_UNKNOWN`, because a host may `define()` it. Name paths and `<n>` that read a fact are fact reads. Save schema stays 3.
+
+`lock topic` and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
 ## `#line:`
 
@@ -216,13 +227,13 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_STATE` | The variant state is not one of the eight names, or its condition shape is wrong |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
-| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>` |
+| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>` |
 | `E_LABEL_UNKNOWN` | A divert, choice, or scene `on_fail` names a label that is not in the scene |
 | `E_LABEL_DUPLICATE` | A label is repeated in one scene |
 | `E_CHOICE_SYNTAX` | A choice line is not one of the forms above |
 | `E_SPEAKER_SHAPE` | A speaker is not a dotted identifier |
 | `E_WRITE_RESOLVED` | `set`, `inc`, or a belief effect targets a resolved fact |
-| `E_WRITE_TYPE` | A write value does not match the stored fact, or `inc` is not numeric |
+| `E_WRITE_TYPE` | A write value does not match the stored fact, `inc` is not numeric, or `adjust baseline` `<n>` is not an int or float |
 | `E_EFFECT_NOT_IN_SLICE` | The effect is outside the slice and belief forms, or the outcome value is not one of the three |
 | `E_NO_SET_DISPOSITION` | The effect is `set_disposition` |
 | `E_LINE_ID_MISSING` | A spoken line, journal entry, or choice label has no `#line:` |
@@ -260,6 +271,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_SLOT_COND_NEVER` | An `unwilling` or `barred` condition is never true |
 | `W_ROUTE_CLOSED` | Every reachable assignment of a branch is `route_closed` |
 | `W_PACK_UNKNOWN` | `requires` names a pack that is not loaded |
+| `W_ROLE_UNKNOWN` | `assign role` or `vacate role` names a role that no `role` block in the pack declares. A host may `define()` it |
 | `W_FACT_NEVER_READ` | A stored fact is written and never read |
 | `W_FACT_NEVER_SET` | A stored fact is read and never written |
 | `W_FACT_UNUSED` | A fact is never read or written |

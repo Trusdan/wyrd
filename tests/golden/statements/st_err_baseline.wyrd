@@ -1,0 +1,5 @@
+language 1
+
+quest gate "Gate"
+  stage pay
+    ~ adjust baseline affinity(tavern_owner, player) by true

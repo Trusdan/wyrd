@@ -29,3 +29,7 @@ role harbor_reeve
   default_holder: tide_clerk
   succession: election
   vacancy: hold
+
+role dock_runner
+  succession: none
+  vacancy: hold

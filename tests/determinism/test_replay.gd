@@ -21,6 +21,9 @@ func test_replay_reproduces_the_dock_errand() -> void:
 	assert_true(_has(recorded, "quest_start"))
 	assert_true(_has(recorded, "quest_advance"))
 	assert_true(_has(recorded, "quest_status"))
+	assert_true(_has(recorded, "role_assign"))
+	assert_true(_has(recorded, "role_vacate"))
+	assert_true(_has(recorded, "baseline_adjust"))
 
 
 func test_a_changed_host_answer_is_detected() -> void:

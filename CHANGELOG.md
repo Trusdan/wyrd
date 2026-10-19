@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `~ assign role <role> to <entity>`, `~ vacate role <role>`, and `~ adjust baseline <axis>(a, b) by <n>` compile and run. A role that no `role` block declares warns `W_ROLE_UNKNOWN`. Assign refuses `abolished`, `contested`, `no_entity`, `ineligible`, and `same_holder`. Vacate refuses `abolished`, `contested`, and `empty`. Baseline refuses `no_entity`, `self_edge`, and `zero`. With tracing on, the lines are `wyrd role_assign role=%s from=%s to=%s ok=%s reason=%s`, `wyrd role_vacate role=%s from=%s to=%s ok=%s reason=%s`, and `wyrd baseline_adjust a=%s b=%s axis=%s from=%s to=%s ok=%s reason=%s`. A frozen `locked_at` holder replaced by `assign`, from the host or from content, stays bound and usable. Only a vacate, or that person no longer being alive, makes the slot `locked_gone`. Gullhaven adds `dock_runner` and uses the three effects on the dock errand. Save schema stays 3.
+
 - `~ start quest <id>` and `~ advance <quest> to <stage>` compile and run. An unknown quest is `E_QUEST_UNKNOWN`. A stage that is not a top-level stage of that quest, including a nested sub-state, is `E_STAGE_UNKNOWN`. With tracing on, a start logs `wyrd quest_start quest=%s ok=%s reason=%s`, an advance logs `wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s`, and every status change logs `wyrd quest_status quest=%s from=%s to=%s`. Gullhaven adds `dock_errand`, started from a choice in `toll.offer_room` and moved to its second stage by `advance`. Save schema stays 3.
 
 ## 0.6.2-m8 - 2026-10-18

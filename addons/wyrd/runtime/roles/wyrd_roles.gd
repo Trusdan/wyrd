@@ -23,7 +23,8 @@ extends RefCounted
 ## declared variant on the current stage wins. [code]contested[/code] with no
 ## variant uses the [code]empty[/code] variant and stays [code]contested[/code].
 ## [code]locked_gone[/code] is a frozen [code]locked_at[/code] holder who was
-## vacated or is not alive.
+## vacated or is not alive. A departure whose history reason is [code]assign[/code]
+## is not a vacate, whether the host or content assigned the new holder.
 ## A secret holder's key [code]role.<id>.holder[/code] is in [code]known/[/code]
 ## only for agents passed to [method tell].
 
@@ -503,6 +504,92 @@ func assign(role: StringName, entity: StringName) -> void:
 		role_holder_changed.emit(role, old, entity)
 
 
+## Content [code]assign role[/code]. Host [method assign] is unchanged.
+## Unknown roles [code]push_error[/code] and do not trace. Other refusals warn.
+## [code]same_holder[/code] traces and does not warn. A first holder has no
+## [code]role_changed[/code] deed, because a deed needs an actor.
+func assign_from_content(role: StringName, entity: StringName) -> bool:
+	if not _defs.has(role):
+		push_error("WyrdRoles.assign_from_content: unknown role \"%s\"" % String(role))
+		return false
+	var prior := _binding(role)
+	var old: StringName = prior["holder"]
+	if _abolished.has(role):
+		return _refuse_assign(role, old, entity, "abolished", "\"%s\" is abolished" % String(role))
+	if _pending.has(role):
+		return _refuse_assign(role, old, entity, "contested", "\"%s\" is contested" % String(role))
+	if not _living(entity):
+		return _refuse_assign(role, old, entity, "no_entity", "\"%s\" has no living entity" % String(role))
+	if not eligible(role, entity):
+		return _refuse_assign(role, old, entity, "ineligible", "\"%s\" is ineligible" % String(role))
+	if old == entity and prior["status"] != EMPTY:
+		_trace_role_line("role_assign", role, old, entity, false, "same_holder")
+		return false
+	if old != &"":
+		_push_history(prior, &"assign")
+	prior["holder"] = entity
+	prior["since"] = _now()
+	var default_holder := StringName(str(_spec(role).get("default_holder", "")))
+	prior["status"] = DEFAULT if entity == default_holder and default_holder != &"" else SUCCESSOR
+	_bindings[role] = prior
+	_refresh_told(role)
+	_record_role_changed(role, old, entity)
+	if old != entity:
+		role_holder_changed.emit(role, old, entity)
+	_trace_role_line("role_assign", role, old, entity, true, "assigned")
+	return true
+
+
+func _refuse_assign(role: StringName, old: StringName, entity: StringName, reason: String, message: String) -> bool:
+	_trace_role_line("role_assign", role, old, entity, false, reason)
+	push_warning("WyrdRoles.assign_from_content: %s" % message)
+	return false
+
+
+## Content [code]vacate role[/code]. Checks, then [method vacate] with reason [code]content[/code].
+func vacate_from_content(role: StringName) -> bool:
+	if not _defs.has(role):
+		push_error("WyrdRoles.vacate_from_content: unknown role \"%s\"" % String(role))
+		return false
+	var old: StringName = _binding(role)["holder"]
+	if _abolished.has(role):
+		return _refuse_vacate(role, old, "abolished", "\"%s\" is abolished" % String(role))
+	if _pending.has(role):
+		return _refuse_vacate(role, old, "contested", "\"%s\" is contested" % String(role))
+	if old == &"":
+		return _refuse_vacate(role, old, "empty", "\"%s\" is empty" % String(role))
+	vacate(role, &"content")
+	_trace_role_line("role_vacate", role, old, _binding(role)["holder"], true, "vacated")
+	return true
+
+
+func _refuse_vacate(role: StringName, old: StringName, reason: String, message: String) -> bool:
+	_trace_role_line("role_vacate", role, old, &"", false, reason)
+	push_warning("WyrdRoles.vacate_from_content: %s" % message)
+	return false
+
+
+func _trace_role_line(kind: String, role: StringName, old: StringName, next: StringName, ok: bool, reason: String) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call(kind, {
+		"from": String(old),
+		"ok": "true" if ok else "false",
+		"reason": reason,
+		"role": String(role),
+		"to": String(next),
+	})
+
+
+func _living(entity: StringName) -> bool:
+	if entity == &"":
+		return false
+	var world := _world()
+	if world == null:
+		return false
+	return world.exists(entity) and world.is_alive(entity)
+
+
 func vacate(role: StringName, reason: StringName) -> void:
 	if _abolished.has(role) or _pending.has(role):
 		return
@@ -966,9 +1053,13 @@ func _gone_reason(quest_id: String, slot_name: String, who: StringName) -> Strin
 		return ""
 	if not _alive(frozen):
 		return "frozen_dead"
-	if _binding(StringName(row.get("role", &"")))["holder"] != frozen:
-		return "frozen_vacated"
-	return ""
+	var role := StringName(row.get("role", &""))
+	if _binding(role)["holder"] == frozen:
+		return ""
+	# assign, from the host or from content, is not a vacate.
+	if _departure_reason(role, frozen) == &"assign":
+		return ""
+	return "frozen_vacated"
 
 
 func _state_applies(
@@ -1146,6 +1237,16 @@ func _binding(role: StringName) -> Dictionary:
 	if not _bindings.has(role):
 		return {"history": [], "holder": &"", "since": 0, "status": EMPTY}
 	return _bindings[role]
+
+
+func _departure_reason(role: StringName, holder: StringName) -> StringName:
+	var history: Array = _binding(role)["history"]
+	for i in range(history.size() - 1, -1, -1):
+		var prior: Dictionary = history[i]
+		if prior.get("holder", &"") != holder:
+			continue
+		return StringName(prior.get("reason", &""))
+	return &""
 
 
 func _push_history(prior: Dictionary, reason: StringName) -> void:

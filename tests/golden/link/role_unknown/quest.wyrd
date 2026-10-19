@@ -1,0 +1,17 @@
+language 1
+
+facts
+  player.coins : int stored
+
+role known_role
+  succession: none
+  vacancy: hold
+
+quest gate "Gate"
+  stage pay
+    ~ set player.coins = 1
+    ~ assign role known_role to player
+    ~ assign role missing_role to player
+    ~ vacate role missing_role
+    ~ adjust baseline affinity(player, tavern) by player.coins
+    waits_until false

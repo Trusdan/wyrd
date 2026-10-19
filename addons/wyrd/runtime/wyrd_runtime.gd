@@ -150,6 +150,7 @@ func _init() -> void:
 	roles.role_holder_changed.connect(_on_role)
 	roles.role_vacant.connect(_on_role_vacant)
 	social.on_changed = Callable(self, &"_on_social")
+	social.trace_of = Callable(self, &"trace_baseline_adjust")
 	effects = WyrdEffects.new()
 	effects.bind(self)
 	facts.provenance_of = Callable(effects, &"export_state")
@@ -626,6 +627,9 @@ func _trace_role(kind: String, fields: Dictionary) -> void:
 		return
 	if kind == "cast":
 		_trace_cast(fields)
+		return
+	if kind == "role_assign" or kind == "role_vacate":
+		_trace_role_change(kind, fields)
 		return
 	trace_add(kind, fields)
 	if trace == null or not trace.enabled:
@@ -1181,6 +1185,33 @@ func trace_quest_status(quest_id: String, from_status: String, to_status: String
 		"quest": quest_id,
 		"to": to_status,
 	}, "quest_status", "wyrd quest_status quest=%s from=%s to=%s" % [quest_id, from_status, to_status])
+
+
+func _trace_role_change(kind: String, fields: Dictionary) -> void:
+	var line := "wyrd %s role=%s from=%s to=%s ok=%s reason=%s" % [
+		kind,
+		str(fields.get("role", "")),
+		str(fields.get("from", "")),
+		str(fields.get("to", "")),
+		str(fields.get("ok", "")),
+		str(fields.get("reason", "")),
+	]
+	_trace_quest_line(fields, kind, line)
+
+
+## One line for [method WyrdSocial.adjust_baseline]. [code]who[/code] is [param a].
+## Load does not call it.
+func trace_baseline_adjust(fields: Dictionary) -> void:
+	var line := "wyrd baseline_adjust a=%s b=%s axis=%s from=%s to=%s ok=%s reason=%s" % [
+		str(fields.get("a", "")),
+		str(fields.get("b", "")),
+		str(fields.get("axis", "")),
+		str(fields.get("from", "")),
+		str(fields.get("to", "")),
+		str(fields.get("ok", "")),
+		str(fields.get("reason", "")),
+	]
+	_trace_quest_line(fields, "baseline_adjust", line)
 
 
 func _trace_quest_line(fields: Dictionary, kind: String, line: String) -> void:
