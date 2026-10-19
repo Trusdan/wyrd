@@ -422,7 +422,7 @@ static func _effects(effects: Array) -> Array:
 		var args: Array = []
 		for arg in effect.args:
 			args.append({"name": str(arg["name"]), "text": str(arg["text"])})
-		rows.append({
+		var row := {
 			"agent": effect.agent,
 			"args": args,
 			"branch": effect.branch,
@@ -435,7 +435,12 @@ static func _effects(effects: Array) -> Array:
 			"topic": effect.topic,
 			"value": _cond(effect.value),
 			"verb": effect.verb,
-		})
+		}
+		if effect.kind == &"start_quest" or effect.kind == &"advance":
+			row["quest"] = effect.quest
+		if effect.kind == &"advance":
+			row["stage"] = effect.stage
+		rows.append(row)
 	return rows
 
 

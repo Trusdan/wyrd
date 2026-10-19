@@ -9,7 +9,9 @@ extends RefCounted
 ## A [code]do[/code] failure returns its [code]on_fail[/code] target: a label in
 ## a scene, or a stage in a quest. Set literals in deed arguments are read from
 ## the stored argument text, because the expression emitter does not push a set
-## value. Out-of-slice effects cannot appear here; the compiler rejects them.
+## value. [code]start_quest[/code] and [code]advance[/code] call
+## [method WyrdQuestRunner.start] and [method WyrdQuestRunner.advance].
+## Out-of-slice effects cannot appear here; the compiler rejects them.
 
 signal topic_unlocked(topic: StringName)
 signal outcome_changed(quest_id: String, branch: StringName, value: StringName)
@@ -125,6 +127,16 @@ func run_one(effect: WyrdEffectDef) -> String:
 			_belief(effect, true)
 		&"unbelieve", &"retract", &"forget":
 			_belief(effect, false)
+		&"start_quest":
+			if runtime.quests == null:
+				push_error("WyrdEffects: no quest runner")
+			else:
+				runtime.quests.start(effect.quest)
+		&"advance":
+			if runtime.quests == null:
+				push_error("WyrdEffects: no quest runner")
+			else:
+				return runtime.quests.advance(effect.quest, effect.stage)
 		_:
 			push_error("WyrdEffects: effect \"%s\" is not in this slice" % String(effect.kind))
 	return ""

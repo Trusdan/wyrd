@@ -41,6 +41,7 @@ func link(
 	_lines(units)
 	_host_steps(units)
 	_quests(units, pack)
+	_quest_flow(units)
 	_scenes_of(units)
 	_commands_of(units)
 	_warn_holder_gaps(units)
@@ -227,6 +228,77 @@ func _quests(units: Array, pack: WyrdLinkedPack) -> void:
 				_quest_stage(quest, stage, stages, path, pack)
 			_warn_empty(quest, path)
 			_warn_routes(quest, path)
+
+
+func _quest_flow(units: Array) -> void:
+	var stages_of := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			var names := {}
+			for stage in quest.stages:
+				if not stage.id.is_empty():
+					names[stage.id] = true
+			stages_of[quest.id] = names
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_flow_stage(stage, path, stages_of)
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_flow_effect(effect, path, stages_of)
+			for item in scene.items:
+				if item.choice == null:
+					continue
+				for effect in item.choice.effects:
+					_flow_effect(effect, path, stages_of)
+
+
+func _flow_stage(stage: WyrdStageDef, path: String, stages_of: Dictionary) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		_flow_effect(effect, path, stages_of)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_flow_effect(effect, path, stages_of)
+	for variant in stage.variants:
+		if variant.body != null:
+			_flow_stage(variant.body, path, stages_of)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_flow_stage(child, path, stages_of)
+
+
+func _flow_effect(effect: WyrdEffectDef, path: String, stages_of: Dictionary) -> void:
+	if effect.kind != &"start_quest" and effect.kind != &"advance":
+		return
+	if effect.quest.is_empty() or not stages_of.has(effect.quest):
+		_diagnostics.add(
+			WyrdDiagnostic.E_QUEST_UNKNOWN,
+			"unknown quest \"%s\"" % effect.quest,
+			path,
+			effect.line,
+			effect.col
+		)
+		return
+	if effect.kind != &"advance":
+		return
+	var names: Dictionary = stages_of[effect.quest]
+	if names.has(effect.stage):
+		return
+	_diagnostics.add(
+		WyrdDiagnostic.E_STAGE_UNKNOWN,
+		"unknown stage \"%s\"" % effect.stage,
+		path,
+		effect.line,
+		effect.col
+	)
 
 
 func _warn_empty(quest: WyrdQuestDef, path: String) -> void:

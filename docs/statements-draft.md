@@ -10,7 +10,7 @@ Status: draft. This is not part of grammar v1. Sections 1–6 of `docs/grammar-v
 4. A line condition is a `when <cond>:` prefix: `when <cond>: <speaker>: <prose> #line:<id>`.
 5. `disabled_when {<cond>} "<reason>"` sits after the choice label. It is parsed only.
 6. `record deed` also accepts `visibility:` and `memorable:`.
-7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, and `forget` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
+7. The six slice effects plus `believe`, `unbelieve`, `declare`, `retract`, `learn`, `forget`, `start quest`, and `advance` are compiled. Any other effect is `E_EFFECT_NOT_IN_SLICE`.
 8. Journal text is unquoted prose after a colon: `journal: text #line:<id>`. `{...}` interpolates. A quoted string is not journal text. Quest titles stay quoted and are not interpolated.
 9. The separate S1b-perf pass is not part of this draft. It landed as its own change before linking.
 
@@ -179,6 +179,8 @@ The linker warns `W_STORYLET_TIE` once per pair, on the later storylet, when two
 | `~ forget <agent> <fact>` | Removes that agent's knowledge. A missing key is a no-op. |
 | `~ declare <group> <fact> = <expr>` | Stored schema fact only. `<group>` is a dotted id. |
 | `~ retract <group> <fact>` | Removes that group's held fact. A missing fact is a no-op. |
+| `~ start quest <id>` | Starts that quest even when `start when` is false. `dormant` and `available` become `active` at the first stage. `active`, `completed`, `failed`, and `abandoned` warn and stay. `unavailable` stays `unavailable`. |
+| `~ advance <quest> to <stage>` | Moves an `active` quest to a top-level stage, even if `waits_until` is false or a held-empty slot is waiting. The offered scene and the waiting reason are cleared. A pending host step or an open scene for that quest warns and stays. The current stage is a no-op. Any other status warns and stays. |
 
 `witnesses` is `auto` or a set. A `do` argument that is only a name path is an entity id when lookup misses, and a fact read when lookup hits. Any other argument is an expression.
 
@@ -190,7 +192,9 @@ A concrete stored fact may carry `recap: true` or `recap: false`. `recap: true` 
 
 `statement: true` is a statement deed (WFR4). Perception modes are still stored, but the mode does not write the fact. Each witness is a listener. The speaker is not added. The listener accepts when `credibility_score(listener, speaker) >= credibility_threshold`. The default score is `disposition(listener, speaker) / 100`. `WyrdConfig.credibility_threshold` defaults to `0.5` and the comparison is inclusive. `register_credibility` replaces that score and is not saved. The game seed is not an input. Acceptance writes `believed/<listener>` only. Rejection writes nothing. `known/`, `world`, and `held/` stay unchanged. One `credibility` line is logged per listener, including a rejection, even when the belief value does not change. `statement: false`, or a deed with no `statement` argument, keeps the perception write above. A statement with no `reveals` records the deed and makes no credibility decision. `deeds.record` does not run this gate.
 
-`lock topic`, `start quest`, `advance`, `assign role`, `vacate role`, `adjust baseline`, and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
+`start quest <id>` and `advance <quest> to <stage>` run in source order and share the 24 stage-hop limit. If the target quest's own step list is running, an `advance` is applied after that list, like a divert. A bad shape is `E_STMT_UNKNOWN`: `start quest needs a quest id`, or `advance needs <quest> to <stage>`. With tracing on, a start logs `wyrd quest_start quest=%s ok=%s reason=%s` (`started`, `active`, `completed`, `failed`, `abandoned`, or `unavailable`). An advance logs `wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s` (`moved`, `not_active`, `same_stage`, `host_step`, or `scene_open`). A pending host step is reported ahead of an open scene. The current stage is reported ahead of both. Every status change logs `wyrd quest_status quest=%s from=%s to=%s`. The existing `transition` line stays. Neither effect reads or writes a fact. Save schema stays 3.
+
+`lock topic`, `assign role`, `vacate role`, `adjust baseline`, and `create document` are `E_EFFECT_NOT_IN_SLICE`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
 ## `#line:`
 
@@ -212,7 +216,7 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_STATE` | The variant state is not one of the eight names, or its condition shape is wrong |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
-| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong |
+| `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>` |
 | `E_LABEL_UNKNOWN` | A divert, choice, or scene `on_fail` names a label that is not in the scene |
 | `E_LABEL_DUPLICATE` | A label is repeated in one scene |
 | `E_CHOICE_SYNTAX` | A choice line is not one of the forms above |
@@ -240,13 +244,14 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 |---|---|
 | `E_FACT_REDECLARED` | The same key or an overlapping pattern is declared in another file |
 | `E_QUEST_DUPLICATE` | The same quest id is declared in another file |
+| `E_QUEST_UNKNOWN` | `start quest` or `advance` names a quest that is not in the pack |
 | `E_SCENE_DUPLICATE` | The same scene id is declared in another file |
 | `E_SCENE_UNKNOWN` | `scene <id>` or `-> scene <id>` names a scene that is not in the pack |
 | `E_SPEAKER_UNBOUND` | A slot speaker is not passed by a stage that runs the scene |
 | `E_COMMAND_UNKNOWN` | `do` names a command missing from `wyrd_commands.json` |
 | `E_COMMANDS_FILE` | `wyrd_commands.json` is present and is not a command list |
 | `E_LINE_ID_DUPLICATE` | The same `#line:` id appears twice in the pack |
-| `E_STAGE_UNKNOWN` | A stage `on_fail` names a stage this quest does not declare |
+| `E_STAGE_UNKNOWN` | A stage `on_fail` names a stage this quest does not declare, or `advance` names a stage that is not a top-level stage of that quest. A nested sub-state is the same error |
 | `W_SCENE_UNUSED` | No quest stage runs the scene |
 | `W_SLOT_UNUSED` | A passed slot is not a speaker in the scene |
 | `W_EMPTY_UNCOVERED` | A slot used by a reachable stage has neither `variant <slot>.empty` nor quest `on_empty`. A `contested` variant does not cover it |

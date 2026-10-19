@@ -12,8 +12,12 @@ quest ferry_toll "The Ferry Toll"
     ~ inc season by 1
     ~ lock topic harbor
     ~ set_disposition player ferry
-    ~ start quest other
+    ~ start quest
+    ~ start quest other extra
     ~ advance
+    ~ advance ferry
+    ~ advance ferry to
+    ~ advance ferry to pay extra
     ~ assign role tavern
     ~ vacate role tavern
     ~ adjust baseline ferry

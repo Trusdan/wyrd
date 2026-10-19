@@ -1149,6 +1149,49 @@ func trace_why_not(fields: Dictionary) -> void:
 	print(WyrdDirector.format_why_not(fields))
 
 
+## One line when [method WyrdQuestRunner.start] runs.
+## [param reason] is [code]started[/code], [code]active[/code], [code]completed[/code],
+## [code]failed[/code], [code]abandoned[/code], or [code]unavailable[/code].
+func trace_quest_start(quest_id: String, ok: bool, reason: String) -> void:
+	_trace_quest_line({
+		"ok": "true" if ok else "false",
+		"quest": quest_id,
+		"reason": reason,
+	}, "quest_start", "wyrd quest_start quest=%s ok=%s reason=%s" % [quest_id, "true" if ok else "false", reason])
+
+
+## One line when [method WyrdQuestRunner.advance] accepts or refuses a move.
+## [param reason] is [code]moved[/code], [code]not_active[/code], [code]same_stage[/code],
+## [code]host_step[/code], or [code]scene_open[/code].
+func trace_quest_advance(quest_id: String, from_stage: String, to_stage: String, ok: bool, reason: String) -> void:
+	var flag := "true" if ok else "false"
+	_trace_quest_line({
+		"from": from_stage,
+		"ok": flag,
+		"quest": quest_id,
+		"reason": reason,
+		"to": to_stage,
+	}, "quest_advance", "wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s" % [quest_id, from_stage, to_stage, flag, reason])
+
+
+## One line for every status change in [method WyrdQuestRunner._set_status]. Load does not call it.
+func trace_quest_status(quest_id: String, from_status: String, to_status: String) -> void:
+	_trace_quest_line({
+		"from": from_status,
+		"quest": quest_id,
+		"to": to_status,
+	}, "quest_status", "wyrd quest_status quest=%s from=%s to=%s" % [quest_id, from_status, to_status])
+
+
+func _trace_quest_line(fields: Dictionary, kind: String, line: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add(kind, fields)
+	print(line)
+
+
 ## One line when a region's active stage changes. [param path] is the region id,
 ## or parent ids joined by [code]/[/code]. Empty [param from_stage] is the first leaf.
 func trace_region(quest_id: String, path: String, from_stage: String, to_stage: String) -> void:

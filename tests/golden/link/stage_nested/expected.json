@@ -1,0 +1,126 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STAGE_UNKNOWN",
+      "col": 5,
+      "line": 5,
+      "message": "unknown stage \"frayed\"",
+      "path": "res://tests/golden/link/stage_nested/other.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "7985bb94707ae1f0",
+        "path": "res://tests/golden/link/stage_nested/other.wyrd"
+      },
+      {
+        "hash": "7ae057d0a3616781",
+        "path": "res://tests/golden/link/stage_nested/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "stage_nested",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/stage_nested/other.wyrd",
+        "id": "other",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "advance",
+                "on_fail": "",
+                "outcome": "",
+                "quest": "gate",
+                "stage": "frayed",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "one",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Other"
+      },
+      {
+        "file": "res://tests/golden/link/stage_nested/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "regions": [
+              {
+                "id": "rope",
+                "stages": [
+                  {
+                    "effects": [],
+                    "id": "frayed",
+                    "journals": [],
+                    "scenes": [],
+                    "transitions": [],
+                    "variants": [],
+                    "waits": ""
+                  }
+                ]
+              }
+            ],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}
