@@ -224,7 +224,7 @@ A concrete stored fact may carry `recap: true` or `recap: false`. `recap: true` 
 
 A bad shape is `E_STMT_UNKNOWN`: `assign role needs <role> to <entity>`, `vacate role needs a role id`, or `adjust baseline needs <axis>(a, b) by <n>`. A non-numeric `<n>` is `E_WRITE_TYPE` with `adjust baseline needs an int or float`. A role that no `role` block declares warns `W_ROLE_UNKNOWN`, because a host may `define()` it. Name paths and `<n>` that read a fact are fact reads. Save schema stays 3.
 
-`create document` is `E_EFFECT_NOT_IN_SLICE`. `lock` without `topic` is the same, for the word `lock`. `lock topic` without an id is `E_STMT_UNKNOWN` with `lock topic needs a topic id`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
+`create document <doc_id> copy <copy_id>` copies a frozen readable document. `<copy_id>` is a dotted id or a quoted string. A bad shape is `E_STMT_UNKNOWN` with `create document needs <doc_id> copy <copy_id>`. An unknown document is `E_DOCUMENT_UNKNOWN`. A live or periodic document is `E_DOCUMENT_NOT_FROZEN`. `lock` without `topic` is `E_EFFECT_NOT_IN_SLICE`, for the word `lock`. `lock topic` without an id is `E_STMT_UNKNOWN` with `lock topic needs a topic id`. `set_disposition` is `E_NO_SET_DISPOSITION` with the message `record deeds or use adjust baseline (§2.5)`.
 
 ## `#line:`
 
@@ -353,7 +353,7 @@ role ferry_master
 
 ## Document
 
-A top-level `document` block publishes a frozen issue on a period. `document` and `publishes_by` stay reserved as identifiers. `create document` stays `E_EFFECT_NOT_IN_SLICE`. Pages, read effects, and `Wyrd.documents.open` are not in this slice.
+A top-level `document` block is either a periodic issue or a readable document. A header that contains `publishes_by`, `every`, or `delay` is the periodic issue below, with the same messages as before. A header without those words is readable: it needs a title, `text: live` or `text: frozen`, and at least one `page`. `document` and `publishes_by` stay reserved as identifiers. `create document <doc_id> copy <copy_id>` is an effect. Content aliases (`was:`), POT extraction, and `create_copy` params are not in this slice.
 
 ```wyrd
 document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day delay 1 hour
@@ -368,10 +368,14 @@ The header is `document <id> ["<title>"] publishes_by <group> every <number> <un
 
 | Code | When |
 |---|---|
-| `E_DOCUMENT_SYNTAX` | The header, a duration, a field, or a fragment is the wrong shape |
+| `E_DOCUMENT_SYNTAX` | The header, a duration, a field, a fragment, or a readable page is the wrong shape. The message names the field |
 | `E_DOCUMENT_DUPLICATE` | The same document id is declared twice |
+| `E_DOCUMENT_UNKNOWN` | `create document` or a literal `has_read` doc names no document |
+| `E_DOCUMENT_NOT_FROZEN` | `create document` names a live or periodic document |
 | `E_UNKNOWN_FACT` | `claim` or `fact` names a key the schema does not have |
 | `E_RESERVED_WORD` | `document` or `publishes_by` is used as an identifier |
+
+A readable document does not publish. `period_minutes` stays 0. `text:` is required once. `meta` values are bool, int, float, symbol, or string literals. Wyrd stores `meta` and does not interpret it. Each `page` needs a paragraph. Page lines are prose. `when <cond>:` on a paragraph stays code up to the colon. `{…|variants}` and `#tag:voiced` are `E_DOCUMENT_SYNTAX`. `#line:` is allowed on the readable header and on paragraphs. `tag-lines` tags those and does not tag a periodic document. `on_first_read:` and `on_read:` take `~` effects. `on_fail` is `E_DOCUMENT_SYNTAX` with `on_fail is not valid in a document`. Page, paragraph, and `{if}` conditions use the story context. `has_read(reader, doc)` reads a read flag. Read flags are not stored facts.
 
 The runtime rules for witnesses, rumor believers, the claim pick, the catch-up cap, and the schema 3 counter are in `addons/wyrd/runtime/publish/README.md`. A skipped issue number is stored in that fact. The counter rides in `flight`.
 

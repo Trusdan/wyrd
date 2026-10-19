@@ -55,6 +55,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"display_name": Callable(self, &"_display_name"),
 		&"filled": Callable(self, &"_filled"),
 		&"has": Callable(self, &"_has"),
+		&"has_read": Callable(self, &"_has_read"),
 		&"has_tag": Callable(self, &"_has_tag"),
 		&"held": Callable(self, &"_held"),
 		&"holder": Callable(self, &"_holder"),
@@ -77,6 +78,12 @@ func funcs() -> Dictionary:
 		for name in _runtime.host_functions().keys():
 			table[name] = _runtime.host_functions()[name]
 	return table
+
+
+func _has_read(args: Array) -> bool:
+	if args.size() < 2 or args[0] == null or args[1] == null or _runtime == null or _runtime.documents == null:
+		return false
+	return _runtime.documents.has_read(StringName(str(args[0])), StringName(str(args[1])))
 
 
 func _holder(args: Array) -> Variant:

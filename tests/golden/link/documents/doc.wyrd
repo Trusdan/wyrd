@@ -1,0 +1,16 @@
+language 1
+
+facts
+  player.secret : symbol stored
+
+document live_note "Live Note"
+  text: live
+  page
+    when player.secret == seen: The mark is {player.secret}. #line:leak
+    when has_read(player, missing_doc): Nobody opened it. #line:missing
+  on_read:
+    ~ create document missing_doc copy one
+    ~ create document live_note copy two
+    ~ create document gazette copy three
+
+document gazette "Gazette" publishes_by guild every 1 hour delay 1 hour

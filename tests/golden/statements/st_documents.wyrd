@@ -1,0 +1,24 @@
+language 1
+
+facts
+  player.coins : int stored
+
+document live_note "Live Note" #tag:paper #secrecy:open #line:live_title
+  text: live
+  meta { copies: 1, rate: 1.5, posted: true, tone: calm, label: "dock" }
+  page when not filled(ferry_master)
+    The tide is up. #tag:notice #line:live_plain
+    when filled(ferry_master): {holder(ferry_master).name} is on the dock. #line:live_when
+  on_first_read:
+    ~ unlock topic storm_rumour
+  on_read:
+    ~ inc player.coins by 1
+
+document frozen_note "Frozen Note" #line:frozen_title
+  text: frozen
+  page
+    {if filled(harbor_reeve)}To {holder(harbor_reeve).name}.{else}To the chair.{end} #line:frozen_body
+
+scene copy_note
+  ~ create document frozen_note copy dock_letter
+  -> end

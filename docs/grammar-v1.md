@@ -156,4 +156,4 @@ The compiler stores the step on the stage. At stage entry the runtime pauses rem
 
 ## 10. `document`
 
-**Status: draft statement syntax. Sections 1–6 stay frozen.** `document` and `publishes_by` remain reserved words (section 6) and are not legal identifiers. A top-level block may use them. The shape, the duration units, and the fragment fields are in `docs/statements-draft.md`. `create document` is still not an effect in this slice.
+**Status: draft statement syntax. Sections 1–6 stay frozen.** `document` and `publishes_by` remain reserved words (section 6) and are not legal identifiers. A top-level block may use them. The lexer also accepts `document` immediately after `~ create`. The shape, the duration units, and the fragment fields are in `docs/statements-draft.md`. `create document <doc_id> copy <copy_id>` is an effect.

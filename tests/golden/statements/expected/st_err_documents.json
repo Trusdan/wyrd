@@ -1,0 +1,543 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 1,
+      "line": 3,
+      "message": "document needs a title",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 1,
+      "line": 8,
+      "message": "document needs text:",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 3,
+      "line": 14,
+      "message": "duplicate document field \"text\"",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 3,
+      "line": 19,
+      "message": "readable field \"text\" is not valid on a periodic document",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 3,
+      "line": 23,
+      "message": "page needs a paragraph",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 19,
+      "line": 27,
+      "message": "meta needs a literal",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 5,
+      "line": 34,
+      "message": "variants are not valid in a paragraph",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 5,
+      "line": 39,
+      "message": "voiced is not valid in a paragraph",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_SYNTAX",
+      "col": 5,
+      "line": 46,
+      "message": "on_fail is not valid in a document",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 54,
+      "message": "create document needs <doc_id> copy <copy_id>",
+      "path": "res://tests/golden/statements/st_err_documents.wyrd",
+      "severity": "error"
+    }
+  ],
+  "documents": [
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "bare",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 6,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 6
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": ""
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "missing_text",
+      "line_id": "",
+      "meta": {},
+      "mode": "",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 10,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 10
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "twice",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 16,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 16
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "guild",
+      "id": "mixed",
+      "line_id": "",
+      "meta": {},
+      "mode": "",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [],
+      "period_minutes": 60,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "empty_page",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": []
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "bad_meta",
+      "line_id": "",
+      "meta": {
+        "n": "holder"
+      },
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 29,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 29
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "variants",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "compiled": {
+                      "reads": [],
+                      "source_span": {
+                        "col": 6,
+                        "end_col": 19,
+                        "end_line": 34,
+                        "line": 34
+                      },
+                      "specificity": 1,
+                      "uses_chance": false
+                    },
+                    "kind": "variants",
+                    "line": 34,
+                    "text": "variants"
+                  },
+                  {
+                    "col": 29,
+                    "kind": "text",
+                    "line": 34,
+                    "text": " stays."
+                  }
+                ],
+                "kind": "prose",
+                "line": 34
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "voiced",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 39,
+                    "text": "Spoken."
+                  }
+                ],
+                "kind": "prose",
+                "line": 39
+              },
+              "secrecy": "",
+              "tags": [
+                "voiced"
+              ]
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "failed",
+      "line_id": "",
+      "meta": {},
+      "mode": "frozen",
+      "on_first_read": [],
+      "on_read": [
+        {
+          "agent": "",
+          "args": [],
+          "branch": "",
+          "command": "ring",
+          "fact_key": "",
+          "kind": "do",
+          "on_fail": "later",
+          "outcome": "",
+          "reads": [],
+          "span": {
+            "col": 5,
+            "end_col": 33,
+            "end_line": 46,
+            "line": 46
+          },
+          "target": null,
+          "target_text": "",
+          "topic": "",
+          "value": null,
+          "value_text": "",
+          "verb": ""
+        }
+      ],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 44,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 44
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Title"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "kept",
+      "line_id": "",
+      "meta": {},
+      "mode": "frozen",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 51,
+                    "text": "Hello."
+                  }
+                ],
+                "kind": "prose",
+                "line": 51
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Kept"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [
+    {
+      "id": "bad",
+      "items": [
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 55,
+            "line": 55
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 55,
+        "line": 53
+      }
+    }
+  ]
+}

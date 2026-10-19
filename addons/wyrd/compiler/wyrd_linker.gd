@@ -14,6 +14,7 @@ var _note_path: String = ""
 var _diagnostics: WyrdDiagnostics
 var _scenes: Dictionary = {}
 var _roles: Dictionary = {}
+var _document_defs: Dictionary = {}
 var _skip_commands_note: bool = false
 
 
@@ -33,12 +34,14 @@ func link(
 	_skip_commands_note = skip_commands_note
 	_diagnostics = diagnostics
 	_scenes = {}
+	_document_defs = {}
 	var pack := WyrdLinkedPack.new()
 	pack.pack_id = pack_id
 	pack.language_version = language_version
 	pack.schema = schema
 	pack.units = units
 	_index_symbols(units)
+	_document_refs(units)
 	_storylet_ties(units)
 	_lines(units)
 	_host_steps(units)
@@ -95,6 +98,8 @@ func _index_symbols(units: Array) -> void:
 			_claim(sequences, sequence.id, path, sequence.line, sequence.col, WyrdDiagnostic.E_SEQUENCE_DUPLICATE, "sequence")
 		for document in file.documents:
 			_claim(documents, document.id, path, document.line, document.col, WyrdDiagnostic.E_DOCUMENT_DUPLICATE, "document")
+			if not document.id.is_empty():
+				_document_defs[document.id] = document
 		for scene in file.scenes:
 			if scene.id.is_empty():
 				continue
@@ -110,6 +115,197 @@ func _index_symbols(units: Array) -> void:
 				continue
 			_scenes[scene.id] = {"col": scene.col, "line": scene.line, "path": path, "scene": scene}
 	_roles = roles
+
+
+func _document_refs(units: Array) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for quest in file.quests:
+			_check_doc_cond(quest.start_when, path)
+			for slot in quest.slots:
+				_check_doc_cond(slot.cast_when, path)
+			for stage in quest.stages:
+				_document_stage(stage, path)
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_check_create_document(effect, path)
+			for item in scene.items:
+				if item.line_def != null:
+					_check_doc_cond(item.line_def.condition, path)
+					_scan_doc_prose(item.line_def.prose, path)
+				if item.effect != null:
+					_check_create_document(item.effect, path)
+				if item.choice != null:
+					_check_doc_cond(item.choice.condition, path)
+					_scan_doc_prose(item.choice.label, path)
+					for effect in item.choice.effects:
+						_check_create_document(effect, path)
+		for storylet in file.storylets:
+			_check_doc_cond(storylet.condition, path)
+			for effect in storylet.effects:
+				_check_create_document(effect, path)
+			for line_def in storylet.lines:
+				_scan_doc_prose(line_def.prose, path)
+		for role in file.roles:
+			_check_doc_cond(role.eligibility, path)
+		for sequence in file.sequences:
+			_check_doc_cond(sequence.reset_cond, path)
+			for step in sequence.steps:
+				if step.where_cond != null:
+					_check_doc_cond(step.where_cond, path)
+		for document in file.documents:
+			for page in document.pages:
+				_check_doc_cond(page.get("condition"), path)
+				for paragraph in page.get("paragraphs", []):
+					_check_doc_cond(paragraph.get("condition"), path)
+					_scan_doc_prose(paragraph.get("prose"), path)
+			for effect in document.on_first_read:
+				_check_create_document(effect, path)
+			for effect in document.on_read:
+				_check_create_document(effect, path)
+
+
+func _document_stage(stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	_check_doc_cond(stage.waits_until, path)
+	for row in stage.transitions:
+		var when: Variant = row.get("when", null)
+		if when is WyrdCompiledCondition:
+			_check_doc_cond(when, path)
+	for effect in stage.effects:
+		_check_create_document(effect, path)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_check_create_document(effect, path)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null:
+			continue
+		_check_doc_cond(variant.condition, path)
+		_document_stage(variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_document_stage(child, path)
+
+
+func _check_create_document(effect: WyrdEffectDef, path: String) -> void:
+	if effect == null or effect.kind != &"create_document":
+		return
+	var found: WyrdDocumentDef = _document_defs.get(effect.document_id)
+	if found == null:
+		_diagnostics.add(WyrdDiagnostic.E_DOCUMENT_UNKNOWN, "unknown document \"%s\"" % effect.document_id, path, effect.line, effect.col)
+		return
+	if found.mode != "frozen":
+		_diagnostics.add(WyrdDiagnostic.E_DOCUMENT_NOT_FROZEN, "document \"%s\" is not frozen" % effect.document_id, path, effect.line, effect.col)
+
+
+func _check_doc_cond(compiled: Variant, path: String) -> void:
+	if not (compiled is WyrdCompiledCondition):
+		return
+	var cond := compiled as WyrdCompiledCondition
+	for doc_id in _has_read_docs(cond):
+		if _document_defs.has(doc_id):
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.E_DOCUMENT_UNKNOWN,
+			"unknown document \"%s\"" % doc_id,
+			path,
+			int(cond.source_span.get("line", 1)),
+			int(cond.source_span.get("col", 1))
+		)
+
+
+func _scan_doc_prose(node: Variant, path: String) -> void:
+	if not (node is WyrdExprNode):
+		return
+	var expr := node as WyrdExprNode
+	if expr.payload is WyrdCompiledCondition:
+		_check_doc_cond(expr.payload, path)
+	_scan_doc_prose(expr.a, path)
+	_scan_doc_prose(expr.b, path)
+	_scan_doc_prose(expr.c, path)
+	for kid in expr.kids:
+		_scan_doc_prose(kid, path)
+
+
+func _has_read_docs(compiled: WyrdCompiledCondition) -> PackedStringArray:
+	var found := {}
+	var stack: Array = []
+	var code := compiled.code
+	var ip := 0
+	while ip < code.size():
+		var op := code[ip]
+		ip += 1
+		if op == WyrdOpcodes.PUSH_CONST:
+			stack.append(compiled.consts[code[ip]])
+			ip += 1
+		elif op == WyrdOpcodes.LOAD_FACT:
+			stack.append(null)
+			ip += 1
+		elif op == WyrdOpcodes.PUSH_TRUE or op == WyrdOpcodes.PUSH_FALSE or op == WyrdOpcodes.PUSH_NIL:
+			stack.append(null)
+		elif op == WyrdOpcodes.LOAD_KEY:
+			var count := code[ip]
+			ip += 1
+			for _i in count:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.NEG or op == WyrdOpcodes.NOT:
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.ADD or op == WyrdOpcodes.SUB or op == WyrdOpcodes.MUL or op == WyrdOpcodes.DIV or op == WyrdOpcodes.EQ or op == WyrdOpcodes.NE or op == WyrdOpcodes.LT or op == WyrdOpcodes.LE or op == WyrdOpcodes.GT or op == WyrdOpcodes.GE:
+			if not stack.is_empty():
+				stack.pop_back()
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_RANGE:
+			for _i in 3:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_SET:
+			var set_count := code[ip]
+			ip += 1
+			for _i in set_count + 1:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.CALL:
+			var name := String(compiled.consts[code[ip]])
+			var argc := code[ip + 1]
+			ip += 2
+			var args: Array = []
+			for _i in argc:
+				if stack.is_empty():
+					args.append(null)
+				else:
+					args.push_front(stack.pop_back())
+			if name == "has_read" and args.size() >= 2 and (args[1] is String or args[1] is StringName):
+				found[String(args[1])] = true
+			stack.append(null)
+		elif op == WyrdOpcodes.JUMP:
+			ip += 1
+		elif op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
+			if not stack.is_empty():
+				stack.pop_back()
+			ip += 1
+		else:
+			break
+	var names := PackedStringArray()
+	for key in found.keys():
+		names.append(String(key))
+	names.sort()
+	return names
 
 
 func _claim(table: Dictionary, id: String, path: String, line: int, col: int, code: StringName, noun: String) -> void:
@@ -157,6 +353,13 @@ func _lines(units: Array) -> void:
 		for storylet in file.storylets:
 			for line_def in storylet.lines:
 				_take_line(seen, line_def.line_id, path, line_def.line, line_def.col)
+		for document in file.documents:
+			if document.mode != "live" and document.mode != "frozen":
+				continue
+			_take_line(seen, document.line_id, path, document.line, document.col)
+			for page in document.pages:
+				for paragraph in page.get("paragraphs", []):
+					_take_line(seen, str(paragraph.get("line_id", "")), path, int(paragraph.get("line", 1)), int(paragraph.get("col", 1)))
 
 
 func _line_regions(stage: WyrdStageDef, path: String, seen: Dictionary) -> void:

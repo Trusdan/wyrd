@@ -2,7 +2,7 @@
 
 `WyrdPublish` builds periodic document issues on the scheduler's `publish` queue.
 
-A `document` block names a group, a period, and a delay. Units are `minute` or `minutes` (1 game minute), `hour` or `hours` (60), and `day` or `days` (1440). The first issue is due at `delay` game minutes after a new game. The next is due one period later. `tick(0)` before that delay publishes nothing.
+A periodic `document` block names a group, a period, and a delay. A readable document has no `publishes_by`, `every`, or `delay`, and its `period_minutes` stays 0, so this queue skips it. Units are `minute` or `minutes` (1 game minute), `hour` or `hours` (60), and `day` or `days` (1440). The first issue is due at `delay` game minutes after a new game. The next is due one period later. `tick(0)` before that delay publishes nothing.
 
 `deeds_known_to(group, since, filter)` returns deed rows that any current member of the group witnessed, or believes through a rumor, at a qualifying minute `>= since`. Membership is `WyrdWorldAdapter.members`. The witness index is the knower list from the deed log. A witness uses the deed minute. `saw` is `known`. `heard` and `inferred` are `believed`. A rumor listener uses the believer index and the minute they adopted the claim. That listener is `believed` even when they are not a witness. A plain `believed/` write does not add a deed. An empty filter keeps every verb. Any other filter is the verb. Rows are unique by deed id and sorted by that id. `t` on the returned row is the earliest qualifying witness minute or adoption minute, and that is the minute the issue window uses. The same person is listed once. A `saw` witness stays `known` when they also believe the rumor.
 

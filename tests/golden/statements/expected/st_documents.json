@@ -1,0 +1,357 @@
+{
+  "diagnostics": [],
+  "documents": [
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "live_note",
+      "line_id": "live_title",
+      "meta": {
+        "copies": 1,
+        "label": "dock",
+        "posted": true,
+        "rate": 1.5,
+        "tone": "calm"
+      },
+      "mode": "live",
+      "on_first_read": [
+        {
+          "agent": "",
+          "args": [],
+          "branch": "",
+          "command": "",
+          "fact_key": "",
+          "kind": "unlock_topic",
+          "on_fail": "",
+          "outcome": "",
+          "reads": [],
+          "span": {
+            "col": 5,
+            "end_col": 32,
+            "end_line": 13,
+            "line": 13
+          },
+          "target": null,
+          "target_text": "",
+          "topic": "storm_rumour",
+          "value": null,
+          "value_text": "",
+          "verb": ""
+        }
+      ],
+      "on_read": [
+        {
+          "agent": "",
+          "args": [],
+          "branch": "",
+          "command": "",
+          "fact_key": "player.coins",
+          "kind": "inc",
+          "on_fail": "",
+          "outcome": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 5,
+            "end_col": 28,
+            "end_line": 15,
+            "line": 15
+          },
+          "target": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 11,
+              "end_col": 23,
+              "end_line": 15,
+              "line": 15
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "target_text": "player.coins",
+          "topic": "",
+          "value": {
+            "reads": [],
+            "source_span": {
+              "col": 27,
+              "end_col": 28,
+              "end_line": 15,
+              "line": 15
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "value_text": "1",
+          "verb": ""
+        }
+      ],
+      "pages": [
+        {
+          "condition": {
+            "reads": [],
+            "source_span": {
+              "col": 13,
+              "end_col": 37,
+              "end_line": 9,
+              "line": 9
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "condition_text": "not filled(ferry_master)",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "live_plain",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 10,
+                    "text": "The tide is up."
+                  }
+                ],
+                "kind": "prose",
+                "line": 10
+              },
+              "secrecy": "",
+              "tags": [
+                "notice"
+              ]
+            },
+            {
+              "condition": {
+                "reads": [],
+                "source_span": {
+                  "col": 10,
+                  "end_col": 30,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "condition_text": "filled(ferry_master)",
+              "line_id": "live_when",
+              "prose": {
+                "col": 32,
+                "kids": [
+                  {
+                    "col": 32,
+                    "compiled": {
+                      "reads": [],
+                      "source_span": {
+                        "col": 33,
+                        "end_col": 58,
+                        "end_line": 11,
+                        "line": 11
+                      },
+                      "specificity": 1,
+                      "uses_chance": false
+                    },
+                    "kind": "value",
+                    "line": 11
+                  },
+                  {
+                    "col": 59,
+                    "kind": "text",
+                    "line": 11,
+                    "text": " is on the dock."
+                  }
+                ],
+                "kind": "prose",
+                "line": 11
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "open",
+      "tags": [
+        "paper"
+      ],
+      "title": "Live Note"
+    },
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "frozen_note",
+      "line_id": "frozen_title",
+      "meta": {},
+      "mode": "frozen",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "frozen_body",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "compiled": {
+                      "reads": [],
+                      "source_span": {
+                        "col": 9,
+                        "end_col": 29,
+                        "end_line": 20,
+                        "line": 20
+                      },
+                      "specificity": 1,
+                      "uses_chance": false
+                    },
+                    "else": {
+                      "col": 67,
+                      "kids": [
+                        {
+                          "col": 67,
+                          "kind": "text",
+                          "line": 20,
+                          "text": "To the chair."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 20
+                    },
+                    "kind": "if",
+                    "line": 20,
+                    "then": {
+                      "col": 30,
+                      "kids": [
+                        {
+                          "col": 30,
+                          "kind": "text",
+                          "line": 20,
+                          "text": "To "
+                        },
+                        {
+                          "col": 33,
+                          "compiled": {
+                            "reads": [],
+                            "source_span": {
+                              "col": 34,
+                              "end_col": 59,
+                              "end_line": 20,
+                              "line": 20
+                            },
+                            "specificity": 1,
+                            "uses_chance": false
+                          },
+                          "kind": "value",
+                          "line": 20
+                        },
+                        {
+                          "col": 60,
+                          "kind": "text",
+                          "line": 20,
+                          "text": "."
+                        }
+                      ],
+                      "kind": "prose",
+                      "line": 20
+                    }
+                  }
+                ],
+                "kind": "prose",
+                "line": 20
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Frozen Note"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [
+    {
+      "id": "copy_note",
+      "items": [
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "copy": "dock_letter",
+            "document": "frozen_note",
+            "fact_key": "",
+            "kind": "create_document",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [],
+            "span": {
+              "col": 3,
+              "end_col": 49,
+              "end_line": 23,
+              "line": 23
+            },
+            "target": null,
+            "target_text": "",
+            "topic": "",
+            "value": null,
+            "value_text": "",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 49,
+            "end_line": 23,
+            "line": 23
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 24,
+            "line": 24
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 24,
+        "line": 22
+      }
+    }
+  ]
+}

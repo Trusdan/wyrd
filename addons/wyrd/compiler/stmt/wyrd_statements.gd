@@ -123,8 +123,6 @@ func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
 	var document := WyrdDocumentDef.new()
 	document.take_span(node)
 	document.title = node.title
-	if not node.line_tag.is_empty():
-		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a line tag is not allowed on a document", node.start_line, node.start_col)
 	var items := node.head
 	var ident := _dotted_at(items, 0)
 	document.id = String(ident["name"])
@@ -133,6 +131,23 @@ func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs an id", node.start_line, node.start_col)
 		document.id = ""
 		return document
+	if _header_periodic(items):
+		return _compile_periodic_document(node, document, items, cursor)
+	return _compile_readable_document(node, document, items, cursor)
+
+
+func _header_periodic(items: Array[WyrdToken]) -> bool:
+	for token in items:
+		if token.kind != &"ident":
+			continue
+		if token.text == "publishes_by" or token.text == "every" or token.text == "delay":
+			return true
+	return false
+
+
+func _compile_periodic_document(node: WyrdNode, document: WyrdDocumentDef, items: Array[WyrdToken], cursor: int) -> WyrdDocumentDef:
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a line tag is not allowed on a document", node.start_line, node.start_col)
 	if not _is_word(items, cursor, "publishes_by"):
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs publishes_by", node.start_line, node.start_col)
 		document.id = ""
@@ -185,6 +200,9 @@ func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
 		if field == "fragment":
 			_document_fragment(child, document)
 			continue
+		if field == "text" or field == "meta" or field == "page" or field == "on_read" or field == "on_first_read":
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "readable field \"%s\" is not valid on a periodic document" % field, child.start_line, child.start_col)
+			continue
 		if field != "claim" and field != "fact" and field != "verb":
 			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unknown document field \"%s\"" % field, child.start_line, child.start_col)
 			continue
@@ -205,6 +223,246 @@ func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
 			continue
 		_document_fact(child, document, field, key)
 	return document
+
+
+func _compile_readable_document(node: WyrdNode, document: WyrdDocumentDef, items: Array[WyrdToken], cursor: int) -> WyrdDocumentDef:
+	document.mode = ""
+	document.line_id = _line_id(node, false)
+	document.tags = node.tags.duplicate()
+	document.secrecy = node.secrecy
+	if document.title.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs a title", node.start_line, node.start_col)
+	if cursor != items.size():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unexpected token on a document", items[cursor].line, items[cursor].col)
+	var seen := {}
+	var saw_page := false
+	for child in node.children:
+		var field := child.keyword
+		if field == "text":
+			if seen.has("text"):
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "duplicate document field \"text\"", child.start_line, child.start_col)
+				continue
+			seen["text"] = true
+			document.mode = _document_text(child)
+			continue
+		if field == "meta":
+			if seen.has("meta"):
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "duplicate document field \"meta\"", child.start_line, child.start_col)
+				continue
+			seen["meta"] = true
+			_document_meta(child, document)
+			continue
+		if field == "page":
+			saw_page = true
+			_document_page(child, document)
+			continue
+		if field == "on_first_read" or field == "on_read":
+			if seen.has(field):
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "duplicate document field \"%s\"" % field, child.start_line, child.start_col)
+				continue
+			seen[field] = true
+			var effects: Array[WyrdEffectDef] = document.on_first_read if field == "on_first_read" else document.on_read
+			_document_read_block(child, effects, document.reads)
+			continue
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unknown document field \"%s\"" % field, child.start_line, child.start_col)
+	if not seen.has("text"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs text:", node.start_line, node.start_col)
+	if not saw_page:
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs a page", node.start_line, node.start_col)
+	return document
+
+
+func _document_text(node: WyrdNode) -> String:
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document field \"text\" cannot contain a block", node.start_line, node.start_col)
+	var items := node.head
+	var cursor := 0
+	if cursor < items.size() and items[cursor].kind == &"colon":
+		cursor += 1
+	if cursor >= items.size() or items[cursor].kind != &"ident" or (items[cursor].text != "live" and items[cursor].text != "frozen"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "text: needs live or frozen", node.start_line, node.start_col)
+		return ""
+	if cursor + 1 != items.size():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "text: needs live or frozen", items[cursor + 1].line, items[cursor + 1].col)
+		return ""
+	return items[cursor].text
+
+
+func _document_meta(node: WyrdNode, document: WyrdDocumentDef) -> void:
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document field \"meta\" cannot contain a block", node.start_line, node.start_col)
+	var items := node.head
+	if items.is_empty() or items[0].kind != &"lbrace":
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "meta needs a literal", node.start_line, node.start_col)
+		return
+	var cursor := 1
+	while cursor < items.size() and items[cursor].kind != &"rbrace":
+		if items[cursor].kind == &"comma":
+			cursor += 1
+			continue
+		if items[cursor].kind != &"ident":
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "meta needs a literal", items[cursor].line, items[cursor].col)
+			return
+		var key := items[cursor].text
+		cursor += 1
+		if cursor >= items.size() or items[cursor].kind != &"colon":
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "meta needs a literal", node.start_line, node.start_col)
+			return
+		cursor += 1
+		var parsed := _meta_literal(items, cursor)
+		if not bool(parsed["ok"]):
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "meta needs a literal", int(parsed["line"]), int(parsed["col"]))
+			return
+		if document.meta.has(key):
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "duplicate meta key \"%s\"" % key, items[cursor - 2].line, items[cursor - 2].col)
+		else:
+			document.meta[key] = parsed["value"]
+		cursor = int(parsed["next"])
+	if cursor >= items.size() or items[cursor].kind != &"rbrace" or cursor + 1 != items.size():
+		var at := items[mini(cursor, items.size() - 1)]
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "meta needs a literal", at.line, at.col)
+
+
+func _meta_literal(items: Array[WyrdToken], start: int) -> Dictionary:
+	var line := 1
+	var col := 1
+	if start < items.size():
+		line = items[start].line
+		col = items[start].col
+	elif not items.is_empty():
+		line = items[items.size() - 1].line
+		col = items[items.size() - 1].col
+	var bad := {"col": col, "line": line, "next": start, "ok": false, "value": null}
+	if start >= items.size():
+		return bad
+	var token := items[start]
+	if token.kind == &"string":
+		return {"col": col, "line": line, "next": start + 1, "ok": true, "value": token.text}
+	if token.kind == &"int":
+		if start + 2 < items.size() and items[start + 1].kind == &"dot" and items[start + 2].kind == &"int":
+			var number := float("%s.%s" % [token.text, items[start + 2].text])
+			return {"col": col, "line": line, "next": start + 3, "ok": true, "value": number}
+		return {"col": col, "line": line, "next": start + 1, "ok": true, "value": int(token.text)}
+	if token.kind == &"minus" and start + 1 < items.size() and items[start + 1].kind == &"int":
+		return {"col": col, "line": line, "next": start + 2, "ok": true, "value": -int(items[start + 1].text)}
+	if token.kind == &"ident" and (token.text == "true" or token.text == "false"):
+		return {"col": col, "line": line, "next": start + 1, "ok": true, "value": token.text == "true"}
+	if token.kind == &"ident":
+		return {"col": col, "line": line, "next": start + 1, "ok": true, "value": StringName(token.text)}
+	return bad
+
+
+func _document_page(node: WyrdNode, document: WyrdDocumentDef) -> void:
+	var page := {
+		"col": node.start_col,
+		"condition": null,
+		"condition_text": "",
+		"line": node.start_line,
+		"paragraphs": [],
+	}
+	var items := node.head
+	if not items.is_empty():
+		if not _is_word(items, 0, "when"):
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "page needs when", node.start_line, node.start_col)
+		else:
+			var span := _span_text(items, 1, items.size())
+			page["condition_text"] = String(span["text"])
+			var built := _expr(String(span["text"]), int(span["line"]), int(span["col"]), _STORY, true, &"", document.reads)
+			page["condition"] = built["compiled"]
+	if node.children.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "page needs a paragraph", node.start_line, node.start_col)
+		document.pages.append(page)
+		return
+	for child in node.children:
+		page["paragraphs"].append(_document_paragraph(child, document))
+	document.pages.append(page)
+
+
+func _document_paragraph(node: WyrdNode, document: WyrdDocumentDef) -> Dictionary:
+	var paragraph := {
+		"col": node.start_col,
+		"condition": null,
+		"condition_text": "",
+		"line": node.start_line,
+		"line_id": _line_id(node, false),
+		"prose": null,
+		"secrecy": node.secrecy,
+		"tags": node.tags.duplicate(),
+	}
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a paragraph cannot contain a block", node.start_line, node.start_col)
+	if node.tags.has("voiced"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "voiced is not valid in a paragraph", node.start_line, node.start_col)
+	var tokens: Array[WyrdToken] = []
+	if node.keyword == "when":
+		var colon := _depth_colon(node.head)
+		if colon < 0:
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "when needs a condition", node.start_line, node.start_col)
+		else:
+			var span := _span_text(node.head, 0, colon)
+			paragraph["condition_text"] = String(span["text"])
+			if String(span["text"]).strip_edges().is_empty():
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "when needs a condition", node.start_line, node.start_col)
+			else:
+				var built := _expr(String(span["text"]), int(span["line"]), int(span["col"]), _STORY, true, &"", document.reads)
+				paragraph["condition"] = built["compiled"]
+			for i in range(colon + 1, node.head.size()):
+				tokens.append(node.head[i])
+	else:
+		if node.lead != null:
+			tokens.append(node.lead)
+		for token in node.head:
+			tokens.append(token)
+	paragraph["prose"] = _interp(tokens, document.reads)
+	_reject_paragraph_variants(paragraph["prose"])
+	return paragraph
+
+
+func _depth_colon(items: Array[WyrdToken]) -> int:
+	var depth := 0
+	for i in items.size():
+		var kind := items[i].kind
+		if kind == &"lparen" or kind == &"lbrace" or kind == &"lbracket":
+			depth += 1
+		elif kind == &"rparen" or kind == &"rbrace" or kind == &"rbracket":
+			depth = maxi(depth - 1, 0)
+		elif kind == &"colon" and depth == 0:
+			return i
+	return -1
+
+
+func _reject_paragraph_variants(node: WyrdExprNode) -> void:
+	if node == null:
+		return
+	if node.kind == &"variants":
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "variants are not valid in a paragraph", node.line, node.col)
+	_reject_paragraph_variants(node.a)
+	_reject_paragraph_variants(node.b)
+	_reject_paragraph_variants(node.c)
+	for kid in node.kids:
+		_reject_paragraph_variants(kid)
+
+
+func _document_read_block(node: WyrdNode, effects: Array[WyrdEffectDef], reads: Array[StringName]) -> void:
+	_line_id(node, false)
+	if not node.head.is_empty() and not (node.head.size() == 1 and node.head[0].kind == &"colon"):
+		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "on_read needs a block of effects" if node.keyword == "on_read" else "on_first_read needs a block of effects", node.start_line, node.start_col)
+	for child in node.children:
+		if child.keyword == "on_fail":
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "on_fail is not valid in a document", child.start_line, child.start_col)
+			continue
+		var effect := _effect(child)
+		if effect == null:
+			continue
+		if not effect.on_fail.is_empty():
+			_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "on_fail is not valid in a document", effect.line, effect.col)
+		effects.append(effect)
+		WyrdStmtSpan.add_reads(reads, effect.reads)
+		for nested in child.children:
+			if nested.keyword == "on_fail":
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "on_fail is not valid in a document", nested.start_line, nested.start_col)
+			else:
+				_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "unknown document field \"%s\"" % nested.keyword, nested.start_line, nested.start_col)
 
 
 func _document_fact(node: WyrdNode, document: WyrdDocumentDef, field: String, key: String) -> void:
@@ -1629,6 +1887,11 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 			if not _adjust_baseline(effect, items):
 				_no_block(node)
 				return null
+		"create":
+			effect.kind = &"create_document"
+			if not _create_document(effect, items):
+				_no_block(node)
+				return null
 		_:
 			_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
 			_no_block(node)
@@ -1636,11 +1899,37 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 	return effect
 
 
+func _create_document(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var message := "create document needs <doc_id> copy <copy_id>"
+	if items.size() < 3 or items[1].kind != &"ident" or items[1].text != "document":
+		_unknown_msg_at(effect, message)
+		return false
+	var named := _dotted_at(items, 2)
+	var doc := String(named["name"])
+	var cursor := int(named["next"])
+	if doc.is_empty() or not _is_word(items, cursor, "copy"):
+		_unknown_msg_at(effect, message)
+		return false
+	cursor += 1
+	var copy := ""
+	if cursor < items.size() and items[cursor].kind == &"string":
+		copy = items[cursor].text
+		cursor += 1
+	else:
+		var copy_named := _dotted_at(items, cursor)
+		copy = String(copy_named["name"])
+		cursor = int(copy_named["next"])
+	if copy.is_empty() or cursor != items.size():
+		_unknown_msg_at(effect, message)
+		return false
+	effect.document_id = doc
+	effect.copy_id = copy
+	return true
+
+
 func _rejected(items: Array[WyrdToken]) -> String:
 	var first := items[0].text
 	var second := items[1].text if items.size() > 1 and items[1].kind == &"ident" else ""
-	if first == "create" and second == "document":
-		return "create document"
 	if first == "record" and second != "deed":
 		return "record"
 	if first == "unlock" and second != "topic":

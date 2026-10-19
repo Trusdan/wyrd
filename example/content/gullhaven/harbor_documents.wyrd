@@ -1,0 +1,30 @@
+// [EXAMPLE CONTENT] Gullhaven readable documents. An invented fishing village, not a host game.
+language 1
+
+document ferry_schedule "Ferry Schedule" #line:sched_title
+  text: live
+  page
+    The ferry leaves when the tide turns. #line:sched_plain
+    {if outcome(ferry_toll, crossing) == done}The toll is paid and the ferry runs.{else}The toll is still due.{end} #line:sched_toll
+    when not filled(ferry_master): The ferry master's chair is empty. #line:sched_empty
+
+document reeve_letter "A Sealed Letter" #line:letter_title
+  text: frozen
+  page
+    {if filled(harbor_reeve)}To {holder(harbor_reeve).name}: the levy can wait.{else}To the empty chair: the levy can wait.{end} #line:letter_body
+  on_first_read:
+    ~ unlock topic storm_rumour
+
+quest dock_letter "The Dock Letter"
+  start when false
+  on_empty: wait
+  slot tavern = tavern_owner mode: live
+
+  stage handoff
+    scene dock.letter_talk with tavern
+    waits_until false
+
+scene dock.letter_talk
+  ~ create document reeve_letter copy dock_letter
+  when has_read(player, reeve_letter): tavern: You have read the reeve's letter. #line:letter_heard
+  -> end

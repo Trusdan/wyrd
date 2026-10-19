@@ -1,14 +1,6 @@
 {
   "diagnostics": [
     {
-      "code": "E_RESERVED_WORD",
-      "col": 14,
-      "line": 23,
-      "message": "reserved word \"document\"",
-      "path": "res://tests/golden/statements/st_err_effects.wyrd",
-      "severity": "error"
-    },
-    {
       "code": "E_WRITE_RESOLVED",
       "col": 11,
       "line": 10,
@@ -113,10 +105,10 @@
       "severity": "error"
     },
     {
-      "code": "E_EFFECT_NOT_IN_SLICE",
-      "col": 7,
+      "code": "E_STMT_UNKNOWN",
+      "col": 5,
       "line": 23,
-      "message": "effect \"create document\" is not in this slice",
+      "message": "create document needs <doc_id> copy <copy_id>",
       "path": "res://tests/golden/statements/st_err_effects.wyrd",
       "severity": "error"
     },

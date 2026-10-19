@@ -7,6 +7,7 @@ extends RefCounted
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
 ## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], [code]sequence[/code], [code]storylet[/code], or [code]document[/code] block, lines stay code.
+## The lines of a [code]page[/code] block are prose, like dialogue. A [code]when <cond>:[/code] prefix on those lines stays code up to the first colon at depth 0.
 ## A storylet prose line starts with a dash. A dash before [code]([/code] stays a label.
 ## Elsewhere a line that starts
 ## with an identifier and a colon is prose: [code]{{[/code] is a literal [code]{[/code],
@@ -104,7 +105,13 @@ func _lex_line(line: String, line_no: int) -> void:
 	var code_block := parent == "facts" or parent == "events" or parent == "role" or parent == "sequence" or parent == "document" or story_parent
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
-	if story_parent and _dash_prose(content):
+	if parent == "page":
+		var when_at := _page_when_colon(content)
+		if when_at >= 0:
+			first_ident = _lex_page_when(content, line_no, origin, when_at)
+		else:
+			first_ident = _lex_page_prose(content, line_no, origin)
+	elif story_parent and _dash_prose(content):
 		first_ident = _lex_dash_prose(content, line_no, origin)
 	elif not code_block and _variant_colon(content) >= 0:
 		first_ident = _lex_variant_line(content, line_no, origin)
@@ -198,6 +205,47 @@ func _lex_when_line(content: String, line_no: int, origin: int) -> String:
 	cursor = _read_prose(content, cursor, line_no, origin, false)
 	_finish_suffix(content, cursor, line_no, origin)
 	return first
+
+
+func _lex_page_when(content: String, line_no: int, origin: int, colon_at: int) -> String:
+	var first := _lex_code_line(content.substr(0, colon_at + 1), line_no, origin)
+	var cursor := colon_at + 1
+	while cursor < content.length() and (content[cursor] == " " or content[cursor] == "\t"):
+		cursor += 1
+	cursor = _read_prose(content, cursor, line_no, origin, false)
+	_finish_suffix(content, cursor, line_no, origin)
+	return first
+
+
+func _lex_page_prose(content: String, line_no: int, origin: int) -> String:
+	var cursor := _read_prose(content, 0, line_no, origin, false)
+	_finish_suffix(content, cursor, line_no, origin)
+	return ""
+
+
+func _page_when_colon(content: String) -> int:
+	var index := 0
+	while index < content.length() and (content[index] == " " or content[index] == "\t"):
+		index += 1
+	if index >= content.length() or not _is_ident_start(content[index]):
+		return -1
+	var end := _ident_end(content, index)
+	if content.substr(index, end - index) != "when":
+		return -1
+	index = end
+	var depth := 0
+	while index < content.length():
+		if content.substr(index, 2) == "//":
+			return -1
+		var ch := content[index]
+		if ch == "(" or ch == "[" or ch == "{":
+			depth += 1
+		elif ch == ")" or ch == "]" or ch == "}":
+			depth = maxi(depth - 1, 0)
+		elif ch == ":" and depth == 0:
+			return index
+		index += 1
+	return -1
 
 
 func _when_speaker_colon(content: String) -> int:
@@ -545,6 +593,8 @@ func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = 
 		return
 	if _effect_verb(word):
 		return
+	if _create_document(word):
+		return
 	if _RESERVED.has(word):
 		_error(WyrdDiagnostic.E_RESERVED_WORD, "reserved word \"%s\"" % word, line_no, col)
 
@@ -565,6 +615,15 @@ func _document_word(content: String, word: String, leading: bool, first_ident: S
 ## [code]believe[/code], [code]declare[/code], [code]retract[/code], [code]learn[/code],
 ## and [code]forget[/code] stay reserved as identifiers. They are legal only as the
 ## effect verb immediately after [code]~[/code].
+## [code]document[/code] is legal as the word after [code]~ create[/code].
+func _create_document(word: String) -> bool:
+	if word != "document" or _tokens.size() < 3:
+		return false
+	var create_tok := _tokens[_tokens.size() - 2]
+	var tilde_tok := _tokens[_tokens.size() - 3]
+	return create_tok.kind == &"ident" and create_tok.text == "create" and tilde_tok.kind == &"tilde"
+
+
 func _effect_verb(word: String) -> bool:
 	if word != "believe" and word != "declare" and word != "retract" and word != "learn" and word != "forget":
 		return false

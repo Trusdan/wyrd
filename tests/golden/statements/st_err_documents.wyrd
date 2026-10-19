@@ -1,0 +1,55 @@
+language 1
+
+document bare
+  text: live
+  page
+    Hello.
+
+document missing_text "Title"
+  page
+    Hello.
+
+document twice "Title"
+  text: live
+  text: frozen
+  page
+    Hello.
+
+document mixed "Title" publishes_by guild every 1 hour delay 1 hour
+  text: live
+
+document empty_page "Title"
+  text: live
+  page
+
+document bad_meta "Title"
+  text: live
+  meta { n: holder(ferry) }
+  page
+    Hello.
+
+document variants "Title"
+  text: live
+  page
+    {holder(ferry)|variants} stays.
+
+document voiced "Title"
+  text: live
+  page
+    Spoken. #tag:voiced
+
+document failed "Title"
+  text: frozen
+  page
+    Hello.
+  on_read:
+    ~ do ring() on_fail -> later
+
+document kept "Kept"
+  text: frozen
+  page
+    Hello.
+
+scene bad
+  ~ create document note
+  -> end

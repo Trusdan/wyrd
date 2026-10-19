@@ -162,6 +162,13 @@ func run_one(effect: WyrdEffectDef) -> String:
 				push_error("WyrdEffects: no role runner")
 			else:
 				runtime.roles.vacate_from_content(StringName(effect.role))
+		&"create_document":
+			if effect.document_id.is_empty() or effect.copy_id.is_empty():
+				push_error("WyrdEffects: create document needs a document and a copy")
+			elif runtime.documents == null:
+				push_error("WyrdEffects: no document store")
+			else:
+				runtime.documents.create_copy(StringName(effect.document_id), effect.copy_id, {}, false)
 		&"adjust_baseline":
 			if runtime.social == null:
 				push_error("WyrdEffects: no social graph")

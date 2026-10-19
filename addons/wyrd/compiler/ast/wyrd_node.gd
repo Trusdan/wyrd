@@ -10,6 +10,9 @@ extends RefCounted
 
 var kind: StringName = &"line"
 var keyword: String = ""
+## The token [member keyword] was taken from. Paragraph prose needs it back.
+## Parse goldens do not print it.
+var lead: WyrdToken = null
 var head: Array[WyrdToken] = []
 var title: String = ""
 var line_tag: String = ""

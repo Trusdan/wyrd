@@ -9,7 +9,7 @@ extends WyrdStmtSpan
 ## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code],
 ## [code]retract[/code], [code]learn[/code], [code]forget[/code],
 ## [code]start_quest[/code], [code]advance[/code], [code]assign_role[/code],
-## [code]vacate_role[/code], or [code]adjust_baseline[/code].
+## [code]vacate_role[/code], [code]adjust_baseline[/code], or [code]create_document[/code].
 ## [member quest] and [member stage] are the quest-flow target.
 ## [member role] is the role id. [member entity] is the assignee.
 ## [member axis], [member a], and [member b] are the baseline edge.
@@ -44,3 +44,6 @@ var branch: String = ""
 var outcome: String = ""
 var on_fail: String = ""
 var args: Array = []
+## [code]create_document[/code] names the frozen document and the copy id.
+var document_id: String = ""
+var copy_id: String = ""
