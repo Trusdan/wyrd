@@ -164,6 +164,13 @@ func _expect(case: Dictionary) -> Dictionary:
 				row["waiting"] = "on_empty"
 		return row
 	if role == "ferry_master":
+		if locked and action == "replace":
+			row["state"] = "default"
+			row["reason"] = "holder"
+			row["slot_holder"] = "ferry_master"
+			row["holder"] = "bell_warden"
+			row["status"] = "default"
+			return row
 		if locked:
 			row["state"] = "locked_gone"
 			row["slot_holder"] = "ferry_master"
@@ -171,14 +178,10 @@ func _expect(case: Dictionary) -> Dictionary:
 				row["reason"] = "frozen_dead"
 				row["holder"] = "ferry_master"
 				row["status"] = "default"
-			elif action == "vacate":
+			else:
 				row["reason"] = "frozen_vacated"
 				row["holder"] = "dock_apprentice"
 				row["status"] = "successor"
-			else:
-				row["reason"] = "frozen_vacated"
-				row["holder"] = "bell_warden"
-				row["status"] = "default"
 			if stage == "pay_toll":
 				row["variant"] = "ferry.locked_gone"
 				row["journal"] = "j_ft_gone"

@@ -8,8 +8,12 @@ extends WyrdStmtSpan
 ## [code]unlock_topic[/code], [code]do[/code], [code]outcome[/code],
 ## [code]believe[/code], [code]unbelieve[/code], [code]declare[/code],
 ## [code]retract[/code], [code]learn[/code], [code]forget[/code],
-## [code]start_quest[/code], or [code]advance[/code].
+## [code]start_quest[/code], [code]advance[/code], [code]assign_role[/code],
+## [code]vacate_role[/code], or [code]adjust_baseline[/code].
 ## [member quest] and [member stage] are the quest-flow target.
+## [member role] is the role id. [member entity] is the assignee.
+## [member axis], [member a], and [member b] are the baseline edge.
+## The amount of [code]adjust_baseline[/code] is [member value].
 ## [member agent] is the belief or knowledge agent, or the group id.
 ## A deed with [code]reveals[/code] stores the fact on [member fact_key] and the
 ## claim on [member value]. [code]statement: true[/code] stays in [member args].
@@ -28,6 +32,14 @@ var command: String = ""
 var topic: String = ""
 var quest: String = ""
 var stage: String = ""
+var role: String = ""
+var entity: WyrdCompiledCondition = null
+var entity_text: String = ""
+var axis: String = ""
+var a: WyrdCompiledCondition = null
+var a_text: String = ""
+var b: WyrdCompiledCondition = null
+var b_text: String = ""
 var branch: String = ""
 var outcome: String = ""
 var on_fail: String = ""

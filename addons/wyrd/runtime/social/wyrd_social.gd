@@ -39,6 +39,8 @@ var enqueue_cache: Callable = Callable()
 var on_cache: Callable = Callable()
 ## [code]() -> bool[/code]. When this is valid and false, cache hits do not build a trace row.
 var tracing_of: Callable = Callable()
+## [code](fields)[/code]. Logs one [code]baseline_adjust[/code] line. Not saved.
+var trace_of: Callable = Callable()
 var _target_cache: Dictionary = {}
 var _target_rev: int = -1
 
@@ -199,6 +201,43 @@ func targets(source: StringName, kind: StringName) -> PackedStringArray:
 func set_baseline(source: StringName, target: StringName, axis_name: StringName, value: float) -> void:
 	_baseline[_edge(source, target, axis_name)] = value
 	_touch()
+
+
+## Adds [param n] to the stored baseline. A missing baseline counts as 0.
+## Zero does not touch the cache. Kind scale does not apply. Load does not call this.
+func adjust_baseline(a: StringName, b: StringName, axis_name: StringName, n: float) -> bool:
+	if a == &"" or b == &"":
+		_trace_adjust(a, b, axis_name, 0.0, 0.0, false, "no_entity")
+		push_warning("WyrdSocial.adjust_baseline: missing entity")
+		return false
+	var old := _base(a, b, axis_name)
+	if a == b:
+		_trace_adjust(a, b, axis_name, old, old, false, "self_edge")
+		push_warning("WyrdSocial.adjust_baseline: \"%s\" is a self edge" % String(a))
+		return false
+	if n == 0.0:
+		_trace_adjust(a, b, axis_name, old, old, false, "zero")
+		push_warning("WyrdSocial.adjust_baseline: zero")
+		return false
+	var next := old + n
+	set_baseline(a, b, axis_name, next)
+	_trace_adjust(a, b, axis_name, old, next, true, "adjusted")
+	return true
+
+
+func _trace_adjust(a: StringName, b: StringName, axis_name: StringName, old: float, next: float, ok: bool, reason: String) -> void:
+	if not trace_of.is_valid():
+		return
+	trace_of.call({
+		"a": String(a),
+		"axis": String(axis_name),
+		"b": String(b),
+		"from": str(old),
+		"ok": "true" if ok else "false",
+		"reason": reason,
+		"to": str(next),
+		"who": String(a),
+	})
 
 
 ## A missing baseline is a no-op. Absence is the same as a baseline of 0.

@@ -18,6 +18,9 @@ func test_dock_errand_plays_both_routes() -> void:
 	assert_false(runtime.dialogue.is_open())
 	assert_eq(runtime.quests.status("dock_errand"), &"active")
 	assert_eq(runtime.quests.stage("dock_errand"), "asked")
+	assert_eq(_baseline(runtime, "tavern_owner", "player", "affinity"), 5.0)
+	assert_eq(String(runtime.roles.holder(&"dock_runner")), "dock_apprentice")
+	assert_eq(String(runtime.roles.binding_status(&"dock_runner")), "successor")
 	var first: Dictionary = runtime.quests.journal("dock_errand")[0]
 	assert_eq(first["id"], "j_errand_asked")
 	assert_eq(String(first["text"]), "A net on the dock needs a hand.")
@@ -34,3 +37,14 @@ func test_dock_errand_plays_both_routes() -> void:
 	var second: Dictionary = runtime.quests.journal("dock_errand")[1]
 	assert_eq(second["id"], "j_errand_sent")
 	assert_eq(String(second["text"]), "The net is sent up the dock.")
+	assert_eq(String(runtime.roles.holder(&"dock_runner")), "")
+	assert_eq(String(runtime.roles.binding_status(&"dock_runner")), "empty")
+	assert_eq(_baseline(runtime, "tavern_owner", "player", "affinity"), 5.0)
+
+
+func _baseline(runtime: WyrdRuntime, source: String, target: String, axis_name: String) -> float:
+	for item in runtime.social.export_state()["baselines"]:
+		var row: Dictionary = item
+		if str(row["source"]) == source and str(row["target"]) == target and str(row["axis"]) == axis_name:
+			return float(row["value"])
+	return 0.0

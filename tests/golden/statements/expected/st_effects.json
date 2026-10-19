@@ -29,8 +29,8 @@
       ],
       "span": {
         "col": 1,
-        "end_col": 32,
-        "end_line": 24,
+        "end_col": 69,
+        "end_line": 28,
         "line": 8
       },
       "stages": [
@@ -693,6 +693,164 @@
               "value": null,
               "value_text": "",
               "verb": ""
+            },
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "entity": {
+                "reads": [],
+                "source_span": {
+                  "col": 35,
+                  "end_col": 50,
+                  "end_line": 25,
+                  "line": 25
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "entity_text": "dock_apprentice",
+              "fact_key": "",
+              "kind": "assign_role",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "role": "ferry_master",
+              "span": {
+                "col": 5,
+                "end_col": 50,
+                "end_line": 25,
+                "line": 25
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "entity": {
+                "reads": [],
+                "source_span": {
+                  "col": 35,
+                  "end_col": 48,
+                  "end_line": 26,
+                  "line": 26
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "entity_text": "holder(ferry)",
+              "fact_key": "",
+              "kind": "assign_role",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "role": "ferry_master",
+              "span": {
+                "col": 5,
+                "end_col": 48,
+                "end_line": 26,
+                "line": 26
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "vacate_role",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [],
+              "role": "ferry_master",
+              "span": {
+                "col": 5,
+                "end_col": 31,
+                "end_line": 27,
+                "line": 27
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            },
+            {
+              "a": {
+                "reads": [],
+                "source_span": {
+                  "col": 32,
+                  "end_col": 44,
+                  "end_line": 28,
+                  "line": 28
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "a_text": "tavern_owner",
+              "agent": "",
+              "args": [],
+              "axis": "affinity",
+              "b": {
+                "reads": [],
+                "source_span": {
+                  "col": 46,
+                  "end_col": 52,
+                  "end_line": 28,
+                  "line": 28
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "b_text": "player",
+              "branch": "",
+              "command": "",
+              "fact_key": "",
+              "kind": "adjust_baseline",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 69,
+                "end_line": 28,
+                "line": 28
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 57,
+                  "end_col": 69,
+                  "end_line": 28,
+                  "line": 28
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "player.coins",
+              "verb": ""
             }
           ],
           "id": "pay",
@@ -705,8 +863,8 @@
           "scenes": [],
           "span": {
             "col": 3,
-            "end_col": 32,
-            "end_line": 24,
+            "end_col": 69,
+            "end_line": 28,
             "line": 10
           },
           "transitions": [],

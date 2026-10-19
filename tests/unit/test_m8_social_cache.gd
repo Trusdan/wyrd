@@ -155,6 +155,31 @@ func test_cache_refresh_rebuilds_and_a_fresh_read_skips() -> void:
 	assert_gt(queued, 0)
 
 
+func test_adjust_baseline_drops_entries_and_zero_does_not() -> void:
+	var runtime := _open()
+	runtime.social.set_baseline(&"ada", &"bea", &"affinity", 4.0)
+	runtime.social.set_kind(&"ada", &"bea", &"friend")
+	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 4.0)
+	var reputation := runtime.social.reputation(&"bea", &"ada")
+	var filled := runtime.social.cache_entries()
+	assert_gt(filled, 0)
+	runtime.trace.enabled = true
+	assert_false(runtime.social.adjust_baseline(&"ada", &"bea", &"affinity", 0.0))
+	assert_eq(runtime.social.cache_entries(), filled)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
+	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 4.0)
+	assert_push_warning("zero")
+	runtime.trace.clear()
+	assert_true(runtime.social.adjust_baseline(&"ada", &"bea", &"affinity", 5.0))
+	assert_eq(runtime.social.cache_entries(), 0)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), filled)
+	runtime.tick(0)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
+	assert_gt(runtime.social.cache_entries(), 0)
+	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 9.0)
+	assert_eq(runtime.social.reputation(&"bea", &"ada"), reputation)
+
+
 func test_social_cache_trace_filters_and_load_is_quiet() -> void:
 	var runtime := _boot(_PATH)
 	runtime.social.set_baseline(&"ferry", &"player", &"affinity", 3.0)

@@ -11,6 +11,8 @@ extends RefCounted
 ## the stored argument text, because the expression emitter does not push a set
 ## value. [code]start_quest[/code] and [code]advance[/code] call
 ## [method WyrdQuestRunner.start] and [method WyrdQuestRunner.advance].
+## [code]assign_role[/code] and [code]vacate_role[/code] call the content role
+## entry points. [code]adjust_baseline[/code] calls [method WyrdSocial.adjust_baseline].
 ## Out-of-slice effects cannot appear here; the compiler rejects them.
 
 signal topic_unlocked(topic: StringName)
@@ -137,6 +139,30 @@ func run_one(effect: WyrdEffectDef) -> String:
 				push_error("WyrdEffects: no quest runner")
 			else:
 				return runtime.quests.advance(effect.quest, effect.stage)
+		&"assign_role":
+			if runtime.roles == null:
+				push_error("WyrdEffects: no role runner")
+			else:
+				runtime.roles.assign_from_content(StringName(effect.role), _party(effect.entity, effect.entity_text))
+		&"vacate_role":
+			if runtime.roles == null:
+				push_error("WyrdEffects: no role runner")
+			else:
+				runtime.roles.vacate_from_content(StringName(effect.role))
+		&"adjust_baseline":
+			if runtime.social == null:
+				push_error("WyrdEffects: no social graph")
+			else:
+				var amount: Variant = runtime.eval_value(effect.value)
+				if not (amount is int) and not (amount is float):
+					push_error("WyrdEffects: adjust baseline needs a number")
+				else:
+					runtime.social.adjust_baseline(
+						_party(effect.a, effect.a_text),
+						_party(effect.b, effect.b_text),
+						StringName(effect.axis),
+						float(amount)
+					)
 		_:
 			push_error("WyrdEffects: effect \"%s\" is not in this slice" % String(effect.kind))
 	return ""
@@ -300,6 +326,41 @@ func _text(args: Dictionary, name: String) -> String:
 	if not args.has(name):
 		return ""
 	return String((args[name] as Dictionary)["text"])
+
+
+## A bare slot name of the running quest is that slot's holder.
+## [code]holder()[/code], [code]player[/code], and an entity id are the evaluated name.
+func _party(compiled: WyrdCompiledCondition, text: String) -> StringName:
+	var bare := text.strip_edges()
+	if _bare_name(bare) and _is_slot(bare):
+		return runtime.roles.slot_holder(quest_id, StringName(bare))
+	var value: Variant = runtime.eval_value(compiled)
+	if value == null:
+		return &""
+	if value is String or value is StringName:
+		return StringName(str(value))
+	return &""
+
+
+func _bare_name(text: String) -> bool:
+	if text.is_empty() or text.contains("(") or text.contains(" ") or text.contains("."):
+		return false
+	return true
+
+
+func _is_slot(name: String) -> bool:
+	if quest_id.is_empty() or runtime == null or runtime.content() == null:
+		return false
+	var content := runtime.content()
+	if not content.quests.has(quest_id):
+		return false
+	var quest := content.quests[quest_id] as WyrdQuestDef
+	if quest == null:
+		return false
+	for slot in quest.slots:
+		if slot.name == name:
+			return true
+	return false
 
 
 func _name(value: Variant) -> StringName:

@@ -12,6 +12,7 @@ var _commands: WyrdCommandSchema
 var _note_path: String = ""
 var _diagnostics: WyrdDiagnostics
 var _scenes: Dictionary = {}
+var _roles: Dictionary = {}
 var _skip_commands_note: bool = false
 
 
@@ -42,6 +43,7 @@ func link(
 	_host_steps(units)
 	_quests(units, pack)
 	_quest_flow(units)
+	_role_refs(units)
 	_scenes_of(units)
 	_commands_of(units)
 	_warn_holder_gaps(units)
@@ -105,6 +107,7 @@ func _index_symbols(units: Array) -> void:
 				)
 				continue
 			_scenes[scene.id] = {"col": scene.col, "line": scene.line, "path": path, "scene": scene}
+	_roles = roles
 
 
 func _claim(table: Dictionary, id: String, path: String, line: int, col: int, code: StringName, noun: String) -> void:
@@ -273,6 +276,57 @@ func _flow_stage(stage: WyrdStageDef, path: String, stages_of: Dictionary) -> vo
 			continue
 		for child in region.stages:
 			_flow_stage(child, path, stages_of)
+
+
+func _role_refs(units: Array) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_role_stage(stage, path)
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_role_effect(effect, path)
+			for item in scene.items:
+				if item.choice == null:
+					continue
+				for effect in item.choice.effects:
+					_role_effect(effect, path)
+
+
+func _role_stage(stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		_role_effect(effect, path)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_role_effect(effect, path)
+	for variant in stage.variants:
+		if variant.body != null:
+			_role_stage(variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_role_stage(child, path)
+
+
+func _role_effect(effect: WyrdEffectDef, path: String) -> void:
+	if effect.kind != &"assign_role" and effect.kind != &"vacate_role":
+		return
+	if effect.role.is_empty() or _roles.has(effect.role):
+		return
+	_diagnostics.add(
+		WyrdDiagnostic.W_ROLE_UNKNOWN,
+		"unknown role \"%s\"" % effect.role,
+		path,
+		effect.line,
+		effect.col,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
 
 
 func _flow_effect(effect: WyrdEffectDef, path: String, stages_of: Dictionary) -> void:

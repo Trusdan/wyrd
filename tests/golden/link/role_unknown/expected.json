@@ -1,0 +1,299 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_ROLE_UNKNOWN",
+      "col": 5,
+      "line": 14,
+      "message": "unknown role \"missing_role\"",
+      "path": "res://tests/golden/link/role_unknown/quest.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_ROLE_UNKNOWN",
+      "col": 5,
+      "line": 15,
+      "message": "unknown role \"missing_role\"",
+      "path": "res://tests/golden/link/role_unknown/quest.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "3d6cecb9602abfe3",
+        "path": "res://tests/golden/link/role_unknown/quest.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "role_unknown",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/role_unknown/quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              },
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "entity": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player"
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "fact_key": "",
+                "kind": "assign_role",
+                "on_fail": "",
+                "outcome": "",
+                "role": "known_role",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "entity": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player"
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "fact_key": "",
+                "kind": "assign_role",
+                "on_fail": "",
+                "outcome": "",
+                "role": "missing_role",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "vacate_role",
+                "on_fail": "",
+                "outcome": "",
+                "role": "missing_role",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "a": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player"
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "agent": "",
+                "args": [],
+                "axis": "affinity",
+                "b": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "tavern"
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "adjust_baseline",
+                "on_fail": "",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "id": "pay",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "roles": [
+      {
+        "default_holder": "",
+        "eligibility": "",
+        "file": "res://tests/golden/link/role_unknown/quest.wyrd",
+        "id": "known_role",
+        "kinds": [],
+        "scope": "world",
+        "scope_id": "",
+        "strategy": "none",
+        "succession": "none",
+        "succession_arg": "",
+        "vacancy": "hold",
+        "visibility": "public"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/role_unknown/quest.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/role_unknown/quest.wyrd",
+              "id": "gate.pay",
+              "kind": "effect",
+              "line": 16
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/role_unknown/quest.wyrd",
+              "id": "gate.pay",
+              "kind": "effect",
+              "line": 12
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

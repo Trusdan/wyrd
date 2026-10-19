@@ -229,6 +229,17 @@ static func _effect(effect: WyrdEffectDef) -> Dictionary:
 		data["quest"] = effect.quest
 	if effect.kind == &"advance":
 		data["stage"] = effect.stage
+	if effect.kind == &"assign_role" or effect.kind == &"vacate_role":
+		data["role"] = effect.role
+	if effect.kind == &"assign_role":
+		data["entity"] = _cond(effect.entity)
+		data["entity_text"] = effect.entity_text
+	if effect.kind == &"adjust_baseline":
+		data["a"] = _cond(effect.a)
+		data["a_text"] = effect.a_text
+		data["axis"] = effect.axis
+		data["b"] = _cond(effect.b)
+		data["b_text"] = effect.b_text
 	return data
 
 

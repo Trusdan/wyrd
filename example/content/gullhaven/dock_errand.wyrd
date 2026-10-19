@@ -9,5 +9,6 @@ quest dock_errand "The Dock Errand"
     waits_until false
 
   stage sent
+    ~ vacate role dock_runner
     journal: The net is sent up the dock. #line:j_errand_sent
     waits_until false

@@ -440,6 +440,14 @@ static func _effects(effects: Array) -> Array:
 			row["quest"] = effect.quest
 		if effect.kind == &"advance":
 			row["stage"] = effect.stage
+		if effect.kind == &"assign_role" or effect.kind == &"vacate_role":
+			row["role"] = effect.role
+		if effect.kind == &"assign_role":
+			row["entity"] = _cond(effect.entity)
+		if effect.kind == &"adjust_baseline":
+			row["a"] = _cond(effect.a)
+			row["axis"] = effect.axis
+			row["b"] = _cond(effect.b)
 		rows.append(row)
 	return rows
 

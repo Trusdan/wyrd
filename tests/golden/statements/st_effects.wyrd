@@ -22,3 +22,7 @@ quest ferry_toll "The Ferry Toll"
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> nowhere
     ~ start quest ferry_toll
     ~ advance ferry_toll to pay
+    ~ assign role ferry_master to dock_apprentice
+    ~ assign role ferry_master to holder(ferry)
+    ~ vacate role ferry_master
+    ~ adjust baseline affinity(tavern_owner, player) by player.coins

@@ -24,6 +24,8 @@ scene toll.offer_room
   * {has_tag(player, local)} [I have a place in town] -> declined #line:c_local
   * [Ask the dock errand] -> errand_ask #line:c_errand
     ~ start quest dock_errand
+    ~ adjust baseline affinity(tavern_owner, player) by 5
+    ~ assign role dock_runner to dock_apprentice
   * [Send the errand on] -> errand_send #line:c_errand_on
     ~ advance dock_errand to sent
   - (took)

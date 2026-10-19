@@ -1525,6 +1525,33 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 			if not _advance_to(effect, items):
 				_no_block(node)
 				return null
+		"assign":
+			if items.size() < 2 or items[1].text != "role":
+				_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
+				_no_block(node)
+				return null
+			effect.kind = &"assign_role"
+			if not _assign_role(effect, items):
+				_no_block(node)
+				return null
+		"vacate":
+			if items.size() < 2 or items[1].text != "role":
+				_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
+				_no_block(node)
+				return null
+			effect.kind = &"vacate_role"
+			if not _vacate_role(effect, items):
+				_no_block(node)
+				return null
+		"adjust":
+			if items.size() < 2 or items[1].text != "baseline":
+				_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
+				_no_block(node)
+				return null
+			effect.kind = &"adjust_baseline"
+			if not _adjust_baseline(effect, items):
+				_no_block(node)
+				return null
 		_:
 			_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
 			_no_block(node)
@@ -1537,12 +1564,6 @@ func _rejected(items: Array[WyrdToken]) -> String:
 	var second := items[1].text if items.size() > 1 and items[1].kind == &"ident" else ""
 	if first == "lock" and second == "topic":
 		return "lock topic"
-	if first == "assign" and second == "role":
-		return "assign role"
-	if first == "vacate" and second == "role":
-		return "vacate role"
-	if first == "adjust" and second == "baseline":
-		return "adjust baseline"
 	if first == "create" and second == "document":
 		return "create document"
 	if first == "record" and second != "deed":
@@ -1754,6 +1775,75 @@ func _advance_to(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
 			return true
 	_unknown_msg_at(effect, "advance needs <quest> to <stage>")
 	return false
+
+
+func _assign_role(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var role := _dotted_at(items, 2)
+	var name := String(role["name"])
+	var at := int(role["next"])
+	if name.is_empty() or not _shape_ok(name) or at >= items.size() or items[at].text != "to":
+		_unknown_msg_at(effect, "assign role needs <role> to <entity>")
+		return false
+	var entity_span := _span_text(items, at + 1, items.size())
+	if String(entity_span["text"]).is_empty():
+		_unknown_msg_at(effect, "assign role needs <role> to <entity>")
+		return false
+	effect.role = name
+	effect.entity_text = String(entity_span["text"])
+	var expected := _command_expected(items, at + 1, items.size())
+	var entity := _expr(effect.entity_text, int(entity_span["line"]), int(entity_span["col"]), _STORY, false, expected, effect.reads)
+	effect.entity = entity["compiled"]
+	return true
+
+
+func _vacate_role(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var role := _dotted_at(items, 2)
+	var name := String(role["name"])
+	if name.is_empty() or not _shape_ok(name) or int(role["next"]) != items.size():
+		_unknown_msg_at(effect, "vacate role needs a role id")
+		return false
+	effect.role = name
+	return true
+
+
+func _adjust_baseline(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var axis := _dotted_at(items, 2)
+	var name := String(axis["name"])
+	var at := int(axis["next"])
+	if name.is_empty() or not _shape_ok(name) or at >= items.size() or items[at].kind != &"lparen":
+		_unknown_msg_at(effect, "adjust baseline needs <axis>(a, b) by <n>")
+		return false
+	var close := _closing(items, at, &"lparen", &"rparen")
+	if close < 0 or close + 1 >= items.size() or items[close + 1].text != "by" or close + 2 >= items.size():
+		_unknown_msg_at(effect, "adjust baseline needs <axis>(a, b) by <n>")
+		return false
+	var comma := _find(items, at + 1, &"comma", "")
+	var later := _find(items, comma + 1, &"comma", "") if comma >= 0 else -1
+	if comma < 0 or comma >= close or (later >= 0 and later < close):
+		_unknown_msg_at(effect, "adjust baseline needs <axis>(a, b) by <n>")
+		return false
+	var a_span := _span_text(items, at + 1, comma)
+	var b_span := _span_text(items, comma + 1, close)
+	var value_span := _span_text(items, close + 2, items.size())
+	if String(a_span["text"]).is_empty() or String(b_span["text"]).is_empty() or String(value_span["text"]).is_empty():
+		_unknown_msg_at(effect, "adjust baseline needs <axis>(a, b) by <n>")
+		return false
+	effect.axis = name
+	effect.a_text = String(a_span["text"])
+	effect.b_text = String(b_span["text"])
+	effect.value_text = String(value_span["text"])
+	var a_expected := _command_expected(items, at + 1, comma)
+	var b_expected := _command_expected(items, comma + 1, close)
+	var a_expr := _expr(effect.a_text, int(a_span["line"]), int(a_span["col"]), _STORY, false, a_expected, effect.reads)
+	var b_expr := _expr(effect.b_text, int(b_span["line"]), int(b_span["col"]), _STORY, false, b_expected, effect.reads)
+	var value := _expr(effect.value_text, int(value_span["line"]), int(value_span["col"]), _STORY, false, &"", effect.reads)
+	effect.a = a_expr["compiled"]
+	effect.b = b_expr["compiled"]
+	effect.value = value["compiled"]
+	var ast := value["ast"] as WyrdExprNode
+	if ast != null and ast.type_name != &"error" and ast.type_name != &"int" and ast.type_name != &"float":
+		_error(WyrdDiagnostic.E_WRITE_TYPE, "adjust baseline needs an int or float", int(value_span["line"]), int(value_span["col"]))
+	return true
 
 
 func _unlock(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:

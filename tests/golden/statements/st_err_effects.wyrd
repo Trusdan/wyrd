@@ -19,7 +19,7 @@ quest ferry_toll "The Ferry Toll"
     ~ advance ferry to
     ~ advance ferry to pay extra
     ~ assign role tavern
-    ~ vacate role tavern
+    ~ vacate role
     ~ adjust baseline ferry
     ~ create document note
     ~ record deed paid(target: ferry)
