@@ -120,10 +120,27 @@ static func _walk(node: WyrdNode, kind: String, owner: String, sites: Array) -> 
 	elif node.keyword == "storylet":
 		next_kind = "storylet"
 		next_owner = _dotted(node)
+	elif node.keyword == "document" and not _periodic_header(node):
+		next_kind = "document"
+		next_owner = _dotted(node)
+		sites.append({"line": node.start_line, "owner": next_owner, "tag": node.line_tag})
+	elif kind == "document" and node.keyword == "page":
+		next_kind = "docpage"
+	elif kind == "docpage":
+		sites.append({"line": node.start_line, "owner": owner, "tag": node.line_tag})
 	elif _is_site(node, kind):
 		sites.append({"line": node.start_line, "owner": owner, "tag": node.line_tag})
 	for child in node.children:
 		_walk(child, next_kind, next_owner, sites)
+
+
+static func _periodic_header(node: WyrdNode) -> bool:
+	for token in node.head:
+		if token.kind != &"ident":
+			continue
+		if token.text == "publishes_by" or token.text == "every" or token.text == "delay":
+			return true
+	return false
 
 
 static func _is_site(node: WyrdNode, kind: String) -> bool:

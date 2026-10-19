@@ -47,6 +47,7 @@ const _BUILTINS: PackedStringArray = [
 	"perceived(agent:entity, verb:symbol)->symbol",
 	"role(id:entity)->symbol",
 	"holder(slot_or_role:symbol)->entity",
+	"has_read(reader:entity, doc:symbol)->bool",
 	"filled(slot_or_role:symbol)->bool",
 	"slot_state(slot:symbol)->symbol",
 	"outcome(quest:symbol, branch:symbol)->symbol",

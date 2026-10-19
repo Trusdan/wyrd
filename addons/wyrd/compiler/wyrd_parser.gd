@@ -456,6 +456,7 @@ func _node_from_line(line: Array[WyrdToken]) -> WyrdNode:
 		node.end_line = head[head.size() - 1].end_line
 		node.end_col = head[head.size() - 1].end_col
 		node.keyword = head[0].display()
+		node.lead = head[0]
 		if head[0].kind == &"string":
 			node.title = head[0].text
 		head.remove_at(0)
@@ -464,11 +465,12 @@ func _node_from_line(line: Array[WyrdToken]) -> WyrdNode:
 		node.start_col = line[0].col
 		node.end_line = line[line.size() - 1].end_line
 		node.end_col = line[line.size() - 1].end_col
-	for i in head.size():
-		if head[i].kind == &"string" and node.title.is_empty():
-			node.title = head[i].text
-			head.remove_at(i)
-			break
+	if node.keyword != "meta":
+		for i in head.size():
+			if head[i].kind == &"string" and node.title.is_empty():
+				node.title = head[i].text
+				head.remove_at(i)
+				break
 	node.head = head
 	return node
 

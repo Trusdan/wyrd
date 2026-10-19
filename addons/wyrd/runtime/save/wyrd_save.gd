@@ -15,6 +15,9 @@ extends RefCounted
 ## sequence id is kept. A missing [code]sequences[/code] key clears that bag only.
 ## Unlocked topic ids, when any exist, ride in [code]topics[/code] as a sorted
 ## list. An unknown id is kept. A missing [code]topics[/code] key clears that set.
+## Read flags and frozen copies, when any exist, ride in [code]documents[/code].
+## Read flags are [code](reader, doc)[/code] pairs, not stored facts. A missing
+## [code]documents[/code] key clears both lists. Unknown ids are kept and ignored.
 ## Quest region leaves ride inside the quest row and are omitted when empty.
 ## An older loader ignores those keys. The unlocked secrecy name is an ordinary
 ## world fact. The document has no secrecy key.
@@ -126,6 +129,10 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 			for topic in topics:
 				names.append(String(topic))
 			data["topics"] = names
+	if runtime.documents != null:
+		var documents := runtime.documents.export_state()
+		if not documents.is_empty():
+			data["documents"] = documents
 	var flight := _capture_flight(runtime)
 	if not flight.is_empty():
 		data["flight"] = flight
@@ -215,6 +222,11 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.topics.import_state(working.get("topics"))
 		else:
 			runtime.topics.clear()
+	if runtime.documents != null:
+		if working.has("documents") and working.get("documents") is Dictionary:
+			runtime.documents.import_state(working.get("documents"))
+		else:
+			runtime.documents.clear()
 	_import_flight(runtime, working, report)
 	report.ok = true
 	report.manifest_hash = content.manifest_hash

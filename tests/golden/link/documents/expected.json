@@ -1,0 +1,189 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_FACT_NEVER_SET",
+      "col": 3,
+      "line": 4,
+      "message": "stored fact \"player.secret\" is read but never set",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_FACT_LEAK",
+      "col": 45,
+      "line": 9,
+      "message": "player-visible text interpolates \"player.secret\" gated only by a world read",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_INTERP_UNSET",
+      "col": 45,
+      "line": 9,
+      "message": "interpolation reads stored fact \"player.secret\" before it is set",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_DOCUMENT_UNKNOWN",
+      "col": 10,
+      "line": 10,
+      "message": "unknown document \"missing_doc\"",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_UNKNOWN",
+      "col": 5,
+      "line": 12,
+      "message": "unknown document \"missing_doc\"",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_NOT_FROZEN",
+      "col": 5,
+      "line": 13,
+      "message": "document \"live_note\" is not frozen",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_NOT_FROZEN",
+      "col": 5,
+      "line": 14,
+      "message": "document \"gazette\" is not frozen",
+      "path": "res://tests/golden/link/documents/doc.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "documents": [
+      {
+        "id": "live_note",
+        "meta": {},
+        "mode": "live",
+        "on_first_read": [],
+        "on_read": [
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "copy": "one",
+            "document": "missing_doc",
+            "fact_key": "",
+            "kind": "create_document",
+            "on_fail": "",
+            "outcome": "",
+            "target": null,
+            "topic": "",
+            "value": null,
+            "verb": ""
+          },
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "copy": "two",
+            "document": "live_note",
+            "fact_key": "",
+            "kind": "create_document",
+            "on_fail": "",
+            "outcome": "",
+            "target": null,
+            "topic": "",
+            "value": null,
+            "verb": ""
+          },
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "copy": "three",
+            "document": "gazette",
+            "fact_key": "",
+            "kind": "create_document",
+            "on_fail": "",
+            "outcome": "",
+            "target": null,
+            "topic": "",
+            "value": null,
+            "verb": ""
+          }
+        ],
+        "pages": [
+          {
+            "paragraphs": [
+              {
+                "id": "leak",
+                "when": "player.secret == seen"
+              },
+              {
+                "id": "missing",
+                "when": "has_read(player, missing_doc)"
+              }
+            ],
+            "when": ""
+          }
+        ],
+        "tags": [],
+        "title_id": ""
+      }
+    ],
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.secret",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "symbol"
+      }
+    ],
+    "files": [
+      {
+        "hash": "e1b87d60f881b0f6",
+        "path": "res://tests/golden/link/documents/doc.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "documents",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/documents/doc.wyrd",
+          "key": "player.secret",
+          "line": 4,
+          "readers": [
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/documents/doc.wyrd",
+              "id": "live_note",
+              "kind": "document",
+              "line": 6
+            }
+          ],
+          "source": "stored",
+          "type": "symbol",
+          "writers": []
+        }
+      ]
+    }
+  }
+}

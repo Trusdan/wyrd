@@ -11,13 +11,15 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [member roles], [member quests], [member dialogue], [member storylets],
 ## [member sequences], [member director], [member debug], and [member coverage] are the runtime's sub-objects. [member dialogue] is
 ## the scene runner. [member storylets] draws a line set. [member director]
-## ranks one. [member topics] is the unlocked topic set.
+## ranks one. [member topics] is the unlocked topic set. [member documents] opens a readable document.
 ## [signal bark_ready] repeats the runtime signal for a bark win.
 ## [signal topic_unlocked] and [signal topic_locked] repeat the topic store.
+## [signal document_read] repeats a document open.
 
 signal bark_ready(line: WyrdLineView)
 signal topic_unlocked(topic: StringName)
 signal topic_locked(topic: StringName)
+signal document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool)
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -27,6 +29,7 @@ var rumors: WyrdRumor
 var publish: WyrdPublish
 var roles: WyrdRoles
 var topics: WyrdTopics
+var documents: WyrdDocuments
 var quests: WyrdQuestRunner
 var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
@@ -49,6 +52,7 @@ func _init() -> void:
 	publish = _runtime.publish
 	roles = _runtime.roles
 	topics = _runtime.topics
+	documents = _runtime.documents
 	quests = _runtime.quests
 	dialogue = _runtime.dialogue
 	storylets = _runtime.storylets
@@ -61,6 +65,8 @@ func _init() -> void:
 	if topics != null:
 		topics.topic_unlocked.connect(_relay_topic_unlocked)
 		topics.topic_locked.connect(_relay_topic_locked)
+	if documents != null:
+		documents.document_read.connect(_relay_document_read)
 
 
 func _relay_bark(line: WyrdLineView) -> void:
@@ -73,6 +79,10 @@ func _relay_topic_unlocked(topic: StringName) -> void:
 
 func _relay_topic_locked(topic: StringName) -> void:
 	topic_locked.emit(topic)
+
+
+func _relay_document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool) -> void:
+	document_read.emit(doc_id, copy_id, reader, first_time)
 
 
 func get_version() -> String:

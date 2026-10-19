@@ -160,6 +160,12 @@ func _warn_interps(schema: WyrdFactSchema, units: Array, writers: Array, diagnos
 			var gates := _gate_list(schema, storylet.when_text)
 			for line_def in storylet.lines:
 				_warn_prose(schema, line_def.prose, path, writers, diagnostics, gates)
+		for document in file.documents:
+			if document.mode != "live" and document.mode != "frozen":
+				continue
+			for page in document.pages:
+				for paragraph in page.get("paragraphs", []):
+					_warn_prose(schema, paragraph.get("prose"), path, writers, diagnostics, _gate_list(schema, str(paragraph.get("condition_text", ""))))
 
 
 func _warn_stage(schema: WyrdFactSchema, stage: WyrdStageDef, path: String, writers: Array, diagnostics: WyrdDiagnostics) -> void:
@@ -591,6 +597,10 @@ func _writers(units: Array) -> Array:
 				for effect in item.choice.effects:
 					_write(rows, effect, id, path)
 		for document in file.documents:
+			for effect in document.on_first_read:
+				_write(rows, effect, document.id, path)
+			for effect in document.on_read:
+				_write(rows, effect, document.id, path)
 			if document.fact_key.is_empty():
 				continue
 			rows.append({

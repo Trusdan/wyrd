@@ -15,6 +15,7 @@ Gullhaven is a fishing village invented for Wyrd. Its people and places are not 
 - `harbor_storylets.wyrd` includes `harbor_gossip.storm` (`scope: topic storm_rumour`, speaker `any`). Its effect starts `dock_rumour`.
 - `dock_rumour.wyrd` is the dock rumour. It starts with `start when false`, casts the tavern slot from `tavern_owner`, and runs `dock.rumour_talk`, which locks `storm_rumour`.
 - `dock_crate.wyrd` is the dock crate. It starts with `start when false` and runs `dock.crate_talk`. Lifting the crate is a `strength` check. `wyrd_commands.json` lists that skill.
+- `harbor_documents.wyrd` is the ferry schedule (live) and the reeve's letter (frozen). `dock_letter` starts with `start when false`, copies the letter, and shows one tavern line after `has_read`. `on_empty: wait` keeps the empty-slot lint quiet.
 - `dock_scenes.wyrd` is `toll.depart`, reached with `-> scene` from the other file.
 - `harbor_bell.wyrd` is the harbor bell quest.
 - `harbor_gazette.wyrd` is the harbor gazette. It publishes `harbor.gazette` once a day after a one-hour delay.

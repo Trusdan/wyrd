@@ -21,6 +21,7 @@ var facts: WyrdFactStore
 var events: WyrdEvents
 var roles: WyrdRoles
 var topics: WyrdTopics
+var documents: WyrdDocuments
 var deeds: WyrdDeedLog
 var social: WyrdSocial
 var rumors: WyrdRumor
@@ -73,6 +74,8 @@ func _init() -> void:
 	roles = WyrdRoles.new()
 	topics = WyrdTopics.new()
 	topics.trace_of = Callable(self, &"trace_topic")
+	documents = WyrdDocuments.new()
+	documents.runtime = self
 	storylets = WyrdStoryletDeck.new()
 	storylets.on_coverage = Callable(self, &"_cover_draw")
 	sequences = WyrdSequences.new()
@@ -325,6 +328,8 @@ func start_new_game(seed_value: int) -> void:
 	roles.clear()
 	if topics != null:
 		topics.clear()
+	if documents != null:
+		documents.clear()
 	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
@@ -417,6 +422,8 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	roles.clear()
 	if topics != null:
 		topics.clear()
+	if documents != null:
+		documents.clear()
 	if manifest == null:
 		report.diagnostics.add(WyrdDiagnostic.E_HEADER_MISSING, "missing content manifest", "", 1, 1)
 		return report
@@ -2214,6 +2221,15 @@ func _mark_calls(names: PackedStringArray) -> void:
 		_queue.mark(hits)
 
 
+func note_has_read() -> void:
+	_mark_calls(PackedStringArray(["has_read"]))
+	if _content == null or not _collecting:
+		return
+	var hits := _content.indexes_for_calls(PackedStringArray(["has_read"]))
+	for index in hits:
+		_collected[int(index)] = true
+
+
 func note_sequence_change() -> void:
 	if _content == null:
 		return
@@ -2237,6 +2253,8 @@ func _tracked_calls() -> PackedStringArray:
 		names.append("done")
 	if not names.has("path_exists"):
 		names.append("path_exists")
+	if not names.has("has_read"):
+		names.append("has_read")
 	return names
 
 

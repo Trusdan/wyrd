@@ -8,7 +8,8 @@ extends RefCounted
 ## inputs ([code]open_scene[/code], [code]advance[/code], [code]choose[/code],
 ## [code]abort[/code], [code]tick[/code], [code]emit[/code],
 ## [code]complete_host[/code], [code]draw[/code], [code]batch_begin[/code],
-## [code]batch_end[/code], [code]emit_rejected[/code]) on another runtime. Host
+## [code]batch_end[/code], [code]emit_rejected[/code], [code]open_document[/code],
+## [code]create_copy[/code]) on another runtime. Host
 ## answers and decisions are compared with [method diff]. A different host
 ## answer shows up there.
 
@@ -130,7 +131,13 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 				runtime.dialogue.ask_topic(str(row.get("npc", "")), str(row.get("topic", "")))
 			"open_topic":
 				runtime.dialogue.open(str(row.get("npc", "")))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check":
+			"open_document":
+				if runtime.documents != null:
+					runtime.documents.open(StringName(str(row.get("doc", ""))), str(row.get("copy", "")), StringName(str(row.get("reader", ""))))
+			"create_copy":
+				if runtime.documents != null:
+					runtime.documents.create_copy(StringName(str(row.get("doc", ""))), str(row.get("copy", "")))
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale":
 				pass
 			_:
 				pass

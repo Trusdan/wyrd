@@ -32,6 +32,11 @@ static func compile(source: WyrdSource) -> Dictionary:
 		for story in file.storylets:
 			storylets.append(_storylet(story))
 		data["storylets"] = storylets
+	if not file.documents.is_empty():
+		var documents: Array = []
+		for document in file.documents:
+			documents.append(_document(document))
+		data["documents"] = documents
 	return data
 
 
@@ -278,7 +283,46 @@ static func _effect(effect: WyrdEffectDef) -> Dictionary:
 		data["axis"] = effect.axis
 		data["b"] = _cond(effect.b)
 		data["b_text"] = effect.b_text
+	if effect.kind == &"create_document":
+		data["copy"] = effect.copy_id
+		data["document"] = effect.document_id
 	return data
+
+
+static func _document(document: WyrdDocumentDef) -> Dictionary:
+	var pages: Array = []
+	for page in document.pages:
+		var paragraphs: Array = []
+		for paragraph in page.get("paragraphs", []):
+			paragraphs.append({
+				"condition": _cond(paragraph.get("condition")),
+				"condition_text": str(paragraph.get("condition_text", "")),
+				"line_id": str(paragraph.get("line_id", "")),
+				"prose": _prose(paragraph.get("prose") as WyrdExprNode),
+				"secrecy": str(paragraph.get("secrecy", "")),
+				"tags": _packed(paragraph.get("tags", PackedStringArray())),
+			})
+		pages.append({
+			"condition": _cond(page.get("condition")),
+			"condition_text": str(page.get("condition_text", "")),
+			"paragraphs": paragraphs,
+		})
+	return {
+		"fact_key": document.fact_key,
+		"fragments": document.fragments.size(),
+		"group": document.group,
+		"id": document.id,
+		"line_id": document.line_id,
+		"meta": document.meta.duplicate(true),
+		"mode": document.mode,
+		"on_first_read": _effects(document.on_first_read),
+		"on_read": _effects(document.on_read),
+		"pages": pages,
+		"period_minutes": document.period_minutes,
+		"secrecy": document.secrecy,
+		"tags": _packed(document.tags),
+		"title": document.title,
+	}
 
 
 static func _transitions(rows: Array) -> Array:
@@ -328,6 +372,13 @@ static func _cond(cond: Variant) -> Variant:
 		"specificity": compiled.specificity,
 		"uses_chance": compiled.uses_chance,
 	}
+
+
+static func _packed(values: PackedStringArray) -> Array:
+	var rows: Array = []
+	for value in values:
+		rows.append(String(value))
+	return rows
 
 
 static func _reads(reads: Array) -> Array:

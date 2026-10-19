@@ -89,6 +89,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			if document.id.is_empty():
 				continue
 			content.documents[document.id] = document
+			content._index_document(document)
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()
@@ -127,6 +128,37 @@ func condition_at(index: int) -> Dictionary:
 	for read in conditions[index].reads:
 		reads.append(String(read))
 	return {"reads": reads, "record": records[index], "site": sites[index]}
+
+
+func _index_document(document: WyrdDocumentDef) -> void:
+	if document.mode != "live" and document.mode != "frozen":
+		return
+	var page_no := 0
+	for page in document.pages:
+		page_no += 1
+		var page_site := "page.%d" % page_no
+		_add(page.get("condition"), document.id, page_site)
+		var para_no := 0
+		for paragraph in page.get("paragraphs", []):
+			para_no += 1
+			var line_id := str(paragraph.get("line_id", ""))
+			var para_site := line_id if not line_id.is_empty() else "p%d.%d" % [page_no, para_no]
+			_add(paragraph.get("condition"), document.id, "paragraph." + para_site)
+			var count := {"n": 0}
+			_index_prose(paragraph.get("prose"), document.id, para_site, count)
+
+
+func _index_prose(node: WyrdExprNode, document_id: String, para_site: String, count: Dictionary) -> void:
+	if node == null:
+		return
+	if node.kind == &"if" and node.payload is WyrdCompiledCondition:
+		count["n"] = int(count["n"]) + 1
+		_add(node.payload, document_id, "if.%s.%d" % [para_site, int(count["n"])])
+	_index_prose(node.a, document_id, para_site, count)
+	_index_prose(node.b, document_id, para_site, count)
+	_index_prose(node.c, document_id, para_site, count)
+	for kid in node.kids:
+		_index_prose(kid, document_id, para_site, count)
 
 
 func _stage(quest_id: String, stage: WyrdStageDef) -> void:

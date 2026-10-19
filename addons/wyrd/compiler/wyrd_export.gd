@@ -42,6 +42,9 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	var sequences := _sequences(pack)
 	if not sequences.is_empty():
 		data["sequences"] = sequences
+	var documents := _documents(pack)
+	if not documents.is_empty():
+		data["documents"] = documents
 	return data
 
 
@@ -435,6 +438,53 @@ static func _line_row(
 	return row
 
 
+static func _documents(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for document in file.documents:
+			if document.mode != "live" and document.mode != "frozen":
+				continue
+			var pages: Array = []
+			for page in document.pages:
+				var paragraphs: Array = []
+				for paragraph in page.get("paragraphs", []):
+					var para := {
+						"id": str(paragraph.get("line_id", "")),
+						"when": str(paragraph.get("condition_text", "")),
+					}
+					var secrecy := str(paragraph.get("secrecy", ""))
+					if not secrecy.is_empty():
+						para["secrecy"] = secrecy
+					var tags: PackedStringArray = paragraph.get("tags", PackedStringArray())
+					if not tags.is_empty():
+						para["tags"] = _strings(tags)
+					paragraphs.append(para)
+				pages.append({
+					"paragraphs": paragraphs,
+					"when": str(page.get("condition_text", "")),
+				})
+			var row := {
+				"id": document.id,
+				"meta": document.meta.duplicate(true),
+				"mode": document.mode,
+				"on_first_read": _effects(document.on_first_read),
+				"on_read": _effects(document.on_read),
+				"pages": pages,
+				"tags": _strings(document.tags),
+				"title_id": document.line_id,
+			}
+			if not document.secrecy.is_empty():
+				row["secrecy"] = document.secrecy
+			rows.append(row)
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["id"]) < str(b["id"]))
+	return rows
+
+
 static func _effects(effects: Array) -> Array:
 	var rows: Array = []
 	for effect in effects:
@@ -467,6 +517,9 @@ static func _effects(effects: Array) -> Array:
 			row["a"] = _cond(effect.a)
 			row["axis"] = effect.axis
 			row["b"] = _cond(effect.b)
+		if effect.kind == &"create_document":
+			row["copy"] = effect.copy_id
+			row["document"] = effect.document_id
 		rows.append(row)
 	return rows
 
