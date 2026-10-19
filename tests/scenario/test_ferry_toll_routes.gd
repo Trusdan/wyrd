@@ -35,7 +35,7 @@ func test_route_take_the_room() -> void:
 	assert_eq(opening[2]["text"], "Bram, the ferry master, is on the dock.")
 	assert_eq(opening[2]["name"], "Nia")
 	assert_null(opening[0]["audio"])
-	assert_eq(runtime.dialogue.choices().size(), 1)
+	assert_eq(runtime.dialogue.choices().size(), 3)
 	assert_eq(runtime.dialogue.choices()[0].text, "Take the room")
 	harness.choose_text(runtime, "Take the room")
 	var rest := harness.line_rows(runtime)
@@ -76,7 +76,7 @@ func test_route_local_place() -> void:
 	var labels := PackedStringArray()
 	for view in runtime.dialogue.choices():
 		labels.append(view.text)
-	assert_eq(labels, PackedStringArray(["Take the room", "I have a place in town"]))
+	assert_eq(labels, PackedStringArray(["Take the room", "I have a place in town", "Ask the dock errand", "Send the errand on"]))
 	harness.choose_text(runtime, "I have a place in town")
 	var rest := harness.line_rows(runtime)
 	assert_eq(harness.ids_of(rest), PackedStringArray(["a920", "a_cross", "a_leave"]))

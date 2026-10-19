@@ -207,7 +207,7 @@ static func _effect(effect: WyrdEffectDef) -> Dictionary:
 			"name": String(arg["name"]),
 			"text": String(arg["text"]),
 		})
-	return {
+	var data := {
 		"agent": effect.agent,
 		"args": args,
 		"branch": effect.branch,
@@ -225,6 +225,11 @@ static func _effect(effect: WyrdEffectDef) -> Dictionary:
 		"value_text": effect.value_text,
 		"verb": effect.verb,
 	}
+	if effect.kind == &"start_quest" or effect.kind == &"advance":
+		data["quest"] = effect.quest
+	if effect.kind == &"advance":
+		data["stage"] = effect.stage
+	return data
 
 
 static func _transitions(rows: Array) -> Array:

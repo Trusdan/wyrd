@@ -1511,6 +1511,20 @@ func _effect(node: WyrdNode) -> WyrdEffectDef:
 			if not _belief(effect, items, false):
 				_no_block(node)
 				return null
+		"start":
+			if items.size() < 2 or items[1].text != "quest":
+				_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
+				_no_block(node)
+				return null
+			effect.kind = &"start_quest"
+			if not _start_quest(effect, items):
+				_no_block(node)
+				return null
+		"advance":
+			effect.kind = &"advance"
+			if not _advance_to(effect, items):
+				_no_block(node)
+				return null
 		_:
 			_error(WyrdDiagnostic.E_EFFECT_NOT_IN_SLICE, "effect \"%s\" is not in this slice" % items[0].text, items[0].line, items[0].col)
 			_no_block(node)
@@ -1523,10 +1537,6 @@ func _rejected(items: Array[WyrdToken]) -> String:
 	var second := items[1].text if items.size() > 1 and items[1].kind == &"ident" else ""
 	if first == "lock" and second == "topic":
 		return "lock topic"
-	if first == "start" and second == "quest":
-		return "start quest"
-	if first == "advance":
-		return "advance"
 	if first == "assign" and second == "role":
 		return "assign role"
 	if first == "vacate" and second == "role":
@@ -1718,6 +1728,32 @@ func _reveal_args(effect: WyrdEffectDef, reveals: Dictionary, claim: Dictionary)
 
 func _witness_auto(items: Array[WyrdToken], start: int, end: int) -> bool:
 	return end == start + 1 and items[start].kind == &"ident" and items[start].text == "auto"
+
+
+func _start_quest(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var ident := _dotted_at(items, 2)
+	var name := String(ident["name"])
+	if name.is_empty() or int(ident["next"]) != items.size() or not _shape_ok(name):
+		_unknown_msg_at(effect, "start quest needs a quest id")
+		return false
+	effect.quest = name
+	return true
+
+
+func _advance_to(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:
+	var quest := _dotted_at(items, 1)
+	var name := String(quest["name"])
+	var at := int(quest["next"])
+	var stage_name := ""
+	if not name.is_empty() and _shape_ok(name) and at < items.size() and items[at].text == "to":
+		var stage := _dotted_at(items, at + 1)
+		stage_name = String(stage["name"])
+		if not stage_name.is_empty() and _shape_ok(stage_name) and int(stage["next"]) == items.size():
+			effect.quest = name
+			effect.stage = stage_name
+			return true
+	_unknown_msg_at(effect, "advance needs <quest> to <stage>")
+	return false
 
 
 func _unlock(effect: WyrdEffectDef, items: Array[WyrdToken]) -> bool:

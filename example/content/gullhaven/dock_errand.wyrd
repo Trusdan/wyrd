@@ -1,0 +1,13 @@
+// [EXAMPLE CONTENT] Gullhaven dock errand. An invented fishing village, not a host game.
+language 1
+
+quest dock_errand "The Dock Errand"
+  start when false
+
+  stage asked
+    journal: A net on the dock needs a hand. #line:j_errand_asked
+    waits_until false
+
+  stage sent
+    journal: The net is sent up the dock. #line:j_errand_sent
+    waits_until false

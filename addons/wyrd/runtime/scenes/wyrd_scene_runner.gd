@@ -55,6 +55,14 @@ func is_open() -> bool:
 	return not _stack.is_empty()
 
 
+## Quest id of the open scene, or empty when the scene was not offered by a quest.
+func open_quest_id() -> String:
+	var frame := _top()
+	if frame == null:
+		return ""
+	return frame.quest_id
+
+
 func can_save() -> bool:
 	return not is_open()
 

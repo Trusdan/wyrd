@@ -1,0 +1,7 @@
+language 1
+
+quest gate "Gate"
+  stage arrive
+    region rope
+      stage frayed
+    ~ outcome route = done

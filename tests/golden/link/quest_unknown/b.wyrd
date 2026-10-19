@@ -1,0 +1,6 @@
+language 1
+
+quest other "Other"
+  stage one
+    ~ start quest missing
+    ~ advance missing to arrive

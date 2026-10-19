@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `~ start quest <id>` and `~ advance <quest> to <stage>` compile and run. An unknown quest is `E_QUEST_UNKNOWN`. A stage that is not a top-level stage of that quest, including a nested sub-state, is `E_STAGE_UNKNOWN`. With tracing on, a start logs `wyrd quest_start quest=%s ok=%s reason=%s`, an advance logs `wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s`, and every status change logs `wyrd quest_status quest=%s from=%s to=%s`. Gullhaven adds `dock_errand`, started from a choice in `toll.offer_room` and moved to its second stage by `advance`. Save schema stays 3.
+
 ## 0.6.2-m8 - 2026-10-18
 
 Bench measurement fix. `VERSION` is `0.6.2-m8`. `plugin.cfg` version is `0.6.2-m8`. Save schema stays 3. Seeded checksums stay the same. No runtime code changed. Corey cuts the tag `v0.6.2-m8` after this merges.

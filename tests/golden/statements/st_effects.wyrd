@@ -20,3 +20,5 @@ quest ferry_toll "The Ferry Toll"
     ~ unlock topic harbor_toll
     ~ outcome crossing = route_closed
     ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> nowhere
+    ~ start quest ferry_toll
+    ~ advance ferry_toll to pay

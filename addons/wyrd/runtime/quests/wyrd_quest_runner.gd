@@ -14,7 +14,9 @@ extends RefCounted
 ## finish the quest. The quest
 ## completes when every declared outcome is [code]done[/code] or [code]failed[/code]
 ## and the current body has no transition. Any [code]failed[/code] outcome
-## fails the quest instead. [code]on_empty: wait[/code] holds a stage when a
+## fails the quest instead. [method start] ignores [code]start when[/code].
+## [method advance] leaves through the same path as a transition, including a
+## stage that is still waiting. [code]on_empty: wait[/code] holds a stage when a
 ## slot is empty and no variant matched. Journal text and its date are frozen
 ## at the write. The default date is [code]day N, HH:MM[/code]. An
 ## [code]await_host[/code] step calls [method request_host_step] and pauses
@@ -36,6 +38,8 @@ const FAILED: StringName = &"failed"
 const ABANDONED: StringName = &"abandoned"
 const UNAVAILABLE: StringName = &"unavailable"
 const _HOP_LIMIT := 24
+## Returned while a region step list defers a top-level advance. Not a stage id.
+const _LIFT := "\u0001"
 
 var runtime: WyrdRuntime
 var _states: Dictionary = {}
@@ -49,6 +53,16 @@ var _watch: Dictionary = {}
 var _by_cond: Dictionary = {}
 var _pure_start: Dictionary = {}
 var _wake: Dictionary = {}
+## Hop count of the stage entry whose step list is running. 0 when none is.
+var _hop: int = 0
+## Quest id whose entry steps or region steps are running. Empty otherwise.
+var _steps_for: String = ""
+## [code]stage[/code] or [code]region[/code] while that list is running.
+var _step_level: String = ""
+## The next [method _goto] came from [method advance] and should trace it.
+var _from_advance: bool = false
+## Top-level stage to enter after the current region step list returns.
+var _lift_to: String = ""
 
 
 class QuestState extends RefCounted:
@@ -383,6 +397,81 @@ func import_state(data: Dictionary) -> void:
 	_retrack()
 
 
+## Starts [param quest_id] whatever its [code]start when[/code] says.
+## [code]dormant[/code] and [code]available[/code] become [code]active[/code] at
+## the first stage, through [method _consider_start] and [method _activate].
+## [code]active[/code], [code]completed[/code], [code]failed[/code], and
+## [code]abandoned[/code] warn and stay. [code]unavailable[/code] stays
+## [code]unavailable[/code]. A running step list is already [code]active[/code],
+## so a start of that quest warns and does not defer.
+##
+## @experimental
+func start(quest_id: String) -> void:
+	var state := _states.get(quest_id) as QuestState
+	var quest := _quest(quest_id)
+	if state == null or quest == null:
+		push_error("WyrdQuestRunner.start: unknown quest \"%s\"" % quest_id)
+		return
+	var reason := _start_reason(state.status)
+	if reason != "started":
+		_trace_start(quest_id, false, reason)
+		if state.status != UNAVAILABLE:
+			push_warning("WyrdQuestRunner.start: \"%s\" is %s" % [quest_id, reason])
+		return
+	var hops := _next_hop()
+	if hops > _HOP_LIMIT:
+		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
+	_trace_start(quest_id, true, "started")
+	if state.status == DORMANT:
+		_set_status(quest_id, state, AVAILABLE)
+	_activate(quest_id, quest, state, hops)
+
+
+## Moves an [code]active[/code] quest to a top-level stage through [method _goto].
+## [code]waits_until[/code] and a held-empty wait do not block it. The offered
+## scene and the waiting reason are cleared. A pending host step or an open
+## scene for this quest warns and stays. The current stage is a no-op. Any
+## other status warns and stays. When both a host step and a scene are open,
+## the reason is [code]host_step[/code]. A quest whose own step list is running
+## applies the move after that list, like a divert. The returned stage id is
+## that divert. Other callers get an empty string.
+##
+## @experimental
+func advance(quest_id: String, stage_id: String) -> String:
+	var state := _states.get(quest_id) as QuestState
+	var quest := _quest(quest_id)
+	if state == null or quest == null:
+		push_error("WyrdQuestRunner.advance: unknown quest \"%s\"" % quest_id)
+		return ""
+	if state.status != ACTIVE:
+		_trace_advance(quest_id, state.stage_id, stage_id, false, "not_active")
+		push_warning("WyrdQuestRunner.advance: \"%s\" is %s" % [quest_id, String(state.status)])
+		return ""
+	if _stage_by_id(quest, stage_id) == null:
+		push_error("WyrdQuestRunner.advance: unknown stage \"%s\"" % stage_id)
+		return ""
+	if stage_id == state.stage_id:
+		_trace_advance(quest_id, state.stage_id, stage_id, false, "same_stage")
+		return ""
+	if state.host_screen != "":
+		_trace_advance(quest_id, state.stage_id, stage_id, false, "host_step")
+		push_warning("WyrdQuestRunner.advance: \"%s\" is waiting on the host" % quest_id)
+		return ""
+	if _scene_open(quest_id):
+		_trace_advance(quest_id, state.stage_id, stage_id, false, "scene_open")
+		push_warning("WyrdQuestRunner.advance: \"%s\" has an open scene" % quest_id)
+		return ""
+	if _steps_for == quest_id and _step_level == "stage":
+		_from_advance = true
+		return stage_id
+	if _steps_for == quest_id and _step_level == "region":
+		_lift_to = stage_id
+		return _LIFT
+	_move(quest_id, quest, state, stage_id, _next_hop())
+	return ""
+
+
 func abandon(quest_id: String) -> void:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -442,7 +531,7 @@ func _consider_start(quest_id: String, quest: WyrdQuestDef, state: QuestState) -
 	_activate(quest_id, quest, state)
 
 
-func _activate(quest_id: String, quest: WyrdQuestDef, state: QuestState) -> void:
+func _activate(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int = 0) -> void:
 	if quest.stages.is_empty():
 		_set_status(quest_id, state, ACTIVE)
 		return
@@ -450,7 +539,7 @@ func _activate(quest_id: String, quest: WyrdQuestDef, state: QuestState) -> void
 	_set_status(quest_id, state, ACTIVE)
 	state.stage_id = quest.stages[0].id
 	state.entered = false
-	_enter(quest_id, quest, state, 0)
+	_enter(quest_id, quest, state, hops)
 
 
 func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int, recheck: bool = false) -> void:
@@ -481,9 +570,11 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 	if body == null:
 		return
 	if state.step_at < _entry_steps(body).size():
-		_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+		_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body, hops))
 		return
 	_advance_region_map(quest_id, quest, state, body, state.regions, hops, "")
+	if _consume_lift(quest_id, quest, state, hops):
+		return
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -518,12 +609,14 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 		return
 	var body := pick["body"] as WyrdStageDef
 	state.regions = _fresh_regions(quest_id, body, "")
-	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body, hops))
 
 
 func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, hops: int, divert: String) -> void:
 	if divert != "":
-		_goto(quest_id, quest, state, divert, hops + 1)
+		var marked := _from_advance
+		_from_advance = false
+		_goto(quest_id, quest, state, divert, hops + 1, marked)
 		return
 	if state.host_screen != "":
 		state.waiting = "host:%s" % state.host_screen
@@ -532,6 +625,8 @@ func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body
 		state.waiting = "scene:%s" % state.offered
 		return
 	_advance_region_map(quest_id, quest, state, body, state.regions, hops, "")
+	if _consume_lift(quest_id, quest, state, hops):
+		return
 	if _wait_blocks(state, body):
 		return
 	state.waiting = ""
@@ -561,7 +656,21 @@ func _entry_steps(body: WyrdStageDef) -> Array:
 	return steps
 
 
-func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef) -> String:
+func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef, hops: int) -> String:
+	var saved_hop := _hop
+	var saved_for := _steps_for
+	var saved_level := _step_level
+	_hop = hops
+	_steps_for = quest_id
+	_step_level = "stage"
+	var divert := _run_step_list(quest_id, state, body)
+	_hop = saved_hop
+	_steps_for = saved_for
+	_step_level = saved_level
+	return divert
+
+
+func _run_step_list(quest_id: String, state: QuestState, body: WyrdStageDef) -> String:
 	var steps := _entry_steps(body)
 	var offered := state.offered != ""
 	while state.step_at < steps.size():
@@ -635,11 +744,16 @@ func _take_transition(quest_id: String, quest: WyrdQuestDef, state: QuestState, 
 	return false
 
 
-func _goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, target: String, hops: int) -> void:
+func _goto(quest_id: String, quest: WyrdQuestDef, state: QuestState, target: String, hops: int, from_advance: bool = false) -> void:
+	if from_advance and hops > _HOP_LIMIT:
+		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
+		return
 	if _stage_by_id(quest, target) == null:
 		push_error("WyrdQuestRunner: unknown stage \"%s\"" % target)
 		return
 	var previous := state.stage_id
+	if from_advance:
+		_trace_advance(quest_id, previous, target, true, "moved")
 	if runtime != null:
 		runtime.trace_add("transition", {"from": previous, "quest": quest_id, "to": target})
 	state.stage_id = target
@@ -709,7 +823,7 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 		return true
 	var body := pick["body"] as WyrdStageDef
 	state.regions = _fresh_regions(quest_id, body, "")
-	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body))
+	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body, hops))
 	return true
 
 
@@ -845,6 +959,8 @@ func _advance_region_map(quest_id: String, quest: WyrdQuestDef, state: QuestStat
 			if stage_id != "":
 				runtime.trace_region(quest_id, leaf, "", stage_id)
 		_advance_region(quest_id, quest, state, region, rows[region.id], hops, leaf)
+		if _lift_to != "":
+			return
 
 
 func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, region: WyrdRegionDef, row: Dictionary, hops: int, path: String) -> void:
@@ -860,7 +976,9 @@ func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, r
 	if _region_blocked(state):
 		return
 	if int(row.get("step_at", 0)) < _entry_steps(stage).size():
-		var ran := _run_region_steps(quest_id, state, stage, row)
+		var ran := _run_region_steps(quest_id, state, stage, row, hops)
+		if bool(ran.get("lift", false)) or _lift_to != "":
+			return
 		if str(ran.get("divert", "")) != "":
 			_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1, path)
 			return
@@ -869,7 +987,7 @@ func _advance_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, r
 	var nested: Dictionary = row.get("regions", {})
 	_advance_region_map(quest_id, quest, state, stage, nested, hops, path + "/")
 	row["regions"] = nested
-	if _region_blocked(state) or _region_waiting(stage):
+	if _lift_to != "" or _region_blocked(state) or _region_waiting(stage):
 		return
 	_take_region_transition(quest_id, quest, state, region, row, stage, hops, path)
 
@@ -881,7 +999,9 @@ func _enter_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, reg
 	row["entered"] = true
 	row["step_at"] = 0
 	row["regions"] = _fresh_regions(quest_id, stage, path + "/")
-	var ran := _run_region_steps(quest_id, state, stage, row)
+	var ran := _run_region_steps(quest_id, state, stage, row, hops)
+	if bool(ran.get("lift", false)) or _lift_to != "":
+		return
 	if str(ran.get("divert", "")) != "":
 		_region_goto(quest_id, quest, state, region, row, str(ran["divert"]), hops + 1, path)
 		return
@@ -890,12 +1010,26 @@ func _enter_region(quest_id: String, quest: WyrdQuestDef, state: QuestState, reg
 	var nested: Dictionary = row.get("regions", {})
 	_advance_region_map(quest_id, quest, state, stage, nested, hops, path + "/")
 	row["regions"] = nested
-	if _region_blocked(state) or _region_waiting(stage):
+	if _lift_to != "" or _region_blocked(state) or _region_waiting(stage):
 		return
 	_take_region_transition(quest_id, quest, state, region, row, stage, hops, path)
 
 
-func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef, row: Dictionary) -> Dictionary:
+func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef, row: Dictionary, hops: int) -> Dictionary:
+	var saved_hop := _hop
+	var saved_for := _steps_for
+	var saved_level := _step_level
+	_hop = hops
+	_steps_for = quest_id
+	_step_level = "region"
+	var ran := _run_region_list(quest_id, state, stage, row)
+	_hop = saved_hop
+	_steps_for = saved_for
+	_step_level = saved_level
+	return ran
+
+
+func _run_region_list(quest_id: String, state: QuestState, stage: WyrdStageDef, row: Dictionary) -> Dictionary:
 	var steps := _entry_steps(stage)
 	while int(row.get("step_at", 0)) < steps.size():
 		var step: Dictionary = steps[int(row["step_at"])]
@@ -910,6 +1044,8 @@ func _run_region_steps(quest_id: String, state: QuestState, stage: WyrdStageDef,
 		elif kind == &"effect":
 			_arm_effects(quest_id)
 			var divert := runtime.effects.run_one(step["effect"])
+			if divert == _LIFT:
+				return {"blocked": false, "divert": "", "lift": true}
 			if divert != "":
 				return {"blocked": false, "divert": divert}
 		elif kind == &"scene":
@@ -1107,9 +1243,67 @@ func _arm_effects(quest_id: String) -> void:
 func _set_status(quest_id: String, state: QuestState, next: StringName) -> void:
 	if state.status == next:
 		return
+	var previous := String(state.status)
 	state.status = next
 	_sync_watch(quest_id, state)
+	if runtime != null:
+		runtime.trace_quest_status(quest_id, previous, String(next))
 	quest_state_changed.emit(quest_id, next)
+
+
+func _start_reason(status: StringName) -> String:
+	match status:
+		DORMANT, AVAILABLE:
+			return "started"
+		ACTIVE:
+			return "active"
+		COMPLETED:
+			return "completed"
+		FAILED:
+			return "failed"
+		ABANDONED:
+			return "abandoned"
+		UNAVAILABLE:
+			return "unavailable"
+		_:
+			return String(status)
+
+
+func _next_hop() -> int:
+	if _steps_for == "":
+		return 0
+	return _hop + 1
+
+
+func _move(quest_id: String, quest: WyrdQuestDef, state: QuestState, stage_id: String, hops: int) -> void:
+	_goto(quest_id, quest, state, stage_id, hops, true)
+
+
+func _consume_lift(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int) -> bool:
+	if _lift_to == "":
+		return false
+	var target := _lift_to
+	_lift_to = ""
+	_goto(quest_id, quest, state, target, hops + 1, true)
+	return true
+
+
+func _scene_open(quest_id: String) -> bool:
+	if runtime == null or runtime.dialogue == null or not runtime.dialogue.is_open():
+		return false
+	return runtime.dialogue.open_quest_id() == quest_id
+
+
+func _trace_start(quest_id: String, ok: bool, reason: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_quest_start(quest_id, ok, reason)
+
+
+func _trace_advance(quest_id: String, from_stage: String, to_stage: String, ok: bool, reason: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_quest_advance(quest_id, from_stage, to_stage, ok, reason)
 
 
 func _index_start(quest_id: String, quest: WyrdQuestDef) -> void:

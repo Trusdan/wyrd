@@ -1,0 +1,5 @@
+language 1
+
+quest other "Other"
+  stage one
+    ~ advance gate to missing
