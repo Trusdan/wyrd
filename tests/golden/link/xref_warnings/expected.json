@@ -1,0 +1,334 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_RESOLVER_NO_INVALIDATE",
+      "col": 3,
+      "line": 5,
+      "message": "resolved fact \"world.tide\" needs invalidate: on_event, poll, or per_query",
+      "path": "res://tests/golden/link/xref_warnings/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_ROUTE_CLOSED",
+      "col": 5,
+      "line": 10,
+      "message": "every route of branch \"crossing\" closes",
+      "path": "res://tests/golden/link/xref_warnings/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_CLAIM",
+      "col": 29,
+      "line": 16,
+      "message": "interpolation presents \"secret.missing_toll\" as a claim",
+      "path": "res://tests/golden/link/xref_warnings/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_STALE_BELIEF",
+      "col": 5,
+      "line": 18,
+      "message": "learn writes known \"secret.missing_toll\" for dock_clerk while a contradicting belief remains",
+      "path": "res://tests/golden/link/xref_warnings/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "secret.missing_toll",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "bool"
+      },
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "world.tide",
+        "line": 5,
+        "origin": "resolved",
+        "pattern": false,
+        "resolver": "world.tide",
+        "source": "world.tide",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "b5099d610fa0bb44",
+        "path": "res://tests/golden/link/xref_warnings/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+        "id": "xref_warnings/claim_line",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            16
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "world.tide"
+            },
+            {
+              "t": "int",
+              "v": 0
+            }
+          ],
+          "reads": [
+            "world.tide"
+          ],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+        "id": "xref_warnings/ask_clerk",
+        "kind": "choice",
+        "scene": "dock.talk",
+        "speaker": "",
+        "tags": []
+      }
+    ],
+    "pack_id": "xref_warnings",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "dock_clerk",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "secret.missing_toll",
+                "kind": "believe",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "secret.missing_toll"
+                    }
+                  ],
+                  "reads": [
+                    "secret.missing_toll"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    2
+                  ],
+                  "consts": [],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              },
+              {
+                "agent": "",
+                "args": [],
+                "branch": "crossing",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "route_closed",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": []
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "claim_line",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "choice_id": "ask_clerk",
+            "divert": "",
+            "effects": [
+              {
+                "agent": "dock_clerk",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "secret.missing_toll",
+                "kind": "learn",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "secret.missing_toll"
+                    }
+                  ],
+                  "reads": [
+                    "secret.missing_toll"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    3
+                  ],
+                  "consts": [],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "kind": "choice",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+          "key": "secret.missing_toll",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+              "id": "claim_line",
+              "kind": "line",
+              "line": 16
+            }
+          ],
+          "source": "stored",
+          "type": "bool",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+              "id": "ferry_toll.arrive",
+              "kind": "effect",
+              "line": 9
+            },
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+              "id": "ask_clerk",
+              "kind": "effect",
+              "line": 18
+            }
+          ]
+        },
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+          "key": "world.tide",
+          "line": 5,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/xref_warnings/pack.wyrd",
+              "id": "ask_clerk",
+              "kind": "choice",
+              "line": 17
+            }
+          ],
+          "source": "world.tide",
+          "type": "int",
+          "writers": []
+        }
+      ]
+    }
+  }
+}

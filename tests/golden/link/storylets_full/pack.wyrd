@@ -1,0 +1,61 @@
+language 1
+
+facts
+  player.coins : int stored
+
+events
+  bell_rung()
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    scene dock.talk
+    -> done
+  stage done
+
+scene dock.talk
+  narrator: The dock is quiet. #line:dock_quiet
+  -> end
+
+storylet harbor.topic
+  scope: topic harbor_toll
+  speaker: dock_clerk
+  when: player.coins >= 1
+  priority: 3
+  weight: 2
+  cooldown: 1 h
+  speaker_cooldown: 1 d
+  secrecy: sealed
+  ~ set player.coins = player.coins + 1
+  - The harbor has news. #secrecy:open #line:topic_line
+
+storylet harbor.bark_set
+  scope: bark
+  speaker: any
+  lines:
+    - The bell is quiet. #line:bark_one
+    - The bell is loud. #line:bark_two
+
+storylet harbor.event_scene
+  scope: event bell_rung
+  speaker: ferry_master
+  -> scene dock.talk
+
+storylet harbor.beat_line
+  scope: beat ferry_toll.arrive
+  speaker: tavern_owner
+  when: filled(ferry)
+  - The stage is set. #line:beat_line
+
+storylet harbor.tie_a
+  scope: bark
+  speaker: any
+  priority: 2
+  weight: 1
+  - The dock is loud. #line:tie_a
+
+storylet harbor.tie_b
+  scope: bark
+  speaker: dock_clerk
+  priority: 2
+  weight: 4
+  - The clerk agrees. #line:tie_b

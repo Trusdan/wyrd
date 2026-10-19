@@ -1,0 +1,69 @@
+{
+  "diagnostics": [],
+  "documents": [
+    {
+      "fact_key": "rumor.tone",
+      "fragments": 2,
+      "group": "harbor_guild",
+      "id": "harbor_gazette",
+      "line_id": "",
+      "meta": {},
+      "mode": "",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [],
+      "period_minutes": 1440,
+      "publish": {
+        "claim_key": "secret.missing_toll",
+        "delay_minutes": 60,
+        "fact_key": "rumor.tone",
+        "fragments": [
+          {
+            "slant": "dock_alarm",
+            "when": {
+              "reads": [
+                "secret.missing_toll"
+              ],
+              "source_span": {
+                "col": 17,
+                "end_col": 36,
+                "end_line": 11,
+                "line": 11
+              },
+              "specificity": 1,
+              "uses_chance": false
+            }
+          },
+          {
+            "slant": "dock_calm",
+            "when": {
+              "reads": [
+                "secret.missing_toll"
+              ],
+              "source_span": {
+                "col": 17,
+                "end_col": 40,
+                "end_line": 13,
+                "line": 13
+              },
+              "specificity": 1,
+              "uses_chance": false
+            }
+          }
+        ],
+        "group": "harbor_guild",
+        "period_minutes": 1440,
+        "verb_filter": "asked_guild"
+      },
+      "secrecy": "",
+      "tags": [],
+      "title": "Harbor Gazette"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "secret.missing_toll",
+    "rumor.tone"
+  ],
+  "scenes": []
+}

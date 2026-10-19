@@ -1,0 +1,23 @@
+language 1
+
+facts
+  secret.missing_toll : bool stored
+
+quest harbor.watch "Harbor Watch"
+  stage arrive
+    ~ learn dock_clerk secret.missing_toll = true
+    ~ forget dock_clerk secret.missing_toll
+    -> done
+  stage done
+
+scene dock.talk
+  ~ learn ferry_master secret.missing_toll = false
+  ~ forget ferry_master secret.missing_toll
+  -> end
+
+storylet harbor.whisper
+  scope: topic harbor_toll
+  speaker: any
+  ~ learn tavern_owner secret.missing_toll = true
+  ~ forget tavern_owner secret.missing_toll
+  - The tavern keeps a secret. #line:whisper

@@ -1,0 +1,26 @@
+language 1
+
+facts
+  player.coins : int stored
+
+events
+  bell_rung(count: int)
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    region rope
+      stage coil
+        waits_until player.coins >= 0
+        -> tied
+      stage tied
+        journal: The rope is tied. #line:rope_tied
+    region bell
+      stage quiet
+        on bell_rung where event.count >= 1:
+          ~ set player.coins = player.coins + 1
+          -> struck
+      stage struck
+        journal: The bell was struck. #line:bell_struck
+    -> done
+  stage done
+    ~ outcome route = done

@@ -1,0 +1,17 @@
+language 1
+
+quest harbor.watch "Harbor Watch"
+  slot ferry = ferry_master mode: cast(true)
+  slot tavern = tavern_owner mode: cast(false)
+  on_empty: wait
+  stage arrive
+    variant ferry.unwilling(true):
+      journal: The master will not cross. #line:always_unwilling
+    variant tavern.barred(false):
+      journal: The tavern is not barred. #line:never_barred
+    region rope
+      stage coil
+        region knots
+          stage hitch
+    -> done
+  stage done

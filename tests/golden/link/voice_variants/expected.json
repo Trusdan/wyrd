@@ -1,0 +1,232 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_HOLDER_UNGUARDED",
+      "col": 17,
+      "line": 17,
+      "message": "holder(\"ferry\") is interpolated where slot \"ferry\" can be empty",
+      "path": "res://tests/golden/link/voice_variants/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 19,
+      "message": "storylet \"harbor.voice\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/voice_variants/pack.wyrd",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "b7cc6cf2d4b16363",
+        "path": "res://tests/golden/link/voice_variants/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "voice_variants/ferry_speaks",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "ferry",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "voice_variants/dock_voice",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": [
+          "voiced"
+        ]
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "holder": "ferry_master",
+        "id": "voice_variants/dock_voice_master",
+        "kind": "variant",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": [
+          "voiced"
+        ]
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "holder": "net_mender",
+        "id": "voice_variants/dock_voice_mender",
+        "kind": "variant",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": [
+          "voiced"
+        ]
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "voice_variants/unguarded",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "voice_variants/story_voice",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "holder": "ferry_master",
+        "id": "voice_variants/story_voice_master",
+        "kind": "variant",
+        "scene": "",
+        "speaker": "any",
+        "tags": [
+          "voiced"
+        ]
+      }
+    ],
+    "pack_id": "voice_variants",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "wait",
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "ferry",
+            "role": "ferry_master"
+          }
+        ],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": [
+                  "ferry"
+                ]
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "ferry_speaks",
+            "speaker": "ferry",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "dock_voice",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "unguarded",
+            "speaker": "narrator",
+            "target": ""
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/voice_variants/pack.wyrd",
+        "generic": true,
+        "id": "harbor.voice",
+        "line_ids": [
+          "story_voice"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "topic harbor_toll",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

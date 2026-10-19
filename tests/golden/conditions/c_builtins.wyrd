@@ -1,0 +1,31 @@
+language 1
+
+facts
+  secret.missing_toll : bool stored
+  rumor.tone : symbol stored
+
+// @value attr(dock_clerk, mood)
+// @value axis(player, dock_clerk, respect)
+// @value belief(dock_clerk, rumor.tone)
+// @when believes(dock_clerk, secret.missing_toll)
+// @when can_perceive(player, dock_clerk)
+// @when can_reach(player, tavern)
+// @when conflicted(dock_clerk, secret.missing_toll)
+// @value count(player, harbor_pass)
+// @value display_name(dock_clerk)
+// @when done(harbor_bell)
+// @when exists(dock_clerk)
+// @when held(harbor_guild, secret.missing_toll)
+// @value kind(dock_clerk)
+// @when knows(dock_clerk, secret.missing_toll)
+// @value outcome(ferry_toll, crossing)
+// @when path_exists(player, tavern, [road, ferry], 3)
+// @value perceived(dock_clerk, asked_guild)
+// @value progress(harbor_bell)
+// @value quest(ferry_toll)
+// @when rel(player, dock_clerk, kin)
+// @value reputation(player, harbor_guild)
+// @value role(dock_clerk)
+// @when seen(harbor_news)
+// @value slot_state(ferry)
+// @value stage(ferry_toll)

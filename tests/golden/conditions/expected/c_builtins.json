@@ -1,0 +1,1926 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "mood"
+            },
+            {
+              "t": "name",
+              "v": "attr"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 PUSH_CONST \"mood\"",
+            "0004 CALL \"attr\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 33,
+            "end_line": 7,
+            "line": 7
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 7,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 7,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 28,
+              "kind": "name",
+              "line": 7,
+              "text": "mood",
+              "type": "symbol"
+            },
+            "col": 28,
+            "kind": "arg",
+            "line": 7,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 7,
+        "text": "attr",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "attr(dock_clerk, mood)",
+      "kind": "value",
+      "line": 7
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            21,
+            3,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "respect"
+            },
+            {
+              "t": "name",
+              "v": "axis"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"dock_clerk\"",
+            "0004 PUSH_CONST \"respect\"",
+            "0006 CALL \"axis\" 3"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 44,
+            "end_line": 8,
+            "line": 8
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 8,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 8,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 24,
+              "kind": "name",
+              "line": 8,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 8,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 36,
+              "kind": "name",
+              "line": 8,
+              "text": "respect",
+              "type": "symbol"
+            },
+            "col": 36,
+            "kind": "arg",
+            "line": 8,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 8,
+        "text": "axis",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "axis(player, dock_clerk, respect)",
+      "kind": "value",
+      "line": 8
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "rumor.tone"
+            },
+            {
+              "t": "name",
+              "v": "belief"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 LOAD_FACT \"rumor.tone\"",
+            "0004 CALL \"belief\" 2"
+          ],
+          "reads": [
+            "rumor.tone",
+            "group.membership"
+          ],
+          "source_span": {
+            "col": 11,
+            "end_col": 41,
+            "end_line": 9,
+            "line": 9
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 18,
+              "kind": "name",
+              "line": 9,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 18,
+            "kind": "arg",
+            "line": 9,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 30,
+              "kind": "fact",
+              "line": 9,
+              "text": "rumor.tone",
+              "type": "symbol"
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 9,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 9,
+        "text": "belief",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "belief(dock_clerk, rumor.tone)",
+      "kind": "value",
+      "line": 9
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "secret.missing_toll"
+            },
+            {
+              "t": "name",
+              "v": "believes"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 LOAD_FACT \"secret.missing_toll\"",
+            "0004 CALL \"believes\" 2"
+          ],
+          "reads": [
+            "secret.missing_toll",
+            "group.membership"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 51,
+            "end_line": 10,
+            "line": 10
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 19,
+              "kind": "name",
+              "line": 10,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 19,
+            "kind": "arg",
+            "line": 10,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 31,
+              "kind": "fact",
+              "line": 10,
+              "text": "secret.missing_toll",
+              "type": "symbol"
+            },
+            "col": 31,
+            "kind": "arg",
+            "line": 10,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 10,
+        "text": "believes",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "believes(dock_clerk, secret.missing_toll)",
+      "kind": "when",
+      "line": 10
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "can_perceive"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"dock_clerk\"",
+            "0004 CALL \"can_perceive\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 42,
+            "end_line": 11,
+            "line": 11
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 23,
+              "kind": "name",
+              "line": 11,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 23,
+            "kind": "arg",
+            "line": 11,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 31,
+              "kind": "name",
+              "line": 11,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 31,
+            "kind": "arg",
+            "line": 11,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 11,
+        "text": "can_perceive",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "can_perceive(player, dock_clerk)",
+      "kind": "when",
+      "line": 11
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "tavern"
+            },
+            {
+              "t": "name",
+              "v": "can_reach"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"tavern\"",
+            "0004 CALL \"can_reach\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 35,
+            "end_line": 12,
+            "line": 12
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 20,
+              "kind": "name",
+              "line": 12,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 20,
+            "kind": "arg",
+            "line": 12,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 28,
+              "kind": "name",
+              "line": 12,
+              "text": "tavern",
+              "type": "entity"
+            },
+            "col": 28,
+            "kind": "arg",
+            "line": 12,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 12,
+        "text": "can_reach",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "can_reach(player, tavern)",
+      "kind": "when",
+      "line": 12
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "secret.missing_toll"
+            },
+            {
+              "t": "name",
+              "v": "conflicted"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 LOAD_FACT \"secret.missing_toll\"",
+            "0004 CALL \"conflicted\" 2"
+          ],
+          "reads": [
+            "secret.missing_toll",
+            "group.membership"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 53,
+            "end_line": 13,
+            "line": 13
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 21,
+              "kind": "name",
+              "line": 13,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 21,
+            "kind": "arg",
+            "line": 13,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 33,
+              "kind": "fact",
+              "line": 13,
+              "text": "secret.missing_toll",
+              "type": "symbol"
+            },
+            "col": 33,
+            "kind": "arg",
+            "line": 13,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 13,
+        "text": "conflicted",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "conflicted(dock_clerk, secret.missing_toll)",
+      "kind": "when",
+      "line": 13
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "harbor_pass"
+            },
+            {
+              "t": "name",
+              "v": "count"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"harbor_pass\"",
+            "0004 CALL \"count\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 37,
+            "end_line": 14,
+            "line": 14
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 17,
+              "kind": "name",
+              "line": 14,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 17,
+            "kind": "arg",
+            "line": 14,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 25,
+              "kind": "name",
+              "line": 14,
+              "text": "harbor_pass",
+              "type": "symbol"
+            },
+            "col": 25,
+            "kind": "arg",
+            "line": 14,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 14,
+        "text": "count",
+        "type": "int"
+      },
+      "diagnostics": [],
+      "expr": "count(player, harbor_pass)",
+      "kind": "value",
+      "line": 14
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "display_name"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 CALL \"display_name\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 35,
+            "end_line": 15,
+            "line": 15
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 24,
+              "kind": "name",
+              "line": 15,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 15,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 15,
+        "text": "display_name",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "display_name(dock_clerk)",
+      "kind": "value",
+      "line": 15
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "harbor_bell"
+            },
+            {
+              "t": "name",
+              "v": "done"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"harbor_bell\"",
+            "0002 CALL \"done\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 16,
+            "line": 16
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 15,
+              "kind": "name",
+              "line": 16,
+              "text": "harbor_bell",
+              "type": "symbol"
+            },
+            "col": 15,
+            "kind": "arg",
+            "line": 16,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 16,
+        "text": "done",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "done(harbor_bell)",
+      "kind": "when",
+      "line": 16
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "exists"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 CALL \"exists\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 28,
+            "end_line": 17,
+            "line": 17
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 17,
+              "kind": "name",
+              "line": 17,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 17,
+            "kind": "arg",
+            "line": 17,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 17,
+        "text": "exists",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "exists(dock_clerk)",
+      "kind": "when",
+      "line": 17
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "harbor_guild"
+            },
+            {
+              "t": "name",
+              "v": "secret.missing_toll"
+            },
+            {
+              "t": "name",
+              "v": "held"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"harbor_guild\"",
+            "0002 LOAD_FACT \"secret.missing_toll\"",
+            "0004 CALL \"held\" 2"
+          ],
+          "reads": [
+            "secret.missing_toll"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 49,
+            "end_line": 18,
+            "line": 18
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 15,
+              "kind": "name",
+              "line": 18,
+              "text": "harbor_guild",
+              "type": "entity"
+            },
+            "col": 15,
+            "kind": "arg",
+            "line": 18,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 29,
+              "kind": "fact",
+              "line": 18,
+              "text": "secret.missing_toll",
+              "type": "symbol"
+            },
+            "col": 29,
+            "kind": "arg",
+            "line": 18,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 18,
+        "text": "held",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "held(harbor_guild, secret.missing_toll)",
+      "kind": "when",
+      "line": 18
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "kind"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 CALL \"kind\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 27,
+            "end_line": 19,
+            "line": 19
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 19,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 19,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 19,
+        "text": "kind",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "kind(dock_clerk)",
+      "kind": "value",
+      "line": 19
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "secret.missing_toll"
+            },
+            {
+              "t": "name",
+              "v": "knows"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 LOAD_FACT \"secret.missing_toll\"",
+            "0004 CALL \"knows\" 2"
+          ],
+          "reads": [
+            "secret.missing_toll"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 48,
+            "end_line": 20,
+            "line": 20
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 20,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 20,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 28,
+              "kind": "fact",
+              "line": 20,
+              "text": "secret.missing_toll",
+              "type": "symbol"
+            },
+            "col": 28,
+            "kind": "arg",
+            "line": 20,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 20,
+        "text": "knows",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "knows(dock_clerk, secret.missing_toll)",
+      "kind": "when",
+      "line": 20
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry_toll"
+            },
+            {
+              "t": "name",
+              "v": "crossing"
+            },
+            {
+              "t": "name",
+              "v": "outcome"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry_toll\"",
+            "0002 PUSH_CONST \"crossing\"",
+            "0004 CALL \"outcome\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 40,
+            "end_line": 21,
+            "line": 21
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 19,
+              "kind": "name",
+              "line": 21,
+              "text": "ferry_toll",
+              "type": "symbol"
+            },
+            "col": 19,
+            "kind": "arg",
+            "line": 21,
+            "type": "symbol"
+          },
+          {
+            "a": {
+              "col": 31,
+              "kind": "name",
+              "line": 21,
+              "text": "crossing",
+              "type": "symbol"
+            },
+            "col": 31,
+            "kind": "arg",
+            "line": 21,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 21,
+        "text": "outcome",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "outcome(ferry_toll, crossing)",
+      "kind": "value",
+      "line": 21
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            1,
+            3,
+            25,
+            2,
+            1,
+            4,
+            21,
+            5,
+            4
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "tavern"
+            },
+            {
+              "t": "name",
+              "v": "road"
+            },
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "int",
+              "v": 3
+            },
+            {
+              "t": "name",
+              "v": "path_exists"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"tavern\"",
+            "0004 PUSH_CONST \"road\"",
+            "0006 PUSH_CONST \"ferry\"",
+            "0008 MAKE_SET 2",
+            "0010 PUSH_CONST 3",
+            "0012 CALL \"path_exists\" 4"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 55,
+            "end_line": 22,
+            "line": 22
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 22,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 22,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 30,
+              "kind": "name",
+              "line": 22,
+              "text": "tavern",
+              "type": "entity"
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 22,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 38,
+              "kids": [
+                {
+                  "col": 39,
+                  "kind": "name",
+                  "line": 22,
+                  "text": "road",
+                  "type": "symbol"
+                },
+                {
+                  "col": 45,
+                  "kind": "name",
+                  "line": 22,
+                  "text": "ferry",
+                  "type": "symbol"
+                }
+              ],
+              "kind": "set",
+              "line": 22,
+              "text": "[",
+              "type": "set"
+            },
+            "col": 38,
+            "kind": "arg",
+            "line": 22,
+            "type": "set"
+          },
+          {
+            "a": {
+              "col": 53,
+              "kind": "int",
+              "line": 22,
+              "text": "3",
+              "type": "int",
+              "value": 3
+            },
+            "col": 53,
+            "kind": "arg",
+            "line": 22,
+            "type": "int"
+          }
+        ],
+        "kind": "call",
+        "line": 22,
+        "text": "path_exists",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "path_exists(player, tavern, [road, ferry], 3)",
+      "kind": "when",
+      "line": 22
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "asked_guild"
+            },
+            {
+              "t": "name",
+              "v": "perceived"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 PUSH_CONST \"asked_guild\"",
+            "0004 CALL \"perceived\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 45,
+            "end_line": 23,
+            "line": 23
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 21,
+              "kind": "name",
+              "line": 23,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 21,
+            "kind": "arg",
+            "line": 23,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 33,
+              "kind": "name",
+              "line": 23,
+              "text": "asked_guild",
+              "type": "symbol"
+            },
+            "col": 33,
+            "kind": "arg",
+            "line": 23,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 23,
+        "text": "perceived",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "perceived(dock_clerk, asked_guild)",
+      "kind": "value",
+      "line": 23
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "harbor_bell"
+            },
+            {
+              "t": "name",
+              "v": "progress"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"harbor_bell\"",
+            "0002 CALL \"progress\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 32,
+            "end_line": 24,
+            "line": 24
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 20,
+              "kind": "name",
+              "line": 24,
+              "text": "harbor_bell",
+              "type": "symbol"
+            },
+            "col": 20,
+            "kind": "arg",
+            "line": 24,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 24,
+        "text": "progress",
+        "type": "int"
+      },
+      "diagnostics": [],
+      "expr": "progress(harbor_bell)",
+      "kind": "value",
+      "line": 24
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry_toll"
+            },
+            {
+              "t": "name",
+              "v": "quest"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry_toll\"",
+            "0002 CALL \"quest\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 28,
+            "end_line": 25,
+            "line": 25
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 17,
+              "kind": "name",
+              "line": 25,
+              "text": "ferry_toll",
+              "type": "symbol"
+            },
+            "col": 17,
+            "kind": "arg",
+            "line": 25,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 25,
+        "text": "quest",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "quest(ferry_toll)",
+      "kind": "value",
+      "line": 25
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            2,
+            21,
+            3,
+            3
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "kin"
+            },
+            {
+              "t": "name",
+              "v": "rel"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"dock_clerk\"",
+            "0004 PUSH_CONST \"kin\"",
+            "0006 CALL \"rel\" 3"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 38,
+            "end_line": 26,
+            "line": 26
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 14,
+              "kind": "name",
+              "line": 26,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 14,
+            "kind": "arg",
+            "line": 26,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 26,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 26,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 34,
+              "kind": "name",
+              "line": 26,
+              "text": "kin",
+              "type": "symbol"
+            },
+            "col": 34,
+            "kind": "arg",
+            "line": 26,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 26,
+        "text": "rel",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "rel(player, dock_clerk, kin)",
+      "kind": "when",
+      "line": 26
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "harbor_guild"
+            },
+            {
+              "t": "name",
+              "v": "reputation"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"harbor_guild\"",
+            "0004 CALL \"reputation\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 43,
+            "end_line": 27,
+            "line": 27
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 27,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 27,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 30,
+              "kind": "name",
+              "line": 27,
+              "text": "harbor_guild",
+              "type": "entity"
+            },
+            "col": 30,
+            "kind": "arg",
+            "line": 27,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 27,
+        "text": "reputation",
+        "type": "float"
+      },
+      "diagnostics": [],
+      "expr": "reputation(player, harbor_guild)",
+      "kind": "value",
+      "line": 27
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "role"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"dock_clerk\"",
+            "0002 CALL \"role\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 27,
+            "end_line": 28,
+            "line": 28
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 28,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 28,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 28,
+        "text": "role",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "role(dock_clerk)",
+      "kind": "value",
+      "line": 28
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "harbor_news"
+            },
+            {
+              "t": "name",
+              "v": "seen"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"harbor_news\"",
+            "0002 CALL \"seen\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 27,
+            "end_line": 29,
+            "line": 29
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 15,
+              "kind": "name",
+              "line": 29,
+              "text": "harbor_news",
+              "type": "symbol"
+            },
+            "col": 15,
+            "kind": "arg",
+            "line": 29,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 29,
+        "text": "seen",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "seen(harbor_news)",
+      "kind": "when",
+      "line": 29
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry"
+            },
+            {
+              "t": "name",
+              "v": "slot_state"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry\"",
+            "0002 CALL \"slot_state\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 28,
+            "end_line": 30,
+            "line": 30
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 22,
+              "kind": "name",
+              "line": 30,
+              "text": "ferry",
+              "type": "symbol"
+            },
+            "col": 22,
+            "kind": "arg",
+            "line": 30,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 30,
+        "text": "slot_state",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "slot_state(ferry)",
+      "kind": "value",
+      "line": 30
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "ferry_toll"
+            },
+            {
+              "t": "name",
+              "v": "stage"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"ferry_toll\"",
+            "0002 CALL \"stage\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 28,
+            "end_line": 31,
+            "line": 31
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 17,
+              "kind": "name",
+              "line": 31,
+              "text": "ferry_toll",
+              "type": "symbol"
+            },
+            "col": 17,
+            "kind": "arg",
+            "line": 31,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 31,
+        "text": "stage",
+        "type": "symbol"
+      },
+      "diagnostics": [],
+      "expr": "stage(ferry_toll)",
+      "kind": "value",
+      "line": 31
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

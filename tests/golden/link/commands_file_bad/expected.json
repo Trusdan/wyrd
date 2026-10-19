@@ -1,0 +1,33 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_COMMANDS_FILE",
+      "col": 1,
+      "line": 1,
+      "message": "could not read command schemas",
+      "path": "res://tests/golden/link/commands_file_bad/wyrd_commands.json",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "0b5d768c5d4f2ad9",
+        "path": "res://tests/golden/link/commands_file_bad/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "commands_file_bad",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

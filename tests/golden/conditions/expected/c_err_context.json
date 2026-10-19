@@ -1,0 +1,184 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "dock_clerk"
+            },
+            {
+              "t": "name",
+              "v": "can_perceive"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"dock_clerk\"",
+            "0004 CALL \"can_perceive\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 42,
+            "end_line": 4,
+            "line": 4
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 23,
+              "kind": "name",
+              "line": 4,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 23,
+            "kind": "arg",
+            "line": 4,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 31,
+              "kind": "name",
+              "line": 4,
+              "text": "dock_clerk",
+              "type": "entity"
+            },
+            "col": 31,
+            "kind": "arg",
+            "line": 4,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 4,
+        "text": "can_perceive",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_SPATIAL_CONTEXT",
+          "col": 10,
+          "line": 4,
+          "message": "can_perceive is not allowed in a wait, trigger, or eligibility condition",
+          "path": "res://tests/golden/conditions/c_err_context.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "can_perceive(player, dock_clerk)",
+      "kind": "when",
+      "line": 4
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            1,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "tavern"
+            },
+            {
+              "t": "name",
+              "v": "can_reach"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 PUSH_CONST \"tavern\"",
+            "0004 CALL \"can_reach\" 2"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 35,
+            "end_line": 5,
+            "line": 5
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 20,
+              "kind": "name",
+              "line": 5,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 20,
+            "kind": "arg",
+            "line": 5,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 28,
+              "kind": "name",
+              "line": 5,
+              "text": "tavern",
+              "type": "entity"
+            },
+            "col": 28,
+            "kind": "arg",
+            "line": 5,
+            "type": "entity"
+          }
+        ],
+        "kind": "call",
+        "line": 5,
+        "text": "can_reach",
+        "type": "bool"
+      },
+      "diagnostics": [
+        {
+          "code": "E_SPATIAL_CONTEXT",
+          "col": 10,
+          "line": 5,
+          "message": "can_reach is not allowed in a wait, trigger, or eligibility condition",
+          "path": "res://tests/golden/conditions/c_err_context.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "can_reach(player, tavern)",
+      "kind": "when",
+      "line": 5
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

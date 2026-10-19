@@ -1,0 +1,21 @@
+language 1
+
+storylet harbor.news
+  scope: topic harbor_toll
+  speaker: any
+  - The harbor has news. #line:news_a
+
+storylet harbor.news
+  scope: bark
+  speaker: dock_clerk
+  - The clerk repeats it. #line:news_b
+
+document dock_letter "Dock Letter"
+  text: live
+  page
+    The tide is posted. #line:letter_a
+
+document dock_letter "Dock Letter Again"
+  text: frozen
+  page
+    The copy is filed. #line:letter_b

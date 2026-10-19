@@ -1,0 +1,17 @@
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    journal: The log is sealed. #secrecy:sealed #line:journal_sealed
+    scene dock.talk
+    -> done
+  stage done
+
+scene dock.talk
+  narrator: The schedule is sealed. #secrecy:sealed #line:scene_sealed
+  * [Open the crate] -> end #secrecy:sealed #line:choice_sealed
+
+storylet harbor.secret
+  scope: topic harbor_toll
+  speaker: any
+  - The rumor is sealed. #secrecy:sealed #line:story_sealed

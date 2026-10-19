@@ -1,0 +1,160 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 14,
+      "message": "storylet \"harbor.secret\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "2b49966427d65f10",
+        "path": "res://tests/golden/link/secrecy_lines/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "secrecy_lines/journal_sealed",
+        "kind": "journal",
+        "scene": "",
+        "secrecy": "sealed",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "secrecy_lines/scene_sealed",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "secrecy": "sealed",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "secrecy_lines/choice_sealed",
+        "kind": "choice",
+        "scene": "dock.talk",
+        "secrecy": "sealed",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "secrecy_lines/story_sealed",
+        "kind": "storylet",
+        "scene": "",
+        "secrecy": "sealed",
+        "speaker": "any",
+        "tags": []
+      }
+    ],
+    "pack_id": "secrecy_lines",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [
+              "journal_sealed"
+            ],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": []
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "scene_sealed",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "choice_id": "choice_sealed",
+            "divert": "",
+            "effects": [],
+            "kind": "choice",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/secrecy_lines/pack.wyrd",
+        "generic": true,
+        "id": "harbor.secret",
+        "line_ids": [
+          "story_sealed"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "topic harbor_toll",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

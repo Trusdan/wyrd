@@ -19,7 +19,7 @@ CI greps the pull request diff against a private deny-list. The list is the repo
 - Unfinished API is marked `@experimental` in the doc comment. The stable surface (facade, signals, adapter bases, config, `language` version) is still small at 0.x and is not frozen in S0.
 - Version with SemVer. `0.x` lasts until 1.0. The addon version is the single line in `addons/wyrd/VERSION`.
 - Commits use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
-- A behavior change arrives with a GUT test. Golden snapshots and scenario tests start when there is a compiler and a runtime to snapshot.
+- A behavior change arrives with a GUT test. Golden snapshots live under `tests/golden/`. See `tests/golden/README.md`.
 
 Godot and GUT versions are pinned in `tools/pins.env`. An upgrade is its own pull request. `WyrdRng` sequences do not depend on the Godot version.
 

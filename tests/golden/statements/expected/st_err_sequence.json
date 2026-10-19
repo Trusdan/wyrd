@@ -1,0 +1,247 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 6,
+      "message": "a line tag is not allowed on a sequence",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 7,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 9,
+      "message": "a sequence has no title",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 10,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 12,
+      "message": "sequence needs an id",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 22,
+      "line": 14,
+      "message": "sequence needs ordered or any(<n> of <m>)",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 16,
+      "message": "sequence needs within <duration>",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 48,
+      "line": 18,
+      "message": "sequence reset needs reset on <event or condition>",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 54,
+      "line": 20,
+      "message": "sequence reset needs an event or a condition",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 22,
+      "message": "sequence \"harbor.no_step\" needs a step",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 27,
+      "line": 24,
+      "message": "any needs (<n> of <m>)",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 27,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 26,
+      "message": "any(0 of 1) needs a count from 1 to 1",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 30,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 31,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 32,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 1,
+      "line": 29,
+      "message": "any of 2 needs 2 steps",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 36,
+      "line": 34,
+      "message": "within needs a duration",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 45,
+      "line": 36,
+      "message": "within needs a duration",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 43,
+      "line": 38,
+      "message": "within cannot be negative",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 46,
+      "line": 40,
+      "message": "within unit must be m, h, or d",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 3,
+      "line": 43,
+      "message": "a sequence step is on <event> where <condition>",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 44,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 5,
+      "line": 48,
+      "message": "a sequence step is only a match",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 47,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_SYNTAX",
+      "col": 3,
+      "line": 51,
+      "message": "a sequence step needs on <event> where <condition>",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 52,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 55,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 6,
+      "line": 58,
+      "message": "unknown event \"bell_rung\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SEQUENCE_DUPLICATE",
+      "col": 1,
+      "line": 57,
+      "message": "duplicate sequence \"harbor.dup\"",
+      "path": "res://tests/golden/statements/st_err_sequence.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": []
+}

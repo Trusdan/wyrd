@@ -1,0 +1,420 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_FACT_NEVER_SET",
+      "col": 3,
+      "line": 4,
+      "message": "stored fact \"player.coins\" is read but never set",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 19,
+      "message": "storylet \"harbor.topic\" specificity 1 priority 3 generic=false",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 31,
+      "message": "storylet \"harbor.bark_set\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 38,
+      "message": "storylet \"harbor.event_scene\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 43,
+      "message": "storylet \"harbor.beat_line\" specificity 1 priority 0 generic=false",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 49,
+      "message": "storylet \"harbor.tie_a\" specificity 0 priority 2 generic=true",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 56,
+      "message": "storylet \"harbor.tie_b\" specificity 0 priority 2 generic=true",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_STORYLET_TIE",
+      "col": 1,
+      "line": 56,
+      "message": "storylet \"harbor.tie_b\" ties \"harbor.tie_a\" on bark speaker any/dock_clerk: priority 2 specificity 0 weights 1 and 4",
+      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [
+      {
+        "fields": [],
+        "line": 7,
+        "name": "bell_rung"
+      }
+    ],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "5e1f2ae7b011cf4e",
+        "path": "res://tests/golden/link/storylets_full/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/dock_quiet",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/topic_line",
+        "kind": "storylet",
+        "scene": "",
+        "secrecy": "open",
+        "speaker": "dock_clerk",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/bark_one",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/bark_two",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/beat_line",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "tavern_owner",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/tie_a",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "storylets_full/tie_b",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "dock_clerk",
+        "tags": []
+      }
+    ],
+    "pack_id": "storylets_full",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": []
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "dock_quiet",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "storylets": [
+      {
+        "body": "set",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": true,
+        "id": "harbor.bark_set",
+        "line_ids": [
+          "bark_one",
+          "bark_two"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "bark",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": false,
+        "id": "harbor.beat_line",
+        "line_ids": [
+          "beat_line"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "beat ferry_toll.arrive",
+        "speaker": "tavern_owner",
+        "speaker_cooldown": 0,
+        "specificity": 1,
+        "weight": 1,
+        "when": "filled(ferry)"
+      },
+      {
+        "body": "scene",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": true,
+        "id": "harbor.event_scene",
+        "line_ids": [],
+        "priority": 0,
+        "scene": "dock.talk",
+        "scope": "event bell_rung",
+        "speaker": "ferry_master",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": true,
+        "id": "harbor.tie_a",
+        "line_ids": [
+          "tie_a"
+        ],
+        "priority": 2,
+        "scene": "",
+        "scope": "bark",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": true,
+        "id": "harbor.tie_b",
+        "line_ids": [
+          "tie_b"
+        ],
+        "priority": 2,
+        "scene": "",
+        "scope": "bark",
+        "speaker": "dock_clerk",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 4,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 60,
+        "effects": [
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "player.coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "target": {
+              "code": [
+                5,
+                0
+              ],
+              "consts": [
+                {
+                  "t": "name",
+                  "v": "player.coins"
+                }
+              ],
+              "reads": [
+                "player.coins"
+              ],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "topic": "",
+            "value": {
+              "code": [
+                5,
+                0,
+                1,
+                1,
+                8
+              ],
+              "consts": [
+                {
+                  "t": "name",
+                  "v": "player.coins"
+                },
+                {
+                  "t": "int",
+                  "v": 1
+                }
+              ],
+              "reads": [
+                "player.coins"
+              ],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "verb": ""
+          }
+        ],
+        "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+        "generic": false,
+        "id": "harbor.topic",
+        "line_ids": [
+          "topic_line"
+        ],
+        "priority": 3,
+        "scene": "",
+        "scope": "topic harbor_toll",
+        "secrecy": "sealed",
+        "speaker": "dock_clerk",
+        "speaker_cooldown": 1440,
+        "specificity": 1,
+        "weight": 2,
+        "when": "player.coins >= 1"
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+              "id": "harbor.topic",
+              "kind": "storylet",
+              "line": 19
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": []
+        }
+      ]
+    }
+  }
+}

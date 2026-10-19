@@ -1,0 +1,14 @@
+language 1
+
+facts
+  secret.missing_toll : bool stored
+  rumor.tone : symbol stored
+
+document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day delay 1 hour
+  claim secret.missing_toll
+  fact rumor.tone
+  verb asked_guild
+  fragment when secret.missing_toll
+    slant dock_alarm
+  fragment when not secret.missing_toll
+    slant dock_calm

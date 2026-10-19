@@ -1,0 +1,58 @@
+language 1
+
+events
+  bell_rung()
+
+sequence harbor.tagged ordered within 1 h #line:seq_tag
+  on bell_rung where true
+
+sequence harbor.named "The Bell" ordered within 1 h
+  on bell_rung where true
+
+sequence
+
+sequence harbor.mode soon
+
+sequence harbor.window ordered
+
+sequence harbor.reset_shape ordered within 1 h later
+
+sequence harbor.reset_empty ordered within 1 h reset on
+
+sequence harbor.no_step ordered within 1 h
+
+sequence harbor.any_shape any within 1 h
+
+sequence harbor.any_count any(0 of 1) within 1 h
+  on bell_rung where true
+
+sequence harbor.any_steps any(1 of 2) within 1 h
+  on bell_rung where true
+  on bell_rung where true
+  on bell_rung where true
+
+sequence harbor.within_end ordered within
+
+sequence harbor.within_token ordered within soon
+
+sequence harbor.within_neg ordered within -1 h
+
+sequence harbor.within_unit ordered within 1 week
+
+sequence harbor.bad_child ordered within 1 h
+  note: not a step
+  on bell_rung where true
+
+sequence harbor.nested ordered within 1 h
+  on bell_rung where true:
+    note: nested
+
+sequence harbor.bad_shape ordered within 1 h
+  on bell_rung
+  on bell_rung where true
+
+sequence harbor.dup ordered within 1 h
+  on bell_rung where true
+
+sequence harbor.dup ordered within 1 h
+  on bell_rung where true

@@ -1,0 +1,76 @@
+{
+  "diagnostics": [],
+  "export": {
+    "events": [
+      {
+        "fields": [
+          {
+            "name": "count",
+            "type": "int"
+          }
+        ],
+        "line": 4,
+        "name": "bell_rung"
+      },
+      {
+        "fields": [],
+        "line": 5,
+        "name": "season_changed"
+      }
+    ],
+    "facts": [],
+    "files": [
+      {
+        "hash": "8468a2679a88a31a",
+        "path": "res://tests/golden/link/sequences/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "sequences",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "sequences": [
+      {
+        "file": "res://tests/golden/link/sequences/pack.wyrd",
+        "id": "harbor.any",
+        "mode": "any",
+        "need": 1,
+        "of": 2,
+        "reset": "filled(ferry)",
+        "steps": [
+          {
+            "event": "bell_rung",
+            "where": "event.count >= 1"
+          },
+          {
+            "event": "season_changed",
+            "where": "true"
+          }
+        ],
+        "within": 1440
+      },
+      {
+        "file": "res://tests/golden/link/sequences/pack.wyrd",
+        "id": "harbor.ordered",
+        "mode": "ordered",
+        "need": 1,
+        "of": 1,
+        "reset": "season_changed",
+        "steps": [
+          {
+            "event": "bell_rung",
+            "where": "event.count >= 1"
+          }
+        ],
+        "within": 60
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

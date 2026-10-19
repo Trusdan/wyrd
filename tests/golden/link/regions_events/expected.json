@@ -1,0 +1,285 @@
+{
+  "diagnostics": [],
+  "export": {
+    "events": [
+      {
+        "fields": [
+          {
+            "name": "count",
+            "type": "int"
+          }
+        ],
+        "line": 7,
+        "name": "bell_rung"
+      }
+    ],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "e2dd0625ec304f9b",
+        "path": "res://tests/golden/link/regions_events/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/regions_events/pack.wyrd",
+        "id": "regions_events/rope_tied",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/regions_events/pack.wyrd",
+        "id": "regions_events/bell_struck",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      }
+    ],
+    "pack_id": "regions_events",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/regions_events/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "regions": [
+              {
+                "id": "rope",
+                "stages": [
+                  {
+                    "effects": [],
+                    "id": "coil",
+                    "journals": [],
+                    "scenes": [],
+                    "transitions": [
+                      {
+                        "target": "tied",
+                        "when": ""
+                      }
+                    ],
+                    "variants": [],
+                    "waits": "player.coins >= 0"
+                  },
+                  {
+                    "effects": [],
+                    "id": "tied",
+                    "journals": [
+                      "rope_tied"
+                    ],
+                    "scenes": [],
+                    "transitions": [],
+                    "variants": [],
+                    "waits": ""
+                  }
+                ]
+              },
+              {
+                "id": "bell",
+                "stages": [
+                  {
+                    "effects": [],
+                    "handlers": [
+                      {
+                        "effects": [
+                          {
+                            "agent": "",
+                            "args": [],
+                            "branch": "",
+                            "command": "",
+                            "fact_key": "player.coins",
+                            "kind": "set",
+                            "on_fail": "",
+                            "outcome": "",
+                            "target": {
+                              "code": [
+                                5,
+                                0
+                              ],
+                              "consts": [
+                                {
+                                  "t": "name",
+                                  "v": "player.coins"
+                                }
+                              ],
+                              "reads": [
+                                "player.coins"
+                              ],
+                              "specificity": 1,
+                              "uses_chance": false
+                            },
+                            "topic": "",
+                            "value": {
+                              "code": [
+                                5,
+                                0,
+                                1,
+                                1,
+                                8
+                              ],
+                              "consts": [
+                                {
+                                  "t": "name",
+                                  "v": "player.coins"
+                                },
+                                {
+                                  "t": "int",
+                                  "v": 1
+                                }
+                              ],
+                              "reads": [
+                                "player.coins"
+                              ],
+                              "specificity": 1,
+                              "uses_chance": false
+                            },
+                            "verb": ""
+                          }
+                        ],
+                        "event": "bell_rung",
+                        "transitions": [
+                          {
+                            "target": "struck",
+                            "when": ""
+                          }
+                        ],
+                        "where": "event.count >= 1"
+                      }
+                    ],
+                    "id": "quiet",
+                    "journals": [],
+                    "scenes": [],
+                    "transitions": [],
+                    "variants": [],
+                    "waits": ""
+                  },
+                  {
+                    "effects": [],
+                    "id": "struck",
+                    "journals": [
+                      "bell_struck"
+                    ],
+                    "scenes": [],
+                    "transitions": [],
+                    "variants": [],
+                    "waits": ""
+                  }
+                ]
+              }
+            ],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "route",
+                "command": "",
+                "fact_key": "",
+                "kind": "outcome",
+                "on_fail": "",
+                "outcome": "done",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [
+        {
+          "col": 9,
+          "fact": "",
+          "file": "res://tests/golden/link/regions_events/pack.wyrd",
+          "line": 19,
+          "name": "bell_rung",
+          "role": "emit"
+        }
+      ],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/regions_events/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 7,
+              "file": "res://tests/golden/link/regions_events/pack.wyrd",
+              "id": "ferry_toll.arrive.rope.coil",
+              "kind": "stage",
+              "line": 12
+            },
+            {
+              "col": 11,
+              "file": "res://tests/golden/link/regions_events/pack.wyrd",
+              "id": "ferry_toll.arrive.bell.quiet",
+              "kind": "effect",
+              "line": 20
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 11,
+              "file": "res://tests/golden/link/regions_events/pack.wyrd",
+              "id": "ferry_toll.arrive.bell.quiet",
+              "kind": "effect",
+              "line": 20
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

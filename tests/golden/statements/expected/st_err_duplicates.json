@@ -1,0 +1,104 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/st_err_duplicates.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 8,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/st_err_duplicates.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_DUPLICATE",
+      "col": 1,
+      "line": 8,
+      "message": "duplicate storylet \"harbor.news\"",
+      "path": "res://tests/golden/statements/st_err_duplicates.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_DUPLICATE",
+      "col": 1,
+      "line": 18,
+      "message": "duplicate document \"dock_letter\"",
+      "path": "res://tests/golden/statements/st_err_duplicates.wyrd",
+      "severity": "error"
+    }
+  ],
+  "documents": [
+    {
+      "fact_key": "",
+      "fragments": 0,
+      "group": "",
+      "id": "dock_letter",
+      "line_id": "",
+      "meta": {},
+      "mode": "live",
+      "on_first_read": [],
+      "on_read": [],
+      "pages": [
+        {
+          "condition": null,
+          "condition_text": "",
+          "paragraphs": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "line_id": "letter_a",
+              "prose": {
+                "col": 5,
+                "kids": [
+                  {
+                    "col": 5,
+                    "kind": "text",
+                    "line": 16,
+                    "text": "The tide is posted."
+                  }
+                ],
+                "kind": "prose",
+                "line": 16
+              },
+              "secrecy": "",
+              "tags": []
+            }
+          ]
+        }
+      ],
+      "period_minutes": 0,
+      "secrecy": "",
+      "tags": [],
+      "title": "Dock Letter"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [],
+  "storylets": [
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.news",
+      "line_ids": [
+        "news_a"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "topic harbor_toll",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 6,
+        "line": 3
+      },
+      "speaker": "any"
+    }
+  ]
+}

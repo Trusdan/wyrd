@@ -223,6 +223,15 @@
       "on_read": [],
       "pages": [],
       "period_minutes": 60,
+      "publish": {
+        "claim_key": "",
+        "delay_minutes": 60,
+        "fact_key": "",
+        "fragments": [],
+        "group": "guild",
+        "period_minutes": 60,
+        "verb_filter": ""
+      },
       "secrecy": "",
       "tags": [],
       "title": "Title"

@@ -1,0 +1,117 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_EVENT_ARG",
+      "col": 3,
+      "line": 4,
+      "message": "an event declaration cannot contain a block",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_DUPLICATE",
+      "col": 3,
+      "line": 6,
+      "message": "duplicate event \"bell_rung\"",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_TYPE",
+      "col": 20,
+      "line": 7,
+      "message": "unknown event field type \"string\"",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_ARG",
+      "col": 12,
+      "line": 8,
+      "message": "expected \"(\" after the event name",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_ARG",
+      "col": 13,
+      "line": 9,
+      "message": "field \"witnesses\" is reserved for the emit payload",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 11,
+      "message": "storylet \"dock.bell\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_EVENT_UNKNOWN",
+      "col": 16,
+      "line": 12,
+      "message": "unknown event \"missing_bell\"",
+      "path": "res://tests/golden/link/events_errors/pack.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [
+      {
+        "fields": [],
+        "line": 4,
+        "name": "bell_rung"
+      }
+    ],
+    "facts": [],
+    "files": [
+      {
+        "hash": "1f94bce63bcf98b0",
+        "path": "res://tests/golden/link/events_errors/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/events_errors/pack.wyrd",
+        "id": "events_errors/bell_quiet",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      }
+    ],
+    "pack_id": "events_errors",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/events_errors/pack.wyrd",
+        "generic": true,
+        "id": "dock.bell",
+        "line_ids": [
+          "bell_quiet"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "event missing_bell",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}
