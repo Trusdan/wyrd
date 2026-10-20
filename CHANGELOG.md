@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.6.4-m3 - 2026-10-20
+
+M3 editor support in VS Code and the CLI (M3 PRs 1–8). `addons/wyrd/VERSION` is `0.6.4-m3`. `plugin.cfg` version is `0.6.4-m3`. Save schema stays 3. Corey cuts the tag `v0.6.4-m3` only when he asks.
+
 - Fixed: the fact cross-reference counts storylet effects and scene effect lines as writers, so `W_FACT_NEVER_SET` no longer fires for facts set only there.
 - Tools: a local VS Code extension in `tools/vscode-wyrd/` (not published) colors `.wyrd` files and adds the `$wyrd` problem matcher for `check` output. `.vscode/tasks.json` runs check and `tag-lines` through the `wyrd.godotPath` setting.
 - CI: a `vscode` job runs grammar snapshot tests and builds the VSIX. Node is pinned in `tools/pins.env`.
@@ -18,6 +22,8 @@
 - `check --tiers a,b,c` (lowest first) adds `W_SECRECY_LEAK`, which warns when visible text at a lower secrecy tier shows a stored fact that only higher-tier content sets. Without `--tiers`, `check` output is unchanged.
 - CLI: `defs --manifest <path>` writes a sorted ctags `tags` file of the pack's quests, stages, scenes, roles, storylets, documents and facts. With the free ctagsx extension, F12 and Ctrl+click in VS Code jump to the definition. The `Wyrd: defs (Gullhaven)` task writes the gitignored `tags` at the project root.
 - Tools: the VS Code language configuration keeps dotted ids such as `harbor.rope_done` as one word.
+- Tests: an M3 exit scenario checks that a Gullhaven edit shows as one `$wyrd` row through a watch cycle and clears when fixed, that `defs` has every demo F12 target, and that `pot` has scene lines and document paragraphs.
+- Docs: `docs/m3-exit-demo.md` lists the manual VS Code demo steps and what CI proves for each M3 exit criterion.
 
 ## 0.6.3-m8 - 2026-10-19
 
