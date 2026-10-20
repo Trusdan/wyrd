@@ -65,6 +65,43 @@ func test_set_without_a_read_is_never_read_and_deed_is_not_a_write() -> void:
 	assert_eq((coins["readers"] as Array).size(), 0)
 
 
+func test_storylet_and_scene_line_writes_count_and_a_read_only_fact_is_never_set() -> void:
+	var diagnostics := WyrdDiagnostics.new()
+	var pack := _compile(diagnostics, """
+		language 1
+		facts
+		  player.coins : int stored
+		  ferry.toll_coins : int stored
+		  harbor.tide : int stored
+		scene dock.talk
+		  ~ set player.coins = 1
+		  when player.coins >= 1: narrator: The board shows the toll. #line:board
+		  -> end
+		storylet harbor.toll
+		  scope: topic harbor_toll
+		  speaker: any
+		  when: ferry.toll_coins >= 0 and harbor.tide >= 0
+		  ~ set ferry.toll_coins = 1
+		  - The toll is posted. #line:toll_line
+		""")
+	assert_false(diagnostics.has_errors(), diagnostics.format())
+	assert_true(diagnostics.format().contains("stored fact \"harbor.tide\" is read but never set"))
+	assert_false(diagnostics.format().contains("stored fact \"player.coins\" is read but never set"))
+	assert_false(diagnostics.format().contains("stored fact \"ferry.toll_coins\" is read but never set"))
+	var coins: Dictionary = _fact(pack, "player.coins")
+	var coin_writers: Array = coins["writers"]
+	assert_eq(coin_writers.size(), 1)
+	assert_eq(str(coin_writers[0]["kind"]), "effect")
+	assert_eq(str(coin_writers[0]["id"]), "dock.talk")
+	var toll: Dictionary = _fact(pack, "ferry.toll_coins")
+	var toll_writers: Array = toll["writers"]
+	assert_eq(toll_writers.size(), 1)
+	assert_eq(str(toll_writers[0]["kind"]), "effect")
+	assert_eq(str(toll_writers[0]["id"]), "harbor.toll")
+	var tide: Dictionary = _fact(pack, "harbor.tide")
+	assert_eq((tide["writers"] as Array).size(), 0)
+
+
 func test_interpolation_before_a_write_warns() -> void:
 	var early := WyrdDiagnostics.new()
 	_compile(early, """

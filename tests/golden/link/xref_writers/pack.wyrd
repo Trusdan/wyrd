@@ -1,0 +1,23 @@
+language 1
+
+facts
+  player.coins : int stored
+  ferry.toll_coins : int stored
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    scene dock.talk
+    -> done
+  stage done
+
+scene dock.talk
+  ~ set player.coins = 1
+  when player.coins >= 1: narrator: The board shows the toll. #line:board
+  -> end
+
+storylet harbor.toll
+  scope: topic harbor_toll
+  speaker: any
+  when: ferry.toll_coins >= 0
+  ~ set ferry.toll_coins = 1
+  - The toll is posted. #line:toll_line

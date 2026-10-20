@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed: the fact cross-reference counts storylet effects and scene effect lines as writers, so `W_FACT_NEVER_SET` no longer fires for facts set only there.
+
 ## 0.6.3-m8 - 2026-10-19
 
 M1–M3 gap work (gap PRs 1–6). `addons/wyrd/VERSION` is `0.6.3-m8`. `plugin.cfg` version is `0.6.3-m8`. Save schema stays 3. Corey cuts the tag `v0.6.3-m8` only when he asks.

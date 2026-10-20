@@ -1,0 +1,333 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 18,
+      "message": "storylet \"harbor.toll\" specificity 1 priority 0 generic=false",
+      "path": "res://tests/golden/link/xref_writers/pack.wyrd",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "ferry.toll_coins",
+        "line": 5,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      },
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "4c7667ff7e20f691",
+        "path": "res://tests/golden/link/xref_writers/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": {
+          "code": [
+            5,
+            0,
+            1,
+            1,
+            17
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player.coins"
+            },
+            {
+              "t": "int",
+              "v": 1
+            }
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+        "id": "xref_writers/board",
+        "kind": "spoken",
+        "scene": "dock.talk",
+        "speaker": "narrator",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+        "id": "xref_writers/toll_line",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      }
+    ],
+    "pack_id": "xref_writers",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "dock.talk",
+                "with": []
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+        "id": "dock.talk",
+        "items": [
+          {
+            "divert": "",
+            "effect": {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "target": {
+                "code": [
+                  5,
+                  0
+                ],
+                "consts": [
+                  {
+                    "t": "name",
+                    "v": "player.coins"
+                  }
+                ],
+                "reads": [
+                  "player.coins"
+                ],
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "topic": "",
+              "value": {
+                "code": [
+                  1,
+                  0
+                ],
+                "consts": [
+                  {
+                    "t": "int",
+                    "v": 1
+                  }
+                ],
+                "reads": [],
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "verb": ""
+            },
+            "kind": "effect",
+            "label": "",
+            "target": ""
+          },
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "board",
+            "speaker": "narrator",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "effects": [
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "ferry.toll_coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "target": {
+              "code": [
+                5,
+                0
+              ],
+              "consts": [
+                {
+                  "t": "name",
+                  "v": "ferry.toll_coins"
+                }
+              ],
+              "reads": [
+                "ferry.toll_coins"
+              ],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "topic": "",
+            "value": {
+              "code": [
+                1,
+                0
+              ],
+              "consts": [
+                {
+                  "t": "int",
+                  "v": 1
+                }
+              ],
+              "reads": [],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "verb": ""
+          }
+        ],
+        "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+        "generic": false,
+        "id": "harbor.toll",
+        "line_ids": [
+          "toll_line"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "topic harbor_toll",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 1,
+        "weight": 1,
+        "when": "ferry.toll_coins >= 0"
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+          "key": "ferry.toll_coins",
+          "line": 5,
+          "readers": [
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+              "id": "harbor.toll",
+              "kind": "storylet",
+              "line": 18
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+              "id": "harbor.toll",
+              "kind": "effect",
+              "line": 22
+            }
+          ]
+        },
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+              "id": "board",
+              "kind": "line",
+              "line": 15
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/xref_writers/pack.wyrd",
+              "id": "dock.talk",
+              "kind": "effect",
+              "line": 14
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
