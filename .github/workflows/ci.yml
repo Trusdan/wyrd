@@ -83,3 +83,43 @@ jobs:
         env:
           WYRD_HYGIENE_DENYLIST: ${{ secrets.WYRD_HYGIENE_DENYLIST }}
         run: tools/content_hygiene.sh "origin/${{ github.base_ref || 'main' }}"
+
+  vscode:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Node pin
+        id: node
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source tools/pins.env
+          echo "version=${NODE_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: npm
+          cache-dependency-path: tools/vscode-wyrd/package-lock.json
+
+      - name: Install extension dependencies
+        working-directory: tools/vscode-wyrd
+        run: npm ci
+
+      - name: Grammar snapshots
+        working-directory: tools/vscode-wyrd
+        run: npx vscode-tmgrammar-snap 'tests/snap/*.wyrd'
+
+      - name: Package VSIX
+        working-directory: tools/vscode-wyrd
+        run: npx vsce package --out wyrd.vsix
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: wyrd-vscode-vsix
+          path: tools/vscode-wyrd/wyrd.vsix
+          if-no-files-found: error

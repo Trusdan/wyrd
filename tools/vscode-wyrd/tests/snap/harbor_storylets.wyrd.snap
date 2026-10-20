@@ -1,0 +1,351 @@
+>// [EXAMPLE CONTENT] Gullhaven storylets. An invented fishing village, not a host game.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd comment.line.double-slash.wyrd
+>language 1
+#^^^^^^^^ source.wyrd keyword.other.header.wyrd
+#        ^ source.wyrd
+#         ^ source.wyrd constant.numeric.wyrd
+>
+>storylet harbor_gossip.generic
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic rumor.ferry_toll
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^^^^^ source.wyrd
+>  speaker: any
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^ source.wyrd
+#           ^^^ source.wyrd keyword.other.wyrd
+>  - They say the ferry's dear since the storm. #line:sg01
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                               ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                     ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet harbor_gossip.tavern
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic rumor.ferry_toll
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^^^^^ source.wyrd
+>  speaker: tavern
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^^ source.wyrd
+>  when: knows(player, harbor.toll_fate) and world.season == autumn
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                        ^^^ source.wyrd keyword.operator.wyrd
+#                                           ^^^^^^^^^^^^^^ source.wyrd
+#                                                         ^^ source.wyrd keyword.operator.wyrd
+#                                                           ^^^^^^^^ source.wyrd
+>  weight: 2
+#^^ source.wyrd
+#  ^^^^^^ source.wyrd keyword.other.wyrd
+#        ^^ source.wyrd
+#          ^ source.wyrd constant.numeric.wyrd
+>  cooldown: 60m
+#^^ source.wyrd
+#  ^^^^^^^^ source.wyrd keyword.other.wyrd
+#          ^^ source.wyrd
+#            ^^^ source.wyrd constant.numeric.wyrd
+>  lines:
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+>    - The toll money never reached the council, if you ask me. #line:sg02
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                               ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                     ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    - Lost at sea, they say. Lost in someone's pocket. #line:sg03
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                       ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                             ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet dock_bark_lantern
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: bark
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^^^ source.wyrd
+>  speaker: ferry
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^ source.wyrd
+>  when: nearby(player, 4m, tag: lantern) > 0
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^ source.wyrd constant.numeric.wyrd
+#                         ^^^^^^^^^^^^^^^^ source.wyrd
+#                                         ^ source.wyrd keyword.operator.wyrd
+#                                          ^ source.wyrd
+#                                           ^ source.wyrd constant.numeric.wyrd
+>  cooldown: 30m
+#^^ source.wyrd
+#  ^^^^^^^^ source.wyrd keyword.other.wyrd
+#          ^^ source.wyrd
+#            ^^^ source.wyrd constant.numeric.wyrd
+>  - Mind that flame near the ropes. #line:sg04
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                    ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                          ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet dock_bark_lantern_carried
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: bark
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^^^ source.wyrd
+>  speaker: ferry
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^ source.wyrd
+>  when: has(player, lantern) and nearby(player, 4m, tag: lantern) > 0
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                             ^^^ source.wyrd keyword.operator.wyrd
+#                                ^^^^^^^^^^^^^^^^ source.wyrd
+#                                                ^^ source.wyrd constant.numeric.wyrd
+#                                                  ^^^^^^^^^^^^^^^^ source.wyrd
+#                                                                  ^ source.wyrd keyword.operator.wyrd
+#                                                                   ^ source.wyrd
+#                                                                    ^ source.wyrd constant.numeric.wyrd
+>  speaker_cooldown: 10m
+#^^ source.wyrd
+#  ^^^^^^^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#                  ^^ source.wyrd
+#                    ^^^ source.wyrd constant.numeric.wyrd
+>  - That lantern in your hand is close to the ropes. #line:sg05
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                     ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                           ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet dock_voice_crossing
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic rumor.crossing
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^^^ source.wyrd
+>  speaker: narrator
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^^^^ source.wyrd
+>  - The crossing stays open. {holder(ferry_master)|variants} #tag:voiced #line:dock_voice
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                             ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                              ^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                  ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.operator.wyrd
+#                                                   ^^^^^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.operator.wyrd
+#                                                           ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                            ^ source.wyrd string.unquoted.prose.wyrd
+#                                                             ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                  ^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                        ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                         ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                               ^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    variant ferry_master: The ferry master keeps the crossing open. #tag:voiced #line:dock_voice_master
+#^^^^ source.wyrd string.unquoted.prose.wyrd
+#    ^^^^^^^ source.wyrd string.unquoted.prose.wyrd keyword.other.wyrd
+#           ^ source.wyrd string.unquoted.prose.wyrd
+#            ^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.label.speaker.wyrd
+#                        ^ source.wyrd string.unquoted.prose.wyrd
+#                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd
+#                                                                    ^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                         ^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                               ^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd
+#                                                                                ^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                      ^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    variant net_mender: The net mender keeps the crossing open. #tag:voiced #line:dock_voice_mender
+#^^^^ source.wyrd string.unquoted.prose.wyrd
+#    ^^^^^^^ source.wyrd string.unquoted.prose.wyrd keyword.other.wyrd
+#           ^ source.wyrd string.unquoted.prose.wyrd
+#            ^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.label.speaker.wyrd
+#                      ^ source.wyrd string.unquoted.prose.wyrd
+#                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd
+#                                                                ^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                     ^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                           ^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd
+#                                                                            ^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                  ^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>// Host secrecy names, lowest first: open, then sealed.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd comment.line.double-slash.wyrd
+>// The unlocked name is the stored fact player.clearance.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd comment.line.double-slash.wyrd
+>quest harbor_ledger "The Dock Ledger"
+#^^^^^ source.wyrd keyword.other.block.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^ source.wyrd entity.name.type.quest.wyrd
+#                   ^ source.wyrd
+#                    ^ source.wyrd string.quoted.double.wyrd
+#                     ^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                    ^ source.wyrd string.quoted.double.wyrd
+>  start when false
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^ source.wyrd
+#        ^^^^ source.wyrd keyword.other.wyrd
+#            ^ source.wyrd
+#             ^^^^^ source.wyrd constant.language.wyrd
+>  stage note
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^^ source.wyrd
+>    ~ set player.clearance = open
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.effect.wyrd
+#     ^ source.wyrd
+#      ^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^^^^^^^^^^^ source.wyrd
+#                           ^ source.wyrd keyword.operator.wyrd
+#                            ^^^^^ source.wyrd
+>    journal: The dock ledger stays on the bench. #line:j_ledger
+#^^^^ source.wyrd
+#    ^^^^^^^ source.wyrd keyword.other.wyrd
+#           ^ source.wyrd
+#            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                 ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                       ^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet harbor_ledger.open
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic rumor.ledger
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^ source.wyrd
+>  speaker: any
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^ source.wyrd
+#           ^^^ source.wyrd keyword.other.wyrd
+>  lines:
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+>    - The dock ledger is open on the bench. #line:lg01
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                            ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                  ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    - A later page stays shut. #secrecy:sealed #line:lg02
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                               ^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                        ^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                              ^ source.wyrd string.unquoted.prose.wyrd
+#                                               ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                     ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet harbor_ledger.sealed
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic rumor.ledger
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^ source.wyrd
+>  speaker: any
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^ source.wyrd
+#           ^^^ source.wyrd keyword.other.wyrd
+>  secrecy: sealed
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^^ source.wyrd
+>  priority: 1
+#^^ source.wyrd
+#  ^^^^^^^^ source.wyrd keyword.other.wyrd
+#          ^^ source.wyrd
+#            ^ source.wyrd constant.numeric.wyrd
+>  when: player.clearance == sealed
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                         ^^ source.wyrd keyword.operator.wyrd
+#                           ^^^^^^^^ source.wyrd
+>  - The sealed page names the late cargo. #line:lg03
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                          ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>storylet harbor_gossip.storm
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.storylet.wyrd
+>  scope: topic storm_rumour
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^ source.wyrd
+#         ^^^^^ source.wyrd keyword.other.wyrd
+#              ^^^^^^^^^^^^^^ source.wyrd
+>  speaker: any
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^ source.wyrd
+#           ^^^ source.wyrd keyword.other.wyrd
+>  ~ start quest dock_rumour
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.effect.wyrd
+#   ^ source.wyrd
+#    ^^^^^ source.wyrd keyword.other.wyrd
+#         ^ source.wyrd
+#          ^^^^^ source.wyrd keyword.other.wyrd
+#               ^^^^^^^^^^^^ source.wyrd
+>  - The storm took a skiff off the bar. #line:sg_storm
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.wyrd
+#   ^ source.wyrd
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                        ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                              ^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>

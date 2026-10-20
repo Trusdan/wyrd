@@ -1,0 +1,63 @@
+{
+  "name": "wyrd",
+  "publisher": "wyrd-local",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Trusdan/wyrd"
+  },
+  "description": "Local coloring and problem matching for Wyrd sources. Not published.",
+  "categories": ["Programming Languages"],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "4.0.0",
+    "vscode-tmgrammar-test": "0.1.3"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "wyrd",
+        "extensions": [".wyrd"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "wyrd",
+        "scopeName": "source.wyrd",
+        "path": "./syntaxes/wyrd.tmLanguage.json"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "wyrd",
+        "owner": "wyrd",
+        "source": "wyrd",
+        "fileLocation": ["autoDetect", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(?:res://)?(.+?):(\\d+):(\\d+): (error|warning|info)\\[([A-Z0-9_]+)\\]: (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Wyrd",
+      "properties": {
+        "wyrd.godotPath": {
+          "type": "string",
+          "default": "godot",
+          "description": "Godot 4.7 executable used by the Wyrd tasks"
+        }
+      }
+    }
+  }
+}

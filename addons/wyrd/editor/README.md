@@ -1,3 +1,3 @@
 # editor
 
-Thin editor layer: import plugin, dock, graph, console. The plugin stub registers none of these in S0.
+Empty. Editor screens (inspector, console, graph) wait for the M7 follow-ups.

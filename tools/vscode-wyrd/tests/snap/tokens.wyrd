@@ -1,0 +1,84 @@
+// A harbor note, one line for each color.
+language 1
+
+facts
+  player.coins : int stored recap: false doc: "Coins \"carried\" \\ dock."
+  world.season : symbol source: time.season invalidate: on_event(season_changed)
+  tier
+
+events
+  season_changed() leaves: harbor.deck_wet = true decays 60
+
+quest ferry_toll "The Ferry Toll"
+  slot ferry = ferry_master mode: live
+  on_empty: wait
+  start when false
+  stage arrive
+    waits_until player.coins >= 1 and not false or harbor.bell_count in 1
+    variant ferry.empty:
+      journal: The dock is empty for 1 h. #line:j_empty
+    successor empty hostile locked_gone unwilling barred
+    ~ set player.coins = player.coins + 2
+    ~ outcome route = failed
+    ~ outcome route = route_closed
+    ~ believe player harbor.toll_fate = lost
+    ~ declare harbor_guild harbor.toll_fate = sealed
+    ~ learn player harbor.toll_fate = paid
+    ~ forget player harbor.toll_fate
+    ~ retract harbor_guild harbor.toll_fate
+    ~ unbelieve player harbor.toll_fate
+    await_host
+    -> done
+
+scene dock.talk
+  on_abort:
+    ~ inc ferry.toll_coins by 1
+    ~ record deed paid(actor: player, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true, statement: true, target: ferry)
+    ~ unlock topic harbor_toll
+    ~ lock topic harbor_toll
+    ~ do take_coin() on_fail -> no_room
+    ~ start quest dock_errand
+    ~ advance dock_errand to sent
+    ~ assign role dock_runner to dock_apprentice
+    ~ vacate role dock_runner
+    ~ adjust baseline affinity(tavern_owner, player) by 5
+    ~ create document reeve_letter copy dock_letter
+  tavern: The board lists the price as {{two coins}}. #line:board
+  when player.coins >= 1: narrator: The tide turns in 1 d. #tag:tide #secrecy:open #line:tide
+  * [Take the room] show_disabled_when {player.coins < 2} "short on coins" -> took #line:c_room
+  - (took)
+  -> end
+
+role dock_runner
+  default_holder: dock_apprentice
+  eligibility: alive(dock_apprentice)
+  succession: default
+  vacancy: contested
+  visibility: public
+
+storylet harbor.toll
+  scope: topic harbor_toll
+  speaker: any
+  when: ferry.toll_coins >= 0
+  priority: 1
+  weight: 2
+  cooldown: 60m
+  speaker_cooldown: 1 d
+  secrecy: sealed
+  lines:
+    - The toll is posted. {if player.coins > 0}Paid.{else}Due.{end} {holder(ferry_master)|variants} #line:toll_line
+      variant ferry_master: The ferry master posts the toll. #line:toll_master
+
+document ferry_schedule "Ferry Schedule" publishes_by harbor_guild every 1 day delay 1 hour
+  text: frozen
+  meta
+  page
+    The ferry leaves when the tide turns. #line:sched
+    when not filled(ferry_master): The chair is empty. #line:sched_empty
+  on_first_read:
+    ~ unlock topic storm_rumour
+  on_read:
+    ~ inc player.coins by 1
+
+sequence harbor.bell ordered within 1 h reset on season_changed
+  season_changed where true

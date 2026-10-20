@@ -1,0 +1,823 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Wyrd",
+  "scopeName": "source.wyrd",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "match": "^(language)(\\s+)(1)\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.other.header.wyrd"
+        },
+        "3": {
+          "name": "constant.numeric.wyrd"
+        }
+      }
+    },
+    {
+      "begin": "^(facts)\\b",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(events)\\b",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(quest)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.quest.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "^(\\s*)(when)\\b",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(:)(\\s*)([A-Za-z_][\\w.]*)(\\s*)(:)",
+              "end": "$",
+              "beginCaptures": {
+                "3": {
+                  "name": "entity.name.label.speaker.wyrd"
+                }
+              },
+              "contentName": "string.unquoted.prose.wyrd",
+              "patterns": [
+                {
+                  "include": "#escape"
+                },
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "include": "#comment"
+                },
+                {
+                  "include": "#tag"
+                }
+              ]
+            },
+            {
+              "include": "#code"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(variant)(\\s+)([A-Za-z_][\\w.]*)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            },
+            "4": {
+              "name": "entity.name.label.speaker.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(journal)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(\\*)(?=\\s)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.operator.choice.wyrd"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "\\[",
+              "end": "\\]",
+              "beginCaptures": {
+                "0": {
+                  "name": "keyword.operator.choice.wyrd"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "keyword.operator.choice.wyrd"
+                }
+              },
+              "contentName": "string.unquoted.prose.wyrd",
+              "patterns": [
+                {
+                  "include": "#escape"
+                },
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "include": "#comment"
+                },
+                {
+                  "include": "#tag"
+                }
+              ]
+            },
+            {
+              "include": "#divert"
+            },
+            {
+              "include": "#code"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(?!(?:when|variant|journal|on_abort|on_empty|requires|on_fail|on_read|on_first_read)\\b)([A-Za-z_][\\w.]*)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "entity.name.label.speaker.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(scene)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.scene.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "^(\\s*)(when)\\b",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(:)(\\s*)([A-Za-z_][\\w.]*)(\\s*)(:)",
+              "end": "$",
+              "beginCaptures": {
+                "3": {
+                  "name": "entity.name.label.speaker.wyrd"
+                }
+              },
+              "contentName": "string.unquoted.prose.wyrd",
+              "patterns": [
+                {
+                  "include": "#escape"
+                },
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "include": "#comment"
+                },
+                {
+                  "include": "#tag"
+                }
+              ]
+            },
+            {
+              "include": "#code"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(variant)(\\s+)([A-Za-z_][\\w.]*)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            },
+            "4": {
+              "name": "entity.name.label.speaker.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(journal)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(\\*)(?=\\s)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.operator.choice.wyrd"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "\\[",
+              "end": "\\]",
+              "beginCaptures": {
+                "0": {
+                  "name": "keyword.operator.choice.wyrd"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "keyword.operator.choice.wyrd"
+                }
+              },
+              "contentName": "string.unquoted.prose.wyrd",
+              "patterns": [
+                {
+                  "include": "#escape"
+                },
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "include": "#comment"
+                },
+                {
+                  "include": "#tag"
+                }
+              ]
+            },
+            {
+              "include": "#divert"
+            },
+            {
+              "include": "#code"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(?!(?:when|variant|journal|on_abort|on_empty|requires|on_fail|on_read|on_first_read)\\b)([A-Za-z_][\\w.]*)(\\s*)(:)",
+          "end": "$",
+          "beginCaptures": {
+            "2": {
+              "name": "entity.name.label.speaker.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(role)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.role.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(storylet)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.storylet.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "^(\\s*)(-)(?!>)(\\s+)",
+          "end": "^(?!\\1  |\\s*$)",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.operator.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "begin": "^(\\s*)(variant)(\\s+)([A-Za-z_][\\w.]*)(\\s*)(:)",
+              "end": "$",
+              "beginCaptures": {
+                "2": {
+                  "name": "keyword.other.wyrd"
+                },
+                "4": {
+                  "name": "entity.name.label.speaker.wyrd"
+                }
+              },
+              "contentName": "string.unquoted.prose.wyrd",
+              "patterns": [
+                {
+                  "include": "#escape"
+                },
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "include": "#comment"
+                },
+                {
+                  "include": "#tag"
+                }
+              ]
+            },
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(sequence)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.sequence.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "begin": "^(document)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.document.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "^(\\s+)(page)\\b",
+          "end": "^(?!\\1[ \\t]|\\s*$)",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.other.wyrd"
+            }
+          },
+          "contentName": "string.unquoted.prose.wyrd",
+          "patterns": [
+            {
+              "begin": "^(\\s+)(when)\\b",
+              "end": "$",
+              "beginCaptures": {
+                "2": {
+                  "name": "keyword.other.wyrd"
+                }
+              },
+              "patterns": [
+                {
+                  "begin": "(:)",
+                  "end": "$",
+                  "contentName": "string.unquoted.prose.wyrd",
+                  "patterns": [
+                    {
+                      "include": "#escape"
+                    },
+                    {
+                      "include": "#interpolation"
+                    },
+                    {
+                      "include": "#comment"
+                    },
+                    {
+                      "include": "#tag"
+                    }
+                  ]
+                },
+                {
+                  "include": "#code"
+                }
+              ]
+            },
+            {
+              "include": "#escape"
+            },
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "#comment"
+            },
+            {
+              "include": "#tag"
+            }
+          ]
+        },
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
+      "include": "#code"
+    }
+  ],
+  "repository": {
+    "header": {
+      "match": "\\b(?:language)\\b",
+      "name": "keyword.other.header.wyrd"
+    },
+    "blocks": {
+      "match": "\\b(?:facts|events|quest|scene|role|storylet|sequence|document)\\b",
+      "name": "keyword.other.block.wyrd"
+    },
+    "reserved": {
+      "match": "\\b(?:document|publishes_by|tier|await_host|believe|declare|forget|learn|retract)\\b",
+      "name": "keyword.other.reserved.wyrd"
+    },
+    "types": {
+      "match": "\\b(?:bool|int|float|symbol)\\b",
+      "name": "storage.type.wyrd"
+    },
+    "fields": {
+      "match": "\\b(?:default_holder|eligibility|scope|succession|vacancy|visibility|cooldown|priority|secrecy|speaker|speaker_cooldown|weight|when|fragment|text|meta|page|on_read|on_first_read|claim|fact|verb|publishes_by|every|delay|stored|source|recap|invalidate|doc|slot|on_empty|start|requires|stage|waits_until|journal|variant|await_host|on|region|redirect|on_abort|on_fail|check|disabled_when|show_disabled_when|ordered|any|where|leaves|decays|mode|live|frozen|cast|locked_at|lines|within|reset|with|topic|quest|role|baseline|copy|deed|to|by|of|beat|event|witnesses|actor|magnitude|memorable|place|statement|tags|target|auto|slant)\\b",
+      "name": "keyword.other.wyrd"
+    },
+    "effects": {
+      "match": "\\b(?:set|inc|record|unlock|lock|do|outcome|believe|unbelieve|declare|retract|learn|forget|start|advance|assign|vacate|adjust|create)\\b",
+      "name": "keyword.other.wyrd"
+    },
+    "states": {
+      "match": "\\b(?:default|successor|empty|hostile|locked_gone|contested|unwilling|barred)\\b",
+      "name": "keyword.control.wyrd"
+    },
+    "outcomes": {
+      "match": "\\b(?:route_closed|done|failed)\\b",
+      "name": "keyword.control.wyrd"
+    },
+    "operators": {
+      "match": "\\b(?:and|or|not|in)\\b",
+      "name": "keyword.operator.wyrd"
+    },
+    "conditional": {
+      "match": "\\b(?:if|else|end)\\b",
+      "name": "keyword.control.conditional.wyrd"
+    },
+    "booleans": {
+      "match": "\\b(?:true|false)\\b",
+      "name": "constant.language.wyrd"
+    },
+    "code": {
+      "patterns": [
+        {
+          "include": "#effect-line"
+        },
+        {
+          "include": "#escape"
+        },
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#tag"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#divert"
+        },
+        {
+          "include": "#punct"
+        },
+        {
+          "include": "#fields"
+        },
+        {
+          "include": "#states"
+        },
+        {
+          "include": "#outcomes"
+        },
+        {
+          "include": "#reserved"
+        },
+        {
+          "include": "#types"
+        },
+        {
+          "include": "#operators"
+        },
+        {
+          "include": "#booleans"
+        },
+        {
+          "include": "#blocks"
+        }
+      ]
+    },
+    "comment": {
+      "match": "//.*",
+      "name": "comment.line.double-slash.wyrd"
+    },
+    "string": {
+      "name": "string.quoted.double.wyrd",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "match": "\\\\[\"\\\\]",
+          "name": "constant.character.escape.wyrd"
+        }
+      ]
+    },
+    "tag": {
+      "match": "(#(?:line|tag|secrecy):)([A-Za-z0-9_]+)",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.wyrd"
+        },
+        "2": {
+          "name": "constant.other.wyrd"
+        }
+      }
+    },
+    "number": {
+      "match": "\\b\\d+(?:\\.\\d+)?(?:[ \\t]*(?:m|h|d|minutes?|hours?|days?))?\\b",
+      "name": "constant.numeric.wyrd"
+    },
+    "divert": {
+      "match": "(->)(\\s+)((?:scene\\s+)?[A-Za-z_][\\w.]*)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.divert.wyrd"
+        },
+        "3": {
+          "name": "entity.name.function.wyrd"
+        }
+      }
+    },
+    "escape": {
+      "match": "\\{\\{",
+      "name": "constant.character.escape.wyrd"
+    },
+    "interpolation": {
+      "begin": "\\{",
+      "end": "\\}",
+      "name": "meta.interpolation.wyrd",
+      "patterns": [
+        {
+          "include": "#conditional"
+        },
+        {
+          "match": "(\\|)(variants)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.operator.wyrd"
+            },
+            "2": {
+              "name": "keyword.operator.wyrd"
+            }
+          }
+        },
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    "effect-line": {
+      "begin": "^(\\s*)(~)(\\s+)",
+      "end": "$",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.operator.effect.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#effects"
+        },
+        {
+          "include": "#code-inner"
+        }
+      ]
+    },
+    "code-inner": {
+      "patterns": [
+        {
+          "include": "#escape"
+        },
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#tag"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#divert"
+        },
+        {
+          "include": "#punct"
+        },
+        {
+          "include": "#fields"
+        },
+        {
+          "include": "#states"
+        },
+        {
+          "include": "#outcomes"
+        },
+        {
+          "include": "#reserved"
+        },
+        {
+          "include": "#types"
+        },
+        {
+          "include": "#operators"
+        },
+        {
+          "include": "#booleans"
+        },
+        {
+          "include": "#blocks"
+        }
+      ]
+    },
+    "punct": {
+      "match": "==|!=|<=|>=|\\.\\.|=|\\+|-|\\*|/|<|>|\\|",
+      "name": "keyword.operator.wyrd"
+    }
+  }
+}
