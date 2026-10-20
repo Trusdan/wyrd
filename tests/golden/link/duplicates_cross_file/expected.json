@@ -1,0 +1,211 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/duplicates_cross_file/a.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_DUPLICATE",
+      "col": 1,
+      "line": 6,
+      "message": "duplicate storylet \"harbor.news\" also declared in res://tests/golden/link/duplicates_cross_file/a.wyrd:6:1",
+      "path": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_SEQUENCE_DUPLICATE",
+      "col": 1,
+      "line": 11,
+      "message": "duplicate sequence \"harbor.bell\" also declared in res://tests/golden/link/duplicates_cross_file/a.wyrd:11:1",
+      "path": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_DOCUMENT_DUPLICATE",
+      "col": 1,
+      "line": 14,
+      "message": "duplicate document \"dock_letter\" also declared in res://tests/golden/link/duplicates_cross_file/a.wyrd:14:1",
+      "path": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "documents": [
+      {
+        "id": "dock_letter",
+        "meta": {},
+        "mode": "live",
+        "on_first_read": [],
+        "on_read": [],
+        "pages": [
+          {
+            "paragraphs": [
+              {
+                "id": "letter_a",
+                "when": ""
+              }
+            ],
+            "when": ""
+          }
+        ],
+        "tags": [],
+        "title_id": ""
+      },
+      {
+        "id": "dock_letter",
+        "meta": {},
+        "mode": "frozen",
+        "on_first_read": [],
+        "on_read": [],
+        "pages": [
+          {
+            "paragraphs": [
+              {
+                "id": "letter_b",
+                "when": ""
+              }
+            ],
+            "when": ""
+          }
+        ],
+        "tags": [],
+        "title_id": ""
+      }
+    ],
+    "events": [
+      {
+        "fields": [],
+        "line": 4,
+        "name": "bell_rung"
+      },
+      {
+        "fields": [],
+        "line": 4,
+        "name": "tide_turn"
+      }
+    ],
+    "facts": [],
+    "files": [
+      {
+        "hash": "bf12c101df9f859f",
+        "path": "res://tests/golden/link/duplicates_cross_file/a.wyrd"
+      },
+      {
+        "hash": "5b25ed3c567bf822",
+        "path": "res://tests/golden/link/duplicates_cross_file/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/duplicates_cross_file/a.wyrd",
+        "id": "duplicates_cross_file/news_a",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+        "id": "duplicates_cross_file/news_b",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "dock_clerk",
+        "tags": []
+      }
+    ],
+    "pack_id": "duplicates_cross_file",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "sequences": [
+      {
+        "file": "res://tests/golden/link/duplicates_cross_file/a.wyrd",
+        "id": "harbor.bell",
+        "mode": "ordered",
+        "need": 1,
+        "of": 1,
+        "reset": "",
+        "steps": [
+          {
+            "event": "bell_rung",
+            "where": "true"
+          }
+        ],
+        "within": 60
+      },
+      {
+        "file": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+        "id": "harbor.bell",
+        "mode": "ordered",
+        "need": 1,
+        "of": 1,
+        "reset": "",
+        "steps": [
+          {
+            "event": "tide_turn",
+            "where": "true"
+          }
+        ],
+        "within": 60
+      }
+    ],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/duplicates_cross_file/a.wyrd",
+        "generic": true,
+        "id": "harbor.news",
+        "line_ids": [
+          "news_a"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "topic harbor_toll",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/duplicates_cross_file/b.wyrd",
+        "generic": true,
+        "id": "harbor.news",
+        "line_ids": [
+          "news_b"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "bark",
+        "speaker": "dock_clerk",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

@@ -1,0 +1,17 @@
+language 1
+
+events
+  tide_turn()
+
+storylet harbor.news
+  scope: bark
+  speaker: dock_clerk
+  - The clerk repeats it. #line:news_b
+
+sequence harbor.bell ordered within 1 h
+  on tide_turn where true
+
+document dock_letter "Dock Letter"
+  text: frozen
+  page
+    The copy is filed. #line:letter_b

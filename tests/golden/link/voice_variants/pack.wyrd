@@ -1,0 +1,23 @@
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  slot ferry = ferry_master mode: live
+  on_empty: wait
+  stage arrive
+    scene dock.talk with ferry
+    -> done
+  stage done
+    ~ outcome route = done
+
+scene dock.talk
+  ferry: The crossing is staffed. #line:ferry_speaks
+  narrator: The crossing stays open. {holder(ferry)|variants} #tag:voiced #line:dock_voice
+    variant ferry_master: The ferry master keeps the crossing open. #tag:voiced #line:dock_voice_master
+    variant net_mender: The net mender keeps the crossing open. #tag:voiced #line:dock_voice_mender
+  narrator: Ask {holder(ferry).name}. #line:unguarded
+
+storylet harbor.voice
+  scope: topic harbor_toll
+  speaker: any
+  - The clerk says {holder(ferry)|variants} #line:story_voice
+    variant ferry_master: The ferry master speaks. #tag:voiced #line:story_voice_master

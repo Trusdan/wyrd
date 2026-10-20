@@ -307,7 +307,7 @@ static func _document(document: WyrdDocumentDef) -> Dictionary:
 			"condition_text": str(page.get("condition_text", "")),
 			"paragraphs": paragraphs,
 		})
-	return {
+	var data := {
 		"fact_key": document.fact_key,
 		"fragments": document.fragments.size(),
 		"group": document.group,
@@ -322,6 +322,27 @@ static func _document(document: WyrdDocumentDef) -> Dictionary:
 		"secrecy": document.secrecy,
 		"tags": _packed(document.tags),
 		"title": document.title,
+	}
+	if document.period_minutes > 0:
+		data["publish"] = _publish(document)
+	return data
+
+
+static func _publish(document: WyrdDocumentDef) -> Dictionary:
+	var fragments: Array = []
+	for fragment in document.fragments:
+		fragments.append({
+			"slant": str(fragment.get("slant", "")),
+			"when": _cond(fragment.get("when")),
+		})
+	return {
+		"claim_key": document.claim_key,
+		"delay_minutes": document.delay_minutes,
+		"fact_key": document.fact_key,
+		"fragments": fragments,
+		"group": document.group,
+		"period_minutes": document.period_minutes,
+		"verb_filter": document.verb_filter,
 	}
 
 

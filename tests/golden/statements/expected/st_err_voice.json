@@ -1,0 +1,526 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 63,
+      "line": 7,
+      "message": "a line holds one {holder|variants} span",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 25,
+      "line": 8,
+      "message": "variants need holder(<name>)",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 3,
+      "line": 8,
+      "message": "variant lines need {holder(<name>)|variants} on the line",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 3,
+      "line": 10,
+      "message": "variant lines need {holder(<name>)|variants} on the line",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 5,
+      "line": 13,
+      "message": "variant needs <holder>: <prose>",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 5,
+      "line": 14,
+      "message": "variant needs <holder>: <prose>",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 5,
+      "line": 17,
+      "message": "duplicate variant for \"ferry\"",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VARIANT_SYNTAX",
+      "col": 5,
+      "line": 19,
+      "message": "a variant line cannot contain a block",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 7,
+      "line": 20,
+      "message": "unknown statement \"note\"",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_VOICED_VARIABLE",
+      "col": 3,
+      "line": 21,
+      "message": "a voiced line cannot interpolate variable text",
+      "path": "res://tests/golden/statements/st_err_voice.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [
+    {
+      "id": "dock.voice",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "two_spans",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 7,
+                  "text": "The crossing stays open. "
+                },
+                {
+                  "col": 38,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 39,
+                      "end_col": 52,
+                      "end_line": 7,
+                      "line": 7
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 7,
+                  "text": "variants"
+                },
+                {
+                  "col": 62,
+                  "kind": "text",
+                  "line": 7,
+                  "text": " "
+                },
+                {
+                  "col": 63,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 64,
+                      "end_col": 78,
+                      "end_line": 7,
+                      "line": 7
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 7,
+                  "text": "variants"
+                }
+              ],
+              "kind": "prose",
+              "line": 7
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 88,
+              "end_line": 7,
+              "line": 7
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 88,
+            "end_line": 7,
+            "line": 7
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "bad_span",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 8,
+                  "text": "The mood is "
+                },
+                {
+                  "col": 25,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 26,
+                      "end_col": 30,
+                      "end_line": 8,
+                      "line": 8
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 8,
+                  "text": "variants"
+                },
+                {
+                  "col": 40,
+                  "kind": "text",
+                  "line": 8,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 8
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 37,
+              "end_line": 9,
+              "line": 8
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 37,
+            "end_line": 9,
+            "line": 8
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "no_span",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 10,
+                  "text": "Ask the clerk."
+                }
+              ],
+              "kind": "prose",
+              "line": 10
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 37,
+              "end_line": 11,
+              "line": 10
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 37,
+            "end_line": 11,
+            "line": 10
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "bad_variant",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 12,
+                  "text": "Broken variant."
+                }
+              ],
+              "kind": "prose",
+              "line": 12
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 19,
+              "end_line": 14,
+              "line": 12
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 19,
+            "end_line": 14,
+            "line": 12
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dup_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 15,
+                  "text": "The crossing stays open. "
+                },
+                {
+                  "col": 38,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 39,
+                      "end_col": 52,
+                      "end_line": 15,
+                      "line": 15
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 15,
+                  "text": "variants"
+                }
+              ],
+              "kind": "prose",
+              "line": 15
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 51,
+              "end_line": 17,
+              "line": 15
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 51,
+            "end_line": 17,
+            "line": 15
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "block_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 18,
+                  "text": "The crossing stays open. "
+                },
+                {
+                  "col": 38,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 39,
+                      "end_col": 52,
+                      "end_line": 18,
+                      "line": 18
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 18,
+                  "text": "variants"
+                }
+              ],
+              "kind": "prose",
+              "line": 18
+            },
+            "reads": [],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 19,
+              "end_line": 20,
+              "line": 18
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 19,
+            "end_line": 20,
+            "line": 18
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "voiced_coins",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 21,
+                  "text": "The tide is "
+                },
+                {
+                  "col": 25,
+                  "compiled": {
+                    "reads": [
+                      "player.coins"
+                    ],
+                    "source_span": {
+                      "col": 26,
+                      "end_col": 38,
+                      "end_line": 21,
+                      "line": 21
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "value",
+                  "line": 21
+                },
+                {
+                  "col": 39,
+                  "kind": "text",
+                  "line": 21,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 21
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "dock.voice",
+            "span": {
+              "col": 3,
+              "end_col": 41,
+              "end_line": 21,
+              "line": 21
+            },
+            "speaker": "narrator",
+            "tags": [
+              "voiced"
+            ]
+          },
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 41,
+            "end_line": 21,
+            "line": 21
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 41,
+        "end_line": 21,
+        "line": 6
+      }
+    }
+  ]
+}

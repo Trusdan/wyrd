@@ -1,0 +1,17 @@
+language 1
+
+events
+  bell_rung()
+
+storylet harbor.news
+  scope: topic harbor_toll
+  speaker: any
+  - The harbor has news. #line:news_a
+
+sequence harbor.bell ordered within 1 h
+  on bell_rung where true
+
+document dock_letter "Dock Letter"
+  text: live
+  page
+    The tide is posted. #line:letter_a

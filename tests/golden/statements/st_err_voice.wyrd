@@ -1,0 +1,21 @@
+language 1
+
+facts
+  player.coins : int stored
+
+scene dock.voice
+  narrator: The crossing stays open. {holder(ferry)|variants} {holder(tavern)|variants} #line:two_spans
+  narrator: The mood is {mood|variants}. #line:bad_span
+    variant ferry: Still the ferry. #line:bad_span_ferry
+  narrator: Ask the clerk. #line:no_span
+    variant ferry: The clerk knows. #line:orphan_ferry
+  narrator: Broken variant. #line:bad_variant
+    variant:
+    variant ferry:
+  narrator: The crossing stays open. {holder(ferry)|variants} #line:dup_line
+    variant ferry: The ferry master speaks. #line:dup_a
+    variant ferry: The ferry master speaks again. #line:dup_b
+  narrator: The crossing stays open. {holder(ferry)|variants} #line:block_line
+    variant ferry: The ferry master speaks. #line:block_ferry
+      note: nested
+  narrator: The tide is {player.coins}. #tag:voiced #line:voiced_coins

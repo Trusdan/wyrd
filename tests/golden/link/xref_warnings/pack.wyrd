@@ -1,0 +1,18 @@
+language 1
+
+facts
+  secret.missing_toll : bool stored
+  world.tide : int source: world.tide
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    ~ believe dock_clerk secret.missing_toll = true
+    ~ outcome crossing = route_closed
+    scene dock.talk
+    -> done
+  stage done
+
+scene dock.talk
+  narrator: The clerk holds {belief(dock_clerk, secret.missing_toll)}. #line:claim_line
+  * {world.tide > 0} [Ask the clerk] -> end #line:ask_clerk
+    ~ learn dock_clerk secret.missing_toll = false

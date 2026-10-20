@@ -1,0 +1,14 @@
+language 1
+
+events
+  bell_rung()
+    extra
+  bell_rung()
+  tide_turn(level: string)
+  bad_shape
+  tide_mark(witnesses: bool)
+
+storylet dock.bell
+  scope: event missing_bell
+  speaker: any
+  - The bell is quiet. #line:bell_quiet
