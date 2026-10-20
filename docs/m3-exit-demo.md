@@ -40,7 +40,7 @@ Run `Wyrd: check (Gullhaven)`. Problems shows the same baseline: `errors=0 warni
 
 ## 5. Jump to definition
 
-Run `Wyrd: defs (Gullhaven)`. F12 on each reference opens its definition. `cross` may show a pick list, because bare stage names can repeat. Ctrl+T, type `npc.{id}.alive`, and pick it: `facts.wyrd:31`. F12 on a filled-in pattern key is not expected to jump (see the extension README).
+Run `Wyrd: defs (Gullhaven)`. F12 on each reference opens its definition. `cross` may show a pick list, because bare stage names can repeat. Run `ctagsx: Search for definition` (Ctrl+Alt+T), type `npc.{id}.alive`, and pick it. That opens `facts.wyrd:31`. F12 on a filled-in pattern key is not expected to jump (see the extension README).
 
 | Reference | Id | Kind | Definition |
 |---|---|---|---|
@@ -49,7 +49,7 @@ Run `Wyrd: defs (Gullhaven)`. F12 on each reference opens its definition. `cross
 | `ferry_toll.wyrd:32` (`-> cross when …`) | `cross` | `s` | `ferry_toll.wyrd:34` |
 | `harbor_documents.wyrd:8` (`outcome(ferry_toll, crossing)`) | `ferry_toll` | `q` | `ferry_toll.wyrd:4` |
 | `harbor_documents.wyrd:9` (`filled(ferry_master)`) | `ferry_master` | `r` | `harbor_roles.wyrd:9` |
-| Ctrl+T only | `npc.{id}.alive` | `f` | `facts.wyrd:31` |
+| Ctrl+Alt+T only | `npc.{id}.alive` | `f` | `facts.wyrd:31` |
 
 All paths are under `example/content/gullhaven/`.
 
@@ -72,7 +72,7 @@ Run `Wyrd: tag lines (dry run)`. It prints proposals, or nothing, and changes no
 | Colored syntax in VS Code | Grammar snapshots (`vscode` job); keyword parity (`test_vscode_keywords.gd`); VSIX builds | The colors look right in an open `.wyrd` file |
 | Errors and warnings in the Problems panel as he saves | `$wyrd` regex against real `check` output (`test_vscode_matcher.gd`); watch loop (`test_check_watch.gd`); Watch smoke step; exit test (edit, one `E_UNKNOWN_FACT` row, fix) | The watch task updates Problems after a save |
 | Click-through to file:line | Regex captures path, line, and column; `fileLocation` is `autoDetect` from the workspace folder (`test_vscode_matcher.gd`) | Clicking the row opens the right line and column |
-| F12 jumps to a definition | `defs` golden; `wordPattern` keeps dotted ids whole (`test_vscode_word_pattern.gd`); exit test pins every demo target | F12 on each plain id in the table above; Ctrl+T for the pattern key |
+| F12 jumps to a definition | `defs` golden; `wordPattern` keeps dotted ids whole (`test_vscode_word_pattern.gd`); exit test pins every demo target | F12 on each plain id in the table above; Ctrl+Alt+T for the pattern key |
 | `wyrd pot` includes `.wyrd` lines and document paragraphs | POT golden; POT check (`msgfmt --check`); `test_pot_translations.gd`; exit test | Running the pot task writes `wyrd.pot` |
 | `tag-lines` from VS Code | `test_vscode_tasks.gd` (commands exist); `test_tag_lines.gd` (dry run writes nothing) | The dry-run task prints and changes nothing |
 | Lints on the M3 row: `fact_never_read`, `fact_never_written`, secrecy leak | `W_FACT_NEVER_READ`, `W_FACT_NEVER_SET`, `W_SECRECY_LEAK` link goldens and the golden inventory | — |
