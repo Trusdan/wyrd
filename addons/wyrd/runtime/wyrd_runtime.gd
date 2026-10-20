@@ -590,6 +590,12 @@ func eval_condition(index: int) -> bool:
 	return _eval_at(index)
 
 
+func content_schema() -> WyrdFactSchema:
+	if _content == null:
+		return null
+	return _content.schema
+
+
 func eval_value(cond: WyrdCompiledCondition) -> Variant:
 	if cond == null:
 		return null

@@ -324,9 +324,116 @@ func _record_walk(node: WyrdExprNode, ifs: Array, values: Array) -> void:
 
 
 func _play_text(paragraph: Dictionary, row: Dictionary) -> String:
+	var prose := paragraph.get("prose") as WyrdExprNode
+	var line_id := str(paragraph.get("line_id", ""))
+	if runtime != null:
+		_text.runtime = runtime
+	var prepared := _text.prepare_translation(prose, line_id)
+	if not bool(prepared["active"]):
+		return _translate(_play_recorded(prose, row), line_id)
+	if prepared["node"] == null:
+		_text.trace_result(line_id, false, str(prepared["reason"]))
+		return _translate(_play_recorded(prose, row), line_id)
+	var bound := _play_named(prose, prepared["node"] as WyrdExprNode, row)
+	if not bool(bound["ok"]):
+		_text.warn_once(line_id, "frozen_shape")
+		_text.trace_result(line_id, false, "frozen_shape")
+		return _translate(_play_recorded(prose, row), line_id)
+	_text.trace_result(line_id, true, "translated")
+	return str(bound["text"])
+
+
+func _play_recorded(prose: WyrdExprNode, row: Dictionary) -> String:
 	var cursor := {"ifs": 0, "values": 0}
-	var built := _play_walk(paragraph.get("prose") as WyrdExprNode, row.get("ifs", []), row.get("values", []), cursor)
-	return _translate(built, str(paragraph.get("line_id", "")))
+	return _play_walk(prose, row.get("ifs", []), row.get("values", []), cursor)
+
+
+func _play_named(source: WyrdExprNode, translated: WyrdExprNode, row: Dictionary) -> Dictionary:
+	var if_queues := {}
+	var value_queues := {}
+	var cursor := {"ifs": 0, "values": 0}
+	_queue_walk(source, row.get("ifs", []), row.get("values", []), cursor, if_queues, value_queues)
+	var failed := {"bad": false, "collapsed": false}
+	var built := _named_walk(translated, if_queues, value_queues, failed)
+	if bool(failed["bad"]):
+		return {"ok": false, "text": ""}
+	if bool(failed["collapsed"]):
+		while built.contains("  "):
+			built = built.replace("  ", " ")
+		built = built.strip_edges()
+	return {"ok": true, "text": built}
+
+
+func _queue_walk(node: WyrdExprNode, ifs: Array, values: Array, cursor: Dictionary, if_queues: Dictionary, value_queues: Dictionary) -> void:
+	if node == null:
+		return
+	if node.kind == &"if":
+		var at := int(cursor["ifs"])
+		cursor["ifs"] = at + 1
+		var take := bool(ifs[at]) if at < ifs.size() else false
+		var name := _span_name(node)
+		var queue: Array = if_queues.get(name, [])
+		queue.append(take)
+		if_queues[name] = queue
+		_queue_walk(node.b if take else node.c, ifs, values, cursor, if_queues, value_queues)
+		return
+	if node.kind == &"value":
+		var at := int(cursor["values"])
+		cursor["values"] = at + 1
+		var packed: Variant = values[at] if at < values.size() else null
+		var name := _span_name(node)
+		var queue: Array = value_queues.get(name, [])
+		queue.append(packed)
+		value_queues[name] = queue
+		return
+	if node.kind == &"prose":
+		for kid in node.kids:
+			_queue_walk(kid, ifs, values, cursor, if_queues, value_queues)
+		return
+	_queue_walk(node.b, ifs, values, cursor, if_queues, value_queues)
+	_queue_walk(node.c, ifs, values, cursor, if_queues, value_queues)
+	for kid in node.kids:
+		_queue_walk(kid, ifs, values, cursor, if_queues, value_queues)
+
+
+func _named_walk(node: WyrdExprNode, if_queues: Dictionary, value_queues: Dictionary, failed: Dictionary) -> String:
+	if node == null or bool(failed["bad"]):
+		return ""
+	if node.kind == &"text":
+		return node.text
+	if node.kind == &"prose":
+		var built := ""
+		for kid in node.kids:
+			built += _named_walk(kid, if_queues, value_queues, failed)
+		return built
+	if node.kind == &"variants":
+		failed["collapsed"] = true
+		return ""
+	if node.kind == &"if":
+		var name := _span_name(node)
+		var queue: Array = if_queues.get(name, [])
+		if queue.is_empty():
+			failed["bad"] = true
+			return ""
+		var take := bool(queue.pop_front())
+		if_queues[name] = queue
+		return _named_walk(node.b if take else node.c, if_queues, value_queues, failed)
+	if node.kind == &"value":
+		var name := _span_name(node)
+		var queue: Array = value_queues.get(name, [])
+		if queue.is_empty():
+			failed["bad"] = true
+			return ""
+		var packed: Variant = queue.pop_front()
+		value_queues[name] = queue
+		return _show(_unpack(packed), node.payload)
+	return ""
+
+
+func _span_name(node: WyrdExprNode) -> String:
+	if node != null and node.payload is WyrdCompiledCondition:
+		return (node.payload as WyrdCompiledCondition).source_text.strip_edges()
+	return ""
 
 
 func _play_walk(node: WyrdExprNode, ifs: Array, values: Array, cursor: Dictionary) -> String:

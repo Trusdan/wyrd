@@ -74,6 +74,15 @@ func tokenize(source: WyrdSource, diagnostics: WyrdDiagnostics) -> Array[WyrdTok
 	return _tokens
 
 
+## Prose and interpolation tokens for one string, as a dash-line body would lex them.
+func tokenize_prose(text: String, diagnostics: WyrdDiagnostics) -> Array[WyrdToken]:
+	_diagnostics = diagnostics
+	_tokens = []
+	_source = WyrdSource.new("", text)
+	_read_prose(text, 0, 1, 1, false)
+	return _tokens
+
+
 func _lex_line(line: String, line_no: int) -> void:
 	var index := 0
 	var tab_at := -1

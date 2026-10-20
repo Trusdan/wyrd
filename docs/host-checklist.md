@@ -61,7 +61,7 @@ msginit --input=wyrd.pot --locale=fr --output=wyrd.fr.po
 
 Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `wyrd.<locale>.po` under Project Settings → Localization → Translations, next to the game's own `.po` files. Godot loads every translation for the locale, so a Wyrd line and a game string can both resolve.
 
-`msgctxt` is the line id. Lines whose text contains `{…}` match a translation only once template lookup lands in a later Wyrd release. Until then, a line with no `{…}` translates from this catalog.
+`msgctxt` is the line id. A line with no `{…}` translates from that rendered text. A line with `{…}` translates by template: the translation must keep exactly the same placeholders, in any order. Otherwise the source line shows, Godot logs a warning, and a `text_translate ok=false` trace row explains why.
 
 ## Start and load
 

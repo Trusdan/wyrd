@@ -13,6 +13,7 @@
 - Docs: the host checklist explains making `.po` files from `wyrd.pot` next to the game's own translations.
 - Tools: `.vscode/tasks.json` adds a pot task for Gullhaven.
 - CI: the POT is checked with gettext `msgfmt --check`.
+- Lines with `{…}` now translate by template: the translation is compiled and its placeholders, named by their expression, are filled at display time. A translation whose placeholders don't match falls back to the source line with a warning and a `text_translate ok=false` trace row.
 
 ## 0.6.3-m8 - 2026-10-19
 

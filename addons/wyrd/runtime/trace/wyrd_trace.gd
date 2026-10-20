@@ -74,6 +74,10 @@ var enabled: bool = false
 ## A publish line is one frozen issue. path is the document id.
 ## key and issue are the copy id. who is the group. deeds is the deed count.
 ## Replay skips it. Load does not log it.
+## A text_translate line is one rendered line that used or rejected a translated
+## template. key is the line id. path is the locale. ok is true when the
+## translation was used. reason is translated, placeholder_mismatch,
+## compile_error, or frozen_shape. Replay skips it. Load does not log one.
 ## A storylet_index line is one index read. scope is the scope text.
 ## speaker is the query speaker. key is the scope id, empty for a bark.
 ## ids is the count returned before secrecy, when, and cooldown.
@@ -137,7 +141,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 			"create_copy":
 				if runtime.documents != null:
 					runtime.documents.create_copy(StringName(str(row.get("doc", ""))), str(row.get("copy", "")))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale":
+			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:
 				pass

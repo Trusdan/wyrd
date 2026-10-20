@@ -45,6 +45,54 @@ static func has_variable_text(node: WyrdExprNode) -> bool:
 	return false
 
 
+## True when the tree has a value, an [code]{if}[/code], or a variants span.
+static func has_spans(node: WyrdExprNode) -> bool:
+	if node == null:
+		return false
+	if node.kind == &"value" or node.kind == &"if" or node.kind == &"variants":
+		return true
+	if has_spans(node.b) or has_spans(node.c):
+		return true
+	for kid in node.kids:
+		if has_spans(kid):
+			return true
+	return false
+
+
+## [method source_of], with each literal [code]{[/code] written back as [code]{{[/code].
+## A tree with no spans returns [method source_of] unchanged.
+static func template_of(node: WyrdExprNode) -> String:
+	if not has_spans(node):
+		return source_of(node)
+	return _template(node)
+
+
+static func _template(node: WyrdExprNode) -> String:
+	if node == null:
+		return ""
+	if node.kind == &"text":
+		return node.text.replace("{", "{{")
+	if node.kind == &"prose":
+		var built := ""
+		for kid in node.kids:
+			built += _template(kid)
+		return built
+	if node.kind == &"value":
+		return "{%s}" % _payload_text(node)
+	if node.kind == &"variants":
+		return "{%s|variants}" % _payload_text(node)
+	if node.kind == &"if":
+		var then_text := _template(node.b)
+		var else_text := _template(node.c)
+		if else_text.is_empty():
+			return "{if %s}%s{end}" % [_payload_text(node), then_text]
+		return "{if %s}%s{else}%s{end}" % [_payload_text(node), then_text, else_text]
+	var built := ""
+	for kid in node.kids:
+		built += _template(kid)
+	return built
+
+
 static func collect_variants(node: WyrdExprNode, into: Array) -> void:
 	if node == null:
 		return
