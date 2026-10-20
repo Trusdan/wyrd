@@ -591,11 +591,16 @@ func _writers(units: Array) -> Array:
 			for effect in scene.on_abort:
 				_write(rows, effect, scene.id, path)
 			for item in scene.items:
+				if item.effect != null:
+					_write(rows, item.effect, scene.id, path)
 				if item.choice == null:
 					continue
 				var id := item.choice.line_id if not item.choice.line_id.is_empty() else scene.id
 				for effect in item.choice.effects:
 					_write(rows, effect, id, path)
+		for storylet in file.storylets:
+			for effect in storylet.effects:
+				_write(rows, effect, storylet.id, path)
 		for document in file.documents:
 			for effect in document.on_first_read:
 				_write(rows, effect, document.id, path)

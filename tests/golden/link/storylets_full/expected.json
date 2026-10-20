@@ -1,14 +1,6 @@
 {
   "diagnostics": [
     {
-      "code": "W_FACT_NEVER_SET",
-      "col": 3,
-      "line": 4,
-      "message": "stored fact \"player.coins\" is read but never set",
-      "path": "res://tests/golden/link/storylets_full/pack.wyrd",
-      "severity": "warning"
-    },
-    {
       "code": "I_STORYLET_SCORE",
       "col": 1,
       "line": 19,
@@ -412,7 +404,15 @@
           ],
           "source": "stored",
           "type": "int",
-          "writers": []
+          "writers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/storylets_full/pack.wyrd",
+              "id": "harbor.topic",
+              "kind": "effect",
+              "line": 28
+            }
+          ]
         }
       ]
     }
