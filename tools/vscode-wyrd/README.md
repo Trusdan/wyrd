@@ -52,6 +52,8 @@ To use the tasks in another project, copy `tasks.sample.json` to that project's 
 4. Re-run the task after editing, since the tags store line numbers.
 5. F12 does not jump from a filled-in pattern key (such as `npc.{holder(ferry)}.alive`). The declared pattern key is still findable through workspace symbol search (Ctrl+T).
 
+The manual M3 exit demo is `docs/m3-exit-demo.md`.
+
 ## Snapshots
 
 From `tools/vscode-wyrd/`:
