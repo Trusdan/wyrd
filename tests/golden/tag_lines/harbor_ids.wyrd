@@ -1,0 +1,22 @@
+// Gullhaven-named tag-lines golden. Untagged on purpose.
+language 1
+
+scene dock.crate_talk
+  when player.coins >= 2: ferry: Two coins, and the boat will cross.
+  tavern: The crate waits. {holder(tavern)|variants}
+    variant tavern: Still waiting on the dock.
+  * [Lift the crate] -> lifted
+    check strength(weight: 2) on_fail -> dropped
+  - (lifted)
+
+storylet dock_voice_crossing
+  scope: topic rumor.crossing
+  speaker: narrator
+  - The crossing stays open. {holder(ferry)|variants}
+    variant ferry: The ferry master keeps the crossing open.
+
+document ferry_schedule "Ferry Schedule"
+  text: live
+  page
+    The ferry leaves when the tide turns.
+    when not filled(ferry): The ferry master's chair is empty.

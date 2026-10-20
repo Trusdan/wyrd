@@ -59,7 +59,7 @@ Run `Wyrd: pot (Gullhaven)`. `wyrd.pot` at the project root has `crate_line` and
 
 ## 7. tag-lines
 
-Run `Wyrd: tag lines (dry run)`. It prints proposals, or nothing, and changes no file.
+Run `Wyrd: tag lines (dry run)`. It prints nothing on Gullhaven and changes no file.
 
 ## 8. Clean up
 

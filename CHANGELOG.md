@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed: CLI runs other than `check --watch` no longer print a `tick` on Nil script error after their output. CI runs every command headless and fails on a script error.
+- Fixed: `tag-lines` proposes ids exactly where `check` requires them: no longer on a choice's skill-check line, and now on variant lines. Document titles and paragraphs still get ids. Ids already written never change; an untagged line after a fixed site may get a different proposed id.
 
 ## 0.6.4-m3 - 2026-10-20
 

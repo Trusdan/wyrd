@@ -8,30 +8,6 @@ extends RefCounted
 ## on a pack collision. An existing id is never changed. Every other byte stays,
 ## including indent, comments, and CRLF. A second run changes nothing.
 
-const _SKIP := {
-	"*": true,
-	"-": true,
-	"->": true,
-	"facts": true,
-	"journal": true,
-	"language": true,
-	"on_abort": true,
-	"on_empty": true,
-	"outcome": true,
-	"quest": true,
-	"redirect": true,
-	"requires": true,
-	"scene": true,
-	"slot": true,
-	"stage": true,
-	"start": true,
-	"variant": true,
-	"waits_until": true,
-	"when": true,
-	"~": true,
-}
-
-
 static func tag_files(files: PackedStringArray, pack_id: String, dry_run: bool) -> Dictionary:
 	var taken := {}
 	var notes: PackedStringArray = PackedStringArray()
@@ -43,10 +19,12 @@ static func tag_files(files: PackedStringArray, pack_id: String, dry_run: bool) 
 		var source := WyrdSource.new(path, raw)
 		var tree := WyrdParser.new().parse(source, WyrdDiagnostics.new())
 		_gather_tags(tree, taken)
-		parsed.append({"path": path, "raw": raw, "tree": tree})
+		var statements := WyrdStatements.new()
+		statements.compile(source, tree, WyrdDiagnostics.new())
+		parsed.append({"path": path, "raw": raw, "sites": statements.line_sites})
 	var changed := 0
 	for row in parsed:
-		var sites := _sites(row["tree"])
+		var sites: Array = row["sites"]
 		var edits: Array = []
 		for ordinal in sites.size():
 			var site: Dictionary = sites[ordinal]
@@ -72,7 +50,9 @@ static func tag_text(text: String, path: String, pack_id: String, taken: Diction
 	var source := WyrdSource.new(path, text)
 	var tree := WyrdParser.new().parse(source, WyrdDiagnostics.new())
 	_gather_tags(tree, taken)
-	var sites := _sites(tree)
+	var statements := WyrdStatements.new()
+	statements.compile(source, tree, WyrdDiagnostics.new())
+	var sites: Array = statements.line_sites
 	var edits: Array = []
 	var notes: PackedStringArray = PackedStringArray()
 	for ordinal in sites.size():
@@ -100,86 +80,6 @@ static func make_id(pack_id: String, path: String, owner: String, ordinal: int, 
 			roll = rng.randi()
 			width = 4
 	return _hex(rng.randi(), 8)
-
-
-static func _sites(tree: WyrdNode) -> Array:
-	var sites: Array = []
-	_walk(tree, "", "", sites)
-	return sites
-
-
-static func _walk(node: WyrdNode, kind: String, owner: String, sites: Array) -> void:
-	var next_kind := kind
-	var next_owner := owner
-	if node.keyword == "quest":
-		next_kind = "quest"
-		next_owner = _dotted(node)
-	elif node.keyword == "scene":
-		next_kind = "scene"
-		next_owner = _dotted(node)
-	elif node.keyword == "storylet":
-		next_kind = "storylet"
-		next_owner = _dotted(node)
-	elif node.keyword == "document" and not _periodic_header(node):
-		next_kind = "document"
-		next_owner = _dotted(node)
-		sites.append({"line": node.start_line, "owner": next_owner, "tag": node.line_tag})
-	elif kind == "document" and node.keyword == "page":
-		next_kind = "docpage"
-	elif kind == "docpage":
-		sites.append({"line": node.start_line, "owner": owner, "tag": node.line_tag})
-	elif _is_site(node, kind):
-		sites.append({"line": node.start_line, "owner": owner, "tag": node.line_tag})
-	for child in node.children:
-		_walk(child, next_kind, next_owner, sites)
-
-
-static func _periodic_header(node: WyrdNode) -> bool:
-	for token in node.head:
-		if token.kind != &"ident":
-			continue
-		if token.text == "publishes_by" or token.text == "every" or token.text == "delay":
-			return true
-	return false
-
-
-static func _is_site(node: WyrdNode, kind: String) -> bool:
-	if kind == "storylet" and node.keyword == "-":
-		return true
-	if kind == "quest" and node.keyword == "journal":
-		return true
-	if kind != "scene":
-		return false
-	if node.keyword == "when":
-		return true
-	if node.keyword == "*":
-		for token in node.head:
-			if token.kind == &"lbracket":
-				return true
-		return false
-	if _SKIP.has(node.keyword):
-		return false
-	for token in node.head:
-		if token.kind == &"colon":
-			return true
-	return false
-
-
-static func _dotted(node: WyrdNode) -> String:
-	var parts: PackedStringArray = PackedStringArray()
-	var pending := false
-	for token in node.head:
-		if token.kind == &"ident":
-			parts.append(token.text)
-			pending = false
-			continue
-		if token.kind == &"dot":
-			pending = true
-			continue
-		break
-	if pending:
-		return ""
-	return ".".join(parts)
 
 
 static func _gather_tags(node: WyrdNode, taken: Dictionary) -> void:
