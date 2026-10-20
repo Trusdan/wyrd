@@ -4,7 +4,7 @@ extends EditorPlugin
 ## Editor entry point for Wyrd.
 ##
 ## @experimental
-## S0 registers nothing: no autoload, importer, translation parser, dock, or highlighter.
+## Registers nothing. M3 chose VS Code and the CLI (see `docs/spikes/s0-syntax-highlight.md`).
 
 func _enter_tree() -> void:
 	return

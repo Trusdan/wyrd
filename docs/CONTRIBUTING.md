@@ -29,6 +29,8 @@ Godot and GUT versions are pinned in `tools/pins.env`. An upgrade is its own pul
 tools/run_tests.sh
 ```
 
+Grammar snapshots live in `tools/vscode-wyrd/tests/snap/`. From `tools/vscode-wyrd/`, `npx vscode-tmgrammar-snap 'tests/snap/*.wyrd'` checks them and `npx vscode-tmgrammar-snap -u 'tests/snap/*.wyrd'` updates them.
+
 Details are in the repository `README.md`.
 
 ## How to read a Wyrd PR

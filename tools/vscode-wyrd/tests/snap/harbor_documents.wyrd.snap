@@ -1,0 +1,189 @@
+>// [EXAMPLE CONTENT] Gullhaven readable documents. An invented fishing village, not a host game.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd comment.line.double-slash.wyrd
+>language 1
+#^^^^^^^^ source.wyrd keyword.other.header.wyrd
+#        ^ source.wyrd
+#         ^ source.wyrd constant.numeric.wyrd
+>
+>document ferry_schedule "Ferry Schedule" #line:sched_title
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^ source.wyrd entity.name.type.document.wyrd
+#                       ^ source.wyrd
+#                        ^ source.wyrd string.quoted.double.wyrd
+#                         ^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                       ^ source.wyrd string.quoted.double.wyrd
+#                                        ^ source.wyrd
+#                                         ^^^^^^ source.wyrd entity.name.tag.wyrd
+#                                               ^^^^^^^^^^^ source.wyrd constant.other.wyrd
+>  text: live
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^ source.wyrd
+#        ^^^^ source.wyrd keyword.other.wyrd
+>  page
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+>    The ferry leaves when the tide turns. #line:sched_plain
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                          ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                ^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    {if outcome(ferry_toll, crossing) == done}The toll is paid and the ferry runs.{else}The toll is still due.{end} #line:sched_toll
+#^^^^ source.wyrd string.unquoted.prose.wyrd
+#    ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#     ^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                      ^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.operator.wyrd
+#                                        ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                         ^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.wyrd
+#                                             ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                  ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                   ^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#                                                                                       ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                        ^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                                              ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                                               ^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#                                                                                                                  ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                                                   ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                                                    ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                                                          ^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    when not filled(ferry_master): The ferry master's chair is empty. #line:sched_empty
+#^^^^ source.wyrd string.unquoted.prose.wyrd
+#    ^^^^ source.wyrd string.unquoted.prose.wyrd keyword.other.wyrd
+#        ^ source.wyrd string.unquoted.prose.wyrd
+#         ^^^ source.wyrd string.unquoted.prose.wyrd keyword.operator.wyrd
+#            ^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                 ^ source.wyrd string.unquoted.prose.wyrd
+#                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd
+#                                                                      ^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                            ^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>
+>document reeve_letter "A Sealed Letter" #line:letter_title
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^ source.wyrd entity.name.type.document.wyrd
+#                     ^ source.wyrd
+#                      ^ source.wyrd string.quoted.double.wyrd
+#                       ^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                      ^ source.wyrd string.quoted.double.wyrd
+#                                       ^ source.wyrd
+#                                        ^^^^^^ source.wyrd entity.name.tag.wyrd
+#                                              ^^^^^^^^^^^^ source.wyrd constant.other.wyrd
+>  text: frozen
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^ source.wyrd
+#        ^^^^^^ source.wyrd keyword.other.wyrd
+>  page
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+>    {if filled(harbor_reeve)}To {holder(harbor_reeve).name}: the levy can wait.{else}To the empty chair: the levy can wait.{end} #line:letter_body
+#^^^^ source.wyrd string.unquoted.prose.wyrd
+#    ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#     ^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#       ^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                            ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                             ^^^ source.wyrd string.unquoted.prose.wyrd
+#                                ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                 ^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                          ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                           ^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                                               ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                ^^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#                                                                                    ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                                                           ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                                                            ^^^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd keyword.control.conditional.wyrd
+#                                                                                                                               ^ source.wyrd string.unquoted.prose.wyrd meta.interpolation.wyrd
+#                                                                                                                                ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                                                                 ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                                                                       ^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>  on_first_read:
+#^^ source.wyrd
+#  ^^^^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#               ^^ source.wyrd
+>    ~ unlock topic storm_rumour
+#^^^^ source.wyrd
+#    ^ source.wyrd keyword.operator.effect.wyrd
+#     ^ source.wyrd
+#      ^^^^^^ source.wyrd keyword.other.wyrd
+#            ^ source.wyrd
+#             ^^^^^ source.wyrd keyword.other.wyrd
+#                  ^^^^^^^^^^^^^ source.wyrd
+>
+>quest dock_letter "The Dock Letter"
+#^^^^^ source.wyrd keyword.other.block.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^ source.wyrd entity.name.type.quest.wyrd
+#                 ^ source.wyrd
+#                  ^ source.wyrd string.quoted.double.wyrd
+#                   ^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                  ^ source.wyrd string.quoted.double.wyrd
+>  start when false
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^ source.wyrd
+#        ^^^^ source.wyrd keyword.other.wyrd
+#            ^ source.wyrd
+#             ^^^^^ source.wyrd constant.language.wyrd
+>  on_empty: wait
+#^^ source.wyrd
+#  ^^^^^^^^ source.wyrd keyword.other.wyrd
+#          ^^^^^^^ source.wyrd
+>  slot tavern = tavern_owner mode: live
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^ source.wyrd
+#              ^ source.wyrd keyword.operator.wyrd
+#               ^^^^^^^^^^^^^^ source.wyrd
+#                             ^^^^ source.wyrd keyword.other.wyrd
+#                                 ^^ source.wyrd
+#                                   ^^^^ source.wyrd keyword.other.wyrd
+>
+>  stage handoff
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^^^^^ source.wyrd
+>    scene dock.letter_talk with tavern
+#^^^^ source.wyrd
+#    ^^^^^ source.wyrd keyword.other.block.wyrd
+#         ^^^^^^^^^^^^^^^^^^ source.wyrd
+#                           ^^^^ source.wyrd keyword.other.wyrd
+#                               ^^^^^^^^ source.wyrd
+>    waits_until false
+#^^^^ source.wyrd
+#    ^^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#               ^ source.wyrd
+#                ^^^^^ source.wyrd constant.language.wyrd
+>
+>scene dock.letter_talk
+#^^^^^ source.wyrd keyword.other.block.wyrd
+#     ^ source.wyrd
+#      ^^^^^^^^^^^^^^^^ source.wyrd entity.name.type.scene.wyrd
+>  ~ create document reeve_letter copy dock_letter
+#^^ source.wyrd
+#  ^ source.wyrd keyword.operator.effect.wyrd
+#   ^ source.wyrd
+#    ^^^^^^ source.wyrd keyword.other.wyrd
+#          ^ source.wyrd
+#           ^^^^^^^^ source.wyrd keyword.other.reserved.wyrd
+#                   ^^^^^^^^^^^^^^ source.wyrd
+#                                 ^^^^ source.wyrd keyword.other.wyrd
+#                                     ^^^^^^^^^^^^ source.wyrd
+>  when has_read(player, reeve_letter): tavern: You have read the reeve's letter. #line:letter_heard
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                     ^^ source.wyrd
+#                                       ^^^^^^ source.wyrd entity.name.label.speaker.wyrd
+#                                             ^ source.wyrd
+#                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                 ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                       ^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>  -> end
+#^^ source.wyrd
+#  ^^ source.wyrd keyword.control.divert.wyrd
+#    ^ source.wyrd
+#     ^^^ source.wyrd entity.name.function.wyrd
+>

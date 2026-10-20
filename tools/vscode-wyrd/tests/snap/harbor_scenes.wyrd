@@ -1,0 +1,45 @@
+// [EXAMPLE CONTENT] Gullhaven harbor scenes. An invented fishing village, not a host game.
+language 1
+
+scene toll.offer_room
+  on_abort:
+    ~ record deed left(actor: player, place: gullhaven, tags: [cut], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
+  tavern: A room's two coins a night, and the stew is free. #line:a91f
+  when harbor.watch_alive and not npc.ferry_master.alive: narrator: The ferry master is gone. #line:a_gone
+  when harbor.bell_count > 0: narrator: The harbor bell was struck. #line:a_bell_count
+  lookout: The headland bell rang twice before the rain. #line:a_look
+  when tavern.stew_bowls > 0: tavern: The stew is still warm. #line:a_stew
+  when harbor.room_taken: tavern: Your room key is on the hook. #line:a_key
+  when harbor.deck_wet: narrator: The deck is still wet from the bucket. #line:a_wet
+  // "the ferry master" is prose. A role has no title field.
+  // filled() is the slot, not the cached npc.ferry_master.alive fact.
+  when filled(ferry): lookout: {holder(ferry).name}, the ferry master, is on the dock. #line:a_alive
+  when not filled(ferry): lookout: The dock is empty. #line:a_empty
+  when world.season == storm: narrator: The season smells like rain. #line:a_season
+  dock.bell: The bell notes the tide. #line:a_bell
+  * [Take the room] show_disabled_when {player.coins < 2} "short on coins" -> took #line:c_room
+    ~ do assign_lodging(player, place: gullhaven.tavern) on_fail -> no_room
+    ~ set player.coins = player.coins - 2
+    ~ set harbor.room_taken = true
+  * {has_tag(player, local)} [I have a place in town] -> declined #line:c_local
+  * [Ask the dock errand] -> errand_ask #line:c_errand
+    ~ start quest dock_errand
+    ~ adjust baseline affinity(tavern_owner, player) by 5
+    ~ assign role dock_runner to dock_apprentice
+  * [Send the errand on] -> errand_send #line:c_errand_on
+    ~ advance dock_errand to sent
+  - (took)
+  - (declined)
+  tavern: The ferry's charging double since the storm, mind. #line:a920
+  -> scene toll.depart
+  -> end
+  - (no_room)
+  tavern: No room left tonight. #line:a922
+  tavern: The board lists the price as {{two coins}}. #line:a921
+  -> end
+  - (errand_ask)
+  narrator: The dock errand can wait. #line:a_errand
+  -> end
+  - (errand_send)
+  narrator: The errand is on its way. #line:a_errand_on
+  -> end

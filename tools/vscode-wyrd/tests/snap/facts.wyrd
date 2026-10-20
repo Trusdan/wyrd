@@ -1,0 +1,31 @@
+// [EXAMPLE CONTENT] Gullhaven facts. An invented fishing village, not a host game.
+language 1
+
+events
+  season_changed()
+  entity_alive_changed(entity: symbol, alive: bool)
+  mechanism_state(object: symbol, state: symbol, actor: symbol)
+  bucket_poured(actor: symbol, place: symbol) leaves: harbor.deck_wet = true decays 60
+
+facts
+  player.coins       : int    stored recap: false  doc: "Coins the player is carrying."
+  player.clearance   : symbol stored doc: "The secrecy name this player has unlocked."
+  ferry.toll_coins   : int    stored recap: true  doc: "Coins counted toward the ferry toll."
+  harbor.room_taken  : bool   stored recap: true  doc: "Whether tonight's tavern room was taken."
+  harbor.deck_wet    : bool   stored  doc: "Whether the harbor deck is still wet."
+  harbor.watch_alive : bool   stored recap: true  doc: "Whether the dock watch is looking for the ferry master."
+  harbor.bell_struck : bool   stored  doc: "Whether the harbor bell was struck."
+  harbor.bell_count  : int    stored  doc: "How many times the harbor bell was struck."
+  harbor.rope_spliced : bool  stored  doc: "Whether the harbor bell rope has been spliced."
+  harbor.rope_done    : bool  stored  doc: "Whether the spliced harbor bell rope is ready."
+  harbor.tongue_seated : bool stored doc: "Whether the harbor bell tongue has been seated."
+  harbor.tongue_done  : bool  stored  doc: "Whether the seated harbor bell tongue is ready."
+  tavern.stew_bowls  : int    stored  doc: "Bowls of stew left on the hearth."
+  world.storm_heard  : bool   stored recap: true  doc: "Whether the storm rumour was heard."
+  harbor.factor_refuses : bool stored recap: false doc: "Whether the harbor factor refuses to sign."
+  harbor.guild_signed   : bool stored recap: false doc: "Whether the harbor guild has signed the levy."
+  harbor.levy_posted    : bool stored recap: false doc: "Whether the signed levy has been posted."
+  harbor.toll_fate   : symbol stored doc: "What people say happened to the ferry toll."
+  harbor.gazette     : symbol stored doc: "Lines the harbor gazette has printed."
+  world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
+  npc.{id}.alive     : bool   source: world.is_alive  invalidate: on_event(entity_alive_changed)  doc: "Whether that person is alive in the host world."

@@ -1,0 +1,321 @@
+>// [EXAMPLE CONTENT] Gullhaven facts. An invented fishing village, not a host game.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd comment.line.double-slash.wyrd
+>language 1
+#^^^^^^^^ source.wyrd keyword.other.header.wyrd
+#        ^ source.wyrd
+#         ^ source.wyrd constant.numeric.wyrd
+>
+>events
+#^^^^^^ source.wyrd keyword.other.block.wyrd
+>  season_changed()
+#^^^^^^^^^^^^^^^^^^^ source.wyrd
+>  entity_alive_changed(entity: symbol, alive: bool)
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                               ^^^^^^ source.wyrd storage.type.wyrd
+#                                     ^^^^^^^^^ source.wyrd
+#                                              ^^^^ source.wyrd storage.type.wyrd
+#                                                  ^^ source.wyrd
+>  mechanism_state(object: symbol, state: symbol, actor: symbol)
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                          ^^^^^^ source.wyrd storage.type.wyrd
+#                                ^^^^^^^^^ source.wyrd
+#                                         ^^^^^^ source.wyrd storage.type.wyrd
+#                                               ^^ source.wyrd
+#                                                 ^^^^^ source.wyrd keyword.other.wyrd
+#                                                      ^^ source.wyrd
+#                                                        ^^^^^^ source.wyrd storage.type.wyrd
+#                                                              ^^ source.wyrd
+>  bucket_poured(actor: symbol, place: symbol) leaves: harbor.deck_wet = true decays 60
+#^^^^^^^^^^^^^^^^ source.wyrd
+#                ^^^^^ source.wyrd keyword.other.wyrd
+#                     ^^ source.wyrd
+#                       ^^^^^^ source.wyrd storage.type.wyrd
+#                             ^^ source.wyrd
+#                               ^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^^^^ source.wyrd storage.type.wyrd
+#                                            ^^ source.wyrd
+#                                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                                    ^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                                                      ^ source.wyrd keyword.operator.wyrd
+#                                                                       ^ source.wyrd
+#                                                                        ^^^^ source.wyrd constant.language.wyrd
+#                                                                            ^ source.wyrd
+#                                                                             ^^^^^^ source.wyrd keyword.other.wyrd
+#                                                                                   ^ source.wyrd
+#                                                                                    ^^ source.wyrd constant.numeric.wyrd
+>
+>facts
+#^^^^^ source.wyrd keyword.other.block.wyrd
+>  player.coins       : int    stored recap: false  doc: "Coins the player is carrying."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^ source.wyrd storage.type.wyrd
+#                          ^^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^^^ source.wyrd keyword.other.wyrd
+#                                          ^^ source.wyrd
+#                                            ^^^^^ source.wyrd constant.language.wyrd
+#                                                 ^^ source.wyrd
+#                                                   ^^^ source.wyrd keyword.other.wyrd
+#                                                      ^^ source.wyrd
+#                                                        ^ source.wyrd string.quoted.double.wyrd
+#                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                      ^ source.wyrd string.quoted.double.wyrd
+>  player.clearance   : symbol stored doc: "The secrecy name this player has unlocked."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^^^ source.wyrd storage.type.wyrd
+#                             ^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^ source.wyrd keyword.other.wyrd
+#                                        ^^ source.wyrd
+#                                          ^ source.wyrd string.quoted.double.wyrd
+#                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                     ^ source.wyrd string.quoted.double.wyrd
+>  ferry.toll_coins   : int    stored recap: true  doc: "Coins counted toward the ferry toll."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^ source.wyrd storage.type.wyrd
+#                          ^^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^^^ source.wyrd keyword.other.wyrd
+#                                          ^^ source.wyrd
+#                                            ^^^^ source.wyrd constant.language.wyrd
+#                                                ^^ source.wyrd
+#                                                  ^^^ source.wyrd keyword.other.wyrd
+#                                                     ^^ source.wyrd
+#                                                       ^ source.wyrd string.quoted.double.wyrd
+#                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                            ^ source.wyrd string.quoted.double.wyrd
+>  harbor.room_taken  : bool   stored recap: true  doc: "Whether tonight's tavern room was taken."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^^^ source.wyrd keyword.other.wyrd
+#                                          ^^ source.wyrd
+#                                            ^^^^ source.wyrd constant.language.wyrd
+#                                                ^^ source.wyrd
+#                                                  ^^^ source.wyrd keyword.other.wyrd
+#                                                     ^^ source.wyrd
+#                                                       ^ source.wyrd string.quoted.double.wyrd
+#                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                ^ source.wyrd string.quoted.double.wyrd
+>  harbor.deck_wet    : bool   stored  doc: "Whether the harbor deck is still wet."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                 ^ source.wyrd string.quoted.double.wyrd
+>  harbor.watch_alive : bool   stored recap: true  doc: "Whether the dock watch is looking for the ferry master."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^^^ source.wyrd keyword.other.wyrd
+#                                          ^^ source.wyrd
+#                                            ^^^^ source.wyrd constant.language.wyrd
+#                                                ^^ source.wyrd
+#                                                  ^^^ source.wyrd keyword.other.wyrd
+#                                                     ^^ source.wyrd
+#                                                       ^ source.wyrd string.quoted.double.wyrd
+#                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                               ^ source.wyrd string.quoted.double.wyrd
+>  harbor.bell_struck : bool   stored  doc: "Whether the harbor bell was struck."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                               ^ source.wyrd string.quoted.double.wyrd
+>  harbor.bell_count  : int    stored  doc: "How many times the harbor bell was struck."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^ source.wyrd storage.type.wyrd
+#                          ^^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                      ^ source.wyrd string.quoted.double.wyrd
+>  harbor.rope_spliced : bool  stored  doc: "Whether the harbor bell rope has been spliced."
+#^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                        ^^^^ source.wyrd storage.type.wyrd
+#                            ^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                          ^ source.wyrd string.quoted.double.wyrd
+>  harbor.rope_done    : bool  stored  doc: "Whether the spliced harbor bell rope is ready."
+#^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                        ^^^^ source.wyrd storage.type.wyrd
+#                            ^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                          ^ source.wyrd string.quoted.double.wyrd
+>  harbor.tongue_seated : bool stored doc: "Whether the harbor bell tongue has been seated."
+#^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                         ^^^^ source.wyrd storage.type.wyrd
+#                             ^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^ source.wyrd keyword.other.wyrd
+#                                        ^^ source.wyrd
+#                                          ^ source.wyrd string.quoted.double.wyrd
+#                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                          ^ source.wyrd string.quoted.double.wyrd
+>  harbor.tongue_done  : bool  stored  doc: "Whether the seated harbor bell tongue is ready."
+#^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                        ^^^^ source.wyrd storage.type.wyrd
+#                            ^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                           ^ source.wyrd string.quoted.double.wyrd
+>  tavern.stew_bowls  : int    stored  doc: "Bowls of stew left on the hearth."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^ source.wyrd storage.type.wyrd
+#                          ^^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^ source.wyrd
+#                                      ^^^ source.wyrd keyword.other.wyrd
+#                                         ^^ source.wyrd
+#                                           ^ source.wyrd string.quoted.double.wyrd
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                             ^ source.wyrd string.quoted.double.wyrd
+>  world.storm_heard  : bool   stored recap: true  doc: "Whether the storm rumour was heard."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^^^ source.wyrd keyword.other.wyrd
+#                                          ^^ source.wyrd
+#                                            ^^^^ source.wyrd constant.language.wyrd
+#                                                ^^ source.wyrd
+#                                                  ^^^ source.wyrd keyword.other.wyrd
+#                                                     ^^ source.wyrd
+#                                                       ^ source.wyrd string.quoted.double.wyrd
+#                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                           ^ source.wyrd string.quoted.double.wyrd
+>  harbor.factor_refuses : bool stored recap: false doc: "Whether the harbor factor refuses to sign."
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                          ^^^^ source.wyrd storage.type.wyrd
+#                              ^ source.wyrd
+#                               ^^^^^^ source.wyrd keyword.other.wyrd
+#                                     ^ source.wyrd
+#                                      ^^^^^ source.wyrd keyword.other.wyrd
+#                                           ^^ source.wyrd
+#                                             ^^^^^ source.wyrd constant.language.wyrd
+#                                                  ^ source.wyrd
+#                                                   ^^^ source.wyrd keyword.other.wyrd
+#                                                      ^^ source.wyrd
+#                                                        ^ source.wyrd string.quoted.double.wyrd
+#                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                   ^ source.wyrd string.quoted.double.wyrd
+>  harbor.guild_signed   : bool stored recap: false doc: "Whether the harbor guild has signed the levy."
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                          ^^^^ source.wyrd storage.type.wyrd
+#                              ^ source.wyrd
+#                               ^^^^^^ source.wyrd keyword.other.wyrd
+#                                     ^ source.wyrd
+#                                      ^^^^^ source.wyrd keyword.other.wyrd
+#                                           ^^ source.wyrd
+#                                             ^^^^^ source.wyrd constant.language.wyrd
+#                                                  ^ source.wyrd
+#                                                   ^^^ source.wyrd keyword.other.wyrd
+#                                                      ^^ source.wyrd
+#                                                        ^ source.wyrd string.quoted.double.wyrd
+#                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                      ^ source.wyrd string.quoted.double.wyrd
+>  harbor.levy_posted    : bool stored recap: false doc: "Whether the signed levy has been posted."
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                          ^^^^ source.wyrd storage.type.wyrd
+#                              ^ source.wyrd
+#                               ^^^^^^ source.wyrd keyword.other.wyrd
+#                                     ^ source.wyrd
+#                                      ^^^^^ source.wyrd keyword.other.wyrd
+#                                           ^^ source.wyrd
+#                                             ^^^^^ source.wyrd constant.language.wyrd
+#                                                  ^ source.wyrd
+#                                                   ^^^ source.wyrd keyword.other.wyrd
+#                                                      ^^ source.wyrd
+#                                                        ^ source.wyrd string.quoted.double.wyrd
+#                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                 ^ source.wyrd string.quoted.double.wyrd
+>  harbor.toll_fate   : symbol stored doc: "What people say happened to the ferry toll."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^^^ source.wyrd storage.type.wyrd
+#                             ^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^ source.wyrd keyword.other.wyrd
+#                                        ^^ source.wyrd
+#                                          ^ source.wyrd string.quoted.double.wyrd
+#                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                      ^ source.wyrd string.quoted.double.wyrd
+>  harbor.gazette     : symbol stored doc: "Lines the harbor gazette has printed."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^^^ source.wyrd storage.type.wyrd
+#                             ^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^ source.wyrd
+#                                     ^^^ source.wyrd keyword.other.wyrd
+#                                        ^^ source.wyrd
+#                                          ^ source.wyrd string.quoted.double.wyrd
+#                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                ^ source.wyrd string.quoted.double.wyrd
+>  world.season       : symbol source: time.season  invalidate: on_event(season_changed)  doc: "The season on the harbor clock."
+#^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^^^ source.wyrd storage.type.wyrd
+#                             ^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^^^^^^^^^^^^^^ source.wyrd
+#                                                   ^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                                                                         ^^^ source.wyrd keyword.other.wyrd
+#                                                                                            ^^ source.wyrd
+#                                                                                              ^ source.wyrd string.quoted.double.wyrd
+#                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                                              ^ source.wyrd string.quoted.double.wyrd
+>  npc.{id}.alive     : bool   source: world.is_alive  invalidate: on_event(entity_alive_changed)  doc: "Whether that person is alive in the host world."
+#^^^^^^ source.wyrd
+#      ^ source.wyrd meta.interpolation.wyrd
+#       ^^ source.wyrd meta.interpolation.wyrd
+#         ^ source.wyrd meta.interpolation.wyrd
+#          ^^^^^^^^^^^^^ source.wyrd
+#                       ^^^^ source.wyrd storage.type.wyrd
+#                           ^^^ source.wyrd
+#                              ^^^^^^ source.wyrd keyword.other.wyrd
+#                                    ^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                                      ^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+#                                                                                                  ^^^ source.wyrd keyword.other.wyrd
+#                                                                                                     ^^ source.wyrd
+#                                                                                                       ^ source.wyrd string.quoted.double.wyrd
+#                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                                                                                                                                       ^ source.wyrd string.quoted.double.wyrd
+>

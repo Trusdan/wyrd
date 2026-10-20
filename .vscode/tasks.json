@@ -1,0 +1,77 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Wyrd: check (Gullhaven)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "check",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres"
+      ],
+      "problemMatcher": "$wyrd",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Wyrd: check (example content)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "check",
+        "example/content"
+      ],
+      "problemMatcher": "$wyrd"
+    },
+    {
+      "label": "Wyrd: tag lines (dry run)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "tag-lines",
+        "--dry-run",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Wyrd: tag lines (write)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "tag-lines",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
