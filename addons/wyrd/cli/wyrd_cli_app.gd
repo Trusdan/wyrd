@@ -32,7 +32,7 @@ static func version_line() -> String:
 
 static func command_lines() -> PackedStringArray:
 	return PackedStringArray([
-		"check: compile and link a content pack",
+		"check: compile and link a content pack; --watch re-checks on change",
 		"test: not implemented",
 		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
@@ -108,14 +108,53 @@ static func _check(args: PackedStringArray) -> Dictionary:
 	var parsed := _options(args)
 	if not str(parsed["error"]).is_empty():
 		return {"exit_code": 1, "output": str(parsed["error"])}
+	if bool(parsed["watch"]):
+		return {
+			"exit_code": 0,
+			"output": "",
+			"watch": WyrdCheckWatch.new(parsed, _without_watch(args)),
+		}
+	var compiled := _compile_check(parsed)
+	return {"exit_code": int(compiled["exit_code"]), "output": str(compiled["output"])}
+
+
+static func _run_check(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(_without_watch(args))
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"]), "errors": 1, "warnings": 0}
+	return _compile_check(parsed)
+
+
+static func _without_watch(args: PackedStringArray) -> PackedStringArray:
+	var forwarded := PackedStringArray()
+	for arg in args:
+		if arg != "--watch":
+			forwarded.append(arg)
+	return forwarded
+
+
+static func _compile_check(parsed: Dictionary) -> Dictionary:
 	var loaded := _load(parsed)
 	if int(loaded["exit_code"]) != 0:
-		return loaded
+		return {"exit_code": 1, "output": str(loaded["output"]), "errors": 1, "warnings": 0}
 	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	var errors := 0
+	var warnings := 0
+	for item in diagnostics.items:
+		var severity := String(item.severity)
+		if severity == "error":
+			errors += 1
+		elif severity == "warning":
+			warnings += 1
 	var exit_code := 0
 	if diagnostics.has_errors() or (bool(parsed["strict"]) and diagnostics.has_warnings()):
 		exit_code = 1
-	return {"exit_code": exit_code, "output": diagnostics.format()}
+	return {
+		"exit_code": exit_code,
+		"output": diagnostics.format(),
+		"errors": errors,
+		"warnings": warnings,
+	}
 
 
 static func _tag(args: PackedStringArray) -> Dictionary:
@@ -901,6 +940,7 @@ static func _load(parsed: Dictionary) -> Dictionary:
 static func _options(args: PackedStringArray) -> Dictionary:
 	var command := args[0]
 	var strict := false
+	var watch := false
 	var dry_run := false
 	var as_json := false
 	var manifest := ""
@@ -939,6 +979,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		var arg := args[i]
 		if arg == "--strict":
 			strict = true
+		elif command == "check" and arg == "--watch":
+			watch = true
 		elif arg == "--dry-run":
 			dry_run = true
 		elif arg == "--json":
@@ -1058,6 +1100,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		else:
 			positionals.append(arg)
 		i += 1
+	if command == "check" and watch and strict:
+		return _fail("wyrd: --watch does not take --strict\n")
 	if command == "script-export" and not speaker_set:
 		return _fail("wyrd: script-export needs --speaker\n")
 	if listed:
@@ -1139,6 +1183,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"speaker_set": speaker_set,
 		"storylet": positionals[0] if command == "why-not" and positionals.size() == 1 else "",
 		"strict": strict,
+		"watch": watch,
 		"tiers": tiers,
 		"tiers_set": tiers_set,
 		"trace_director": trace_director,
@@ -1161,6 +1206,7 @@ static func _fail(message: String) -> Dictionary:
 		"prefix": "",
 		"save": "",
 		"strict": false,
+		"watch": false,
 	}
 
 

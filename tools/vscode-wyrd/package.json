@@ -47,6 +47,26 @@
           "code": 5,
           "message": 6
         }
+      },
+      {
+        "name": "wyrd-watch",
+        "owner": "wyrd",
+        "source": "wyrd",
+        "fileLocation": ["autoDetect", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(?:res://)?(.+?):(\\d+):(\\d+): (error|warning|info)\\[([A-Z0-9_]+)\\]: (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^wyrd: check started$",
+          "endsPattern": "^wyrd: check finished errors=\\d+ warnings=\\d+$"
+        }
       }
     ],
     "configuration": {

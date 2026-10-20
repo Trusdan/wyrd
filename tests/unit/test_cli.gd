@@ -77,6 +77,49 @@ func test_check_gullhaven_manifest_is_clean() -> void:
 		assert_true(claim or score, line)
 
 
+func test_check_watch_returns_a_loop_without_compiling() -> void:
+	var plain: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check",
+		"--manifest",
+		"example/content/gullhaven/harbor.wyrdmanifest.tres",
+	]))
+	var watched: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check",
+		"--watch",
+		"--manifest",
+		"example/content/gullhaven/harbor.wyrdmanifest.tres",
+	]))
+	assert_false(plain.has("watch"))
+	assert_false(str(plain["output"]).is_empty())
+	assert_eq(int(watched["exit_code"]), 0)
+	assert_eq(str(watched["output"]), "")
+	assert_true(watched["watch"] is WyrdCheckWatch)
+	var keys: Array = plain.keys()
+	keys.sort()
+	assert_eq(keys, ["exit_code", "output"])
+
+
+func test_check_watch_with_strict_exits_one() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["check", "--watch", "--strict"]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: --watch does not take --strict\n")
+	assert_false(result.has("watch"))
+
+
+func test_check_watch_missing_path_exits_before_a_loop() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["check", "--watch", "res://example/missing.wyrd"]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: no such file: res://example/missing.wyrd\n")
+	assert_false(result.has("watch"))
+
+
+func test_tag_lines_watch_is_an_unknown_option() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["tag-lines", "--watch"]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: unknown option \"--watch\"\n")
+	assert_false(result.has("watch"))
+
+
 func test_check_invalid_file_exits_one() -> void:
 	var result: Dictionary = WyrdCli.execute(PackedStringArray([
 		"check",
