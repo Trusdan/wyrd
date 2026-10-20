@@ -110,6 +110,25 @@
         "wyrd.pot"
       ],
       "problemMatcher": "$wyrd"
+    },
+    {
+      "label": "Wyrd: defs (Gullhaven)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "defs",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres",
+        "--out",
+        "tags"
+      ],
+      "problemMatcher": "$wyrd"
     }
   ]
 }
