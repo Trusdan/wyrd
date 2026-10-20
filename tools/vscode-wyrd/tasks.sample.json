@@ -91,6 +91,25 @@
       ],
       "isBackground": true,
       "problemMatcher": "$wyrd-watch"
+    },
+    {
+      "label": "Wyrd: pot (Gullhaven)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "pot",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres",
+        "--out",
+        "wyrd.pot"
+      ],
+      "problemMatcher": "$wyrd"
     }
   ]
 }

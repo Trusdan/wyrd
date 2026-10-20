@@ -1,0 +1,388 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: harbor\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: wyrd pot\n"
+
+#: example/content/gullhaven/dock_crate.wyrd:12
+msgctxt "j_dock_crate"
+msgid "The innkeeper wants a crate moved."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/dock_crate.wyrd:16
+msgctxt "crate_line"
+msgid "That crate's been on the dock since the storm."
+msgstr ""
+
+#: example/content/gullhaven/dock_crate.wyrd:17
+msgctxt "c_crate_lift"
+msgid "Lift the crate"
+msgstr ""
+
+#: example/content/gullhaven/dock_crate.wyrd:19
+msgctxt "c_crate_leave"
+msgid "Leave it"
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/dock_crate.wyrd:21
+msgctxt "crate_lifted"
+msgid "Strong arms. Put it by the door."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/dock_crate.wyrd:24
+msgctxt "crate_dropped"
+msgid "Leave it, before you drop it twice."
+msgstr ""
+
+#: example/content/gullhaven/dock_errand.wyrd:8
+msgctxt "j_errand_asked"
+msgid "A net on the dock needs a hand."
+msgstr ""
+
+#: example/content/gullhaven/dock_errand.wyrd:13
+msgctxt "j_errand_sent"
+msgid "The net is sent up the dock."
+msgstr ""
+
+#: example/content/gullhaven/dock_rumour.wyrd:12
+msgctxt "j_dock_rumour"
+msgid "The innkeeper has a word about the storm."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/dock_rumour.wyrd:16
+msgctxt "rumour_line"
+msgid "The bar took a skiff in the last storm."
+msgstr ""
+
+#. ferry
+#: example/content/gullhaven/dock_scenes.wyrd:5
+msgctxt "a_cross"
+msgid "Two coins, and the boat will cross."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/dock_scenes.wyrd:6
+msgctxt "a_leave"
+msgid "The boat leaves the dock."
+msgstr ""
+
+#: example/content/gullhaven/ferry_toll.wyrd:21
+msgctxt "j_ft_01"
+msgid "{holder(ferry).name}, the ferry master, at the dock wants {ferry.toll_coins} coins before the crossing."
+msgstr ""
+
+#: example/content/gullhaven/ferry_toll.wyrd:27
+msgctxt "j_ft_gone"
+msgid "The ferry master who took the lock is gone."
+msgstr ""
+
+#: example/content/gullhaven/ferry_toll.wyrd:30
+msgctxt "j_ft_empty"
+msgid "The dock is empty, so the crossing waits."
+msgstr ""
+
+#: example/content/gullhaven/harbor_bell.wyrd:15
+msgctxt "j_bell_01"
+msgid "The harbor bell was struck."
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:4
+msgctxt "sched_title"
+msgid "Ferry Schedule"
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:7
+msgctxt "sched_plain"
+msgid "The ferry leaves when the tide turns."
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:8
+msgctxt "sched_toll"
+msgid "{if outcome(ferry_toll, crossing) == done}The toll is paid and the ferry runs.{else}The toll is still due.{end}"
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:9
+msgctxt "sched_empty"
+msgid "The ferry master's chair is empty."
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:11
+msgctxt "letter_title"
+msgid "A Sealed Letter"
+msgstr ""
+
+#: example/content/gullhaven/harbor_documents.wyrd:14
+msgctxt "letter_body"
+msgid "{if filled(harbor_reeve)}To {holder(harbor_reeve).name}: the levy can wait.{else}To the empty chair: the levy can wait.{end}"
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_documents.wyrd:29
+msgctxt "letter_heard"
+msgid "You have read the reeve's letter."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:13
+msgctxt "j_guild_barred"
+msgid "The guild ledger is closed to visitors."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:17
+msgctxt "j_guild_unwilling"
+msgid "The factor will not sign."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:20
+msgctxt "j_guild_empty"
+msgid "The factor's chair is empty."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:23
+msgctxt "j_guild_next"
+msgid "The guild names a new factor."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:26
+msgctxt "j_guild_levy"
+msgid "The factor reads the levy."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:34
+msgctxt "j_guild_vote"
+msgid "The harbor votes for a reeve."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:37
+msgctxt "j_guild_noreeve"
+msgid "No reeve sits the chair."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:39
+msgctxt "j_guild_signed"
+msgid "The levy is signed."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:7
+msgctxt "a91f"
+msgid "A room's two coins a night, and the stew is free."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:8
+msgctxt "a_gone"
+msgid "The ferry master is gone."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:9
+msgctxt "a_bell_count"
+msgid "The harbor bell was struck."
+msgstr ""
+
+#. lookout
+#: example/content/gullhaven/harbor_scenes.wyrd:10
+msgctxt "a_look"
+msgid "The headland bell rang twice before the rain."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:11
+msgctxt "a_stew"
+msgid "The stew is still warm."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:12
+msgctxt "a_key"
+msgid "Your room key is on the hook."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:13
+msgctxt "a_wet"
+msgid "The deck is still wet from the bucket."
+msgstr ""
+
+#. lookout
+#: example/content/gullhaven/harbor_scenes.wyrd:16
+msgctxt "a_alive"
+msgid "{holder(ferry).name}, the ferry master, is on the dock."
+msgstr ""
+
+#. lookout
+#: example/content/gullhaven/harbor_scenes.wyrd:17
+msgctxt "a_empty"
+msgid "The dock is empty."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:18
+msgctxt "a_season"
+msgid "The season smells like rain."
+msgstr ""
+
+#. dock.bell
+#: example/content/gullhaven/harbor_scenes.wyrd:19
+msgctxt "a_bell"
+msgid "The bell notes the tide."
+msgstr ""
+
+#: example/content/gullhaven/harbor_scenes.wyrd:20
+msgctxt "c_room"
+msgid "Take the room"
+msgstr ""
+
+#: example/content/gullhaven/harbor_scenes.wyrd:24
+msgctxt "c_local"
+msgid "I have a place in town"
+msgstr ""
+
+#: example/content/gullhaven/harbor_scenes.wyrd:25
+msgctxt "c_errand"
+msgid "Ask the dock errand"
+msgstr ""
+
+#: example/content/gullhaven/harbor_scenes.wyrd:29
+msgctxt "c_errand_on"
+msgid "Send the errand on"
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:33
+msgctxt "a920"
+msgid "The ferry's charging double since the storm, mind."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:37
+msgctxt "a922"
+msgid "No room left tonight."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_scenes.wyrd:38
+msgctxt "a921"
+msgid "The board lists the price as {two coins}}."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:41
+msgctxt "a_errand"
+msgid "The dock errand can wait."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_scenes.wyrd:44
+msgctxt "a_errand_on"
+msgid "The errand is on its way."
+msgstr ""
+
+#. any
+#: example/content/gullhaven/harbor_storylets.wyrd:7
+msgctxt "sg01"
+msgid "They say the ferry's dear since the storm."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_storylets.wyrd:16
+msgctxt "sg02"
+msgid "The toll money never reached the council, if you ask me."
+msgstr ""
+
+#. tavern
+#: example/content/gullhaven/harbor_storylets.wyrd:17
+msgctxt "sg03"
+msgid "Lost at sea, they say. Lost in someone's pocket."
+msgstr ""
+
+#. ferry
+#: example/content/gullhaven/harbor_storylets.wyrd:24
+msgctxt "sg04"
+msgid "Mind that flame near the ropes."
+msgstr ""
+
+#. ferry
+#: example/content/gullhaven/harbor_storylets.wyrd:31
+msgctxt "sg05"
+msgid "That lantern in your hand is close to the ropes."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_storylets.wyrd:36
+msgctxt "dock_voice"
+msgid "The crossing stays open. {holder(ferry_master)|variants}"
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_storylets.wyrd:37
+msgctxt "dock_voice_master"
+msgid "The ferry master keeps the crossing open."
+msgstr ""
+
+#. narrator
+#: example/content/gullhaven/harbor_storylets.wyrd:38
+msgctxt "dock_voice_mender"
+msgid "The net mender keeps the crossing open."
+msgstr ""
+
+#: example/content/gullhaven/harbor_storylets.wyrd:46
+msgctxt "j_ledger"
+msgid "The dock ledger stays on the bench."
+msgstr ""
+
+#. any
+#: example/content/gullhaven/harbor_storylets.wyrd:52
+msgctxt "lg01"
+msgid "The dock ledger is open on the bench."
+msgstr ""
+
+#. any
+#: example/content/gullhaven/harbor_storylets.wyrd:53
+msgctxt "lg02"
+msgid "A later page stays shut."
+msgstr ""
+
+#. any
+#: example/content/gullhaven/harbor_storylets.wyrd:61
+msgctxt "lg03"
+msgid "The sealed page names the late cargo."
+msgstr ""
+
+#. any
+#: example/content/gullhaven/harbor_storylets.wyrd:67
+msgctxt "sg_storm"
+msgid "The storm took a skiff off the bar."
+msgstr ""
+
+#: example/content/gullhaven/harbor_tale.wyrd:27
+msgctxt "j_tale_barred"
+msgid "The council will not hear a theft tale."
+msgstr ""
+
+#: example/content/gullhaven/harbor_tale.wyrd:30
+msgctxt "j_tale_unwilling"
+msgid "The council member will not drop the official line."
+msgstr ""
+
+#: example/content/gullhaven/harbor_tale.wyrd:33
+msgctxt "j_tale_empty"
+msgid "The council chair is empty."
+msgstr ""
+
+#: example/content/gullhaven/harbor_tale.wyrd:36
+msgctxt "j_tale_open"
+msgid "The council member hears the tale."
+msgstr ""
+
+#. council
+#: example/content/gullhaven/harbor_tale.wyrd:42
+msgctxt "tale_claim"
+msgid "A fisher swears the toll was {belief(line_fisher, harbor.toll_fate)}."
+msgstr ""

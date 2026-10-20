@@ -9,6 +9,7 @@ Golden tests snapshot the compiler. Each family is a `.wyrd` source and a JSON f
 | Statements | `tests/golden/statements/*.wyrd` | `tests/golden/statements/expected/*.json` | `tests/golden/test_statement_goldens.gd` |
 | Link | `tests/golden/link/<dir>/*.wyrd` and an optional `wyrd_commands.json` | `tests/golden/link/<dir>/expected.json` | `tests/golden/test_link_goldens.gd` |
 | Roles | `tests/golden/roles/*.wyrd` | `tests/golden/roles/expected/*.json` | `tests/golden/test_role_goldens.gd` |
+| POT | Gullhaven manifest `example/content/gullhaven/harbor.wyrdmanifest.tres` | `tests/golden/pot/gullhaven.pot` | `tests/golden/test_pot_golden.gd` |
 
 Regenerate every family with:
 

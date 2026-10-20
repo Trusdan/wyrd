@@ -9,6 +9,7 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("test: not implemented"))
 	assert_true(text.contains("tag-lines: write missing #line: ids"))
 	assert_true(text.contains("export-json: write the linked pack as JSON"))
+	assert_true(text.contains("pot: write a gettext POT for one pack's player text"))
 	assert_true(text.contains("facts: print the fact cross-reference"))
 	assert_true(text.contains("roles: print a sorted table of role holders"))
 	assert_true(text.contains("why-not: explain one storylet for a scope and speaker"))
@@ -20,7 +21,7 @@ func test_render_prints_version_and_command_list() -> void:
 	assert_true(text.contains("choices: list fact writes by scene, choice, prefix, or time"))
 	assert_true(text.contains("coverage: list storylets, variants, and lines that were never hit"))
 	assert_true(text.contains("console: playtest prompt for facts, roles, time, events, and scenes"))
-	assert_eq(WyrdCli.COMMANDS.size(), 15)
+	assert_eq(WyrdCli.COMMANDS.size(), 16)
 
 
 func test_execute_without_args_matches_render() -> void:
@@ -127,3 +128,51 @@ func test_check_invalid_file_exits_one() -> void:
 	]))
 	assert_eq(int(result["exit_code"]), 1)
 	assert_true(str(result["output"]).contains("error[E_HEADER_MISSING]"))
+
+
+func test_pot_without_manifest_exits_one() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["pot"]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: pot needs --manifest\n")
+
+
+func test_pot_path_is_refused() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray(["pot", "example/content/gullhaven"]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: pot needs --manifest\n")
+
+
+func test_pot_with_errors_writes_nothing() -> void:
+	var dir := "user://wyrd_pot_bad"
+	DirAccess.make_dir_recursive_absolute(dir)
+	var source := dir + "/broken.wyrd"
+	var manifest_path := dir + "/broken.wyrdmanifest.tres"
+	var out := dir + "/out.pot"
+	var source_file := FileAccess.open(source, FileAccess.WRITE)
+	source_file.store_string("not a header\n")
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"bad"
+	manifest.language_version = 1
+	manifest.files = PackedStringArray([source])
+	assert_eq(ResourceSaver.save(manifest, manifest_path), OK)
+	if FileAccess.file_exists(out):
+		DirAccess.remove_absolute(out)
+	var result: Dictionary = WyrdCli.execute(PackedStringArray([
+		"pot", "--manifest", manifest_path, "--out", out,
+	]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_true(str(result["output"]).contains("error["))
+	assert_false(FileAccess.file_exists(out))
+
+
+func test_pot_stdout_matches_out_file() -> void:
+	var manifest := "example/content/gullhaven/harbor.wyrdmanifest.tres"
+	var printed: Dictionary = WyrdCli.execute(PackedStringArray(["pot", "--manifest", manifest]))
+	var out := "user://wyrd_pot_stdout.pot"
+	var written: Dictionary = WyrdCli.execute(PackedStringArray([
+		"pot", "--manifest", manifest, "--out", out,
+	]))
+	assert_eq(int(printed["exit_code"]), 0)
+	assert_eq(int(written["exit_code"]), 0)
+	assert_eq(str(written["output"]), "")
+	assert_eq(FileAccess.get_file_as_string(out), str(printed["output"]))

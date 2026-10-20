@@ -18,7 +18,7 @@ func test_tasks_match_the_sample_and_the_cli() -> void:
 	var parsed: Variant = JSON.parse_string(repo)
 	var root: Dictionary = parsed
 	var rows: Array = root["tasks"]
-	assert_eq(rows.size(), 5)
+	assert_eq(rows.size(), 6)
 	for row in rows:
 		var task: Dictionary = row
 		assert_eq(str(task["type"]), "process")
@@ -35,6 +35,14 @@ func test_tasks_match_the_sample_and_the_cli() -> void:
 			assert_eq(str(task["problemMatcher"]), "$wyrd-watch")
 			assert_eq(command, "check")
 			assert_eq(str(args[_PREFIX.size() + 1]), "--watch")
+		elif label == "Wyrd: pot (Gullhaven)":
+			assert_eq(str(task["problemMatcher"]), "$wyrd")
+			assert_eq(command, "pot")
+			var manifest_at := args.find("--manifest")
+			assert_gt(manifest_at, 0)
+			assert_eq(str(args[manifest_at + 1]), "example/content/gullhaven/harbor.wyrdmanifest.tres")
+			assert_eq(str(args[manifest_at + 2]), "--out")
+			assert_eq(str(args[manifest_at + 3]), "wyrd.pot")
 		elif label.begins_with("Wyrd: check"):
 			assert_eq(str(task["problemMatcher"]), "$wyrd")
 		else:
