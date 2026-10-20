@@ -47,6 +47,7 @@ func link(
 	_host_steps(units)
 	_quests(units, pack)
 	_quest_flow(units)
+	_warn_unreachable(units)
 	_role_refs(units)
 	_topic_refs(units)
 	_scenes_of(units)
@@ -716,6 +717,177 @@ func _enqueue_targets(stage: WyrdStageDef, by_id: Dictionary, queue: Array) -> v
 		var variant := item as WyrdVariantDef
 		if variant != null and variant.body != null:
 			_enqueue_targets(variant.body, by_id, queue)
+
+
+## A quest stage no [code]->[/code], [code]advance[/code], or region path reaches.
+## [method _reachable] is unchanged. A host [code]advance()[/code] call is not visible here.
+func _warn_unreachable(units: Array) -> void:
+	var advances := _advance_targets(units)
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			_warn_quest_reach(quest, path, advances)
+
+
+func _warn_quest_reach(quest: WyrdQuestDef, path: String, advances: Dictionary) -> void:
+	if quest.stages.is_empty():
+		return
+	var by_id := {}
+	for stage in quest.stages:
+		if not stage.id.is_empty():
+			by_id[stage.id] = stage
+	var first: WyrdStageDef = quest.stages[0]
+	var first_label := "%s.%s" % [quest.id, first.id]
+	var seen := {}
+	var queue: Array = []
+	if not first.id.is_empty():
+		queue.append(first)
+	var starts: Dictionary = advances.get(quest.id, {})
+	for stage_id in starts:
+		if by_id.has(stage_id):
+			queue.append(by_id[stage_id])
+	while not queue.is_empty():
+		var stage: WyrdStageDef = queue.pop_front()
+		if stage == null or stage.id.is_empty() or seen.has(stage.id):
+			continue
+		seen[stage.id] = true
+		_enqueue_reach(stage, by_id, queue)
+		_reach_regions(stage, "%s.%s" % [quest.id, stage.id], first_label, path)
+	for stage in quest.stages:
+		if stage.id.is_empty() or seen.has(stage.id):
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.W_STAGE_UNREACHABLE,
+			"stage \"%s.%s\" is never reached from \"%s\"" % [quest.id, stage.id, first_label],
+			path,
+			stage.line,
+			stage.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _reach_regions(stage: WyrdStageDef, parent_label: String, first_label: String, path: String) -> void:
+	if stage == null:
+		return
+	for item in stage.regions:
+		_reach_region(item as WyrdRegionDef, parent_label, first_label, path)
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_reach_regions(variant.body, parent_label, first_label, path)
+
+
+func _reach_region(region: WyrdRegionDef, parent_label: String, first_label: String, path: String) -> void:
+	if region == null or region.stages.is_empty():
+		return
+	var by_id := {}
+	for child in region.stages:
+		if not child.id.is_empty():
+			by_id[child.id] = child
+	var seen := {}
+	var queue: Array = []
+	var first: WyrdStageDef = region.stages[0]
+	if not first.id.is_empty():
+		queue.append(first)
+	while not queue.is_empty():
+		var child: WyrdStageDef = queue.pop_front()
+		if child == null or child.id.is_empty() or seen.has(child.id):
+			continue
+		seen[child.id] = true
+		_enqueue_reach(child, by_id, queue)
+		var child_label := "%s.%s.%s" % [parent_label, region.id, child.id]
+		_reach_regions(child, child_label, first_label, path)
+	for child in region.stages:
+		if child.id.is_empty() or seen.has(child.id):
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.W_STAGE_UNREACHABLE,
+			"stage \"%s.%s.%s\" is never reached from \"%s\"" % [parent_label, region.id, child.id, first_label],
+			path,
+			child.line,
+			child.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _enqueue_reach(stage: WyrdStageDef, by_id: Dictionary, queue: Array) -> void:
+	if stage == null:
+		return
+	_enqueue_ids(stage.transitions, by_id, queue)
+	for handler in stage.handlers:
+		_enqueue_ids(handler.transitions, by_id, queue)
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_enqueue_reach(variant.body, by_id, queue)
+
+
+func _enqueue_ids(rows: Array, by_id: Dictionary, queue: Array) -> void:
+	for row in rows:
+		if not (row is Dictionary):
+			continue
+		var target := str(row.get("target", ""))
+		if by_id.has(target):
+			queue.append(by_id[target])
+
+
+func _advance_targets(units: Array) -> Dictionary:
+	var found := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		for quest in file.quests:
+			for stage in quest.stages:
+				_note_stage_advances(stage, found)
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_note_advance(effect, found)
+			for item in scene.items:
+				if item.effect != null:
+					_note_advance(item.effect, found)
+				if item.choice == null:
+					continue
+				for effect in item.choice.effects:
+					_note_advance(effect, found)
+		for story in file.storylets:
+			for effect in story.effects:
+				_note_advance(effect, found)
+		for document in file.documents:
+			for effect in document.on_first_read:
+				_note_advance(effect, found)
+			for effect in document.on_read:
+				_note_advance(effect, found)
+	return found
+
+
+func _note_stage_advances(stage: WyrdStageDef, found: Dictionary) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		_note_advance(effect, found)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_note_advance(effect, found)
+	for item in stage.variants:
+		var variant := item as WyrdVariantDef
+		if variant != null and variant.body != null:
+			_note_stage_advances(variant.body, found)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_note_stage_advances(child, found)
+
+
+func _note_advance(effect: WyrdEffectDef, found: Dictionary) -> void:
+	if effect == null or effect.kind != &"advance":
+		return
+	if effect.quest.is_empty() or effect.stage.is_empty():
+		return
+	if not found.has(effect.quest):
+		found[effect.quest] = {}
+	found[effect.quest][effect.stage] = true
 
 
 func _mark_coverage(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictionary, gone_covered: Dictionary) -> void:

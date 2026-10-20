@@ -1,0 +1,19 @@
+language 1
+
+facts
+  player.coins : int stored
+
+storylet harbor.sealed
+  scope: bark
+  speaker: dock_clerk
+  priority: 2
+  secrecy: sealed
+  ~ set player.coins = 2
+  - The ledger stays shut. #line:sealed_line
+
+storylet harbor.open
+  scope: bark
+  speaker: dock_clerk
+  priority: 1
+  secrecy: open
+  - The coins are {player.coins}. #line:open_line

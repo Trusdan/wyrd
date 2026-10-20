@@ -32,7 +32,7 @@ static func version_line() -> String:
 
 static func command_lines() -> PackedStringArray:
 	return PackedStringArray([
-		"check: compile and link a content pack; --watch re-checks on change",
+		"check: compile and link a content pack; --watch re-checks on change; --tiers a,b runs the secrecy lint",
 		"test: not implemented",
 		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
@@ -950,15 +950,28 @@ static func _load(parsed: Dictionary) -> Dictionary:
 		var read := WyrdPack.read_commands(commands_path, diagnostics)
 		commands = read["schema"]
 		skip_commands_note = bool(read["skip_note"])
-	var pack: WyrdLinkedPack = WyrdPack.compile(
-		files,
-		str(parsed["pack_id"]),
-		int(parsed["language_version"]),
-		commands,
-		diagnostics,
-		str(parsed["note_path"]),
-		skip_commands_note
-	)
+	var pack: WyrdLinkedPack
+	if str(parsed["command"]) == "check" and bool(parsed["tiers_set"]):
+		pack = WyrdPack.compile(
+			files,
+			str(parsed["pack_id"]),
+			int(parsed["language_version"]),
+			commands,
+			diagnostics,
+			str(parsed["note_path"]),
+			skip_commands_note,
+			parsed["tiers"]
+		)
+	else:
+		pack = WyrdPack.compile(
+			files,
+			str(parsed["pack_id"]),
+			int(parsed["language_version"]),
+			commands,
+			diagnostics,
+			str(parsed["note_path"]),
+			skip_commands_note
+		)
 	return {"diagnostics": diagnostics, "exit_code": 0, "output": "", "pack": pack}
 
 
@@ -1048,7 +1061,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --speaker needs an id\n")
 			speaker = args[i]
 			speaker_set = true
-		elif listed and arg == "--tiers":
+		elif (listed or command == "check") and arg == "--tiers":
 			i += 1
 			if i >= args.size() or args[i].begins_with("--"):
 				return _fail("wyrd: --tiers needs a list\n")

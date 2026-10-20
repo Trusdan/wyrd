@@ -14,6 +14,8 @@
 - Tools: `.vscode/tasks.json` adds a pot task for Gullhaven.
 - CI: the POT is checked with gettext `msgfmt --check`.
 - Lines with `{…}` now translate by template: the translation is compiled and its placeholders, named by their expression, are filled at display time. A translation whose placeholders don't match falls back to the source line with a warning and a `text_translate ok=false` trace row.
+- Lints: `W_STAGE_UNREACHABLE` warns on a quest stage that no `->`, `advance` or region path reaches.
+- `check --tiers a,b,c` (lowest first) adds `W_SECRECY_LEAK`, which warns when visible text at a lower secrecy tier shows a stored fact that only higher-tier content sets. Without `--tiers`, `check` output is unchanged.
 
 ## 0.6.3-m8 - 2026-10-19
 

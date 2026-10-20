@@ -1,0 +1,7 @@
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  stage arrive
+    -> done
+  stage done
+  stage side

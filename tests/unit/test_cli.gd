@@ -176,3 +176,54 @@ func test_pot_stdout_matches_out_file() -> void:
 	assert_eq(int(written["exit_code"]), 0)
 	assert_eq(str(written["output"]), "")
 	assert_eq(FileAccess.get_file_as_string(out), str(printed["output"]))
+
+
+func test_check_tiers_empty_name_matches_why_not() -> void:
+	var manifest := "example/content/gullhaven/harbor.wyrdmanifest.tres"
+	var checked: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check", "--tiers", "open,,sealed", "--manifest", manifest,
+	]))
+	var why: Dictionary = WyrdCli.execute(PackedStringArray([
+		"why-not", "--tiers", "open,,sealed", "--manifest", manifest, "harbor_ledger.sealed",
+	]))
+	assert_eq(int(checked["exit_code"]), 1)
+	assert_eq(str(checked["output"]), "wyrd: --tiers has an empty name\n")
+	assert_eq(str(checked["output"]), str(why["output"]))
+
+
+func test_check_tiers_matches_plain_check_on_gullhaven() -> void:
+	var manifest := "example/content/gullhaven/harbor.wyrdmanifest.tres"
+	var plain: Dictionary = WyrdCli.execute(PackedStringArray(["check", "--manifest", manifest]))
+	var tiered: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check", "--tiers", "open,sealed", "--manifest", manifest,
+	]))
+	assert_eq(int(plain["exit_code"]), 0, str(plain["output"]))
+	assert_eq(int(tiered["exit_code"]), 0, str(tiered["output"]))
+	assert_eq(str(tiered["output"]), str(plain["output"]))
+
+
+func test_check_watch_tiers_returns_a_loop() -> void:
+	var watched: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check",
+		"--watch",
+		"--tiers",
+		"open,sealed",
+		"--manifest",
+		"example/content/gullhaven/harbor.wyrdmanifest.tres",
+	]))
+	assert_eq(int(watched["exit_code"]), 0)
+	assert_eq(str(watched["output"]), "")
+	assert_true(watched["watch"] is WyrdCheckWatch)
+	assert_false(watched.has("errors"))
+
+
+func test_check_rejects_secrecy_fact() -> void:
+	var result: Dictionary = WyrdCli.execute(PackedStringArray([
+		"check",
+		"--secrecy-fact",
+		"player.clearance",
+		"--manifest",
+		"example/content/gullhaven/harbor.wyrdmanifest.tres",
+	]))
+	assert_eq(int(result["exit_code"]), 1)
+	assert_eq(str(result["output"]), "wyrd: unknown option \"--secrecy-fact\"\n")
