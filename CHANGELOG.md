@@ -6,6 +6,9 @@
 - Tools: a local VS Code extension in `tools/vscode-wyrd/` (not published) colors `.wyrd` files and adds the `$wyrd` problem matcher for `check` output. `.vscode/tasks.json` runs check and `tag-lines` through the `wyrd.godotPath` setting.
 - CI: a `vscode` job runs grammar snapshot tests and builds the VSIX. Node is pinned in `tools/pins.env`.
 - Docs: the in-Godot highlighting spike is closed with findings; the editor plugin stays a stub that registers nothing.
+- CLI: `check --watch` re-checks a pack whenever a listed file changes. Each run is wrapped in `wyrd: check started` and `wyrd: check finished errors=<n> warnings=<n>`. Plain `check` output is unchanged.
+- Tools: the VS Code extension adds the `$wyrd-watch` background problem matcher, and `.vscode/tasks.json` adds a check --watch task for Gullhaven.
+- CI: a watch smoke step runs `check --watch` as a real process.
 
 ## 0.6.3-m8 - 2026-10-19
 

@@ -267,7 +267,7 @@ Existing condition codes (`E_CHANCE_CONTEXT`, `E_RESOLVER_INVALIDATION`, `E_UNKN
 
 ## Linking
 
-Still draft. `check` links a pack after statements. A directory with no manifest is one pack named after the folder. `--manifest` loads a `WyrdContentManifest` (`pack_id`, `files`, `language_version`). Files are linked in sorted path order. Diagnostics are sorted by file, line, column, then code. `check` exits 1 on an error. Warnings still exit 0 unless `--strict`. Info does not fail `--strict`.
+Still draft. `check` links a pack after statements. A directory with no manifest is one pack named after the folder. `--manifest` loads a `WyrdContentManifest` (`pack_id`, `files`, `language_version`). Files are linked in sorted path order. Diagnostics are sorted by file, line, column, then code. `check` exits 1 on an error. Warnings still exit 0 unless `--strict`. Info does not fail `--strict`. `check --watch` re-checks the pack whenever a listed file changes, and wraps each run in `wyrd: check started` and `wyrd: check finished errors=<n> warnings=<n>`.
 
 `requires: [pack.<id>]` warns with `W_PACK_UNKNOWN` when the id is not this pack. `unlock topic` and `lock topic` warn `W_TOPIC_NO_STORYLET` when no storylet uses `scope: topic` for that id. There is no reverse warning. `on_event(...)` names are recorded as plain symbols. There is no event schema here.
 

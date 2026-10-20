@@ -72,6 +72,25 @@
         "example/content/gullhaven/harbor.wyrdmanifest.tres"
       ],
       "problemMatcher": []
+    },
+    {
+      "label": "Wyrd: check --watch (Gullhaven)",
+      "type": "process",
+      "command": "${config:wyrd.godotPath}",
+      "args": [
+        "--headless",
+        "--path",
+        "${workspaceFolder}",
+        "-s",
+        "res://addons/wyrd/cli/wyrd_cli.gd",
+        "--",
+        "check",
+        "--watch",
+        "--manifest",
+        "example/content/gullhaven/harbor.wyrdmanifest.tres"
+      ],
+      "isBackground": true,
+      "problemMatcher": "$wyrd-watch"
     }
   ]
 }

@@ -18,7 +18,7 @@ func test_tasks_match_the_sample_and_the_cli() -> void:
 	var parsed: Variant = JSON.parse_string(repo)
 	var root: Dictionary = parsed
 	var rows: Array = root["tasks"]
-	assert_eq(rows.size(), 4)
+	assert_eq(rows.size(), 5)
 	for row in rows:
 		var task: Dictionary = row
 		assert_eq(str(task["type"]), "process")
@@ -30,7 +30,12 @@ func test_tasks_match_the_sample_and_the_cli() -> void:
 		var command := str(args[_PREFIX.size()])
 		assert_true(WyrdCli.COMMANDS.has(command), command)
 		var label := str(task["label"])
-		if label.begins_with("Wyrd: check"):
+		if label == "Wyrd: check --watch (Gullhaven)":
+			assert_eq(bool(task["isBackground"]), true)
+			assert_eq(str(task["problemMatcher"]), "$wyrd-watch")
+			assert_eq(command, "check")
+			assert_eq(str(args[_PREFIX.size() + 1]), "--watch")
+		elif label.begins_with("Wyrd: check"):
 			assert_eq(str(task["problemMatcher"]), "$wyrd")
 		else:
 			var matcher: Array = task["problemMatcher"]
