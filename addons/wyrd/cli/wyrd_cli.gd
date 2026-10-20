@@ -21,6 +21,8 @@ func _init() -> void:
 
 
 func _process(_delta: float) -> bool:
+	if _watch == null:
+		return false
 	var text := _watch.tick(Time.get_ticks_msec())
 	if not text.is_empty():
 		print(text.strip_edges())

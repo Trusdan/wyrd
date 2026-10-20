@@ -103,4 +103,9 @@ if [[ -n "$st" && "$st" != Z* ]]; then
 fi
 wait "$pid" 2>/dev/null || true
 pid=""
+if grep -q "SCRIPT ERROR" "$log" || grep -q "Parse Error" "$log"; then
+	echo "watch log contains a script error" >&2
+	cat "$log" >&2
+	exit 1
+fi
 cat "$log"

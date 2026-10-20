@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed: CLI runs other than `check --watch` no longer print a `tick` on Nil script error after their output. CI runs every command headless and fails on a script error.
+
 ## 0.6.4-m3 - 2026-10-20
 
 M3 editor support in VS Code and the CLI (M3 PRs 1–8). `addons/wyrd/VERSION` is `0.6.4-m3`. `plugin.cfg` version is `0.6.4-m3`. Save schema stays 3. Corey cuts the tag `v0.6.4-m3` only when he asks.
