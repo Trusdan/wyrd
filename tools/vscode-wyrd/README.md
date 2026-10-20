@@ -38,11 +38,19 @@ Two local routes:
 
 ## Tasks
 
-`.vscode/tasks.json` in this repo is the same file as `tasks.sample.json`. It runs Gullhaven `check`, example-content `check`, and `tag-lines` (dry run and write) through `wyrd.godotPath`. `Wyrd: pot (Gullhaven)` writes the gitignored `wyrd.pot` at the project root.
+`.vscode/tasks.json` in this repo is the same file as `tasks.sample.json`. It runs Gullhaven `check`, example-content `check`, and `tag-lines` (dry run and write) through `wyrd.godotPath`. `Wyrd: pot (Gullhaven)` writes the gitignored `wyrd.pot` at the project root. `Wyrd: defs (Gullhaven)` writes the gitignored `tags` file at the project root.
 
 `Wyrd: check --watch (Gullhaven)` runs until you stop it. Start it from Run Task. After each save, the next cycle publishes that run's problems.
 
-To use the tasks in another project, copy `tasks.sample.json` to that project's `.vscode/tasks.json` and change the manifest path in the arguments.
+To use the tasks in another project, copy `tasks.sample.json` to that project's `.vscode/tasks.json` and change the manifest path in the arguments. `Wyrd: defs (Gullhaven)` takes the same change.
+
+## Jump to definition
+
+1. Install the free `ctagsx` extension (marketplace `jtanx.ctagsx`).
+2. Run `Wyrd: defs (Gullhaven)`.
+3. F12, Ctrl+click and Ctrl+T then use the root `tags` file.
+4. Re-run the task after editing, since the tags store line numbers.
+5. F12 does not jump from a filled-in pattern key (such as `npc.{holder(ferry)}.alive`). The declared pattern key is still findable through workspace symbol search (Ctrl+T).
 
 ## Snapshots
 

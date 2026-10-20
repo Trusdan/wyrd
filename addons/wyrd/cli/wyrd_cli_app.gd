@@ -21,7 +21,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "pot", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage", "console"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "pot", "defs", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage", "console"]
 const CONSOLE_SCRIPT := "res://addons/wyrd/runtime/console/wyrd_console.gd"
 const CONSOLE_ABSENT := "wyrd: console is not in this build\n"
 
@@ -37,6 +37,7 @@ static func command_lines() -> PackedStringArray:
 		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
 		"pot: write a gettext POT for one pack's player text",
+		"defs: write a ctags tags file of a pack's definitions",
 		"facts: print the fact cross-reference",
 		"roles: print a sorted table of role holders",
 		"why-not: explain one storylet for a scope and speaker",
@@ -94,6 +95,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _unvoiced_report(args)
 	if command == "pot":
 		return _pot(args)
+	if command == "defs":
+		return _defs(args)
 	return {"exit_code": 1, "output": "wyrd: unknown command \"%s\"\n" % command}
 
 
@@ -784,6 +787,28 @@ static func _pot(args: PackedStringArray) -> Dictionary:
 	return {"exit_code": 0, "output": ""}
 
 
+static func _defs(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var loaded := _load(parsed)
+	if int(loaded["exit_code"]) != 0:
+		return loaded
+	var diagnostics: WyrdDiagnostics = loaded["diagnostics"]
+	if diagnostics.has_errors():
+		return {"exit_code": 1, "output": diagnostics.format()}
+	var body := WyrdDefsWriter.render(loaded["pack"])
+	var out := str(parsed["out"])
+	if out.is_empty():
+		return {"exit_code": 0, "output": body}
+	var path := out if out.begins_with("res://") or out.begins_with("user://") or out.begins_with("/") else "res://" + out
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return {"exit_code": 1, "output": "wyrd: could not write %s\n" % out}
+	file.store_string(body)
+	return {"exit_code": 0, "output": ""}
+
+
 static func _unvoiced_report(args: PackedStringArray) -> Dictionary:
 	var parsed := _options(args)
 	if not str(parsed["error"]).is_empty():
@@ -1094,7 +1119,7 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail("wyrd: --from needs a whole number of minutes\n")
 			from_minute = int(args[i])
 			from_set = true
-		elif (command == "console" or command == "pot") and arg == "--out":
+		elif (command == "console" or command == "pot" or command == "defs") and arg == "--out":
 			i += 1
 			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
 				return _fail("wyrd: --out needs a path\n")
@@ -1144,6 +1169,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		return _fail("wyrd: script-export needs --speaker\n")
 	if command == "pot" and (manifest.is_empty() or not positionals.is_empty()):
 		return _fail("wyrd: pot needs --manifest\n")
+	if command == "defs" and (manifest.is_empty() or not positionals.is_empty()):
+		return _fail("wyrd: defs needs --manifest\n")
 	if listed:
 		if manifest.is_empty():
 			return _fail("wyrd: %s needs --manifest\n" % command)
