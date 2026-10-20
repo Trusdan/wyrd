@@ -97,6 +97,8 @@ static func _add(
 	line_no: int,
 	prose: Variant
 ) -> void:
+	if prose is WyrdExprNode and WyrdLineDef.has_spans(prose):
+		text = WyrdLineDef.template_of(prose)
 	if line_id.is_empty() or text.is_empty():
 		return
 	found.append({

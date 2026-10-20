@@ -114,6 +114,35 @@ func test_plain_lines_match_what_wyrd_text_renders() -> void:
 	assert_eq(variants, PackedStringArray(["dock_voice"]))
 
 
+func test_span_rows_escape_literal_braces() -> void:
+	var body := """language 1
+
+facts
+  player.coins : int stored
+
+scene room
+  ferryman: The price is {{two coins}} for {player.coins}. #line:price
+  ferryman: The board lists the price as {{two coins}}. #line:plain
+"""
+	var pack := _compile(_ESCAPE, "escape", PackedStringArray([_ESCAPE + "/braces.wyrd"]), body)
+	var by_id := {}
+	for row in WyrdPotExtractor.rows(pack):
+		by_id[str(row["msgctxt"])] = str(row["msgid"])
+	assert_eq(by_id["price"], "The price is {{two coins}} for {player.coins}.")
+	assert_eq(by_id["plain"], WyrdLineDef.source_of(_line_prose(pack, "plain")))
+	assert_eq(by_id["plain"], "The board lists the price as {two coins}}.")
+
+
+func _line_prose(pack: WyrdLinkedPack, line_id: String) -> WyrdExprNode:
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.line_def != null and item.line_def.line_id == line_id:
+					return item.line_def.prose
+	return null
+
+
 func test_brace_escape_keeps_one_literal_brace() -> void:
 	for row in WyrdPotExtractor.rows(_gullhaven_pack()):
 		if str(row["msgctxt"]) != "a921":
