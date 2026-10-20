@@ -17,6 +17,8 @@ extends RefCounted
 
 var facts: Array = []
 var events: Array = []
+var _writer_rows: Array = []
+var _writer_index: WyrdDepIndex
 
 
 func build(
@@ -28,13 +30,17 @@ func build(
 ) -> void:
 	facts.clear()
 	events.clear()
+	_writer_rows = []
+	_writer_index = null
 	if schema == null:
 		return
 	var readers := _readers(units)
 	var writers := _writers(units)
 	_leave_writers(writers, declared_events)
+	_writer_rows = writers
 	var reader_index := _index(readers)
 	var writer_index := _index(writers)
+	_writer_index = writer_index
 	for fact in schema.entries:
 		var path := str(fact_paths.get(fact, ""))
 		var source := fact.resolver if fact.origin == &"resolved" else "stored"
@@ -71,6 +77,18 @@ func build(
 
 func to_data() -> Dictionary:
 	return {"events": events.duplicate(true), "facts": facts.duplicate(true)}
+
+
+## Tier names of writer rows for [param key], in index order.
+## An empty name is untiered. [method _hits] does not copy this name into [member facts].
+func writer_tiers(key: String) -> Array:
+	var names: Array = []
+	if _writer_index == null:
+		return names
+	for hit in _writer_index.affected([StringName(key)]):
+		var row: Dictionary = _writer_rows[int(hit)]
+		names.append(str(row.get("tier", "")))
+	return names
 
 
 func render_table() -> String:
@@ -576,6 +594,7 @@ func _leave_writers(rows: Array, declared_events: Dictionary) -> void:
 			"kind": "event",
 			"line": event.leaves_line if event.leaves_line > 0 else event.line,
 			"reads": [StringName(event.leaves_key)],
+			"tier": "",
 		})
 
 
@@ -597,15 +616,15 @@ func _writers(units: Array) -> Array:
 					continue
 				var id := item.choice.line_id if not item.choice.line_id.is_empty() else scene.id
 				for effect in item.choice.effects:
-					_write(rows, effect, id, path)
+					_write(rows, effect, id, path, item.choice.secrecy)
 		for storylet in file.storylets:
 			for effect in storylet.effects:
-				_write(rows, effect, storylet.id, path)
+				_write(rows, effect, storylet.id, path, storylet.secrecy)
 		for document in file.documents:
 			for effect in document.on_first_read:
-				_write(rows, effect, document.id, path)
+				_write(rows, effect, document.id, path, document.secrecy)
 			for effect in document.on_read:
-				_write(rows, effect, document.id, path)
+				_write(rows, effect, document.id, path, document.secrecy)
 			if document.fact_key.is_empty():
 				continue
 			rows.append({
@@ -615,6 +634,7 @@ func _writers(units: Array) -> Array:
 				"kind": "document",
 				"line": document.line,
 				"reads": [StringName(document.fact_key)],
+				"tier": document.secrecy,
 			})
 	return rows
 
@@ -638,7 +658,7 @@ func _stage_writers(rows: Array, stage: WyrdStageDef, id: String, path: String) 
 			_stage_writers(rows, child, "%s.%s.%s" % [id, region.id, child.id], path)
 
 
-func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> void:
+func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String, tier: String = "") -> void:
 	if effect.kind != &"set" and effect.kind != &"inc" and effect.kind != &"believe" and effect.kind != &"declare" and effect.kind != &"learn" and effect.kind != &"record_deed":
 		return
 	if effect.fact_key.is_empty():
@@ -650,6 +670,7 @@ func _write(rows: Array, effect: WyrdEffectDef, id: String, path: String) -> voi
 		"kind": "effect",
 		"line": effect.line,
 		"reads": [StringName(effect.fact_key)],
+		"tier": tier,
 	})
 
 

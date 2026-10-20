@@ -1,0 +1,77 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_STAGE_UNREACHABLE",
+      "col": 3,
+      "line": 7,
+      "message": "stage \"ferry_toll.side\" is never reached from \"ferry_toll.arrive\"",
+      "path": "res://tests/golden/link/stage_unreachable/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "d299d052c2f1ac46",
+        "path": "res://tests/golden/link/stage_unreachable/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "stage_unreachable",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/stage_unreachable/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "side",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "The Ferry Toll"
+      }
+    ],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

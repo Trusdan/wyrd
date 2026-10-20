@@ -39,21 +39,50 @@ static func case_names() -> PackedStringArray:
 static func compile_dir(dir: String) -> Dictionary:
 	var files := _wyrd(dir)
 	var diagnostics := WyrdDiagnostics.new()
-	var commands_path := dir.trim_suffix("/") + "/wyrd_commands.json"
+	var root := dir.trim_suffix("/")
+	var commands_path := root + "/wyrd_commands.json"
 	var read := WyrdPack.read_commands(commands_path, diagnostics)
-	var pack := WyrdPack.compile(
+	var pack := _compile(root, files, read, diagnostics)
+	return {
+		"diagnostics": _diagnostics(diagnostics),
+		"export": WyrdExport.to_data(pack),
+	}
+
+
+static func _compile(dir: String, files: PackedStringArray, read: Dictionary, diagnostics: WyrdDiagnostics) -> WyrdLinkedPack:
+	var tier_path := dir + "/secrecy_tiers.txt"
+	if not FileAccess.file_exists(tier_path):
+		return WyrdPack.compile(
+			files,
+			dir.get_file(),
+			1,
+			read["schema"],
+			diagnostics,
+			dir,
+			bool(read["skip_note"])
+		)
+	return WyrdPack.compile(
 		files,
 		dir.get_file(),
 		1,
 		read["schema"],
 		diagnostics,
 		dir,
-		bool(read["skip_note"])
+		bool(read["skip_note"]),
+		_tiers(tier_path)
 	)
-	return {
-		"diagnostics": _diagnostics(diagnostics),
-		"export": WyrdExport.to_data(pack),
-	}
+
+
+static func _tiers(path: String) -> PackedStringArray:
+	var names := PackedStringArray()
+	var text := FileAccess.get_file_as_string(path).strip_edges()
+	if text.is_empty():
+		return names
+	for part in text.split("\n")[0].split(","):
+		var name := part.strip_edges()
+		if not name.is_empty():
+			names.append(name)
+	return names
 
 
 static func _wyrd(dir: String) -> PackedStringArray:

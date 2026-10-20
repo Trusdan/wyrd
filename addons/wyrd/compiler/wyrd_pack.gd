@@ -14,7 +14,8 @@ static func compile(
 	commands: WyrdCommandSchema,
 	diagnostics: WyrdDiagnostics,
 	note_path: String = "",
-	skip_commands_note: bool = false
+	skip_commands_note: bool = false,
+	secrecy_tiers: PackedStringArray = PackedStringArray()
 ) -> WyrdLinkedPack:
 	var parsed: Array = []
 	for path in _unique(files):
@@ -64,6 +65,8 @@ static func compile(
 	var pack := linker.link(units, merged, pack_id, language_version, commands, note_path, skip_commands_note, diagnostics)
 	pack.events = events
 	linker.finish_xref(pack, fact_paths)
+	if not secrecy_tiers.is_empty():
+		WyrdSecrecyLint.warn(pack, diagnostics, secrecy_tiers)
 	diagnostics.sort_items()
 	return pack
 

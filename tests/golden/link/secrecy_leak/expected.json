@@ -1,0 +1,195 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "storylet \"harbor.sealed\" specificity 0 priority 2 generic=true",
+      "path": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 14,
+      "message": "storylet \"harbor.open\" specificity 0 priority 1 generic=true",
+      "path": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_SECRECY_LEAK",
+      "col": 19,
+      "line": 19,
+      "message": "text at secrecy \"open\" shows \"player.coins\", which is only set at secrecy \"sealed\" or higher",
+      "path": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "7f197f153bb957dc",
+        "path": "res://tests/golden/link/secrecy_leak/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+        "id": "secrecy_leak/sealed_line",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "dock_clerk",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+        "id": "secrecy_leak/open_line",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "dock_clerk",
+        "tags": []
+      }
+    ],
+    "pack_id": "secrecy_leak",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+        "generic": true,
+        "id": "harbor.open",
+        "line_ids": [
+          "open_line"
+        ],
+        "priority": 1,
+        "scene": "",
+        "scope": "bark",
+        "secrecy": "open",
+        "speaker": "dock_clerk",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "body": "line",
+        "cooldown": 0,
+        "effects": [
+          {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "player.coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "target": {
+              "code": [
+                5,
+                0
+              ],
+              "consts": [
+                {
+                  "t": "name",
+                  "v": "player.coins"
+                }
+              ],
+              "reads": [
+                "player.coins"
+              ],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "topic": "",
+            "value": {
+              "code": [
+                1,
+                0
+              ],
+              "consts": [
+                {
+                  "t": "int",
+                  "v": 2
+                }
+              ],
+              "reads": [],
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "verb": ""
+          }
+        ],
+        "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+        "generic": true,
+        "id": "harbor.sealed",
+        "line_ids": [
+          "sealed_line"
+        ],
+        "priority": 2,
+        "scene": "",
+        "scope": "bark",
+        "secrecy": "sealed",
+        "speaker": "dock_clerk",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+              "id": "open_line",
+              "kind": "line",
+              "line": 19
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/secrecy_leak/pack.wyrd",
+              "id": "harbor.sealed",
+              "kind": "effect",
+              "line": 11
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
