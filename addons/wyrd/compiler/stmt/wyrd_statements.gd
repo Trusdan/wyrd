@@ -37,6 +37,9 @@ var _schema: WyrdFactSchema
 var _path: String = ""
 var _signatures: WyrdSignatures
 var _line_ids: Dictionary = {}
+## Id sites for tag-lines. Not saved and not part of the pack hash.
+var line_sites: Array = []
+var _line_owner := ""
 var _labels: Dictionary = {}
 var _label_uses: Array = []
 var _track_labels: bool = false
@@ -56,6 +59,8 @@ func compile(
 	_path = source.path
 	_signatures = WyrdSignatures.new()
 	_line_ids = {}
+	line_sites = []
+	_line_owner = ""
 	_labels = {}
 	_label_uses = []
 	_track_labels = false
@@ -226,8 +231,11 @@ func _compile_periodic_document(node: WyrdNode, document: WyrdDocumentDef, items
 
 
 func _compile_readable_document(node: WyrdNode, document: WyrdDocumentDef, items: Array[WyrdToken], cursor: int) -> WyrdDocumentDef:
+	var saved_owner := _line_owner
+	_line_owner = document.id
 	document.mode = ""
 	document.line_id = _line_id(node, false)
+	_note_line_site(node, false)
 	document.tags = node.tags.duplicate()
 	document.secrecy = node.secrecy
 	if document.title.is_empty():
@@ -269,6 +277,7 @@ func _compile_readable_document(node: WyrdNode, document: WyrdDocumentDef, items
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs text:", node.start_line, node.start_col)
 	if not saw_page:
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs a page", node.start_line, node.start_col)
+	_line_owner = saved_owner
 	return document
 
 
@@ -379,12 +388,14 @@ func _document_page(node: WyrdNode, document: WyrdDocumentDef) -> void:
 
 
 func _document_paragraph(node: WyrdNode, document: WyrdDocumentDef) -> Dictionary:
+	var line_id := _line_id(node, false)
+	_note_line_site(node, false)
 	var paragraph := {
 		"col": node.start_col,
 		"condition": null,
 		"condition_text": "",
 		"line": node.start_line,
-		"line_id": _line_id(node, false),
+		"line_id": line_id,
 		"prose": null,
 		"secrecy": node.secrecy,
 		"tags": node.tags.duplicate(),
@@ -672,6 +683,8 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 	quest.title = node.title
 	if quest.id.is_empty() or quest.title.is_empty() or int(ident["next"]) != node.head.size():
 		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "quest needs an id and a quoted title", node.start_line, node.start_col)
+	var saved_owner := _line_owner
+	_line_owner = quest.id
 	for child in node.children:
 		match child.keyword:
 			"slot":
@@ -688,6 +701,7 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 				_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", child.start_line, child.start_col)
 			_:
 				_unknown(child)
+	_line_owner = saved_owner
 	_finish_quest(quest)
 	return quest
 
@@ -1437,6 +1451,8 @@ func _scene(node: WyrdNode) -> WyrdSceneDef:
 	scene.id = String(found["name"])
 	if scene.id.is_empty() or int(found["next"]) != node.head.size():
 		_unknown_msg(node, "scene needs an id")
+	var saved_owner := _line_owner
+	_line_owner = scene.id
 	_labels = {}
 	_label_uses = []
 	_track_labels = true
@@ -1449,6 +1465,7 @@ func _scene(node: WyrdNode) -> WyrdSceneDef:
 		if not _labels.has(use["name"]):
 			_error(WyrdDiagnostic.E_LABEL_UNKNOWN, "unknown label \"%s\"" % use["name"], int(use["line"]), int(use["col"]))
 	_track_labels = false
+	_line_owner = saved_owner
 	return scene
 
 
@@ -2517,6 +2534,8 @@ func _lint_voiced(prose: WyrdExprNode, tags: PackedStringArray, line: int, col: 
 
 
 func _line_id(node: WyrdNode, required: bool) -> String:
+	if required:
+		_note_line_site(node, true)
 	if node.line_tag.is_empty():
 		if required:
 			_error(WyrdDiagnostic.E_LINE_ID_MISSING, "missing #line: id; run tag-lines (S1d)", node.start_line, node.start_col)
@@ -2526,6 +2545,15 @@ func _line_id(node: WyrdNode, required: bool) -> String:
 	else:
 		_line_ids[node.line_tag] = true
 	return node.line_tag
+
+
+func _note_line_site(node: WyrdNode, required: bool) -> void:
+	line_sites.append({
+		"line": node.start_line,
+		"owner": _line_owner,
+		"required": required,
+		"tag": node.line_tag,
+	})
 
 
 func _note_label(name: String, line: int, col: int) -> void:
@@ -2707,6 +2735,8 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 	if story.id.is_empty() or int(ident["next"]) != node.head.size():
 		_story_error(node, "storylet needs an id")
 		story.id = ""
+	var saved_owner := _line_owner
+	_line_owner = story.id
 	var seen := {}
 	var bodies := 0
 	for child in node.children:
@@ -2770,6 +2800,7 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 			story.col,
 			WyrdDiagnostic.SEVERITY_INFO
 		)
+	_line_owner = saved_owner
 	return story
 
 
