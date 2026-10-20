@@ -45,6 +45,9 @@ jobs:
       - name: Watch smoke
         run: tools/watch_smoke.sh
 
+      - name: CLI smoke
+        run: tools/cli_smoke.sh
+
       - name: POT check
         run: |
           sudo apt-get install -y --no-install-recommends gettext
