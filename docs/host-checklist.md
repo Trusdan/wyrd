@@ -48,6 +48,21 @@ godot --headless --path /path/to/host-project \
   -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest path/to/pack.wyrdmanifest.tres
 ```
 
+## Translations
+
+Godot's own POT Generation does not read `.wyrd` files. Write a catalog from the pack, then translate it with the usual gettext tools:
+
+```bash
+godot --headless --path /path/to/host-project \
+  -s res://addons/wyrd/cli/wyrd_cli.gd -- \
+  pot --manifest path/to/pack.wyrdmanifest.tres --out wyrd.pot
+msginit --input=wyrd.pot --locale=fr --output=wyrd.fr.po
+```
+
+Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `wyrd.<locale>.po` under Project Settings → Localization → Translations, next to the game's own `.po` files. Godot loads every translation for the locale, so a Wyrd line and a game string can both resolve.
+
+`msgctxt` is the line id. Lines whose text contains `{…}` match a translation only once template lookup lands in a later Wyrd release. Until then, a line with no `{…}` translates from this catalog.
+
 ## Start and load
 
 `start_new_game(seed)` stores the seed, clears facts, deeds, roles, quests, RNG streams, and the trace, and sets play minutes to 0.

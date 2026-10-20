@@ -9,6 +9,10 @@
 - CLI: `check --watch` re-checks a pack whenever a listed file changes. Each run is wrapped in `wyrd: check started` and `wyrd: check finished errors=<n> warnings=<n>`. Plain `check` output is unchanged.
 - Tools: the VS Code extension adds the `$wyrd-watch` background problem matcher, and `.vscode/tasks.json` adds a check --watch task for Gullhaven.
 - CI: a watch smoke step runs `check --watch` as a real process.
+- CLI: `pot --manifest <path> [--out <file>]` writes a gettext POT of a pack's player text: dialogue, choices, storylet and journal lines, and document titles and paragraphs. `msgctxt` is the line id.
+- Docs: the host checklist explains making `.po` files from `wyrd.pot` next to the game's own translations.
+- Tools: `.vscode/tasks.json` adds a pot task for Gullhaven.
+- CI: the POT is checked with gettext `msgfmt --check`.
 
 ## 0.6.3-m8 - 2026-10-19
 

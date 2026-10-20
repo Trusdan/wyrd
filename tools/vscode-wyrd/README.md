@@ -38,7 +38,7 @@ Two local routes:
 
 ## Tasks
 
-`.vscode/tasks.json` in this repo is the same file as `tasks.sample.json`. It runs Gullhaven `check`, example-content `check`, and `tag-lines` (dry run and write) through `wyrd.godotPath`.
+`.vscode/tasks.json` in this repo is the same file as `tasks.sample.json`. It runs Gullhaven `check`, example-content `check`, and `tag-lines` (dry run and write) through `wyrd.godotPath`. `Wyrd: pot (Gullhaven)` writes the gitignored `wyrd.pot` at the project root.
 
 `Wyrd: check --watch (Gullhaven)` runs until you stop it. Start it from Run Task. After each save, the next cycle publishes that run's problems.
 

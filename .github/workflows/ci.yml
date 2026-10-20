@@ -45,6 +45,19 @@ jobs:
       - name: Watch smoke
         run: tools/watch_smoke.sh
 
+      - name: POT check
+        run: |
+          sudo apt-get install -y --no-install-recommends gettext
+          set +o pipefail
+          msgfmt --version | head -1
+          status=${PIPESTATUS[0]}
+          set -o pipefail
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- pot --manifest example/content/gullhaven/harbor.wyrdmanifest.tres --out "$RUNNER_TEMP/wyrd.pot"
+          msgfmt --check -o /dev/null "$RUNNER_TEMP/wyrd.pot"
+
       - name: Export JSON is stable
         run: |
           set -euo pipefail
