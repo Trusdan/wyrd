@@ -43,6 +43,13 @@ func exists(id: StringName) -> bool:
 	return _entities.has(id)
 
 
+func remove_entity(id: StringName) -> void:
+	_entities.erase(id)
+	_groups.erase(id)
+	for faction in _members.keys():
+		(_members[faction] as Dictionary).erase(id)
+
+
 func kind(id: StringName) -> StringName:
 	var record := _record(id)
 	if record == null:

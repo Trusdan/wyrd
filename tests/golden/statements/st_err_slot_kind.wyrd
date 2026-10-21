@@ -1,0 +1,51 @@
+language 1
+
+quest bad_mode "Bad Mode"
+  slot post kind: object mode: live
+  stage hold
+    waits_until false
+
+quest bad_lock "Bad Lock"
+  slot post kind: item mode: locked_at(hold)
+  stage hold
+    waits_until false
+
+quest bad_kind "Bad Kind"
+  slot post kind: person mode: cast(true)
+  stage hold
+    waits_until false
+
+quest named "Named"
+  slot post = keeper kind: object mode: cast(has_tag(candidate, bollard))
+  stage hold
+    waits_until false
+
+quest succeed "Succeed"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  stage hold
+    variant post.successor:
+      waits_until false
+    waits_until false
+
+quest contest "Contest"
+  slot post kind: item mode: cast(true)
+  stage hold
+    variant post.contested:
+      waits_until false
+    waits_until false
+
+quest moods "Moods"
+  slot post kind: object mode: cast(true)
+  stage hold
+    variant post.hostile:
+      waits_until false
+    variant post.unwilling(true):
+      waits_until false
+    variant post.barred(true):
+      waits_until false
+    waits_until false
+
+quest uncovered "Uncovered"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  stage hold
+    waits_until false

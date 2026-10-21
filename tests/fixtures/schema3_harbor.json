@@ -2,7 +2,7 @@
 	"content": {
 		"packs": [
 			{
-				"hash": "04ec20d503329cdc",
+				"hash": "2dc9e18b0136305a",
 				"id": "harbor"
 			}
 		]
@@ -177,6 +177,23 @@
 			"waiting": ""
 		},
 		"harbor_ledger": {
+			"entered": false,
+			"held_empty": false,
+			"host_fields": [],
+			"host_returns": {},
+			"host_screen": "",
+			"journal": [],
+			"offered": "",
+			"outcomes": {},
+			"scene_done": false,
+			"slots": [],
+			"stage": "",
+			"status": "dormant",
+			"step_at": 0,
+			"variant": "",
+			"waiting": ""
+		},
+		"mooring_post": {
 			"entered": false,
 			"held_empty": false,
 			"host_fields": [],

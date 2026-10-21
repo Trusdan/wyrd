@@ -44,6 +44,10 @@ var enabled: bool = false
 ## scope is deeds, social, or precedence. key is the caller prefix.
 ## ids is the deed-row count, or the agent-name count for precedence.
 ## Replay skips it. Load does not log one. Lookup off does not log one.
+## An object or item cast stores the slot kind as [code]slot_kind[/code].
+## The printed line labels that field [code]kind[/code]. [code]kind[/code] on the
+## record stays the event name ([code]cast[/code] or [code]slot_state[/code]).
+## An item cast also stores [code]owner[/code] when it was recorded.
 ## A social_cache line is one cache invalidation, miss, or hit.
 ## event is invalidate, miss, or hit. cache is axis, disposition, reputation, path,
 ## or the invalidation reason, and the printed line labels it kind.
@@ -93,11 +97,22 @@ func clear() -> void:
 func add(kind: String, fields: Dictionary) -> void:
 	if not enabled:
 		return
+	# kind is the event name and stays first, matching every existing record.
+	# A field also named kind is the slot kind. It is stored as slot_kind.
 	var row := {"kind": kind}
 	var keys: Array = fields.keys()
 	keys.sort()
+	var slot_kind := ""
+	var has_slot_kind := false
 	for key in keys:
-		row[String(key)] = _plain(fields[key])
+		var name := String(key)
+		if name == "kind":
+			slot_kind = str(_plain(fields[key]))
+			has_slot_kind = true
+			continue
+		row[name] = _plain(fields[key])
+	if has_slot_kind:
+		row["slot_kind"] = slot_kind
 	events.append(row)
 
 

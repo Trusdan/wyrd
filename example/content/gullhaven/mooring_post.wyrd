@@ -1,0 +1,20 @@
+// [EXAMPLE CONTENT] Gullhaven mooring post. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.mooring_check : bool stored doc: "Whether the harbor mooring has been checked."
+
+quest mooring_post "The Mooring Post"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  start when harbor.mooring_check
+
+  stage check
+    journal: The {holder(post).name} holds the mooring. #line:f9fe
+    ~ set harbor.mooring_check = true
+    waits_until false
+    variant post.empty:
+      journal: No bollard stands for the mooring. #line:5b47
+      waits_until false
+    variant post.locked_gone:
+      journal: The mooring post is gone. #line:6481
+      waits_until false

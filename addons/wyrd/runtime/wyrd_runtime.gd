@@ -150,6 +150,7 @@ func _init() -> void:
 	roles.config_of = Callable(self, &"config")
 	roles.content_of = Callable(self, &"content")
 	roles.world_of = Callable(self, &"_world")
+	roles.inventory_of = Callable(self, &"_inventory_adapter")
 	roles.eval_with = Callable(self, &"eval_with_locals")
 	roles.trace_of = Callable(self, &"_trace_role")
 	deeds.deed_recorded.connect(_on_deed)
@@ -669,6 +670,18 @@ func _trace_slot(fields: Dictionary) -> void:
 		return
 	_slot_traced[key] = token
 	trace_add("slot_state", fields)
+	if str(fields.get("kind", "")) != "":
+		print(
+			"wyrd slot_state quest=%s kind=%s slot=%s state=%s reason=%s"
+			% [
+				str(fields.get("quest", "")),
+				str(fields.get("kind", "")),
+				str(fields.get("slot", "")),
+				str(fields.get("state", "")),
+				str(fields.get("reason", "")),
+			]
+		)
+		return
 	print(
 		"wyrd slot_state quest=%s role=%s slot=%s state=%s reason=%s"
 		% [
@@ -687,6 +700,18 @@ func _trace_cast(fields: Dictionary) -> void:
 	if not _trace_allows(fields):
 		return
 	trace_add("cast", fields)
+	if str(fields.get("kind", "")) != "":
+		print(
+			"wyrd cast quest=%s slot=%s kind=%s entity=%s reason=%s"
+			% [
+				str(fields.get("quest", "")),
+				str(fields.get("slot", "")),
+				str(fields.get("kind", "")),
+				str(fields.get("entity", "")),
+				str(fields.get("reason", "")),
+			]
+		)
+		return
 	print(
 		"wyrd cast quest=%s role=%s slot=%s entity=%s reason=%s"
 		% [
@@ -2348,6 +2373,13 @@ func _world() -> WyrdWorldAdapter:
 	var found := adapter(WyrdWorldAdapter)
 	if found is WyrdWorldAdapter:
 		return found as WyrdWorldAdapter
+	return null
+
+
+func _inventory_adapter() -> WyrdInventoryAdapter:
+	var found := adapter(WyrdInventoryAdapter)
+	if found is WyrdInventoryAdapter:
+		return found as WyrdInventoryAdapter
 	return null
 
 

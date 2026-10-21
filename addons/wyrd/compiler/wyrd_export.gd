@@ -134,12 +134,16 @@ static func _quests(pack: WyrdLinkedPack) -> Array:
 		for quest in file.quests:
 			var slots: Array = []
 			for slot in quest.slots:
-				slots.append({
+				var slot_row := {
 					"locked_stage": slot.locked_stage,
 					"mode": String(slot.mode),
 					"name": slot.name,
 					"role": slot.role,
-				})
+				}
+				if not slot.kind.is_empty():
+					slot_row["cast_tag"] = slot.cast_tag
+					slot_row["kind"] = slot.kind
+				slots.append(slot_row)
 			var stages: Array = []
 			for stage in quest.stages:
 				stages.append(_stage(stage))

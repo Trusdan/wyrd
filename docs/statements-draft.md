@@ -21,6 +21,8 @@ quest <id> "<Title>"
   slot <name> = <role> mode: live
   slot <name> = <role> mode: locked_at(<stage>)
   slot <name> = <role> mode: cast(<condition>)
+  slot <name> kind: object mode: cast(<condition>)
+  slot <name> kind: item mode: cast(<condition>)
   on_empty: wait
   requires: [pack.<id>, ...]
   start when <condition>
@@ -41,6 +43,8 @@ quest <id> "<Title>"
 A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
 
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
+
+`kind: object` or `kind: item` casts from world entities of that kind. The condition's top-level `and` conjunct `has_tag(candidate, <symbol>)` becomes the filter tag; any other shape leaves the tag empty and the condition is still checked on each answer. The world adapter's `candidates` receives that kind and tag. The pick is frozen at quest start. An item pick also stores `owner` from `owner_of` when an inventory adapter is registered, and that string is saved and loaded with the frozen entry. Object and role entries stay `{holder, status}`. Such a slot resolves only `locked_gone`, `empty`, and `default`. It is `empty` when nothing matches. It is `locked_gone` with reason `gone` when the frozen entity no longer exists, and reason `moved` when an item's owner differs from the recorded owner. `E_OBJECT_SUCCESSION` rejects a role on the same slot and a `successor` or `contested` variant. `hostile`, `unwilling`, and `barred` are `E_SLOT_STATE`. Save schema stays 3.
 
 Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling(<cond>)`, `barred(<cond>)`, `locked_gone`. Precedence is `locked_gone`, `contested`, `empty`, then `barred`, `hostile`, `unwilling`, `successor`, and `default`. The first state that applies and has a declared variant wins. A higher state with no variant falls through. `contested` is the exception: no `contested` variant uses the `empty` variant, and the state stays `contested`. `unwilling` tests the holder as `$h`. `$` plus a name is one identifier. `$h` outside an `unwilling` condition is an error, and a lone `$` is an unexpected token. `barred` tests the player. Both are live, and a fact invalidation re-checks them on the next tick when no scene or host step is open. A scene ending finishes the current stage body before that re-check. `locked_gone` is a frozen `locked_at` holder who was vacated or is not alive, even when the role has a successor. A departure whose history reason is `assign` is not a vacate, for a host `assign` or a content `assign role`, so the frozen person stays bound and the slot stays usable. The slot holder stays that person. A quest resolution logs one `slot_state` line (`quest`, `role`, `slot`, `state`, `reason`). `WyrdTrace.prefix` keeps a line when the quest, role, or slot starts with that text.
 
@@ -243,7 +247,8 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_DUPLICATE` | A slot name is repeated in one quest |
 | `E_STAGE_DUPLICATE` | A stage id is repeated in one quest |
 | `E_SLOT_UNKNOWN` | `variant` or `with` names a slot this quest does not declare |
-| `E_SLOT_STATE` | The variant state is not one of the eight names, or its condition shape is wrong |
+| `E_SLOT_STATE` | The variant state is not one of the eight names, its condition shape is wrong, or `hostile`, `unwilling`, or `barred` is used on an object or item slot |
+| `E_OBJECT_SUCCESSION` | An object or item slot also names a role, or has a `successor` or `contested` variant |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
 | `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>`. `lock topic` without an id says `lock topic needs a topic id`. A sibling scene `on_fail` says `on_fail belongs on the do line`. A `when` prefix on a scene effect says `when is not valid on an effect` |
@@ -288,7 +293,7 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_SCENE_UNUSED` | No quest stage runs the scene |
 | `W_SLOT_UNUSED` | A passed slot is not a speaker in the scene |
 | `W_EMPTY_UNCOVERED` | A slot used by a reachable stage has neither `variant <slot>.empty` nor quest `on_empty`. A `contested` variant does not cover it |
-| `W_LOCKED_GONE_UNCOVERED` | A `locked_at` slot has no `locked_gone` variant on a reachable stage |
+| `W_LOCKED_GONE_UNCOVERED` | A `locked_at` slot has no `locked_gone` variant on a reachable stage, or an object or item slot has no `locked_gone` variant |
 | `W_SLOT_COND_ALWAYS` | An `unwilling` or `barred` condition is always true |
 | `W_SLOT_COND_NEVER` | An `unwilling` or `barred` condition is never true |
 | `W_ROUTE_CLOSED` | Every reachable assignment of a branch is `route_closed` |

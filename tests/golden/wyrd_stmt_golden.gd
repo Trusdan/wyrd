@@ -71,7 +71,7 @@ static func case_names() -> PackedStringArray:
 static func _quest(quest: WyrdQuestDef) -> Dictionary:
 	var slots: Array = []
 	for slot in quest.slots:
-		slots.append({
+		var slot_row := {
 			"cast": _cond(slot.cast_when),
 			"cast_text": slot.cast_text,
 			"locked_stage": slot.locked_stage,
@@ -80,7 +80,11 @@ static func _quest(quest: WyrdQuestDef) -> Dictionary:
 			"reads": _reads(slot.reads),
 			"role": slot.role,
 			"span": slot.span_data(),
-		})
+		}
+		if not slot.kind.is_empty():
+			slot_row["cast_tag"] = slot.cast_tag
+			slot_row["kind"] = slot.kind
+		slots.append(slot_row)
 	var stages: Array = []
 	for stage in quest.stages:
 		stages.append(_stage(stage))

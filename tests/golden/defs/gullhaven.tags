@@ -10,6 +10,7 @@ bell_repair.loose	example/content/gullhaven/bell_repair.wyrd	16;"	s
 bell_repair.repair	example/content/gullhaven/bell_repair.wyrd	6;"	s
 bell_repair.seated	example/content/gullhaven/bell_repair.wyrd	21;"	s
 bell_repair.spliced	example/content/gullhaven/bell_repair.wyrd	13;"	s
+check	example/content/gullhaven/mooring_post.wyrd	11;"	s
 council_member	example/content/gullhaven/harbor_tale.wyrd	4;"	r
 cross	example/content/gullhaven/ferry_toll.wyrd	34;"	s
 dock.crate_talk	example/content/gullhaven/dock_crate.wyrd	15;"	g
@@ -46,6 +47,7 @@ harbor.factor_refuses	example/content/gullhaven/facts.wyrd	25;"	f
 harbor.gazette	example/content/gullhaven/facts.wyrd	29;"	f
 harbor.guild_signed	example/content/gullhaven/facts.wyrd	26;"	f
 harbor.levy_posted	example/content/gullhaven/facts.wyrd	27;"	f
+harbor.mooring_check	example/content/gullhaven/mooring_post.wyrd	5;"	f
 harbor.room_taken	example/content/gullhaven/facts.wyrd	14;"	f
 harbor.rope_done	example/content/gullhaven/facts.wyrd	20;"	f
 harbor.rope_spliced	example/content/gullhaven/facts.wyrd	19;"	f
@@ -71,6 +73,8 @@ harbor_ledger.sealed	example/content/gullhaven/harbor_storylets.wyrd	55;"	t
 harbor_reeve	example/content/gullhaven/harbor_roles.wyrd	27;"	r
 hearing	example/content/gullhaven/harbor_tale.wyrd	25;"	s
 loose	example/content/gullhaven/bell_repair.wyrd	16;"	s
+mooring_post	example/content/gullhaven/mooring_post.wyrd	7;"	q
+mooring_post.check	example/content/gullhaven/mooring_post.wyrd	11;"	s
 note	example/content/gullhaven/harbor_storylets.wyrd	44;"	s
 npc.{id}.alive	example/content/gullhaven/facts.wyrd	31;"	f
 pay_toll	example/content/gullhaven/ferry_toll.wyrd	16;"	s

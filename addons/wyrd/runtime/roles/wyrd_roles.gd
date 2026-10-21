@@ -15,7 +15,12 @@ extends RefCounted
 ## [method assign]. [code]vacancy: abolish[/code] runs when a strategy finds
 ## nobody. [code]live[/code] follows the role. [code]locked_at[/code] freezes in
 ## [method enter_stage]. [code]cast[/code] picks once in [method begin_quest]
-## from [method WyrdWorldAdapter.candidates] and freezes that entity. Slot state [code]hostile[/code]
+## from [method WyrdWorldAdapter.candidates] and freezes that entity. A slot with
+## [code]kind: object[/code] or [code]kind: item[/code] passes that kind and the
+## [code]has_tag[/code] symbol to [code]candidates[/code], freezes the pick, and
+## resolves only [code]locked_gone[/code], [code]empty[/code], and [code]default[/code].
+## An item pick also stores [code]owner[/code] when an inventory adapter is registered.
+## Slot state [code]hostile[/code]
 ## means disposition toward [code]player[/code] is below the threshold.
 ## Precedence is [code]locked_gone[/code], [code]contested[/code], [code]empty[/code],
 ## then [code]barred[/code], [code]hostile[/code], [code]unwilling[/code],
@@ -55,6 +60,8 @@ var clock: Callable = Callable()
 var config_of: Callable = Callable()
 var content_of: Callable = Callable()
 var world_of: Callable = Callable()
+## [code]inventory_of()[/code] returns the registered [WyrdInventoryAdapter], or null.
+var inventory_of: Callable = Callable()
 ## [code]eval_with(condition, locals)[/code] evaluates one eligibility or cast condition.
 var eval_with: Callable = Callable()
 ## [code]trace_of(kind, fields)[/code] records one eligibility, slot-state, succession, or cast line. Optional.
@@ -98,6 +105,7 @@ func bind_content(content: WyrdContent) -> void:
 			if not _slots.has(name):
 				_slots[name] = []
 			(_slots[name] as Array).append({
+				"kind": slot.kind,
 				"mode": slot.mode,
 				"quest": String(quest_id),
 				"role": StringName(slot.role),
@@ -172,10 +180,13 @@ func export_state() -> Dictionary:
 		if not frozen.has(parts[0]):
 			frozen[parts[0]] = {}
 		var snap: Dictionary = _frozen[lock]
-		(frozen[parts[0]] as Dictionary)[parts[1]] = {
+		var frozen_row := {
 			"holder": String(snap.get("holder", "")),
 			"status": String(snap.get("status", "")),
 		}
+		if snap.has("owner"):
+			frozen_row["owner"] = String(snap.get("owner", ""))
+		(frozen[parts[0]] as Dictionary)[parts[1]] = frozen_row
 	var told := {}
 	var secret_roles: Array = _told.keys()
 	secret_roles.sort()
@@ -283,10 +294,13 @@ func import_state(data: Dictionary) -> void:
 		var slots: Dictionary = frozen[quest_id]
 		for slot_name in slots.keys():
 			var snap: Dictionary = slots[slot_name]
-			_frozen[_freeze_key(String(quest_id), String(slot_name))] = {
+			var loaded_row := {
 				"holder": StringName(str(snap.get("holder", ""))),
 				"status": StringName(str(snap.get("status", ""))),
 			}
+			if snap.has("owner"):
+				loaded_row["owner"] = String(snap.get("owner", ""))
+			_frozen[_freeze_key(String(quest_id), String(slot_name))] = loaded_row
 	var told: Dictionary = data.get("told", {})
 	for role in told.keys():
 		var bag := {}
@@ -666,6 +680,7 @@ func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = fals
 	var who: StringName = resolved["holder"]
 	var status: StringName = resolved["status"]
 	var role: StringName = resolved["role"]
+	var kind := String(_slot_row(quest_id, String(slot_name)).get("kind", ""))
 	var variants := _stage_variants(quest_id, String(slot_name))
 	var gone := _gone_reason(quest_id, String(slot_name), who)
 	var higher := false
@@ -674,6 +689,8 @@ func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = fals
 	var winner: WyrdVariantDef = null
 	var saw := false
 	for state_name in _STATE_ORDER:
+		if not kind.is_empty() and state_name != "locked_gone" and state_name != "empty" and state_name != "default":
+			continue
 		if not _state_applies(state_name, who, status, role, gone, variants):
 			continue
 		if not saw:
@@ -704,13 +721,17 @@ func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = fals
 		winner_reason = "fallthrough" if higher else _state_reason(state_name, gone)
 		break
 	if trace_it and trace_of.is_valid():
-		trace_of.call("slot_state", {
+		var traced := {
 			"quest": quest_id,
 			"reason": winner_reason,
-			"role": String(role),
 			"slot": String(slot_name),
 			"state": String(winner_state),
-		})
+		}
+		if kind.is_empty():
+			traced["role"] = String(role)
+		else:
+			traced["kind"] = kind
+		trace_of.call("slot_state", traced)
 	return {
 		"reason": winner_reason,
 		"role": role,
@@ -779,8 +800,13 @@ func begin_quest(quest_id: String) -> void:
 			continue
 		var picked := _cast_pick(quest_id, slot)
 		var status := DEFAULT if picked != &"" else EMPTY
-		_frozen[key] = {"holder": picked, "status": status}
-		_trace_cast(quest_id, slot, picked)
+		var snap := {"holder": picked, "status": status}
+		if slot.kind == "item" and picked != &"":
+			var inventory := _inventory()
+			if inventory != null:
+				snap["owner"] = String(inventory.owner_of(picked))
+		_frozen[key] = snap
+		_trace_cast(quest_id, slot, picked, snap)
 
 
 func enter_stage(quest_id: String, stage_id: String) -> void:
@@ -926,7 +952,10 @@ func _cast_pick(quest_id: String, slot: WyrdSlotDef) -> StringName:
 		return &""
 	var seen := {}
 	var ids: Array = []
-	for raw in world.candidates(WyrdEntityFilter.new()):
+	var filter := WyrdEntityFilter.new()
+	if slot.kind == "object" or slot.kind == "item":
+		filter = WyrdEntityFilter.new(StringName(slot.cast_tag), StringName(slot.kind))
+	for raw in world.candidates(filter):
 		var who := StringName(str(raw))
 		if who == &"" or seen.has(who):
 			continue
@@ -950,16 +979,22 @@ func _cast_accepts(slot: WyrdSlotDef, entity: StringName) -> bool:
 	return bool(eval_with.call(slot.cast_when, {"candidate": entity}))
 
 
-func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName) -> void:
+func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName, snap: Dictionary) -> void:
 	if not trace_of.is_valid():
 		return
-	trace_of.call("cast", {
+	var fields := {
 		"entity": String(picked),
 		"quest": quest_id,
 		"reason": "picked" if picked != &"" else "empty",
-		"role": slot.role,
 		"slot": slot.name,
-	})
+	}
+	if slot.kind.is_empty():
+		fields["role"] = slot.role
+	else:
+		fields["kind"] = slot.kind
+		if snap.has("owner"):
+			fields["owner"] = String(snap.get("owner", ""))
+	trace_of.call("cast", fields)
 
 
 func _trace_succession(role: StringName, strategy: String, old: StringName, next: StringName, reason: String) -> void:
@@ -1040,8 +1075,11 @@ func _stage_def(quest_id: String) -> WyrdStageDef:
 	return null
 
 
-func _gone_reason(quest_id: String, slot_name: String, who: StringName) -> String:
+func _gone_reason(quest_id: String, slot_name: String, _who: StringName) -> String:
 	var row := _slot_row(quest_id, slot_name)
+	var kind := String(row.get("kind", ""))
+	if kind == "object" or kind == "item":
+		return _kind_gone(quest_id, slot_name, kind)
 	if row.get("mode", &"") != &"locked_at":
 		return ""
 	var key := _freeze_key(quest_id, slot_name)
@@ -1148,6 +1186,36 @@ func _threshold(role: StringName) -> int:
 	if cfg == null:
 		return 20
 	return cfg.hostile_threshold
+
+
+func _kind_gone(quest_id: String, slot_name: String, kind: String) -> String:
+	var key := _freeze_key(quest_id, slot_name)
+	if not _frozen.has(key):
+		return ""
+	var snap: Dictionary = _frozen[key]
+	var held := StringName(str(snap.get("holder", "")))
+	if held == &"":
+		return ""
+	var world := _world()
+	if world == null or not world.exists(held):
+		return "gone"
+	if kind != "item" or not snap.has("owner"):
+		return ""
+	var inventory := _inventory()
+	if inventory == null:
+		return ""
+	if inventory.owner_of(held) != StringName(str(snap.get("owner", ""))):
+		return "moved"
+	return ""
+
+
+func _inventory() -> WyrdInventoryAdapter:
+	if not inventory_of.is_valid():
+		return null
+	var found: Variant = inventory_of.call()
+	if found is WyrdInventoryAdapter:
+		return found as WyrdInventoryAdapter
+	return null
 
 
 func _alive(id: StringName) -> bool:

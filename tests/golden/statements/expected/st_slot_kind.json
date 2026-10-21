@@ -1,0 +1,548 @@
+{
+  "diagnostics": [],
+  "quests": [
+    {
+      "id": "posts",
+      "on_empty": "",
+      "reads": [
+        "player.coins"
+      ],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 37,
+              "end_col": 64,
+              "end_line": 7,
+              "line": 7
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "bollard",
+          "cast_text": "has_tag(candidate, bollard)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 65,
+            "end_line": 7,
+            "line": 7
+          }
+        },
+        {
+          "cast": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 35,
+              "end_col": 81,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 2,
+            "uses_chance": false
+          },
+          "cast_tag": "toll",
+          "cast_text": "has_tag(candidate, toll) and player.coins >= 0",
+          "kind": "item",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "coin",
+          "reads": [
+            "player.coins"
+          ],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 82,
+            "end_line": 8,
+            "line": 8
+          }
+        },
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 38,
+              "end_col": 84,
+              "end_line": 9,
+              "line": 9
+            },
+            "specificity": 2,
+            "uses_chance": false
+          },
+          "cast_tag": "spare",
+          "cast_text": "alive(candidate) and has_tag(candidate, spare)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "spare",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 85,
+            "end_line": 9,
+            "line": 9
+          }
+        },
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 37,
+              "end_col": 53,
+              "end_line": 10,
+              "line": 10
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "",
+          "cast_text": "alive(candidate)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "rope",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 54,
+            "end_line": 10,
+            "line": 10
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 29,
+        "line": 6
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 27,
+                "end_line": 12,
+                "line": 12
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 23,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 27,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "1",
+              "verb": ""
+            }
+          ],
+          "id": "hold",
+          "journals": [],
+          "reads": [
+            "player.coins"
+          ],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 29,
+            "line": 11
+          },
+          "transitions": [],
+          "variants": [
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 14,
+                  "line": 13
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 14,
+                    "line": 14
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 14,
+                "line": 13
+              },
+              "state": "locked_gone"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 16,
+                  "line": 15
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 16,
+                    "line": 16
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 16,
+                "line": 15
+              },
+              "state": "empty"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 18,
+                  "line": 17
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 18,
+                    "line": 18
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "coin",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 18,
+                "line": 17
+              },
+              "state": "locked_gone"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 20,
+                  "line": 19
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 20,
+                    "line": 20
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "coin",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 20,
+                "line": 19
+              },
+              "state": "empty"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 22,
+                  "line": 21
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 22,
+                    "line": 22
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "spare",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 22,
+                "line": 21
+              },
+              "state": "locked_gone"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 24,
+                  "line": 23
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 24,
+                    "line": 24
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "spare",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 24,
+                "line": 23
+              },
+              "state": "empty"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 26,
+                  "line": 25
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 26,
+                    "line": 26
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "rope",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 26,
+                "line": 25
+              },
+              "state": "locked_gone"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 28,
+                  "line": 27
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 28,
+                    "line": 28
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "rope",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 28,
+                "line": 27
+              },
+              "state": "empty"
+            }
+          ],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 29,
+              "line": 29
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Posts"
+    }
+  ],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": []
+}
