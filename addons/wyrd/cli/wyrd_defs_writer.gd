@@ -4,10 +4,11 @@ extends RefCounted
 ## Sorted Exuberant-ctags tags for one linked pack.
 ##
 ## @experimental
-## Kinds are quest [code]q[/code], stage [code]s[/code], scene [code]g[/code],
-## role [code]r[/code], storylet [code]t[/code], document [code]d[/code], and
-## fact [code]f[/code]. Each stage is listed as [code]quest.stage[/code] and as
-## its bare id. Variant bodies are not stages. Events and sequences are omitted.
+## Kinds are quest [code]q[/code], template [code]p[/code], stage [code]s[/code],
+## scene [code]g[/code], role [code]r[/code], storylet [code]t[/code], document
+## [code]d[/code], and fact [code]f[/code]. Each stage is listed as
+## [code]quest.stage[/code] or [code]template.stage[/code] and as its bare id.
+## Variant bodies are not stages. Events and sequences are omitted.
 ## The text depends only on the pack.
 
 
@@ -40,6 +41,10 @@ static func _collect(pack: WyrdLinkedPack, rows: Array) -> void:
 			_add(rows, quest.id, path, quest.line, "q")
 			for stage in quest.stages:
 				_stage(rows, quest.id, stage, path)
+		for template in file.templates:
+			_add(rows, template.id, path, template.line, "p")
+			for stage in template.stages:
+				_stage(rows, template.id, stage, path)
 		for scene in file.scenes:
 			_add(rows, scene.id, path, scene.line, "g")
 		for role in file.roles:

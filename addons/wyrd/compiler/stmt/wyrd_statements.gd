@@ -121,6 +121,10 @@ func compile(
 			seen_documents[document.id] = true
 			file.documents.append(document)
 			WyrdStmtSpan.add_reads(file.reads, document.reads)
+		elif child.keyword == "template":
+			var template := _template(child)
+			file.templates.append(template)
+			WyrdStmtSpan.add_reads(file.reads, template.reads)
 	return file
 
 
@@ -706,6 +710,380 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 	return quest
 
 
+const _TEMPLATE_FIELDS := {
+	"allow_protected": true,
+	"assumes": true,
+	"max_active": true,
+	"priority": true,
+	"tier": true,
+	"weight": true,
+	"when": true,
+}
+const _PARAM_KINDS := {"item": true, "object": true, "place": true}
+
+
+func _template(node: WyrdNode) -> WyrdTemplateDef:
+	var template := WyrdTemplateDef.new()
+	template.take_span(node)
+	_line_id(node, false)
+	var ident := _dotted_at(node.head, 0)
+	template.id = String(ident["name"])
+	template.title = node.title
+	if template.id.is_empty() or template.title.is_empty() or int(ident["next"]) != node.head.size():
+		_template_error(node, "template needs an id and a quoted title")
+		template.id = ""
+	var names := _template_names(node)
+	var saved_owner := _line_owner
+	_line_owner = template.id
+	var seen := {}
+	for child in node.children:
+		var field := child.keyword
+		if field == "start":
+			_template_error(child, "a template has no start; the generator starts its instances")
+			_no_block(child)
+			continue
+		if field == "on_deed":
+			_template_error(child, "on_deed is not supported yet")
+			_no_block(child)
+			continue
+		if field == "slot":
+			var slot_name := _head_ident(child)
+			if not slot_name.is_empty() and _param_named(template, slot_name):
+				_error(WyrdDiagnostic.E_SLOT_DUPLICATE, "duplicate slot \"%s\"" % slot_name, child.start_line, child.start_col)
+				_no_block(child)
+				continue
+			_slot(child, template)
+			continue
+		if field == "param":
+			_param(child, template)
+			continue
+		if field == "on_empty":
+			_on_empty(child, template)
+			continue
+		if field == "requires":
+			_requires(child, template)
+			continue
+		if field == "stage":
+			_stage(child, template)
+			continue
+		if field == "on":
+			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", child.start_line, child.start_col)
+			_no_block(child)
+			continue
+		if not _TEMPLATE_FIELDS.has(field):
+			_unknown(child)
+			continue
+		if seen.has(field):
+			_template_error(child, "duplicate template field \"%s\"" % field)
+			_no_block(child)
+			continue
+		seen[field] = true
+		_template_field(child, template, field, names)
+	if not template.id.is_empty():
+		_diagnostics.add(
+			WyrdDiagnostic.I_TEMPLATE_SCORE,
+			"template \"%s\" specificity %d priority %d" % [template.id, template.specificity, template.priority],
+			_path,
+			template.line,
+			template.col,
+			WyrdDiagnostic.SEVERITY_INFO
+		)
+	_line_owner = saved_owner
+	_finish_quest(template)
+	return template
+
+
+func _template_names(node: WyrdNode) -> Dictionary:
+	var names := {}
+	for child in node.children:
+		if child.keyword != "slot" and child.keyword != "param":
+			continue
+		var name := _head_ident(child)
+		if not name.is_empty():
+			names[name] = true
+	return names
+
+
+func _head_ident(node: WyrdNode) -> String:
+	if node.head.is_empty() or node.head[0].kind != &"ident":
+		return ""
+	return node.head[0].text
+
+
+func _param_named(template: WyrdTemplateDef, name: String) -> bool:
+	for param in template.params:
+		if param.name == name:
+			return true
+	return false
+
+
+func _slot_named(template: WyrdTemplateDef, name: String) -> bool:
+	for slot in template.slots:
+		if slot.name == name:
+			return true
+	return false
+
+
+func _template_field(node: WyrdNode, template: WyrdTemplateDef, field: String, names: Dictionary) -> void:
+	_line_id(node, false)
+	_no_block(node)
+	match field:
+		"when":
+			_template_when(node, template)
+		"priority":
+			_template_priority(node, template)
+		"weight":
+			_template_weight(node, template)
+		"max_active":
+			_template_max_active(node, template)
+		"tier":
+			_template_tier(node, template)
+		"assumes":
+			_template_assumes(node, template, names)
+		"allow_protected":
+			_template_allow_protected(node, template)
+
+
+func _template_when(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var at := _colon_at(node)
+	if at < 0:
+		_template_error(node, "when needs a condition")
+		return
+	var span := _span_text(node.head, at, node.head.size())
+	if str(span["text"]).is_empty():
+		_template_error(node, "when needs a condition")
+		return
+	template.when_text = str(span["text"])
+	var compiled := _expr(template.when_text, int(span["line"]), int(span["col"]), _STORY, true, &"", template.reads)
+	template.when_cond = compiled["compiled"]
+	if template.when_cond != null:
+		template.specificity = template.when_cond.specificity
+	var ast := compiled["ast"] as WyrdExprNode
+	if ast != null and ast.kind != &"error":
+		var emitter := WyrdEmitter.new()
+		for part in WyrdStoryletTie.and_parts(ast):
+			template.clause_text.append(WyrdStoryletTie.render(part))
+			template.clauses.append(emitter.emit(part))
+
+
+func _template_priority(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var parsed := _signed_int(node)
+	if not bool(parsed["ok"]):
+		_template_error(node, "priority needs an integer")
+		return
+	template.priority = int(parsed["value"])
+
+
+func _template_weight(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var parsed := _signed_int(node)
+	if not bool(parsed["ok"]):
+		_template_error(node, "weight needs an integer")
+		return
+	if int(parsed["value"]) < 0:
+		_template_error(node, "weight cannot be negative")
+		return
+	template.weight = int(parsed["value"])
+
+
+func _template_max_active(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var parsed := _signed_int(node)
+	if not bool(parsed["ok"]) or int(parsed["value"]) < 1:
+		_template_error(node, "max_active needs an integer of at least 1")
+		return
+	template.max_active = int(parsed["value"])
+
+
+func _template_tier(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var at := _colon_at(node)
+	if at < 0 or at >= node.head.size() or node.head[at].kind != &"ident":
+		_template_error(node, "tier needs a name or a range")
+		return
+	var low := node.head[at].text
+	if at + 1 == node.head.size():
+		template.tier_low = low
+		template.tier_high = ""
+		template.tier_range = false
+		return
+	if at + 4 == node.head.size() and node.head[at + 1].kind == &"dot" and node.head[at + 2].kind == &"dot" and node.head[at + 3].kind == &"ident":
+		template.tier_low = low
+		template.tier_high = node.head[at + 3].text
+		template.tier_range = true
+		return
+	_template_error(node, "tier needs a name or a range")
+
+
+func _template_allow_protected(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var at := _colon_at(node)
+	if at < 0 or at + 1 != node.head.size() or node.head[at].kind != &"ident":
+		_template_error(node, "allow_protected needs true or false")
+		return
+	var text := node.head[at].text
+	if text != "true" and text != "false":
+		_template_error(node, "allow_protected needs true or false")
+		return
+	template.allow_protected = text == "true"
+
+
+func _template_assumes(node: WyrdNode, template: WyrdTemplateDef, names: Dictionary) -> void:
+	var at := _colon_at(node)
+	if at < 0:
+		_template_error(node, "assumes needs a condition")
+		return
+	var span := _span_text(node.head, at, node.head.size())
+	if str(span["text"]).is_empty():
+		_template_error(node, "assumes needs a condition")
+		return
+	template.assumes_text = str(span["text"])
+	var line := int(span["line"])
+	var col := int(span["col"])
+	var before := _diagnostics.items.size()
+	var compiled := _expr(template.assumes_text, line, col, _WAIT, true, &"", template.reads)
+	var ast := compiled["ast"] as WyrdExprNode
+	if ast != null and ast.kind != &"error":
+		for part in WyrdStoryletTie.and_parts(ast):
+			template.assumption_texts.append(WyrdStoryletTie.render(part))
+	if not _expr_failed(before) and ast != null and _rewrite_entity_holders(ast, names):
+		var rewritten := _render_expr(ast)
+		compiled = _expr(rewritten, line, col, _WAIT, true, &"", template.reads)
+	template.assumes = compiled["compiled"]
+
+
+func _expr_failed(before: int) -> bool:
+	for index in range(before, _diagnostics.items.size()):
+		var item: WyrdDiagnostic = _diagnostics.items[index]
+		if item.severity == WyrdDiagnostic.SEVERITY_ERROR:
+			return true
+	return false
+
+
+func _rewrite_entity_holders(node: WyrdExprNode, names: Dictionary) -> bool:
+	if node == null:
+		return false
+	var changed := false
+	if node.kind == &"call":
+		var sig := _signatures.signature(StringName(node.text))
+		var params: Array = sig.get("params", [])
+		var args: Array = node.payload if node.payload is Array else []
+		for index in args.size():
+			if index >= params.size():
+				break
+			var arg: Variant = args[index]
+			if not (arg is WyrdExprNode):
+				continue
+			var expr := arg as WyrdExprNode
+			var pname := String((params[index] as Dictionary).get("type", ""))
+			var bare := _bare_entity_name(expr)
+			if pname == "entity" and not bare.is_empty() and names.has(bare):
+				args[index] = _holder_call(expr, bare)
+				changed = true
+			elif _rewrite_entity_holders(expr, names):
+				changed = true
+		if changed:
+			node.payload = args
+	if _rewrite_entity_holders(node.a, names):
+		changed = true
+	if _rewrite_entity_holders(node.b, names):
+		changed = true
+	if _rewrite_entity_holders(node.c, names):
+		changed = true
+	for kid in node.kids:
+		if _rewrite_entity_holders(kid, names):
+			changed = true
+	return changed
+
+
+func _bare_entity_name(node: WyrdExprNode) -> String:
+	if node == null or node.kind != &"name":
+		return ""
+	if node.text.is_empty() or node.text.contains("."):
+		return ""
+	return node.text
+
+
+func _holder_call(source: WyrdExprNode, name: String) -> WyrdExprNode:
+	var call := WyrdExprNode.new()
+	call.kind = &"call"
+	call.text = "holder"
+	call.type_name = WyrdSignatures.T_ENTITY
+	call.line = source.line
+	call.col = source.col
+	call.end_line = source.end_line
+	call.end_col = source.end_col
+	var arg := WyrdExprNode.new()
+	arg.kind = &"name"
+	arg.text = name
+	arg.type_name = WyrdSignatures.T_SYMBOL
+	arg.line = source.line
+	arg.col = source.col
+	arg.end_line = source.end_line
+	arg.end_col = source.end_col
+	call.payload = [arg]
+	return call
+
+
+func _render_expr(node: WyrdExprNode) -> String:
+	if node == null:
+		return ""
+	if node.kind == &"call" and node.payload is Array:
+		var args := PackedStringArray()
+		for arg in node.payload:
+			if arg is WyrdExprNode:
+				args.append(_render_expr(arg))
+		return "%s(%s)" % [node.text, ", ".join(args)]
+	return WyrdStoryletTie.render(node)
+
+
+func _param(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	_line_id(node, false)
+	var items := node.head
+	if items.size() < 5 or items[0].kind != &"ident" or items[1].kind != &"colon" or items[2].kind != &"ident" or items[3].text != "cast" or items[4].kind != &"lparen":
+		_template_error(node, "param needs <name>: item|place|object cast(<condition>)")
+		_no_block(node)
+		return
+	var name := items[0].text
+	var kind := items[2].text
+	if not _PARAM_KINDS.has(kind):
+		_template_error(node, "unknown param kind \"%s\"" % kind)
+		_no_block(node)
+		return
+	var close := _closing(items, 4, &"lparen", &"rparen")
+	if close < 0 or close + 1 != items.size():
+		_template_error(node, "param needs <name>: item|place|object cast(<condition>)")
+		_no_block(node)
+		return
+	if _slot_named(template, name) or _param_named(template, name):
+		_error(WyrdDiagnostic.E_SLOT_DUPLICATE, "duplicate slot \"%s\"" % name, node.start_line, node.start_col)
+		_no_block(node)
+		return
+	var param := WyrdParamDef.new()
+	param.take_span(node)
+	param.name = name
+	param.kind = kind
+	var span := _span_text(items, 5, close)
+	param.cast_text = str(span["text"])
+	var compiled := _expr(
+		param.cast_text,
+		int(span["line"]),
+		int(span["col"]),
+		_WAIT,
+		true,
+		&"",
+		param.reads,
+		{"candidate": WyrdSignatures.T_ENTITY}
+	)
+	param.cast_when = compiled["compiled"]
+	if compiled["ast"] != null:
+		_warn_slot_const("cast", compiled["ast"], int(span["line"]), int(span["col"]))
+		param.cast_tag = _cast_tag_of(compiled["ast"])
+	template.params.append(param)
+	WyrdStmtSpan.add_reads(template.reads, param.reads)
+	_no_block(node)
+
+
+func _template_error(node: WyrdNode, message: String) -> void:
+	_error(WyrdDiagnostic.E_TEMPLATE_SYNTAX, message, node.start_line, node.start_col)
+
+
 func _finish_quest(quest: WyrdQuestDef) -> void:
 	var stage_names := {}
 	var slot_names := {}
@@ -721,6 +1099,10 @@ func _finish_quest(quest: WyrdQuestDef) -> void:
 				slot.line,
 				slot.col
 			)
+	if quest is WyrdTemplateDef:
+		for param in (quest as WyrdTemplateDef).params:
+			if not param.name.is_empty():
+				slot_names[param.name] = true
 	for stage in quest.stages:
 		_finish_body(stage, stage_names, slot_names, 1)
 	for stage in quest.stages:

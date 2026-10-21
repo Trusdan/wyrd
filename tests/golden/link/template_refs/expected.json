@@ -1,0 +1,296 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 17,
+      "line": 9,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 17,
+      "line": 9,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 17,
+      "line": 9,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_UNKNOWN",
+      "col": 17,
+      "line": 9,
+      "message": "unknown template \"missing\"",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 5,
+      "line": 10,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 5,
+      "line": 11,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_REF",
+      "col": 1,
+      "line": 16,
+      "message": "\"errand\" is a template; content cannot name its instances",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 16,
+      "message": "storylet \"harbor.news\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/link/template_refs/a_quest.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_QUEST_DUPLICATE",
+      "col": 1,
+      "line": 3,
+      "message": "duplicate template \"shared\" also declared in res://tests/golden/link/template_refs/a_quest.wyrd:3:1",
+      "path": "res://tests/golden/link/template_refs/b_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "template \"shared\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_refs/b_template.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 7,
+      "message": "template \"errand\" specificity 0 priority 1",
+      "path": "res://tests/golden/link/template_refs/b_template.wyrd",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "f319fd4a2b979458",
+        "path": "res://tests/golden/link/template_refs/a_quest.wyrd"
+      },
+      {
+        "hash": "477f2ec5f4bd5dc8",
+        "path": "res://tests/golden/link/template_refs/b_template.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/template_refs/a_quest.wyrd",
+        "id": "template_refs/beat1",
+        "kind": "storylet",
+        "scene": "",
+        "speaker": "any",
+        "tags": []
+      }
+    ],
+    "pack_id": "template_refs",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/template_refs/a_quest.wyrd",
+        "id": "shared",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "start": null,
+        "title": "Shared"
+      },
+      {
+        "file": "res://tests/golden/link/template_refs/a_quest.wyrd",
+        "id": "gate",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "start_quest",
+                "on_fail": "",
+                "outcome": "",
+                "quest": "errand",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              },
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "advance",
+                "on_fail": "",
+                "outcome": "",
+                "quest": "errand",
+                "stage": "work",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": ""
+              }
+            ],
+            "id": "hold",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "next",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": "quest(errand) == done and stage(errand) == work and outcome(errand, crossing) == done and active_count(missing) >= 1"
+          },
+          {
+            "effects": [],
+            "id": "next",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "start": null,
+        "title": "Gate"
+      }
+    ],
+    "roles": [],
+    "scenes": [],
+    "storylets": [
+      {
+        "body": "line",
+        "cooldown": 0,
+        "file": "res://tests/golden/link/template_refs/a_quest.wyrd",
+        "generic": true,
+        "id": "harbor.news",
+        "line_ids": [
+          "beat1"
+        ],
+        "priority": 0,
+        "scene": "",
+        "scope": "beat errand.work",
+        "speaker": "any",
+        "speaker_cooldown": 0,
+        "specificity": 0,
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "templates": [
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_refs/b_template.wyrd",
+        "id": "shared",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Shared",
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_refs/b_template.wyrd",
+        "id": "errand",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 1,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Errand",
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

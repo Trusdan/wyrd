@@ -165,7 +165,7 @@ func _warn_interps(schema: WyrdFactSchema, units: Array, writers: Array, diagnos
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_warn_stage(schema, stage, path, writers, diagnostics)
 		for scene in file.scenes:
@@ -277,7 +277,7 @@ func _warn_stale_beliefs(units: Array, diagnostics: WyrdDiagnostics) -> void:
 	var cleared := {}
 	for unit in units:
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_note_belief_stage(stage, believed, cleared)
 		for scene in file.scenes:
@@ -466,10 +466,16 @@ func _readers(units: Array) -> Array:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			_push(rows, _cond_reads(quest.start_when), "quest", quest.id, path, quest.line, quest.col)
 			for slot in quest.slots:
 				_push(rows, _cond_reads(slot.cast_when), "slot", "%s.%s" % [quest.id, slot.name], path, slot.line, slot.col)
+			if quest is WyrdTemplateDef:
+				var template := quest as WyrdTemplateDef
+				_push(rows, _cond_reads(template.when_cond), "template", template.id, path, template.line, template.col)
+				_push(rows, _cond_reads(template.assumes), "template", template.id, path, template.line, template.col)
+				for param in template.params:
+					_push(rows, _cond_reads(param.cast_when), "param", "%s.%s" % [template.id, param.name], path, param.line, param.col)
 			for stage in quest.stages:
 				_stage_readers(rows, stage, "%s.%s" % [quest.id, stage.id], path)
 		for scene in file.scenes:
@@ -496,7 +502,7 @@ func _handler_events(units: Array) -> void:
 		var file: WyrdFileDef = unit["file"]
 		if file == null:
 			continue
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_handler_stage(stage, path)
 
@@ -603,7 +609,7 @@ func _writers(units: Array) -> Array:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_stage_writers(rows, stage, "%s.%s" % [quest.id, stage.id], path)
 		for scene in file.scenes:
@@ -681,7 +687,7 @@ func _warn_unmarked_recap(schema: WyrdFactSchema, units: Array, diagnostics: Wyr
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_stage_recap(schema, stage, path, diagnostics)
 		for scene in file.scenes:

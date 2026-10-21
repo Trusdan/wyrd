@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Compiler: `template` blocks (params, when/priority/weight/max_active/tier/assumes/allow_protected) compile, link and lint like quests, with W_TEMPLATE_TIE, E_TEMPLATE_REF and E_TEMPLATE_UNKNOWN; content.templates is filled from the pack.
 - Saves: schema 4. Generated quest instances (`<template>#<n>`) save with `template` and `n` on their quest row, and a `generator` block holds instance counters and casts; it is omitted when there are none. Schema 2 and 3 saves load as before, with an empty generator block. A schema 4 save is refused by an older Wyrd. A save whose template is no longer in the content keeps those instances ignored and warns `W_SAVE_TEMPLATE`. Conditions can read `active_count(<template>)`. Hand-written quests, their saves and traces are unchanged apart from `schema_version`.
 - Fixed: CLI runs other than `check --watch` no longer print a `tick` on Nil script error after their output. CI runs every command headless and fails on a script error.
 - Fixed: `tag-lines` proposes ids exactly where `check` requires them: no longer on a choice's skill-check line, and now on variant lines. Document titles and paragraphs still get ids. Ids already written never change; an untagged line after a fixed site may get a different proposed id.

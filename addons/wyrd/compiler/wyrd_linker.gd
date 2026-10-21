@@ -15,6 +15,8 @@ var _diagnostics: WyrdDiagnostics
 var _scenes: Dictionary = {}
 var _roles: Dictionary = {}
 var _document_defs: Dictionary = {}
+var _template_ids: Dictionary = {}
+var _quest_ids: Dictionary = {}
 var _skip_commands_note: bool = false
 
 
@@ -35,14 +37,18 @@ func link(
 	_diagnostics = diagnostics
 	_scenes = {}
 	_document_defs = {}
+	_template_ids = {}
+	_quest_ids = {}
 	var pack := WyrdLinkedPack.new()
 	pack.pack_id = pack_id
 	pack.language_version = language_version
 	pack.schema = schema
 	pack.units = units
 	_index_symbols(units)
+	_template_refs(units)
 	_document_refs(units)
 	_storylet_ties(units)
+	_template_ties(units)
 	_lines(units)
 	_host_steps(units)
 	_quests(units, pack)
@@ -90,7 +96,13 @@ func _index_symbols(units: Array) -> void:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
 		for quest in file.quests:
+			if not quest.id.is_empty():
+				_quest_ids[quest.id] = true
 			_claim(quests, quest.id, path, quest.line, quest.col, WyrdDiagnostic.E_QUEST_DUPLICATE, "quest")
+		for template in file.templates:
+			if not template.id.is_empty():
+				_template_ids[template.id] = true
+			_claim(quests, template.id, path, template.line, template.col, WyrdDiagnostic.E_QUEST_DUPLICATE, "template")
 		for role in file.roles:
 			_claim(roles, role.id, path, role.line, role.col, WyrdDiagnostic.E_ROLE_DUPLICATE, "role")
 		for storylet in file.storylets:
@@ -124,7 +136,7 @@ func _document_refs(units: Array) -> void:
 		var file: WyrdFileDef = unit["file"]
 		if file == null:
 			continue
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			_check_doc_cond(quest.start_when, path)
 			for slot in quest.slots:
 				_check_doc_cond(slot.cast_when, path)
@@ -337,12 +349,254 @@ func _storylet_ties(units: Array) -> void:
 			WyrdStoryletTie.warn(_diagnostics, rows[index], rows[other])
 
 
+func _template_refs(units: Array) -> void:
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for quest in file.quest_bodies():
+			_scan_template_cond(quest.start_when, path)
+			for slot in quest.slots:
+				_scan_template_cond(slot.cast_when, path)
+			if quest is WyrdTemplateDef:
+				var template := quest as WyrdTemplateDef
+				_scan_template_cond(template.when_cond, path)
+				_scan_template_cond(template.assumes, path)
+				for param in template.params:
+					_scan_template_cond(param.cast_when, path)
+			for stage in quest.stages:
+				_scan_template_stage(stage, path)
+		for scene in file.scenes:
+			for item in scene.items:
+				if item.line_def != null:
+					_scan_template_cond(item.line_def.condition, path)
+				if item.choice != null:
+					_scan_template_cond(item.choice.condition, path)
+		for storylet in file.storylets:
+			_scan_template_cond(storylet.condition, path)
+			if storylet.scope_kind == &"beat":
+				var beat_id := storylet.scope_id
+				var dot := beat_id.find(".")
+				if dot > 0:
+					beat_id = beat_id.substr(0, dot)
+				if _template_ids.has(beat_id):
+					_template_ref(beat_id, path, storylet.line, storylet.col)
+		for role in file.roles:
+			_scan_template_cond(role.eligibility, path)
+		for sequence in file.sequences:
+			_scan_template_cond(sequence.reset_cond, path)
+			for step in sequence.steps:
+				_scan_template_cond(step.where_cond, path)
+
+
+func _scan_template_stage(stage: WyrdStageDef, path: String) -> void:
+	if stage == null:
+		return
+	_scan_template_cond(stage.waits_until, path)
+	for row in stage.transitions:
+		var when: Variant = row.get("when", null)
+		if when is WyrdCompiledCondition:
+			_scan_template_cond(when, path)
+	for handler in stage.handlers:
+		_scan_template_cond(handler.where_cond, path)
+	for journal in stage.journals:
+		_scan_template_cond(journal.condition, path)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null:
+			continue
+		_scan_template_cond(variant.condition, path)
+		_scan_template_stage(variant.body, path)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_scan_template_stage(child, path)
+
+
+func _scan_template_cond(compiled: Variant, path: String) -> void:
+	if not (compiled is WyrdCompiledCondition):
+		return
+	var cond := compiled as WyrdCompiledCondition
+	var line := int(cond.source_span.get("line", 1))
+	var col := int(cond.source_span.get("col", 1))
+	var stack: Array = []
+	var code := cond.code
+	var ip := 0
+	while ip < code.size():
+		var op := code[ip]
+		ip += 1
+		if op == WyrdOpcodes.PUSH_CONST:
+			stack.append(cond.consts[code[ip]])
+			ip += 1
+		elif op == WyrdOpcodes.LOAD_FACT:
+			stack.append(null)
+			ip += 1
+		elif op == WyrdOpcodes.PUSH_TRUE or op == WyrdOpcodes.PUSH_FALSE or op == WyrdOpcodes.PUSH_NIL:
+			stack.append(null)
+		elif op == WyrdOpcodes.LOAD_KEY:
+			var count := code[ip]
+			ip += 1
+			for _i in count:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.NEG or op == WyrdOpcodes.NOT:
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.ADD or op == WyrdOpcodes.SUB or op == WyrdOpcodes.MUL or op == WyrdOpcodes.DIV or op == WyrdOpcodes.EQ or op == WyrdOpcodes.NE or op == WyrdOpcodes.LT or op == WyrdOpcodes.LE or op == WyrdOpcodes.GT or op == WyrdOpcodes.GE:
+			if not stack.is_empty():
+				stack.pop_back()
+			if not stack.is_empty():
+				stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_RANGE:
+			for _i in 3:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.IN_SET:
+			var set_count := code[ip]
+			ip += 1
+			for _i in set_count + 1:
+				if not stack.is_empty():
+					stack.pop_back()
+			stack.append(null)
+		elif op == WyrdOpcodes.CALL:
+			var name := String(cond.consts[code[ip]])
+			var argc := code[ip + 1]
+			ip += 2
+			var args: Array = []
+			for _i in argc:
+				if stack.is_empty():
+					args.append(null)
+				else:
+					args.push_front(stack.pop_back())
+			_note_template_call(name, args, path, line, col)
+			stack.append(null)
+		elif op == WyrdOpcodes.JUMP:
+			ip += 1
+		elif op == WyrdOpcodes.JUMP_IF_FALSE or op == WyrdOpcodes.JUMP_IF_TRUE:
+			if not stack.is_empty():
+				stack.pop_back()
+			ip += 1
+		else:
+			break
+
+
+func _note_template_call(name: String, args: Array, path: String, line: int, col: int) -> void:
+	if args.is_empty():
+		return
+	var id := _symbol_text(args[0])
+	if id.is_empty():
+		return
+	if name == "quest" or name == "stage" or name == "outcome":
+		if _template_ids.has(id):
+			_template_ref(id, path, line, col)
+		return
+	if name == "active_count" and not _template_ids.has(id) and not _quest_ids.has(id):
+		_diagnostics.add(WyrdDiagnostic.E_TEMPLATE_UNKNOWN, "unknown template \"%s\"" % id, path, line, col)
+
+
+func _symbol_text(value: Variant) -> String:
+	if value is String or value is StringName:
+		return String(value)
+	return ""
+
+
+func _template_ref(id: String, path: String, line: int, col: int) -> void:
+	_diagnostics.add(
+		WyrdDiagnostic.E_TEMPLATE_REF,
+		"\"%s\" is a template; content cannot name its instances" % id,
+		path,
+		line,
+		col
+	)
+
+
+func _template_ties(units: Array) -> void:
+	var rows: Array = []
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for template in file.templates:
+			rows.append({"path": path, "template": template})
+	for index in rows.size():
+		for other in range(index + 1, rows.size()):
+			_template_tie(rows[index], rows[other])
+
+
+func _template_tie(left: Dictionary, right: Dictionary) -> void:
+	var a: WyrdTemplateDef = left["template"]
+	var b: WyrdTemplateDef = right["template"]
+	if a.id.is_empty() or b.id.is_empty() or a.id == b.id:
+		return
+	if a.priority != b.priority or a.specificity != b.specificity:
+		return
+	if not WyrdTemplateDef.tiers_overlap(a, b):
+		return
+	if not WyrdStoryletTie.clauses_can_both(WyrdStoryletTie.when_clauses(a.when_text), WyrdStoryletTie.when_clauses(b.when_text)):
+		return
+	var later := left
+	var earlier := right
+	if _template_before(left, right):
+		later = right
+		earlier = left
+	var template: WyrdTemplateDef = later["template"]
+	var other: WyrdTemplateDef = earlier["template"]
+	var low := a.id if a.id < b.id else b.id
+	var high := b.id if a.id < b.id else a.id
+	_diagnostics.add(
+		WyrdDiagnostic.W_TEMPLATE_TIE,
+		"template \"%s\" ties \"%s\": priority %d specificity %d weights %d and %d" % [
+			template.id,
+			other.id,
+			template.priority,
+			template.specificity,
+			a.weight if a.id == low else b.weight,
+			a.weight if a.id == high else b.weight,
+		],
+		str(later["path"]),
+		template.line,
+		template.col,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
+
+
+func _template_before(left: Dictionary, right: Dictionary) -> bool:
+	var a: WyrdTemplateDef = left["template"]
+	var b: WyrdTemplateDef = right["template"]
+	var path_a := str(left["path"])
+	var path_b := str(right["path"])
+	if path_a != path_b:
+		return path_a < path_b
+	if a.line != b.line:
+		return a.line < b.line
+	if a.col != b.col:
+		return a.col < b.col
+	return a.id < b.id
+
+
+func _is_param(quest: WyrdQuestDef, name: String) -> bool:
+	if not (quest is WyrdTemplateDef):
+		return false
+	for param in (quest as WyrdTemplateDef).params:
+		if param.name == name:
+			return true
+	return false
+
+
 func _lines(units: Array) -> void:
 	var seen := {}
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_line_stage(stage, path, seen)
 		for scene in file.scenes:
@@ -416,7 +670,7 @@ func _quests(units: Array, pack: WyrdLinkedPack) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			var stages := {}
 			for stage in quest.stages:
 				if not stage.id.is_empty():
@@ -452,7 +706,7 @@ func _quest_flow(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_flow_stage(stage, path, stages_of)
 		for scene in file.scenes:
@@ -488,7 +742,7 @@ func _role_refs(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_role_stage(stage, path)
 		for scene in file.scenes:
@@ -535,7 +789,7 @@ func _topic_refs(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_topic_stage(stage, path, known)
 		for scene in file.scenes:
@@ -606,6 +860,9 @@ func _role_effect(effect: WyrdEffectDef, path: String) -> void:
 
 func _flow_effect(effect: WyrdEffectDef, path: String, stages_of: Dictionary) -> void:
 	if effect.kind != &"start_quest" and effect.kind != &"advance":
+		return
+	if _template_ids.has(effect.quest):
+		_template_ref(effect.quest, path, effect.line, effect.col)
 		return
 	if effect.quest.is_empty() or not stages_of.has(effect.quest):
 		_diagnostics.add(
@@ -726,7 +983,7 @@ func _warn_unreachable(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			_warn_quest_reach(quest, path, advances)
 
 
@@ -836,7 +1093,7 @@ func _advance_targets(units: Array) -> Dictionary:
 	var found := {}
 	for unit in units:
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_note_stage_advances(stage, found)
 		for scene in file.scenes:
@@ -990,9 +1247,10 @@ func _bind(quest: WyrdQuestDef, ref: Dictionary, path: String) -> void:
 		var name := str(entry["name"])
 		passed[name] = true
 		if not _uses(scene, name):
+			var noun := "param" if _is_param(quest, name) else "slot"
 			_diagnostics.add(
 				WyrdDiagnostic.W_SLOT_UNUSED,
-				"slot \"%s\" is not used in scene \"%s\"" % [name, scene_id],
+				"%s \"%s\" is not used in scene \"%s\"" % [noun, name, scene_id],
 				path,
 				int(entry["line"]),
 				int(entry["col"]),
@@ -1014,7 +1272,7 @@ func _scenes_of(units: Array) -> void:
 	var run: Dictionary = {}
 	for unit in units:
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_mark_runs(stage, run)
 	for unit in units:
@@ -1089,7 +1347,7 @@ func _commands_of(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				if _command_stage(stage, path):
 					saw = true
@@ -1197,7 +1455,7 @@ func _warn_holder_gaps(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			var slots := _slot_set(quest)
 			for stage in quest.stages:
 				_holder_stage(stage, {}, slots, path, sites)
@@ -1481,7 +1739,7 @@ func _host_steps(units: Array) -> void:
 	for unit in units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_host_stage(stage, path)
 

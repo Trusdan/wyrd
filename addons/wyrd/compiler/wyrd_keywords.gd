@@ -10,7 +10,7 @@ extends RefCounted
 
 
 const HEADER: PackedStringArray = ["language"]
-const BLOCKS: PackedStringArray = ["facts", "events", "quest", "scene", "role", "storylet", "sequence", "document"]
+const BLOCKS: PackedStringArray = ["facts", "events", "quest", "scene", "role", "storylet", "sequence", "document", "template"]
 const RESERVED: PackedStringArray = ["document", "publishes_by", "tier", "await_host", "believe", "declare", "forget", "learn", "retract"]
 const TYPES: PackedStringArray = ["bool", "int", "float", "symbol"]
 const FIELDS: PackedStringArray = [
@@ -96,6 +96,10 @@ const FIELDS: PackedStringArray = [
 	"target",
 	"auto",
 	"slant",
+	"param",
+	"max_active",
+	"assumes",
+	"allow_protected",
 ]
 const EFFECTS: PackedStringArray = [
 	"set",

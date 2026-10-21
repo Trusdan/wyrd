@@ -386,6 +386,26 @@ A readable document does not publish. `period_minutes` stays 0. `text:` is requi
 
 The runtime rules for witnesses, rumor believers, the claim pick, the catch-up cap, and the schema 3 counter are in `addons/wyrd/runtime/publish/README.md`. A skipped issue number is stored in that fact. The counter rides in `flight`.
 
+## Template
+
+A top-level `template <id> "<title>"` block is a quest body plus generator fields. `slot`, `on_empty`, `requires`, and `stage` compile on the quest paths. `param <name>: item|place|object cast(<condition>)` is a cast input. The cast uses the `candidate` binding. A param name that matches a slot or another param is `E_SLOT_DUPLICATE` with `duplicate slot "<name>"`.
+
+`when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` are colon fields, each at most once. `when:` uses the storylet context and sets specificity from the compiled condition. `priority:` defaults to 0. `weight:` defaults to 1 and cannot be negative. `max_active:` defaults to 1 and must be at least 1. `tier:` is `<name>` or `<low>..<high>`. `tier` stays reserved as an identifier and is accepted as this field word only. `assumes:` uses the wait context. Each top-level `and` part keeps its source text. An identifier in an entity argument that names a slot or param of this template compiles as `holder(<name>)` there only. `allow_protected:` is `true` or `false`, default false.
+
+`start` is `E_TEMPLATE_SYNTAX` with `a template has no start; the generator starts its instances`. `on_deed` is `E_TEMPLATE_SYNTAX` with `on_deed is not supported yet`. A compiled template prints `info[I_TEMPLATE_SCORE]` as `template "<id>" specificity <n> priority <n>`.
+
+Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPLICATE`, and the message names `template` when the template is the later one. Quest lints walk template bodies: empty coverage, unreachable stages, unused slots, fact xref, secrecy, line ids, and holder and role checks. An unused name passed with `with` is `W_SLOT_UNUSED`; a param uses the noun `param`. `start quest`, `advance`, `quest(...)`, `stage(...)`, `outcome(...)`, and a beat scope on a template stage are `E_TEMPLATE_REF` with `"<id>" is a template; content cannot name its instances`. `active_count(<id>)` of an id that is neither a template nor a quest is `E_TEMPLATE_UNKNOWN` with `unknown template "<id>"`. A quest id is allowed: the instance tests promote that quest into `content.templates` in memory.
+
+`W_TEMPLATE_TIE` warns on the later template when priority and specificity match, tiers overlap, and the `when` conditions can both be true: `template "<id>" ties "<id>": priority <n> specificity <n> weights <n> and <n>`. A missing tier overlaps every tier. A range overlaps every tier. Two single names overlap only if they are equal. Weight does not suppress the warning. `content.templates` is filled from the pack. The runner does not keep a row for the template id.
+
+| Code | When |
+|---|---|
+| `E_TEMPLATE_SYNTAX` | A template field, param, `start`, or `on_deed` is the wrong shape. The message names the field |
+| `E_TEMPLATE_REF` | Content names a template where a quest or an instance is meant |
+| `E_TEMPLATE_UNKNOWN` | `active_count` names an id that is neither a declared template nor a declared quest |
+| `W_TEMPLATE_TIE` | Two templates can tie for a pick |
+| `I_TEMPLATE_SCORE` | The template's specificity and priority |
+
 ## Not in this draft
 
 Role definitions are compiled from a `role` block. `unwilling`, `barred`, `locked_gone`, and `contested` resolve at play time. `outcome <branch> = route_closed` keeps the quest open, and `outcome(quest, branch)` reads it. `faction_assigns`, `host_decides`, `election`, and `vacancy: abolish` run. `cast(<condition>)` asks `WyrdWorldAdapter.candidates` once when the quest starts, keeps the ids the condition accepts, and freezes a seeded pick. No survivor leaves the slot `empty`. The freeze is saved with the other slot locks. One `cast` line is logged. `wyrd roles` prints a sorted table of every role (holder, status, strategy, pending or abolished, frozen slots). `--prefix` keeps ids that start with that text. Resolving `redirect beat` stays later. Storylets, topics as entities, barks, and `priority:` are M6. Storylet `on` waits for that work. `test` stays unimplemented.

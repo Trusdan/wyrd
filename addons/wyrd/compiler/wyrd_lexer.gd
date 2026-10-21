@@ -6,7 +6,7 @@ extends RefCounted
 ## @experimental
 ## Indentation is two spaces. A tab is [code]E_TAB_INDENT[/code]. Indent may rise by
 ## one level at a time. Blank lines and comment-only lines are ignored.
-## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], [code]sequence[/code], [code]storylet[/code], or [code]document[/code] block, lines stay code.
+## Inside a [code]facts[/code], [code]events[/code], [code]role[/code], [code]sequence[/code], [code]storylet[/code], [code]document[/code], or [code]template[/code] block, lines stay code.
 ## The lines of a [code]page[/code] block are prose, like dialogue. A [code]when <cond>:[/code] prefix on those lines stays code up to the first colon at depth 0.
 ## A storylet prose line starts with a dash. A dash before [code]([/code] stays a label.
 ## Elsewhere a line that starts
@@ -111,7 +111,7 @@ func _lex_line(line: String, line_no: int) -> void:
 	var origin := index + 1
 	var parent := _kinds[_kinds.size() - 1]
 	var story_parent := parent == "storylet" or parent == "lines"
-	var code_block := parent == "facts" or parent == "events" or parent == "role" or parent == "sequence" or parent == "document" or story_parent
+	var code_block := parent == "facts" or parent == "events" or parent == "role" or parent == "sequence" or parent == "document" or parent == "template" or story_parent
 	var first_ident := ""
 	var code_colon := _CODE_COLON.has(_leading_ident(content))
 	if parent == "page":
@@ -383,7 +383,8 @@ func _lex_code_line(content: String, line_no: int, origin: int, allow_await_host
 			if leading:
 				first_ident = word
 			_emit_span(&"ident", word, line_no, origin, index, end)
-			_check_reserved(word, line_no, origin + index, leading and allow_await_host, _document_word(content, word, leading, first_ident, end))
+			var tier_field := leading and word == "tier" and _kinds[_kinds.size() - 1] == "template"
+			_check_reserved(word, line_no, origin + index, leading and allow_await_host, _document_word(content, word, leading, first_ident, end), tier_field)
 			index = end
 			continue
 		if _is_digit(ch):
@@ -595,10 +596,12 @@ func _read_string(content: String, index: int, line_no: int, origin: int) -> int
 	return cursor
 
 
-func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false, document_ok: bool = false) -> void:
+func _check_reserved(word: String, line_no: int, col: int, statement_ok: bool = false, document_ok: bool = false, tier_ok: bool = false) -> void:
 	if statement_ok and word == "await_host":
 		return
 	if document_ok and (word == "document" or word == "publishes_by"):
+		return
+	if tier_ok and word == "tier":
 		return
 	if _effect_verb(word):
 		return

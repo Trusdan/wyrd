@@ -1,0 +1,10 @@
+language 1
+
+template shared "Shared"
+  stage work
+    waits_until false
+
+template errand "Errand"
+  priority: 1
+  stage work
+    waits_until false

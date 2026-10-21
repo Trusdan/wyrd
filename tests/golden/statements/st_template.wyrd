@@ -1,0 +1,27 @@
+language 1
+
+facts
+  player.coins : int stored
+
+template ferry.errand "The Errand"
+  slot giver = dock_keeper mode: live
+  slot victim = witness mode: cast(player.coins > 0)
+  param toll: item cast(has_tag(candidate, toll))
+  param berth: place cast(has_tag(candidate, dock))
+  param post: object cast(has_tag(candidate, bollard))
+  when: player.coins > 0 and alive(giver)
+  priority: 2
+  weight: 3
+  max_active: 2
+  tier: low..high
+  assumes: alive(giver) and alive(victim)
+  allow_protected: true
+  on_empty: wait
+  requires: [pack.harbor]
+  stage ask
+    journal: Ask the giver. #line:ask1
+    -> pay
+  stage pay
+    waits_until player.coins > 0
+    journal: Pay the toll. #line:pay1
+    ~ outcome finished = done

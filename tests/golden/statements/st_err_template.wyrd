@@ -1,0 +1,18 @@
+language 1
+
+quest tier "C"
+
+template bad "Bad"
+  slot giver = dock_keeper mode: live
+  param giver: item cast(true)
+  param nope: npc cast(true)
+  when: true
+  when: false
+  weight: -1
+  max_active: 0
+  allow_protected: maybe
+  assumes: chance(0.5)
+  start when true
+  on_deed player.met
+  stage one
+    waits_until false

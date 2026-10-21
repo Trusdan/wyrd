@@ -166,21 +166,40 @@ static func _before(left: Dictionary, right: Dictionary) -> bool:
 	return a.id < b.id
 
 
-static func _can_both(a: WyrdStoryletDef, b: WyrdStoryletDef) -> bool:
-	return not bool(_merge(_constraints(a), _constraints(b)).get("never", false))
+## True when the two clause lists can be true together.
+## An empty list, a generic storylet, or a condition that does not parse
+## contributes no constraint, the same as an omitted [code]when[/code].
+static func clauses_can_both(left: Array, right: Array) -> bool:
+	return not bool(_merge(_from_clauses(left), _from_clauses(right)).get("never", false))
 
 
-static func _constraints(story: WyrdStoryletDef) -> Dictionary:
-	if story.generic or story.when_text.strip_edges().is_empty():
-		return _blank()
+## Top-level [code]and[/code] parts of [param text]. [param generic] yields none.
+static func when_clauses(text: String, generic: bool = false) -> Array:
+	var parts: Array = []
+	if generic or text.strip_edges().is_empty():
+		return parts
 	var diagnostics := WyrdDiagnostics.new()
-	var tokens := WyrdExprLexer.new().tokenize(story.when_text, "", 1, 1, diagnostics)
+	var tokens := WyrdExprLexer.new().tokenize(text, "", 1, 1, diagnostics)
 	if diagnostics.has_errors():
-		return _blank()
+		return parts
 	var ast := WyrdExprParser.new().parse(tokens, diagnostics, "")
 	if diagnostics.has_errors() or ast == null or ast.kind == &"error":
-		return _blank()
-	return _from(ast)
+		return parts
+	for part in and_parts(ast):
+		parts.append(part)
+	return parts
+
+
+static func _can_both(a: WyrdStoryletDef, b: WyrdStoryletDef) -> bool:
+	return clauses_can_both(when_clauses(a.when_text, a.generic), when_clauses(b.when_text, b.generic))
+
+
+static func _from_clauses(parts: Array) -> Dictionary:
+	var row := _blank()
+	for part in parts:
+		if part is WyrdExprNode:
+			row = _merge(row, _from(part))
+	return row
 
 
 static func _from(node: WyrdExprNode) -> Dictionary:

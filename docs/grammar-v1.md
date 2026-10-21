@@ -137,7 +137,7 @@ Approved by Corey, 2026-10-14. Items 1–4 and 6–9 are the frozen lexical and 
 6. **Prose escapes.** `{{` is the only escape for `{`. A stray `}` is literal. There is no `}}` escape and no backslash escape in prose.
 7. **Titles.** Inside double-quoted titles, `\"` escapes a quote and `\\` escapes a backslash.
 8. **Header.** `language 1` is required. Anything else is an error.
-9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. The word `await_host` stays reserved (it is not a legal identifier). Its statement form is in section 9. `document` and `publishes_by` stay reserved as identifiers. Their block form is in section 10. No syntax is defined here for `tier`, `believe`, `declare`, or `retract`.
+9. **Reserved words.** `document`, `publishes_by`, `tier`, `await_host`, plus `believe`, `declare`, and `retract` for belief layers. The word `await_host` stays reserved (it is not a legal identifier). Its statement form is in section 9. `document` and `publishes_by` stay reserved as identifiers. Their block form is in section 10. `tier` stays reserved as an identifier. Its field form inside a template is in section 11. No syntax is defined here for `believe`, `declare`, or `retract`.
 10. **Examples.** The quest, scene, and facts examples remain illustrations until the slice compiler.
 
 ## 9. `await_host`
@@ -157,3 +157,28 @@ The compiler stores the step on the stage. At stage entry the runtime pauses rem
 ## 10. `document`
 
 **Status: draft statement syntax. Sections 1–6 stay frozen.** `document` and `publishes_by` remain reserved words (section 6) and are not legal identifiers. A top-level block may use them. The lexer also accepts `document` immediately after `~ create`. The shape, the duration units, and the fragment fields are in `docs/statements-draft.md`. `create document <doc_id> copy <copy_id>` is an effect.
+
+## 11. `template`
+
+**Status: draft statement syntax. Sections 1–6 stay frozen.** `tier` remains a reserved word (section 6) and is not a legal identifier. Inside a `template` block only, a leading `tier:` is a field word.
+
+A template is a quest body the generator can start. The header is `template <id> "<title>"`. Children reuse `slot`, `on_empty`, `requires`, and `stage`. A template has no `start`. `on_deed` is not supported yet.
+
+```wyrd
+template ferry.errand "The Errand"
+  slot giver = dock_keeper mode: live
+  param toll: item cast(has_tag(candidate, toll))
+  when: player.coins > 0
+  priority: 1
+  weight: 2
+  max_active: 1
+  tier: low..high
+  assumes: alive(giver)
+  allow_protected: false
+  stage ask
+    journal: Ask the giver. #line:ask1
+```
+
+`param <name>: item|place|object cast(<condition>)` compiles the cast the way a kind slot does, with `candidate` bound. Each of `when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` may appear once. `when:` is a storylet condition. `priority:` is a signed integer, default 0. `weight:` is an integer of at least 0, default 1. `max_active:` is an integer of at least 1, default 1. `tier:` is one name, or `<low>..<high>`. Names are not checked against pressure tiers here. `assumes:` is a wait condition, so `chance` is rejected. Each top-level `and` part is one assumption. In an entity argument inside `assumes:` only, an identifier that names one of this template's slots or params compiles as `holder(<name>)`. The same text anywhere else stays an entity literal. `allow_protected:` is `true` or `false`, default false.
+
+A template shares the quest id namespace. `start quest`, `advance`, `quest(...)`, `stage(...)`, `outcome(...)`, and a storylet `scope: beat <template>.<stage>` cannot name a template. `active_count(<id>)` of an id that names no template and no quest is an error. A quest id is allowed. Two templates that share priority and specificity, have overlapping tiers, and whose `when` conditions can both be true are a tie. A missing tier overlaps every tier. A range overlaps every tier. Two single names overlap only when they are equal. Weight does not break the tie. Pick, cast, and bind are later.

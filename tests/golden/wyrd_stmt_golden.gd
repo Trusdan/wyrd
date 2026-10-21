@@ -37,6 +37,11 @@ static func compile(source: WyrdSource) -> Dictionary:
 		for document in file.documents:
 			documents.append(_document(document))
 		data["documents"] = documents
+	if not file.templates.is_empty():
+		var templates: Array = []
+		for template in file.templates:
+			templates.append(_template(template))
+		data["templates"] = templates
 	return data
 
 
@@ -66,6 +71,40 @@ static func case_names() -> PackedStringArray:
 	dir.list_dir_end()
 	names.sort()
 	return names
+
+
+static func _template(template: WyrdTemplateDef) -> Dictionary:
+	var data := _quest(template)
+	data["allow_protected"] = template.allow_protected
+	data["assumes"] = _cond(template.assumes)
+	data["assumes_text"] = template.assumes_text
+	data["assumption_texts"] = _packed(template.assumption_texts)
+	data["max_active"] = template.max_active
+	data["params"] = _params(template)
+	data["priority"] = template.priority
+	data["specificity"] = template.specificity
+	data["tier_high"] = template.tier_high
+	data["tier_low"] = template.tier_low
+	data["tier_range"] = template.tier_range
+	data["weight"] = template.weight
+	data["when"] = _cond(template.when_cond)
+	data["when_text"] = template.when_text
+	return data
+
+
+static func _params(template: WyrdTemplateDef) -> Array:
+	var rows: Array = []
+	for param in template.params:
+		rows.append({
+			"cast": _cond(param.cast_when),
+			"cast_tag": param.cast_tag,
+			"cast_text": param.cast_text,
+			"kind": param.kind,
+			"name": param.name,
+			"reads": _reads(param.reads),
+			"span": param.span_data(),
+		})
+	return rows
 
 
 static func _quest(quest: WyrdQuestDef) -> Dictionary:

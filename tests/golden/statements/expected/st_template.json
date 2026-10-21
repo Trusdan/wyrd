@@ -1,0 +1,338 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "template \"ferry.errand\" specificity 2 priority 2",
+      "path": "res://tests/golden/statements/st_template.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [
+    "player.coins"
+  ],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": true,
+      "assumes": {
+        "reads": [],
+        "source_span": {
+          "col": 12,
+          "end_col": 42,
+          "end_line": 17,
+          "line": 17
+        },
+        "specificity": 2,
+        "uses_chance": false
+      },
+      "assumes_text": "alive(giver) and alive(victim)",
+      "assumption_texts": [
+        "alive(giver)",
+        "alive(victim)"
+      ],
+      "id": "ferry.errand",
+      "max_active": 2,
+      "on_empty": "wait",
+      "params": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 25,
+              "end_col": 49,
+              "end_line": 9,
+              "line": 9
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "toll",
+          "cast_text": "has_tag(candidate, toll)",
+          "kind": "item",
+          "name": "toll",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 50,
+            "end_line": 9,
+            "line": 9
+          }
+        },
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 27,
+              "end_col": 51,
+              "end_line": 10,
+              "line": 10
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "dock",
+          "cast_text": "has_tag(candidate, dock)",
+          "kind": "place",
+          "name": "berth",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 52,
+            "end_line": 10,
+            "line": 10
+          }
+        },
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 27,
+              "end_col": 54,
+              "end_line": 11,
+              "line": 11
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "bollard",
+          "cast_text": "has_tag(candidate, bollard)",
+          "kind": "object",
+          "name": "post",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 55,
+            "end_line": 11,
+            "line": 11
+          }
+        }
+      ],
+      "priority": 2,
+      "reads": [
+        "player.coins"
+      ],
+      "requires": [
+        "pack.harbor"
+      ],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "giver",
+          "reads": [],
+          "role": "dock_keeper",
+          "span": {
+            "col": 3,
+            "end_col": 38,
+            "end_line": 7,
+            "line": 7
+          }
+        },
+        {
+          "cast": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 36,
+              "end_col": 52,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_text": "player.coins > 0",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "victim",
+          "reads": [
+            "player.coins"
+          ],
+          "role": "witness",
+          "span": {
+            "col": 3,
+            "end_col": 53,
+            "end_line": 8,
+            "line": 8
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 30,
+        "end_line": 27,
+        "line": 6
+      },
+      "specificity": 2,
+      "stages": [
+        {
+          "effects": [],
+          "id": "ask",
+          "journals": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "ask1",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "kind": "text",
+                    "line": 22,
+                    "text": "Ask the giver."
+                  }
+                ],
+                "kind": "prose",
+                "line": 22
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 29,
+                "end_line": 22,
+                "line": 22
+              },
+              "speaker": "",
+              "tags": []
+            }
+          ],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 11,
+            "end_line": 23,
+            "line": 21
+          },
+          "transitions": [
+            {
+              "col": 8,
+              "expr": "",
+              "line": 23,
+              "target": "pay",
+              "when": null
+            }
+          ],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        },
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "finished",
+              "command": "",
+              "fact_key": "",
+              "kind": "outcome",
+              "on_fail": "",
+              "outcome": "done",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 30,
+                "end_line": 27,
+                "line": 27
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            }
+          ],
+          "id": "pay",
+          "journals": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "pay1",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "kind": "text",
+                    "line": 26,
+                    "text": "Pay the toll."
+                  }
+                ],
+                "kind": "prose",
+                "line": 26
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 28,
+                "end_line": 26,
+                "line": 26
+              },
+              "speaker": "",
+              "tags": []
+            }
+          ],
+          "reads": [
+            "player.coins"
+          ],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 30,
+            "end_line": 27,
+            "line": 24
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "player.coins > 0",
+          "waits_until": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 17,
+              "end_col": 33,
+              "end_line": 25,
+              "line": 25
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "high",
+      "tier_low": "low",
+      "tier_range": true,
+      "title": "The Errand",
+      "weight": 3,
+      "when": {
+        "reads": [
+          "player.coins"
+        ],
+        "source_span": {
+          "col": 9,
+          "end_col": 42,
+          "end_line": 12,
+          "line": 12
+        },
+        "specificity": 2,
+        "uses_chance": false
+      },
+      "when_text": "player.coins > 0 and alive(giver)"
+    }
+  ]
+}

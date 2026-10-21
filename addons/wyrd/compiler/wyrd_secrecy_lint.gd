@@ -33,7 +33,7 @@ func _run(pack: WyrdLinkedPack, diagnostics: WyrdDiagnostics, tiers: PackedStrin
 		var file: WyrdFileDef = unit["file"]
 		if file == null:
 			continue
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_stage(stage, path)
 		for scene in file.scenes:
