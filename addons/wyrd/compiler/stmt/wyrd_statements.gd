@@ -1231,6 +1231,7 @@ func _param(node: WyrdNode, template: WyrdTemplateDef) -> void:
 	if compiled["ast"] != null:
 		_warn_slot_const("cast", compiled["ast"], int(span["line"]), int(span["col"]))
 		param.cast_tag = _cast_tag_of(compiled["ast"])
+	param.cast_plan = _build_cast_plan(compiled["ast"], compiled["compiled"], param.kind, param.cast_tag, true)
 	template.params.append(param)
 	WyrdStmtSpan.add_reads(template.reads, param.reads)
 	_no_block(node)
@@ -1435,6 +1436,13 @@ func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
 			_warn_slot_const("cast", compiled["ast"], int(span["line"]), int(span["col"]))
 			if has_kind:
 				slot.cast_tag = _cast_tag_of(compiled["ast"])
+		slot.cast_plan = _build_cast_plan(
+			compiled["ast"],
+			compiled["compiled"],
+			slot.kind,
+			slot.cast_tag,
+			has_kind
+		)
 	else:
 		_unknown_msg(node, "unknown slot mode \"%s\"" % mode)
 		return
@@ -1487,6 +1495,234 @@ func _cast_has_tag(node: WyrdExprNode) -> String:
 	if tag.text.is_empty() or tag.text.contains("."):
 		return ""
 	return tag.text
+
+
+const _LOCAL_CALLS := {
+	"alive": true,
+	"display_name": true,
+	"has_tag": true,
+	"kind": true,
+}
+const _LOCAL_OPS := {
+	"!=": true,
+	"<": true,
+	"<=": true,
+	"==": true,
+	">": true,
+	">=": true,
+	"and": true,
+	"or": true,
+}
+
+
+## One plan per cast. A failed or [code]chance[/code] condition stays a full scan.
+func _build_cast_plan(
+	ast: WyrdExprNode,
+	compiled: WyrdCompiledCondition,
+	kind_name: String,
+	tag_name: String,
+	filtered: bool
+) -> WyrdCastPlan:
+	var plan := WyrdCastPlan.new()
+	plan.kind = kind_name
+	plan.tag = tag_name
+	plan.use_filter = filtered
+	plan.key = plan.filter_key()
+	if ast == null or compiled == null or compiled.uses_chance:
+		plan.scan = true
+		return plan
+	var parts: Array[WyrdExprNode] = []
+	_cast_and_parts(ast, parts)
+	if parts.is_empty():
+		plan.scan = true
+		return plan
+	var pinned := false
+	for part in parts:
+		if not _place_cast_clause(plan, part, pinned):
+			plan.scan = true
+			plan.scope.clear()
+			plan.pin = null
+			plan.local.clear()
+			plan.rest.clear()
+			plan.classes = PackedStringArray()
+			plan.key = plan.filter_key()
+			return plan
+		if plan.classes[plan.classes.size() - 1] == "pin":
+			pinned = true
+	plan.key = WyrdCastPlan.make_key(filtered, kind_name, tag_name, plan.local)
+	return plan
+
+
+func _place_cast_clause(plan: WyrdCastPlan, part: WyrdExprNode, pinned: bool) -> bool:
+	if part == null or part.kind == &"error":
+		return false
+	var label := _cast_clause_class(part, pinned)
+	if label.is_empty():
+		return false
+	if label == "pin":
+		var side := _pin_side(part)
+		var built := _compile_cast_clause(_render_expr(side), side, false, WyrdSignatures.T_ENTITY)
+		if built == null or built.uses_chance:
+			return false
+		plan.pin = built
+		plan.classes.append("pin")
+		return true
+	var built_bool := _compile_cast_clause(_render_expr(part), part, true, WyrdSignatures.T_BOOL)
+	if built_bool == null or built_bool.uses_chance:
+		return false
+	if label == "scope":
+		plan.scope.append(built_bool)
+	elif label == "local":
+		plan.local.append(built_bool)
+	else:
+		plan.rest.append(built_bool)
+	plan.classes.append(label)
+	return true
+
+
+func _cast_clause_class(part: WyrdExprNode, pinned: bool) -> String:
+	if not _refs_candidate(part):
+		return "scope"
+	if not pinned and _pin_side(part) != null:
+		return "pin"
+	if _local_clause(part):
+		return "local"
+	return "rest"
+
+
+func _pin_side(node: WyrdExprNode) -> WyrdExprNode:
+	if node == null or node.kind != &"binary" or node.text != "==":
+		return null
+	if _is_candidate(node.a) and not _refs_candidate(node.b):
+		return node.b
+	if _is_candidate(node.b) and not _refs_candidate(node.a):
+		return node.a
+	return null
+
+
+func _local_clause(node: WyrdExprNode) -> bool:
+	if node == null or not _refs_candidate(node):
+		return false
+	return _local_shape(node)
+
+
+func _local_shape(node: WyrdExprNode) -> bool:
+	if node == null or _is_candidate(node):
+		return false
+	match node.kind:
+		&"bool", &"int", &"float", &"duration", &"distance", &"unit", &"name":
+			return not _refs_candidate(node)
+		&"unary":
+			if node.text != "not":
+				return false
+			return _local_shape(node.a)
+		&"binary":
+			if not _LOCAL_OPS.has(node.text):
+				return false
+			return _local_shape(node.a) and _local_shape(node.b)
+		&"call":
+			if not _LOCAL_CALLS.has(node.text):
+				return false
+			return _local_call(node)
+		_:
+			return false
+
+
+func _local_call(node: WyrdExprNode) -> bool:
+	var args: Array = node.kids
+	if node.payload is Array:
+		args = node.payload
+	if args.is_empty():
+		return false
+	var saw := false
+	for arg in args:
+		if not (arg is WyrdExprNode):
+			return false
+		var expr := arg as WyrdExprNode
+		if expr.kind == &"arg":
+			expr = expr.a
+		if expr == null:
+			return false
+		if _is_candidate(expr):
+			saw = true
+			continue
+		if _refs_candidate(expr):
+			if not _local_shape(expr):
+				return false
+			saw = true
+			continue
+		if not _local_literal(expr):
+			return false
+	return saw
+
+
+func _local_literal(node: WyrdExprNode) -> bool:
+	if node == null or _refs_candidate(node):
+		return false
+	match node.kind:
+		&"bool", &"int", &"float", &"duration", &"distance", &"unit", &"name":
+			return true
+		&"unary":
+			return node.text == "-" and _local_literal(node.a)
+		_:
+			return false
+
+
+func _is_candidate(node: WyrdExprNode) -> bool:
+	if node == null:
+		return false
+	if node.kind != &"fact" and node.kind != &"name":
+		return false
+	return node.text == "candidate" and node.kids.is_empty()
+
+
+func _refs_candidate(node: WyrdExprNode) -> bool:
+	if node == null:
+		return false
+	if _is_candidate(node):
+		return true
+	if _refs_candidate(node.a) or _refs_candidate(node.b) or _refs_candidate(node.c):
+		return true
+	for kid in node.kids:
+		if _refs_candidate(kid):
+			return true
+	if node.payload is Array:
+		for item in node.payload:
+			if item is WyrdExprNode and _refs_candidate(item):
+				return true
+	return false
+
+
+func _compile_cast_clause(
+	text: String,
+	node: WyrdExprNode,
+	require_bool: bool,
+	expected: StringName
+) -> WyrdCompiledCondition:
+	if text.strip_edges().is_empty() or node == null:
+		return null
+	var bag := WyrdDiagnostics.new()
+	var compiler := WyrdCondition.new()
+	var compiled := compiler.compile(
+		text,
+		_schema,
+		bag,
+		_path,
+		node.line,
+		node.col,
+		_WAIT,
+		WyrdCondition.MINUTES_PER_DAY,
+		_signatures,
+		require_bool,
+		expected,
+		_event_fields,
+		{"candidate": WyrdSignatures.T_ENTITY},
+		false,
+		"event"
+	)
+	if bag.has_errors() or compiled == null:
+		return null
+	return compiled
 
 
 func _check_kind_variants(quest: WyrdQuestDef, stage: WyrdStageDef) -> void:

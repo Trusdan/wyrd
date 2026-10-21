@@ -1,0 +1,120 @@
+// [EXAMPLE CONTENT] Invented cast-plan shapes. Not a host game.
+language 1
+
+facts
+  scale.open : bool stored doc: "Whether the example gate is open."
+
+role scale_gate
+  succession: none
+  vacancy: hold
+
+role scale_keeper
+  succession: none
+  vacancy: hold
+
+role scale_client
+  succession: none
+  vacancy: hold
+
+role scale_friend
+  succession: none
+  vacancy: hold
+
+template scale_scope "Scope Gate"
+  priority: 1
+  max_active: 128
+  on_empty: wait
+  slot gate = scale_gate mode: cast(scale.open)
+  stage hold
+    journal: The gate stays shut. #line:sc01
+    waits_until false
+    variant gate.empty:
+      journal: No one minds the gate. #line:sc02
+      waits_until false
+
+template scale_pin "Pinned Keeper"
+  priority: 2
+  max_active: 128
+  on_empty: wait
+  slot keeper = scale_keeper mode: cast(candidate == holder(scale_keeper))
+  stage hold
+    journal: The keeper is pinned. #line:sc03
+    waits_until false
+    variant keeper.empty:
+      journal: No keeper is pinned. #line:sc04
+      waits_until false
+
+template scale_local "Local Client"
+  priority: 3
+  max_active: 128
+  on_empty: wait
+  slot client = scale_client mode: cast(has_tag(candidate, scale_client) and alive(candidate))
+  stage hold
+    journal: A client is local. #line:sc05
+    waits_until false
+    variant client.empty:
+      journal: No client is local. #line:sc06
+      waits_until false
+
+template scale_local_again "Local Client Again"
+  priority: 4
+  max_active: 128
+  on_empty: wait
+  slot client = scale_client mode: cast(has_tag(candidate, scale_client) and alive(candidate))
+  stage hold
+    journal: A client is local again. #line:sc07
+    waits_until false
+    variant client.empty:
+      journal: No client is local again. #line:sc08
+      waits_until false
+
+template scale_kind "Kind Crate"
+  priority: 5
+  max_active: 128
+  on_empty: wait
+  slot crate kind: object mode: cast(kind(candidate) == object)
+  stage hold
+    journal: A crate is here. #line:sc09
+    waits_until false
+    variant crate.empty:
+      journal: No crate is here. #line:sc10
+      waits_until false
+    variant crate.locked_gone:
+      journal: The crate is gone. #line:sc11
+      waits_until false
+
+template scale_rest "Rest Ally"
+  priority: 6
+  max_active: 128
+  on_empty: wait
+  slot friend = scale_friend mode: cast(rel(candidate, holder(scale_keeper), ally))
+  stage hold
+    journal: An ally remains. #line:sc12
+    waits_until false
+    variant friend.empty:
+      journal: No ally remains. #line:sc13
+      waits_until false
+
+template scale_mixed "Mixed Hand"
+  priority: 7
+  max_active: 128
+  on_empty: wait
+  slot hand = scale_client mode: cast(has_tag(candidate, scale_client) and alive(candidate) and candidate == holder(scale_keeper) and rel(candidate, player, ally))
+  stage hold
+    journal: A mixed hand remains. #line:sc14
+    waits_until false
+    variant hand.empty:
+      journal: No mixed hand remains. #line:sc15
+      waits_until false
+
+template scale_chance "Chance Roll"
+  priority: 8
+  max_active: 128
+  on_empty: wait
+  slot roll = scale_client mode: cast(chance(0.5))
+  stage hold
+    journal: A roll decides. #line:sc16
+    waits_until false
+    variant roll.empty:
+      journal: No roll is left. #line:sc17
+      waits_until false

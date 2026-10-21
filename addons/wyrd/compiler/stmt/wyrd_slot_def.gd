@@ -18,3 +18,5 @@ var mode: StringName = &""
 var locked_stage: String = ""
 var cast_when: WyrdCompiledCondition = null
 var cast_text: String = ""
+## Cast-clause split. Not exported, not saved, and not dumped by goldens.
+var cast_plan: WyrdCastPlan = null

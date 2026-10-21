@@ -77,6 +77,11 @@ func members(_faction: StringName) -> PackedStringArray:
 	return PackedStringArray()
 
 
+## The JSON world does not change during a run, so casts may reuse [method candidates].
+func reports_changes() -> bool:
+	return true
+
+
 func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
 	var rows := PackedStringArray()
 	for id in _entities.keys():

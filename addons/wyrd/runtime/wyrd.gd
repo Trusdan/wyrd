@@ -123,6 +123,11 @@ func invalidate_groups() -> void:
 	_runtime.invalidate_groups()
 
 
+## Drops cached cast lists. An empty [param ids] means anything may have changed.
+func invalidate_world(ids: PackedStringArray = PackedStringArray()) -> void:
+	_runtime.invalidate_world(ids)
+
+
 func start_new_game(seed_value: int) -> void:
 	_runtime.start_new_game(seed_value)
 

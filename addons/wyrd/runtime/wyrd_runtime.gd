@@ -170,6 +170,7 @@ func _init() -> void:
 	roles.world_of = Callable(self, &"_world")
 	roles.inventory_of = Callable(self, &"_inventory_adapter")
 	roles.eval_with = Callable(self, &"eval_with_locals")
+	roles.eval_value = Callable(self, &"eval_value_with_locals")
 	roles.trace_of = Callable(self, &"_trace_role")
 	deeds.deed_recorded.connect(_on_deed)
 	roles.role_holder_changed.connect(_on_role)
@@ -232,6 +233,8 @@ func register_adapter(base: Script, adapter: RefCounted) -> void:
 	_adapters[base.resource_path] = adapter
 	if base == WyrdWorldAdapter:
 		invalidate_groups()
+		if roles != null:
+			roles.drop_cast_index()
 
 
 func adapter(base: Script) -> RefCounted:
@@ -296,6 +299,13 @@ func credibility_threshold() -> float:
 	return _config.credibility_threshold
 
 
+## Drops cached cast candidate lists. An empty [param ids] means anything may
+## have changed. This does not write a save or a trace line.
+func invalidate_world(ids: PackedStringArray = PackedStringArray()) -> void:
+	if roles != null:
+		roles.invalidate_world(ids)
+
+
 ## Drops the membership cache and wakes conditions that read [code]group.membership[/code].
 func invalidate_groups() -> void:
 	_group_cache.clear()
@@ -345,6 +355,7 @@ func start_new_game(seed_value: int) -> void:
 	if publish != null:
 		publish.clear()
 	roles.clear()
+	roles.drop_cast_index()
 	if topics != null:
 		topics.clear()
 	if documents != null:
@@ -422,6 +433,8 @@ func now_minutes() -> int:
 
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	var report := WyrdLoadReport.new()
+	if roles != null:
+		roles.drop_cast_index()
 	_content = null
 	_hooks_by_verb = {}
 	if generator != null:
@@ -672,6 +685,14 @@ func eval_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> bool:
 	var ok := eval_bool(cond)
 	_locals = saved
 	return ok
+
+
+func eval_value_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> Variant:
+	var saved := _locals.duplicate()
+	_locals = locals.duplicate()
+	var value: Variant = eval_value(cond)
+	_locals = saved
+	return value
 
 
 ## Pushes a quest id. An empty id hides any instance scope above it.
@@ -1309,6 +1330,8 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> WyrdLoadReport:
+	if roles != null:
+		roles.drop_cast_index()
 	if generator != null:
 		generator.clear()
 	_clear_generation_scope()

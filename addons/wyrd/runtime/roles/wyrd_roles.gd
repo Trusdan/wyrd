@@ -64,6 +64,15 @@ var world_of: Callable = Callable()
 var inventory_of: Callable = Callable()
 ## [code]eval_with(condition, locals)[/code] evaluates one eligibility or cast condition.
 var eval_with: Callable = Callable()
+## [code]eval_value(condition, locals)[/code] evaluates one cast pin expression.
+var eval_value: Callable = Callable()
+## Internal. Default true. Not a [WyrdConfig] field and not saved.
+var cast_index_enabled: bool = true
+var _cast_index := WyrdCastIndex.new()
+var _indexed_pool: bool = false
+var _indexed_ready: bool = false
+var _indexed_digest: int = 0
+var _indexed_filter: String = ""
 ## [code]trace_of(kind, fields)[/code] records one eligibility, slot-state, succession, or cast line. Optional.
 var trace_of: Callable = Callable()
 ## [code]stage_of(quest_id)[/code] returns the quest's current stage id. Optional.
@@ -1050,6 +1059,17 @@ func _record_role_changed(role: StringName, old: StringName, next: StringName) -
 ## list after the condition. Both are sorted. A missing world yields two empty lists.
 func cast_pool(slot: WyrdSlotDef) -> Dictionary:
 	if slot == null:
+		_note_scan_pool()
+		return {"accepted": [], "raw": []}
+	if _use_cast_index(slot.cast_plan):
+		return _pool_indexed(slot.cast_plan)
+	_note_scan_pool()
+	return cast_pool_scan(slot)
+
+
+## The full candidate walk. Same result as [method cast_pool] when the index is off.
+func cast_pool_scan(slot: WyrdSlotDef) -> Dictionary:
+	if slot == null:
 		return {"accepted": [], "raw": []}
 	var filtered := slot.kind == "object" or slot.kind == "item"
 	return _candidate_pool(slot.cast_when, slot.cast_tag, slot.kind, filtered)
@@ -1058,8 +1078,52 @@ func cast_pool(slot: WyrdSlotDef) -> Dictionary:
 ## Sorted candidate ids for one param. The filter always carries the param kind and tag.
 func param_pool(param: WyrdParamDef) -> Dictionary:
 	if param == null:
+		_note_scan_pool()
+		return {"accepted": [], "raw": []}
+	if _use_cast_index(param.cast_plan):
+		return _pool_indexed(param.cast_plan)
+	_note_scan_pool()
+	return param_pool_scan(param)
+
+
+## The full candidate walk for one param.
+func param_pool_scan(param: WyrdParamDef) -> Dictionary:
+	if param == null:
 		return {"accepted": [], "raw": []}
 	return _candidate_pool(param.cast_when, param.cast_tag, param.kind, true)
+
+
+## Drops every cached candidate list. Role changes do not call this.
+func drop_cast_index() -> void:
+	_cast_index.clear()
+	_note_scan_pool()
+
+
+## [param ids] empty drops the cache. Otherwise those entities are checked again
+## on the next cast, and every cached host answer is refreshed once.
+func invalidate_world(ids: PackedStringArray = PackedStringArray()) -> void:
+	_cast_index.invalidate(ids)
+	_note_scan_pool()
+
+
+func indexed_pool() -> bool:
+	return _indexed_pool
+
+
+func indexed_digest_ready() -> bool:
+	return _indexed_ready
+
+
+func indexed_digest() -> int:
+	return _indexed_digest
+
+
+func store_indexed_digest(digest: int) -> void:
+	if _indexed_filter.is_empty():
+		return
+	_cast_index.store_digest(_indexed_filter, digest)
+	_indexed_digest = digest
+	_indexed_ready = true
 
 
 ## Picks one id from an already sorted list. Empty yields [code]&""[/code].
@@ -1076,6 +1140,52 @@ func _cast_pick(quest_id: String, slot: WyrdSlotDef, stream: StringName = &"cast
 		key = "%s|%s" % [quest_id, slot.name]
 	var accepted: Array = cast_pool(slot)["accepted"]
 	return pick_id(accepted, stream, key)
+
+
+func _use_cast_index(plan: WyrdCastPlan) -> bool:
+	if not cast_index_enabled or plan == null or plan.scan:
+		return false
+	var world := _world()
+	if world == null or not world.reports_changes():
+		return false
+	return true
+
+
+func _pool_indexed(plan: WyrdCastPlan) -> Dictionary:
+	var found: Dictionary = _cast_index.pool(
+		plan,
+		_world(),
+		Callable(self, &"_condition_accepts"),
+		Callable(self, &"_pin_value"),
+		Callable(self, &"_scope_accepts")
+	)
+	_indexed_pool = true
+	_indexed_filter = str(found.get("filter", ""))
+	_indexed_ready = bool(found.get("digest_ready", false))
+	_indexed_digest = int(found.get("digest", 0))
+	return {"accepted": found["accepted"], "raw": found["raw"]}
+
+
+func _note_scan_pool() -> void:
+	_indexed_pool = false
+	_indexed_ready = false
+	_indexed_digest = 0
+	_indexed_filter = ""
+
+
+func _scope_accepts(cond: WyrdCompiledCondition) -> bool:
+	if cond == null:
+		return true
+	if not eval_with.is_valid():
+		push_error("WyrdRoles: cast has no condition evaluator")
+		return false
+	return bool(eval_with.call(cond, {}))
+
+
+func _pin_value(cond: WyrdCompiledCondition) -> Variant:
+	if cond == null or not eval_value.is_valid():
+		return null
+	return eval_value.call(cond, {})
 
 
 func _candidate_pool(cond: WyrdCompiledCondition, tag: String, kind: String, use_filter: bool) -> Dictionary:
