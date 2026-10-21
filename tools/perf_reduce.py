@@ -295,6 +295,14 @@ def write_trend(results_dir, out_path):
             ("load.flight", "s"),
             ("deeds.index", "s"),
             ("deeds.scan", "s"),
+            ("generator.propose", "s"),
+            ("generator.cast_object", "s"),
+            ("generator.cast_person", "s"),
+            ("generator.validate", "s"),
+            ("generator.tick", "s"),
+            ("memory.generated", "B"),
+            ("save.generated_bytes", "B"),
+            ("load.generated", "s"),
             ("memory.resident", "B"),
         ]
         names = [item[0] for item in catalog]

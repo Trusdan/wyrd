@@ -22,6 +22,8 @@ var _quest_mem := 0
 var _deeds := 0
 var _rumors_ready := false
 var _flight_ready := false
+var _generated_ready := false
+var _objects_ready := false
 var _graph: Dictionary = {}
 var _cached_beliefs: Array = []
 var _belief_ready := false
@@ -131,6 +133,8 @@ func _prepare() -> Dictionary:
 			"npcs": _npcs,
 			"quests": int(info.get("quests", "0")),
 			"speakers": int(info.get("speakers", "0")),
+			"generated": int(WyrdPerfScale.gen_counts(_profile).get("generated", 0)),
+			"objects": int(WyrdPerfScale.gen_counts(_profile).get("objects", 0)),
 			"storylets": int(info.get("storylets", "0")),
 			"topics": _topics,
 		},
@@ -211,6 +215,22 @@ func _sample(name: String) -> Dictionary:
 			row = _sample_deed_lookup(true)
 		"deeds.scan":
 			row = _sample_deed_lookup(false)
+		"generator.propose":
+			row = _sample_generator_propose()
+		"generator.cast_object":
+			row = _sample_generator_cast("crate")
+		"generator.cast_person":
+			row = _sample_generator_cast("client")
+		"generator.validate":
+			row = _sample_generator_validate()
+		"generator.tick":
+			row = _sample_generator_tick()
+		"memory.generated":
+			row = _sample_generated_memory()
+		"save.generated_bytes":
+			row = _sample_generated_save()
+		"load.generated":
+			row = _sample_generated_load()
 		"memory.resident":
 			row = _sample_resident()
 		_:
@@ -547,6 +567,7 @@ func _ensure_stories() -> String:
 	_runtime.trace.enabled = false
 	_runtime.start_new_game(WyrdPerfScale.SEED)
 	_stories_ready = true
+	_generated_ready = false
 	return ""
 
 
@@ -930,6 +951,7 @@ func _ensure_flight_content() -> String:
 		return report.diagnostics.format()
 	_runtime.trace.enabled = false
 	_flight_ready = true
+	_generated_ready = false
 	return ""
 
 
@@ -965,6 +987,8 @@ func _ensure_rumors() -> String:
 	if not registered.is_empty():
 		return registered
 	_rumors_ready = true
+	_flight_ready = false
+	_generated_ready = false
 	return ""
 
 
@@ -1199,6 +1223,417 @@ func _median(values: Array[float]) -> float:
 	if copy.size() % 2 == 1:
 		return copy[mid]
 	return (copy[mid - 1] + copy[mid]) / 2.0
+
+
+func _sample_generator_propose() -> Dictionary:
+	var err := _boot_generated(false)
+	if not err.is_empty():
+		return {"error": err}
+	var cold_proposal := _propose_one("scale_warm", "low")
+	if str(cold_proposal.get("error", "")) != "":
+		return cold_proposal
+	if not _runtime.roles.indexed_pool():
+		return {"error": "propose did not use the cast index"}
+	var cold := float(cold_proposal["seconds"])
+	_runtime.generator.clear()
+	var digest := 0
+	var passes := WyrdPerfScale.GEN_PROPOSE_PASSES
+	var offers := WyrdPerfScale.GEN_OFFERS
+	var started := Time.get_ticks_usec()
+	for pass_index in passes:
+		var rows: Array[WyrdProposal] = []
+		for index in offers:
+			var proposal := _runtime.generator.propose({
+				"key": "scale_%02d" % index,
+				"source": WyrdPerfScale.GEN_SOURCE,
+				"tier": WyrdPerfScale.GEN_TIERS[index % 4],
+			})
+			if proposal == null:
+				return {"error": "propose returned null"}
+			rows.append(proposal)
+		var folded := _proposal_digest(rows)
+		if pass_index == 0:
+			digest = folded
+		elif folded != digest:
+			return {"error": "propose digest changed between passes"}
+		if _runtime.generator.candidate_traces != 0:
+			return {"error": "propose hashed candidates while tracing was off"}
+		_runtime.generator.clear()
+	var elapsed := Time.get_ticks_usec() - started
+	_runtime.generator.clear()
+	return {
+		"checksum": str(digest),
+		"extra": {"cold": cold},
+		"value": (float(elapsed) / 1000000.0) / float(passes * offers),
+	}
+
+
+func _sample_generator_cast(slot_name: String) -> Dictionary:
+	var err := _boot_generated(false)
+	if not err.is_empty():
+		return {"error": err}
+	var slot := _scale_slot("gen_scale_0", slot_name)
+	if slot == null:
+		return {"error": "template gen_scale_0 has no %s slot" % slot_name}
+	var cold_started := Time.get_ticks_usec()
+	var primed := _runtime.roles.cast_pool(slot)
+	var cold := float(Time.get_ticks_usec() - cold_started) / 1000000.0
+	if not _runtime.roles.indexed_pool():
+		return {"error": "cast did not use the cast index"}
+	var expected := _npcs
+	if slot_name == "crate":
+		expected = int(WyrdPerfScale.gen_counts(_profile).get("objects", 0))
+	if (primed["accepted"] as Array).size() != expected:
+		return {"error": "accepted %d != %d" % [(primed["accepted"] as Array).size(), expected]}
+	var picked := &""
+	var accepted := 0
+	var started := Time.get_ticks_usec()
+	for _step in WyrdPerfScale.GEN_CAST_BATCH:
+		var pool := _runtime.roles.cast_pool(slot)
+		accepted = (pool["accepted"] as Array).size()
+		picked = _runtime.roles.pick_id(pool["accepted"], &"generator", "cast:bench.%s" % slot_name)
+	var elapsed := Time.get_ticks_usec() - started
+	_runtime.generator.clear()
+	return {
+		"checksum": "%s:%d" % [String(picked), accepted],
+		"extra": {"accepted": accepted, "cold": cold},
+		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.GEN_CAST_BATCH),
+	}
+
+
+func _sample_generator_validate() -> Dictionary:
+	var err := _boot_generated(false)
+	if not err.is_empty():
+		return {"error": err}
+	var proposed := _propose_one("scale_validate", "low")
+	if str(proposed.get("error", "")) != "":
+		return proposed
+	var proposal: WyrdProposal = proposed["proposal"]
+	var template: WyrdTemplateDef = _runtime.content().templates[proposal.template]
+	var started := Time.get_ticks_usec()
+	for _step in WyrdPerfScale.GEN_VALIDATE_BATCH:
+		_runtime.begin_provisional(proposal.instance)
+		_runtime.push_scope(proposal.instance)
+		for slot in template.slots:
+			if not proposal.casts.has(slot.name):
+				continue
+			_runtime.provisional_cast(slot.name, StringName(str(proposal.casts[slot.name])))
+		var problem := _runtime.generator._validate(template, proposal.instance, proposal.casts, proposal.params, 0)
+		_runtime.pop_scope()
+		_runtime.end_provisional()
+		if not problem.is_empty():
+			return {"error": "validate rejected %s" % str(problem)}
+	var elapsed := Time.get_ticks_usec() - started
+	_runtime.generator.clear()
+	return {
+		"checksum": _cast_text(proposal),
+		"extra": {},
+		"value": (float(elapsed) / 1000000.0) / float(WyrdPerfScale.GEN_VALIDATE_BATCH),
+	}
+
+
+func _sample_generator_tick() -> Dictionary:
+	var err := _boot_generated(false)
+	if not err.is_empty():
+		return {"error": err}
+	var quiet := _quiet_scheduler()
+	if not quiet.is_empty():
+		return {"error": quiet}
+	var times: Array[float] = []
+	var created := 0
+	var last_id := ""
+	for round_index in WyrdPerfScale.TICKS_PER_SAMPLE:
+		for index in WyrdPerfScale.GEN_OFFERS:
+			var queued := _runtime.generator.offer(
+				StringName(WyrdPerfScale.GEN_SOURCE),
+				"scale_r%02d_%02d" % [round_index, index],
+				StringName(WyrdPerfScale.GEN_TIERS[index % 4])
+			)
+			if not queued:
+				return {"error": "offer was rejected"}
+		var before := _generated_total()
+		var started := Time.get_ticks_usec()
+		_runtime.tick(0)
+		times.append(float(Time.get_ticks_usec() - started) / 1000000.0)
+		var made := _generated_total() - before
+		if made != WyrdPerfScale.GEN_OFFERS:
+			return {"error": "tick created %d instances" % made}
+		created = made
+		last_id = _last_instance_id()
+	_runtime.generator.clear()
+	return {
+		"checksum": "%d:%s" % [created * WyrdPerfScale.TICKS_PER_SAMPLE, last_id],
+		"extra": {"cold": times[0], "instances": created},
+		"value": _median(times),
+	}
+
+
+func _sample_generated_memory() -> Dictionary:
+	var err := _boot_generated(false)
+	if not err.is_empty():
+		return {"error": err}
+	var before := int(Performance.get_monitor(Performance.MEMORY_STATIC))
+	var made := _accept_generated("mem_%03d")
+	if str(made.get("error", "")) != "":
+		return made
+	var growth := maxi(int(Performance.get_monitor(Performance.MEMORY_STATIC)) - before, 0)
+	_runtime.generator.clear()
+	return {
+		"checksum": str(_active_generated()),
+		"extra": {"instances": int(made["count"])},
+		"value": float(growth),
+	}
+
+
+func _sample_generated_save() -> Dictionary:
+	var err := _boot_generated(true)
+	if not err.is_empty():
+		return {"error": err}
+	var made := _accept_generated("save_%03d")
+	if str(made.get("error", "")) != "":
+		return made
+	var data := _runtime.save_state()
+	if int(data.get("schema_version", 0)) != 4:
+		return {"error": "generated save schema is not 4"}
+	var block: Variant = data.get("generator", {})
+	if not (block is Dictionary) or (block as Dictionary).is_empty():
+		return {"error": "generated save has no generator block"}
+	var text := JSON.stringify(data)
+	var size := text.to_utf8_buffer().size()
+	_write_text(_generated_path(), text)
+	data = {}
+	text = ""
+	_runtime.generator.clear()
+	return {"checksum": str(size), "extra": {"instances": int(made["count"])}, "value": float(size)}
+
+
+func _sample_generated_load() -> Dictionary:
+	if not FileAccess.file_exists(_generated_path()):
+		var saved := _sample_generated_save()
+		if not str(saved.get("error", "")).is_empty():
+			return saved
+	var err := _boot_generated(true)
+	if not err.is_empty():
+		return {"error": err}
+	var started := Time.get_ticks_usec()
+	var text := _read_text(_generated_path())
+	var parsed: Variant = JSON.parse_string(text)
+	var data: Dictionary = parsed if parsed is Dictionary else {}
+	var report := _runtime.load_state(data)
+	var elapsed := Time.get_ticks_usec() - started
+	text = ""
+	if not report.ok:
+		return {"error": report.diagnostics.format()}
+	if report.diagnostics != null and report.diagnostics.has_warnings():
+		return {"error": report.diagnostics.format()}
+	var expected := _saved_instance_count(data)
+	var loaded := _loaded_instance_count()
+	data = {}
+	if loaded != expected:
+		return {"error": "loaded %d instances, save had %d" % [loaded, expected]}
+	_runtime.generator.clear()
+	return {
+		"checksum": "%d:%d" % [loaded, _runtime.deeds.size()],
+		"extra": {"deeds": _runtime.deeds.size(), "instances": loaded},
+		"value": float(elapsed) / 1000000.0,
+	}
+
+
+func _boot_generated(with_deeds: bool) -> String:
+	var err := _ensure_generated_content()
+	if not err.is_empty():
+		return err
+	var config := _runtime.config()
+	config.pressure_tiers = WyrdPerfScale.GEN_TIERS
+	_restore_shares()
+	_runtime.start_new_game(WyrdPerfScale.SEED)
+	_runtime.trace.enabled = false
+	if not _objects_ready:
+		var objects := int(WyrdPerfScale.gen_counts(_profile).get("objects", 0))
+		for index in objects:
+			var id := "scale_obj_%05d" % index
+			_world.add_entity(StringName(id), &"object", id, PackedStringArray([WyrdPerfScale.GEN_OBJECT_TAG]), true)
+		_objects_ready = true
+	for index in _npcs:
+		var id := StringName(_npc(index))
+		_world.add_entity(id, &"person", String(id), PackedStringArray([WyrdPerfScale.GEN_CLIENT_TAG]), true)
+	_runtime.facts.set(&"harbor.gen_scale_open", true)
+	_runtime.facts.set(&"harbor.gen_scale_mark", true)
+	if with_deeds:
+		_import_deeds()
+	if _world == null or not _world.reports_changes():
+		return "bench world does not report changes"
+	if _runtime.roles == null or not _runtime.roles.cast_index_enabled:
+		return "cast index is disabled"
+	return ""
+
+
+func _ensure_generated_content() -> String:
+	if _generated_ready:
+		return ""
+	var extra := _wyrd_files_in(WyrdScalePack.templates_root(_pack))
+	if extra.is_empty():
+		return "template pack is missing"
+	var files := _wyrd_files()
+	files.append_array(extra)
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"gullhaven"
+	manifest.language_version = 1
+	manifest.files = files
+	var report := _runtime.load_content(manifest)
+	if not report.ok:
+		return report.diagnostics.format()
+	_runtime.trace.enabled = false
+	_generated_ready = true
+	_stories_ready = false
+	_rumors_ready = false
+	_flight_ready = false
+	return ""
+
+
+func _propose_one(key: String, tier: String) -> Dictionary:
+	var started := Time.get_ticks_usec()
+	var proposal := _runtime.generator.propose({
+		"key": key,
+		"source": WyrdPerfScale.GEN_SOURCE,
+		"tier": tier,
+	})
+	var elapsed := float(Time.get_ticks_usec() - started) / 1000000.0
+	if proposal == null:
+		return {"error": "propose returned null", "seconds": elapsed}
+	return {"proposal": proposal, "seconds": elapsed}
+
+
+func _accept_generated(key_format: String) -> Dictionary:
+	var count := int(WyrdPerfScale.gen_counts(_profile).get("generated", 0))
+	for index in count:
+		var proposal := _runtime.generator.propose({
+			"key": key_format % index,
+			"source": WyrdPerfScale.GEN_SOURCE,
+			"tier": WyrdPerfScale.GEN_TIERS[index % 4],
+		})
+		if proposal == null:
+			return {"error": "propose returned null"}
+		var instance := _runtime.generator.accept(proposal)
+		if instance.is_empty() or instance == "unknown" or instance == "stale" or instance == "accepted":
+			return {"error": "accept failed: %s" % instance}
+	return {"count": count}
+
+
+func _proposal_digest(rows: Array[WyrdProposal]) -> int:
+	var digest := WyrdHash.of_int(rows.size())
+	for proposal in rows:
+		digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(proposal.template)))
+		var names: Array = proposal.casts.keys()
+		names.sort()
+		for name in names:
+			digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(name))))
+			digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(proposal.casts[name]))))
+		var params: Array = proposal.params.keys()
+		params.sort()
+		for name in params:
+			digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(name))))
+			var snap: Variant = proposal.params[name]
+			digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(snap))))
+	return digest
+
+
+func _cast_text(proposal: WyrdProposal) -> String:
+	var names: Array = proposal.casts.keys()
+	names.sort()
+	var parts: PackedStringArray = PackedStringArray([proposal.template])
+	for name in names:
+		parts.append("%s=%s" % [str(name), str(proposal.casts[name])])
+	return ":".join(parts)
+
+
+func _scale_slot(template_id: String, slot_name: String) -> WyrdSlotDef:
+	if _runtime.content() == null or not _runtime.content().templates.has(template_id):
+		return null
+	var template: WyrdTemplateDef = _runtime.content().templates[template_id]
+	for slot in template.slots:
+		if slot.name == slot_name:
+			return slot
+	return null
+
+
+func _generated_total() -> int:
+	var total := 0
+	if _runtime.quests == null:
+		return 0
+	for n in 8:
+		total += _runtime.quests.template_counter("gen_scale_%d" % n)
+	return total
+
+
+func _active_generated() -> int:
+	var total := 0
+	if _runtime.quests == null:
+		return 0
+	for n in 8:
+		total += _runtime.quests.active_count("gen_scale_%d" % n)
+	return total
+
+
+func _last_instance_id() -> String:
+	if _runtime.quests == null:
+		return ""
+	var best := ""
+	var best_n := -1
+	for key in _runtime.quests.export_state().keys():
+		var id := String(key)
+		if not id.begins_with("gen_scale_"):
+			continue
+		var mark := id.rfind("#")
+		if mark < 0:
+			continue
+		var n := id.substr(mark + 1).to_int()
+		if n > best_n or (n == best_n and id > best):
+			best_n = n
+			best = id
+	return best
+
+
+func _saved_instance_count(data: Dictionary) -> int:
+	var quests: Variant = data.get("quests", {})
+	if not (quests is Dictionary):
+		return 0
+	var count := 0
+	for key in (quests as Dictionary).keys():
+		if String(key).begins_with("gen_scale_"):
+			count += 1
+	return count
+
+
+func _loaded_instance_count() -> int:
+	if _runtime.quests == null:
+		return 0
+	var count := 0
+	for key in _runtime.quests.export_state().keys():
+		if String(key).begins_with("gen_scale_"):
+			count += 1
+	return count
+
+
+func _quiet_scheduler() -> String:
+	var guard := 0
+	var limit := _runtime.condition_count() + 8
+	while guard < limit:
+		var busy := _runtime.scheduler().carry("waits") > 0
+		busy = busy or _runtime.scheduler().carry("rumor") > 0
+		busy = busy or _runtime.scheduler().carry("publish") > 0
+		busy = busy or _runtime.scheduler().carry("cache_refresh") > 0
+		if not busy and _runtime.last_rechecks() == 0 and guard > 0:
+			return ""
+		_runtime.tick(0)
+		guard += 1
+		if _runtime.scheduler().carry("waits") == 0 and _runtime.scheduler().carry("rumor") == 0 and _runtime.scheduler().carry("publish") == 0 and _runtime.scheduler().carry("cache_refresh") == 0 and _runtime.last_rechecks() == 0:
+			return ""
+	return "scheduler did not go quiet"
+
+
+func _generated_path() -> String:
+	return _box.path_join("generated.json")
 
 
 func _reply(payload: Dictionary) -> void:

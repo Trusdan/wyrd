@@ -206,6 +206,7 @@ import json, sys
 path, count = sys.argv[1], int(sys.argv[2])
 doc = json.load(open(path, encoding="utf-8"))
 doc["samples"] = count
+doc["samples_override"] = True
 json.dump(doc, open(path, "w", encoding="utf-8"))
 PY
 fi
@@ -266,14 +267,42 @@ PY
 }
 
 for metric in "${metrics[@]}"; do
-	echo "perf: ${metric}"
-	for ((i = 0; i < warmups; i++)); do
+	read -r metric_warmups metric_samples < <(python3 - "$prepare" "$metric" "$profile" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding="utf-8"))
+name, profile = sys.argv[2], sys.argv[3]
+global_w = int(doc["warmups"])
+global_s = int(doc["samples"])
+row = None
+for item in doc["metrics"]:
+    if item["name"] == name:
+        row = item
+        break
+if doc.get("samples_override"):
+    samples = global_s
+elif row is not None and "samples" in row:
+    samples = int(row["samples"])
+    if profile == "smoke":
+        samples = min(samples, global_s)
+else:
+    samples = global_s
+if row is not None and "warmups" in row:
+    warmups = int(row["warmups"])
+    if profile == "smoke":
+        warmups = min(warmups, global_w)
+else:
+    warmups = global_w
+print("%d %d" % (warmups, samples))
+PY
+)
+	echo "perf: ${metric} warmups=${metric_warmups} samples=${metric_samples}"
+	for ((i = 0; i < metric_warmups; i++)); do
 		if [[ -n "$base_box" ]]; then
 			record base warmup "$base_box" "$metric"
 		fi
 		record head warmup "$work/head" "$metric"
 	done
-	for ((i = 0; i < samples_n; i++)); do
+	for ((i = 0; i < metric_samples; i++)); do
 		if [[ -n "$base_box" ]]; then
 			record base sample "$base_box" "$metric"
 		fi

@@ -57,6 +57,23 @@ static func write_rumors(dir: String, profile_name: String) -> void:
 	_store(root.path_join("graph.txt"), _rumor_graph(profile_name, counts))
 
 
+## Sibling of the quest pack. [method hash_release] does not cover it.
+static func templates_root(pack_dir: String) -> String:
+	return "%s_templates" % pack_dir
+
+
+static func write_templates(dir: String, profile_name: String) -> void:
+	if WyrdPerfScale.profile(profile_name).is_empty():
+		push_error("scale pack: unknown profile %s" % profile_name)
+		return
+	var root := templates_root(dir)
+	remove_dir(root)
+	DirAccess.make_dir_recursive_absolute(root)
+	var counts := WyrdPerfScale.gen_counts(profile_name)
+	_store(root.path_join("templates.wyrd"), _templates_wyrd(profile_name, counts))
+	_store(root.path_join("pack.txt"), _templates_pack(profile_name, counts))
+
+
 static func read_rumors(pack_dir: String) -> Dictionary:
 	var policies: Array = []
 	var friends: Array = []
@@ -320,6 +337,50 @@ static func _rumor_wyrd() -> String:
 	lines.append("    ~ set harbor.toll_fate = lost_at_sea")
 	lines.append("")
 	return "\n".join(lines)
+
+
+static func _templates_wyrd(profile_name: String, counts: Dictionary) -> String:
+	var lines := PackedStringArray()
+	lines.append(_banner())
+	lines.append("// profile: %s objects: %s generated: %s" % [
+		profile_name,
+		str(counts.get("objects", "")),
+		str(counts.get("generated", "")),
+	])
+	lines.append("facts")
+	lines.append("  harbor.gen_scale_open : bool stored recap: false doc: \"Whether a scale errand may be offered.\"")
+	lines.append("  harbor.gen_scale_mark : bool stored recap: false doc: \"Whether a scale errand has been marked.\"")
+	lines.append("role gen_scale_client")
+	lines.append("  succession: none")
+	lines.append("  vacancy: hold")
+	for n in 8:
+		var tier := WyrdPerfScale.GEN_TIERS[int(n / 2)]
+		lines.append("template gen_scale_%d \"Scale Errand %d\"" % [n, n])
+		lines.append("  priority: %d" % (n + 1))
+		lines.append("  tier: %s" % tier)
+		lines.append("  max_active: 128")
+		lines.append("  assumes: alive(holder(client)) and harbor.gen_scale_open and harbor.gen_scale_mark")
+		lines.append("  slot client = gen_scale_client mode: cast(has_tag(candidate, %s) and alive(candidate))" % WyrdPerfScale.GEN_CLIENT_TAG)
+		lines.append("  slot crate kind: object mode: cast(has_tag(candidate, %s))" % WyrdPerfScale.GEN_OBJECT_TAG)
+		lines.append("  stage mark")
+		lines.append("    ~ set harbor.gen_scale_open = true")
+		lines.append("    ~ set harbor.gen_scale_mark = true")
+		lines.append("    ~ outcome errand = done")
+		lines.append("    variant crate.empty:")
+		lines.append("      waits_until false")
+		lines.append("    variant crate.locked_gone:")
+		lines.append("      waits_until false")
+	lines.append("")
+	return "\n".join(lines)
+
+
+## Counts live here, not in the hashed quest pack.
+static func _templates_pack(profile_name: String, counts: Dictionary) -> String:
+	return "generated=%s\nobjects=%s\nprofile=%s\n" % [
+		str(counts.get("generated", "")),
+		str(counts.get("objects", "")),
+		profile_name,
+	]
 
 
 static func _rumor_graph(profile_name: String, counts: Dictionary) -> String:

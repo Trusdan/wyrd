@@ -55,6 +55,21 @@ const MUTATION_FIELD := "harbor.toll_fate"
 const MUTATION_TO := "waived"
 const GAZETTE := "harbor_gazette"
 const GAZETTE_FACT := "harbor.gazette"
+## Not written into pack.txt. Smoke is one tenth of the full counts.
+const GEN_COUNTS := {
+	"full": {"generated": 100, "objects": 5000},
+	"smoke": {"generated": 10, "objects": 500},
+}
+## Pressure-queue length. The same in both profiles.
+const GEN_OFFERS := 32
+const GEN_TIERS: PackedStringArray = ["low", "mid", "high", "dire"]
+## Timed batches. At the indexed speeds each region is a few milliseconds.
+const GEN_PROPOSE_PASSES := 4
+const GEN_CAST_BATCH := 512
+const GEN_VALIDATE_BATCH := 256
+const GEN_CLIENT_TAG := "scale_client"
+const GEN_OBJECT_TAG := "scale_crate"
+const GEN_SOURCE := "bench"
 
 
 static func profile(name: String) -> Dictionary:
@@ -79,6 +94,14 @@ static func profile(name: String) -> Dictionary:
 			"topics": 8,
 		}
 	return {}
+
+
+## Objects and generated-instance counts. Empty for an unknown profile.
+## These stay off [code]pack.txt[/code], which is part of the release hash.
+static func gen_counts(name: String) -> Dictionary:
+	if not GEN_COUNTS.has(name):
+		return {}
+	return (GEN_COUNTS[name] as Dictionary).duplicate()
 
 
 static func samples_for(name: String) -> int:
@@ -134,5 +157,21 @@ static func metrics() -> Array:
 		# Indexed score 0.61 ms, full scan 14.5 ms.
 		{"budget": 0.001, "name": "deeds.index", "stat": "median", "unit": "s"},
 		{"budget": 0.025, "name": "deeds.scan", "stat": "median", "unit": "s"},
+		# Set from the full-profile medians of the M9 bench run. They warn until they are confirmed.
+		# generator.propose 0.692 ms. The ceiling stays the 2 ms frame warn.
+		# generator.cast_object 19.96 µs and generator.cast_person 19.95 µs. Twice either median is
+		# under 0.1 ms, so the floor is the ceiling.
+		# generator.validate 54.11 µs. Ceiling 110 µs, about 2× rounded up, above the 0.1 ms floor.
+		# generator.tick 45.30 ms. Ceiling 100 ms, about 2× rounded up. Not the frame warning.
+		# memory.generated 3.667 MiB. Ceiling 6 MiB, about 1.5× rounded up to a whole MiB.
+		{"budget": 0.002, "name": "generator.propose", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		{"budget": 0.0001, "name": "generator.cast_object", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		{"budget": 0.0001, "name": "generator.cast_person", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		{"budget": 0.00011, "name": "generator.validate", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		{"budget": 0.1, "name": "generator.tick", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		{"budget": 6291456.0, "name": "memory.generated", "samples": 5, "stat": "median", "unit": "B", "warmups": 1},
+		# save.generated_bytes and load.generated share the flight envelopes.
+		{"budget": 9437184.0, "name": "save.generated_bytes", "samples": 5, "stat": "median", "unit": "B", "warmups": 1},
+		{"budget": 1.2, "name": "load.generated", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
 		{"budget": MEMORY_PEAK_BUDGET, "name": "memory.resident", "stat": "median", "unit": "B"},
 	]
