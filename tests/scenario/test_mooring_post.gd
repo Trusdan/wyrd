@@ -85,13 +85,14 @@ func _open(seed_value: int) -> Dictionary:
 
 func _start(runtime: WyrdRuntime) -> void:
 	runtime.facts.set(&"harbor.mooring_check", true)
-	runtime.tick(1)
+	# The template conditions share the first tick's wait budget, so the cast lands on the next tick.
+	runtime.tick(2)
 
 
 func _expect(seed_value: int) -> String:
 	var ids := ["dock.bollard_north", "dock.bollard_south"]
 	ids.sort()
-	var rng := WyrdRng.for_decision(seed_value, &"cast", &"mooring_post|post", 1)
+	var rng := WyrdRng.for_decision(seed_value, &"cast", &"mooring_post|post", 2)
 	return String(ids[rng.randi_bounded(ids.size())])
 
 
@@ -101,7 +102,7 @@ func _traced(recorded: Array = []) -> Array:
 	runtime.facts.set(&"harbor.mooring_check", true)
 	runtime.trace.clear()
 	if recorded.is_empty():
-		runtime.tick(1)
+		runtime.tick(2)
 	else:
 		WyrdTrace.replay(runtime, recorded)
 	return runtime.trace.snapshot()

@@ -19,6 +19,7 @@ Gullhaven is a fishing village invented for Wyrd. Its people and places are not 
 - `dock_scenes.wyrd` is `toll.depart`, reached with `-> scene` from the other file.
 - `harbor_bell.wyrd` is the harbor bell quest.
 - `harbor_gazette.wyrd` is the harbor gazette. It publishes `harbor.gazette` once a day after a one-hour delay.
+- `harbor_templates.wyrd` is seven generated templates: `net_delivery` delivers a net to the harbor factor, `stolen_catch` recovers a stolen catch, `cut_line` investigates a cut mooring, `night_walk` escorts a visitor, and `tavern_stew_low`, `tavern_stew_mid`, and `tavern_stew_high` are one recurring stew favor tiered by pressure.
 - `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`, and the skill `strength`. `playtest/harbor_election.gd` is the no-op election adapter New game registers. New game also registers the rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
 
 ```bash

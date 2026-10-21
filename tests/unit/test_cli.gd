@@ -3,7 +3,7 @@ extends GutTest
 
 func test_render_prints_version_and_command_list() -> void:
 	var text := WyrdCli.render()
-	assert_true(text.begins_with("wyrd 0.6.4-m3\n"))
+	assert_true(text.begins_with("wyrd 0.7.0-m9\n"))
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
 	assert_true(text.contains("check: compile and link a content pack"))
 	assert_true(text.contains("test: not implemented"))
@@ -75,7 +75,7 @@ func test_check_gullhaven_manifest_is_clean() -> void:
 		if line.is_empty():
 			continue
 		var claim := line.contains("warning[W_CLAIM]")
-		var score := line.contains("info[I_STORYLET_SCORE]")
+		var score := line.contains("info[I_STORYLET_SCORE]") or line.contains("info[I_TEMPLATE_SCORE]")
 		assert_true(claim or score, line)
 
 

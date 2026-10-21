@@ -387,6 +387,175 @@ msgctxt "tale_claim"
 msgid "A fisher swears the toll was {belief(line_fisher, harbor.toll_fate)}."
 msgstr ""
 
+#: example/content/gullhaven/harbor_templates.wyrd:37
+msgctxt "t_net_1"
+msgid "{holder(sender).name} wants a net carried to the harbor factor."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:41
+msgctxt "t_net_empty"
+msgid "No fisher is left to send the net."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:47
+msgctxt "t_net_2"
+msgid "The net reached the harbor factor."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:58
+msgctxt "t_catch_1"
+msgid "Someone took {holder(victim).name}'s catch from the drying racks."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:62
+msgctxt "t_catch_empty"
+msgid "No fisher is left to claim the catch."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:68
+msgctxt "t_catch_2"
+msgid "The catch is back with {holder(victim).name}."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:71
+msgctxt "t_catch_empty2"
+msgid "No fisher is left to take the catch back."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:81
+msgctxt "t_cut_1"
+msgid "{holder(witness).name} saw a mooring line cut at the {holder(post).name}."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:86
+msgctxt "t_cut_empty"
+msgid "No one is left who saw the line."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:89
+msgctxt "t_cut_2"
+msgid "No bollard is left to check."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:92
+msgctxt "t_cut_3"
+msgid "The bollard is gone before anyone could look."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:98
+msgctxt "t_cut_4"
+msgid "The cut line has been looked at."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:109
+msgctxt "t_walk_1"
+msgid "{holder(walker).name} asks to be walked to the {holder(dest).name}."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:114
+msgctxt "t_walk_empty"
+msgid "No visitor is left to walk."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:118
+msgctxt "t_walk_2"
+msgid "{holder(walker).name} reached the {holder(dest).name}."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:120
+msgctxt "t_walk_empty2"
+msgid "No visitor is left at the steps."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:130
+msgctxt "t_stew_1"
+msgid "{holder(cook).name} needs a fish for the stew."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:134
+msgctxt "t_stew_empty"
+msgid "No one is left to ask for the stew."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:142
+msgctxt "t_stew_2"
+msgid "The stew is on the fire."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:152
+msgctxt "t_stew_3"
+msgid "{holder(cook).name} needs two fish for the stew."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:156
+msgctxt "t_stew_empty2"
+msgid "No one is left to ask for the stew."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:164
+msgctxt "t_stew_4"
+msgid "The stew is on the fire again."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:174
+msgctxt "t_stew_5"
+msgid "{holder(cook).name} needs three fish for a full pot."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:178
+msgctxt "t_stew_empty3"
+msgid "No one is left to ask for the stew."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:185
+msgctxt "t_stew_6"
+msgid "The whole room eats from the pot. That makes {harbor.stew_favors} pots of stew."
+msgstr ""
+
+#. witness
+#: example/content/gullhaven/harbor_templates.wyrd:189
+msgctxt "t_cut_s1"
+msgid "It was cut clean, not frayed."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:190
+msgctxt "t_cut_c1"
+msgid "Thank them and look at the line"
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:192
+msgctxt "t_cut_c2"
+msgid "Leave it for now"
+msgstr ""
+
+#. witness
+#: example/content/gullhaven/harbor_templates.wyrd:194
+msgctxt "t_cut_s2"
+msgid "Whoever did it had a sharp knife."
+msgstr ""
+
+#. walker
+#: example/content/gullhaven/harbor_templates.wyrd:198
+msgctxt "t_walk_s1"
+msgid "It's dark past the nets."
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:199
+msgctxt "t_walk_c1"
+msgid "Walk them there"
+msgstr ""
+
+#: example/content/gullhaven/harbor_templates.wyrd:201
+msgctxt "t_walk_c2"
+msgid "Not tonight"
+msgstr ""
+
+#. walker
+#: example/content/gullhaven/harbor_templates.wyrd:203
+msgctxt "t_walk_s2"
+msgid "Thank you. I'd have missed the step."
+msgstr ""
+
 #: example/content/gullhaven/mooring_post.wyrd:12
 msgctxt "f9fe"
 msgid "The {holder(post).name} holds the mooring."

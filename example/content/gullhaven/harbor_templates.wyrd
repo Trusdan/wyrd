@@ -1,0 +1,204 @@
+// [EXAMPLE CONTENT] Gullhaven templates. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.nets_wanted     : bool   stored recap: false doc: "Whether a net is waiting to go to the harbor factor."
+  harbor.catch_missing   : bool   stored recap: false doc: "Whether a catch is missing from the drying racks."
+  harbor.boat_adrift     : bool   stored recap: false doc: "Whether a boat was found adrift with a cut line."
+  harbor.line_found      : bool   stored recap: false doc: "Whether the cut mooring line has been looked at."
+  harbor.visitor_waiting : bool   stored recap: false doc: "Whether a visitor is waiting to be walked."
+  harbor.stew_wanted     : bool   stored recap: false doc: "Whether the tavern stew is waiting for fish."
+  harbor.stew_tier       : symbol stored recap: false doc: "How much the innkeeper asks for next: low, mid or high."
+  harbor.stew_favors     : int    stored recap: false doc: "How many stew favors are done."
+  harbor.net_fate        : symbol stored recap: false doc: "Whether the carried net was delivered."
+  harbor.catch_fate      : symbol stored recap: false doc: "Whether the stolen catch was returned."
+  harbor.line_fate       : symbol stored recap: false doc: "Whether the cut mooring line was found."
+  harbor.stew_fate       : symbol stored recap: false doc: "Whether the tavern stew was served."
+
+role harbor_fisher
+  succession: none
+  vacancy: hold
+
+role dock_witness
+  succession: none
+  vacancy: hold
+
+role harbor_visitor
+  succession: none
+  vacancy: hold
+
+template net_delivery "Nets for the Factor"
+  priority: 2
+  when: harbor.nets_wanted
+  assumes: owner_of(net) == sender
+  slot sender = harbor_fisher mode: cast(has_tag(candidate, fisher) and alive(candidate))
+  param net: item cast(has_tag(candidate, net))
+  stage carry
+    journal: {holder(sender).name} wants a net carried to the harbor factor. #line:t_net_1
+    waits_until owner_of(holder(net)) == holder(harbor_factor)
+    -> delivered
+    variant sender.empty:
+      journal: No fisher is left to send the net. #line:t_net_empty
+      waits_until false
+  stage delivered
+    ~ set harbor.nets_wanted = false
+    ~ set harbor.net_fate = delivered
+    ~ outcome net = done
+    journal: The net reached the harbor factor. #line:t_net_2
+    waits_until harbor.net_fate == delivered
+
+template stolen_catch "The Stolen Catch"
+  priority: 4
+  when: harbor.catch_missing
+  on_deed stole where not deed.actor == player
+  assumes: alive(holder(victim)) and not owner_of(catch) == victim
+  slot victim = harbor_fisher mode: cast(has_tag(candidate, fisher) and alive(candidate))
+  param catch: item cast(has_tag(candidate, catch))
+  stage search
+    journal: Someone took {holder(victim).name}'s catch from the drying racks. #line:t_catch_1
+    waits_until owner_of(holder(catch)) == holder(victim)
+    -> returned
+    variant victim.empty:
+      journal: No fisher is left to claim the catch. #line:t_catch_empty
+      waits_until false
+  stage returned
+    ~ set harbor.catch_missing = false
+    ~ set harbor.catch_fate = returned
+    ~ outcome catch = done
+    journal: The catch is back with {holder(victim).name}. #line:t_catch_2
+    waits_until harbor.catch_fate == returned
+    variant victim.empty:
+      journal: No fisher is left to take the catch back. #line:t_catch_empty2
+      waits_until false
+
+template cut_line "The Cut Line"
+  priority: 5
+  when: harbor.boat_adrift
+  assumes: harbor.boat_adrift and alive(holder(witness))
+  slot witness = dock_witness mode: cast(has_tag(candidate, dock) and alive(candidate))
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  stage ask
+    journal: {holder(witness).name} saw a mooring line cut at the {holder(post).name}. #line:t_cut_1
+    scene cut.ask with witness
+    waits_until harbor.line_found
+    -> found
+    variant witness.empty:
+      journal: No one is left who saw the line. #line:t_cut_empty
+      waits_until false
+    variant post.empty:
+      journal: No bollard is left to check. #line:t_cut_2
+      waits_until false
+    variant post.locked_gone:
+      journal: The bollard is gone before anyone could look. #line:t_cut_3
+      waits_until false
+  stage found
+    ~ set harbor.boat_adrift = false
+    ~ set harbor.line_fate = found
+    ~ outcome line = done
+    journal: The cut line has been looked at. #line:t_cut_4
+    waits_until harbor.line_fate == found
+
+template night_walk "The Night Walk"
+  priority: 3
+  when: harbor.visitor_waiting
+  expires: 6h
+  assumes: alive(holder(walker))
+  slot walker = harbor_visitor mode: cast(has_tag(candidate, visitor) and alive(candidate))
+  param dest: place cast(has_tag(candidate, steps))
+  stage walk
+    journal: {holder(walker).name} asks to be walked to the {holder(dest).name}. #line:t_walk_1
+    scene night.walk with walker
+    waits_until not harbor.visitor_waiting
+    -> arrived
+    variant walker.empty:
+      journal: No visitor is left to walk. #line:t_walk_empty
+      waits_until false
+  stage arrived
+    ~ outcome walk = done
+    journal: {holder(walker).name} reached the {holder(dest).name}. #line:t_walk_2
+    variant walker.empty:
+      journal: No visitor is left at the steps. #line:t_walk_empty2
+      waits_until false
+
+template tavern_stew_low "Stew for the Tavern"
+  priority: 1
+  tier: low
+  when: harbor.stew_wanted
+  assumes: alive(holder(cook))
+  slot cook = tavern_owner mode: cast(candidate == holder(tavern_owner))
+  stage ask
+    journal: {holder(cook).name} needs a fish for the stew. #line:t_stew_1
+    waits_until count(player, fish) >= 1
+    -> served
+    variant cook.empty:
+      journal: No one is left to ask for the stew. #line:t_stew_empty
+      waits_until false
+  stage served
+    ~ set harbor.stew_wanted = false
+    ~ set harbor.stew_tier = mid
+    ~ set harbor.stew_fate = served
+    ~ inc harbor.stew_favors by 1
+    ~ outcome stew = done
+    journal: The stew is on the fire. #line:t_stew_2
+    waits_until harbor.stew_fate == served
+
+template tavern_stew_mid "Stew for the Tavern"
+  priority: 1
+  tier: mid
+  when: harbor.stew_wanted
+  assumes: alive(holder(cook))
+  slot cook = tavern_owner mode: cast(candidate == holder(tavern_owner))
+  stage ask
+    journal: {holder(cook).name} needs two fish for the stew. #line:t_stew_3
+    waits_until count(player, fish) >= 2
+    -> served
+    variant cook.empty:
+      journal: No one is left to ask for the stew. #line:t_stew_empty2
+      waits_until false
+  stage served
+    ~ set harbor.stew_wanted = false
+    ~ set harbor.stew_tier = high
+    ~ set harbor.stew_fate = served
+    ~ inc harbor.stew_favors by 1
+    ~ outcome stew = done
+    journal: The stew is on the fire again. #line:t_stew_4
+    waits_until harbor.stew_fate == served
+
+template tavern_stew_high "Stew for the Tavern"
+  priority: 1
+  tier: high
+  when: harbor.stew_wanted and harbor.stew_tier == high
+  assumes: alive(holder(cook))
+  slot cook = tavern_owner mode: cast(candidate == holder(tavern_owner))
+  stage ask
+    journal: {holder(cook).name} needs three fish for a full pot. #line:t_stew_5
+    waits_until count(player, fish) >= 3
+    -> served
+    variant cook.empty:
+      journal: No one is left to ask for the stew. #line:t_stew_empty3
+      waits_until false
+  stage served
+    ~ set harbor.stew_wanted = false
+    ~ set harbor.stew_fate = served
+    ~ inc harbor.stew_favors by 1
+    ~ outcome stew = done
+    journal: The whole room eats from the pot. That makes {harbor.stew_favors} pots of stew. #line:t_stew_6
+    waits_until harbor.stew_fate == served
+
+scene cut.ask
+  witness: It was cut clean, not frayed. #line:t_cut_s1
+  * [Thank them and look at the line] -> looked #line:t_cut_c1
+    ~ set harbor.line_found = true
+  * [Leave it for now] -> end #line:t_cut_c2
+  - (looked)
+  witness: Whoever did it had a sharp knife. #line:t_cut_s2
+  -> end
+
+scene night.walk
+  walker: It's dark past the nets. #line:t_walk_s1
+  * [Walk them there] -> walked #line:t_walk_c1
+    ~ set harbor.visitor_waiting = false
+  * [Not tonight] -> end #line:t_walk_c2
+  - (walked)
+  walker: Thank you. I'd have missed the step. #line:t_walk_s2
+  -> end
