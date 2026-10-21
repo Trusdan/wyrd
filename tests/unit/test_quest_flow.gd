@@ -207,7 +207,7 @@ func test_save_and_load_keep_the_quest_row() -> void:
 	var first := _boot(_PLAIN)
 	first.quests.start("gate")
 	var started := first.save_state()
-	assert_eq(int(started["schema_version"]), 3)
+	assert_eq(int(started["schema_version"]), 4)
 	var loaded := _boot(_PLAIN)
 	loaded.trace.enabled = true
 	assert_true(loaded.load_state(started).ok)

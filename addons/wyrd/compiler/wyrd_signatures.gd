@@ -31,6 +31,7 @@ const _BUILTINS: PackedStringArray = [
 	"can_perceive(a:entity, b:entity)->bool",
 	"can_reach(a:entity, place:entity)->bool",
 	"alive(id:entity)->bool",
+	"active_count(template:symbol)->int",
 	"exists(id:entity)->bool",
 	"kind(id:entity)->symbol",
 	"has_tag(id:entity, tag:symbol)->bool",

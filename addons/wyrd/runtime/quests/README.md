@@ -2,6 +2,8 @@
 
 `WyrdQuestRunner` is the facade's `quests` object.
 
+A generated instance id is `<template>#<n>`. The counter is the last `n` for that template and is saved under `generator`. `create_instance` is internal: tests call it, and there is no `Wyrd` facade method. It freezes the supplied casts, then starts the instance on the normal quest path. A finished instance keeps its casts. Hand-written quests are unchanged.
+
 Statuses: `dormant`, `available`, `active`, `completed`, `failed`, `abandoned`, `unavailable`. A true `start when` becomes `available` and then `active` in the same check. There is no accept step.
 
 Entry steps (journal, effect, scene offer) run in source order, once. A variant whose slot state matches replaces that body. `on_empty: wait` holds the stage when a slot is empty and no variant matched.

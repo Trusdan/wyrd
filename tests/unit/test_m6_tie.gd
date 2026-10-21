@@ -173,7 +173,7 @@ func test_why_not_cooldown_survives_save_and_load() -> void:
 	var picked := runtime.director.query("topic", "rumor.ferry_toll", "tavern")
 	assert_eq(str(picked["id"]), "harbor_gossip.tavern")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	var cooling := runtime.director.why_not("harbor_gossip.tavern", "topic", "rumor.ferry_toll", "tavern")
 	assert_eq(str(cooling["reason"]), "cooldown")
 	assert_false(bool(cooling["eligible"]))

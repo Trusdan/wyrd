@@ -14,8 +14,10 @@ extends RefCounted
 ## hold different values for one key. [code]perceived[/code] returns the latest
 ## witness mode for an agent and verb. [code]reputation[/code] is the mean disposition
 ## of a group's members toward the subject. [code]nearby[/code] counts adapter ids.
-## [code]has[/code] is a positive [code]count[/code]. A missing adapter returns 0 or
-## false and does not call the unimplemented base. A compiled key argument loads the fact; the key is the
+## [code]has[/code] is a positive [code]count[/code]. [code]active_count(template)[/code]
+## counts active generated instances of that template. An unknown id is 0 and
+## logs nothing. A missing adapter returns 0 or false and does not call the
+## unimplemented base. A compiled key argument loads the fact; the key is the
 ## latest load in this evaluation.
 
 var record_id: String = ""
@@ -38,6 +40,7 @@ var _builtins: Dictionary = {}
 func bind(runtime: WyrdRuntime) -> void:
 	_runtime = runtime
 	_builtins = {
+		&"active_count": Callable(self, &"_active_count"),
 		&"affinity": Callable(self, &"_affinity"),
 		&"alive": Callable(self, &"_alive"),
 		&"axis": Callable(self, &"_axis"),
@@ -206,6 +209,12 @@ func _known(args: Array) -> bool:
 	if _runtime.roles.revealed(agent, key):
 		return true
 	return _runtime.facts.get_in(key, StringName("known/%s" % String(agent))) != null
+
+
+func _active_count(args: Array) -> int:
+	if args.is_empty() or args[0] == null or _runtime == null or _runtime.quests == null:
+		return 0
+	return _runtime.quests.active_count(str(args[0]))
 
 
 func _affinity(args: Array) -> float:

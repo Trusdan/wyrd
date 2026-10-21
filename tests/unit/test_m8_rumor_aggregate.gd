@@ -365,7 +365,7 @@ func test_load_keeps_reach_and_a_written_belief() -> void:
 	var level := runtime.rumors.reach_level("1", &"gullhaven")
 	assert_gte(level, 1)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("reach"))
 	assert_false(saved.has("rumor"))
 	assert_true(saved.has("flight"))

@@ -50,7 +50,7 @@ func test_bark_inventory_proximity_cooldown_matrix() -> void:
 	assert_eq(str(runtime.director.query("bark", "", "ferry")["id"]), "dock_bark_lantern_carried")
 	assert_eq(str(runtime.director.query("bark", "", "ferry")["id"]), "")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("secrecy_tiers"))
 	assert_false(saved.has("trace_director"))
 	var loaded := _harbor()
@@ -78,7 +78,7 @@ func test_substate_save_load_matrix() -> void:
 		else:
 			assert_eq(str(runtime.quests.status("bell_repair")), "completed")
 		var saved := runtime.save_state()
-		assert_eq(int(saved["schema_version"]), 3)
+		assert_eq(int(saved["schema_version"]), 4)
 		var loaded := _harbor()
 		loaded.trace.enabled = true
 		loaded.config().trace_director = true
@@ -156,7 +156,7 @@ func test_secrecy_filter_at_each_tier() -> void:
 	assert_eq(str(shown["id"]), "harbor_ledger.sealed")
 	assert_eq(str(shown["line_id"]), "lg03")
 	var saved := named.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_eq(str(saved["facts"]["world"]["player.clearance"]), "sealed")
 	assert_false(saved.has("secrecy_tiers"))
 	var loaded := _harbor()

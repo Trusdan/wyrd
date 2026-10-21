@@ -67,7 +67,7 @@ Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `
 
 ## Start and load
 
-`start_new_game(seed)` stores the seed, clears facts, deeds, roles, quests, RNG streams, and the trace, and sets play minutes to 0.
+`start_new_game(seed)` stores the seed, clears facts, deeds, roles, quests (including generated instances and their counters), RNG streams, and the trace, and sets play minutes to 0.
 
 `load_state(data)` restores a document from `save_state()`. Load content first. `start_new_game` and `load_state` both refuse while a scene is open.
 
@@ -75,7 +75,7 @@ Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `
 
 Call `can_save()` before writing a save. It is false while a scene is open. Embed the dictionary from `save_state()` in the host save and pass that same dictionary to `load_state`. One shape is `save["wyrd"]`.
 
-The document is schema version 3. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, each named RNG stream, and `flight` when a rumor, a document issue, or the scheduler still has work. 64-bit values are hex. The event log is not included. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when nothing is in flight, and that load clears the dirty waits. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. See `addons/wyrd/runtime/save/README.md`.
+The document is schema version 4. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, each named RNG stream, `flight` when a rumor, a document issue, or the scheduler still has work, and `generator` when a generated quest instance exists. 64-bit values are hex. The event log is not included. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when nothing is in flight, and that load clears the dirty waits. Both load on schema 4, with an empty generator when the save had no instances. An older Wyrd (0.6.x) refuses a schema 4 save. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. Quest signals pass an instance id `<template>#<n>` for a generated quest. See `addons/wyrd/runtime/save/README.md`.
 
 ## Events
 

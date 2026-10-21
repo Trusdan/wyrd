@@ -1919,6 +1919,66 @@
       "expr": "stage(ferry_toll)",
       "kind": "value",
       "line": 31
+    },
+    {
+      "ast": {
+        "col": 11,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "harbor_errand"
+            },
+            {
+              "t": "name",
+              "v": "active_count"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"harbor_errand\"",
+            "0002 CALL \"active_count\" 1"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 11,
+            "end_col": 38,
+            "end_line": 32,
+            "line": 32
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 24,
+              "kind": "name",
+              "line": 32,
+              "text": "harbor_errand",
+              "type": "symbol"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 32,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 32,
+        "text": "active_count",
+        "type": "int"
+      },
+      "diagnostics": [],
+      "expr": "active_count(harbor_errand)",
+      "kind": "value",
+      "line": 32
     }
   ],
   "diagnostics": [],

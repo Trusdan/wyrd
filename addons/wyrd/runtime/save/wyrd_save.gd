@@ -1,7 +1,8 @@
 class_name WyrdSave
 extends RefCounted
 
-## JSON-safe snapshot of one runtime. Schema 3 stores in-flight rumors,
+## JSON-safe snapshot of one runtime. Schema 4 adds [code]generator[/code]
+## when a generated quest instance exists. Schema 3 stores in-flight rumors,
 ## publish counters, and scheduler carry in [code]flight[/code] when any of
 ## that exists. Schema 2 fills belief bags. A schema 2 document has no
 ## [code]flight[/code] key and loads with empty in-flight state.
@@ -25,15 +26,23 @@ extends RefCounted
 ## @experimental
 ## [member migrations] is the ordered table from schema N to N+1. Step 0 fills
 ## [code]facts.believed[/code] and [code]facts.held[/code]. Step 1 leaves the
-## document as it is. A schema 2 file has no [code]flight[/code] key: token
-## queues and the slice come back empty, and the dirty waits stay armed.
-## A save from schema 3 on omits [code]flight[/code] only when that set was
-## empty, so load clears the dirty waits. [constant FLIGHT_SINCE_SCHEMA] pins
-## that rule, and a later schema bump leaves it in place.
+## document as it is. Step 2 adds an empty [code]generator[/code] object when
+## the key is missing. It does not write [code]schema_version[/code] and it
+## does not change [code]quests[/code]. The file's own version stays in place
+## so [method _import_flight] still compares it with
+## [constant FLIGHT_SINCE_SCHEMA]. A schema 2 file has no [code]flight[/code]
+## key: token queues and the slice come back empty, and the dirty waits stay
+## armed. A save from schema 3 on omits [code]flight[/code] only when that set
+## was empty, so load clears the dirty waits. [constant FLIGHT_SINCE_SCHEMA]
+## pins that rule, and a later schema bump leaves it in place.
+## [code]generator[/code] holds instance counters and casts. It is omitted
+## when there are no counters. A generated quest row adds [code]template[/code]
+## and [code]n[/code]. A missing template keeps those rows, entries, and
+## counters, and warns [code]W_SAVE_TEMPLATE[/code]. Schema 5 is refused.
 ## 64-bit values are lowercase hex. A scene must be closed. A manifest hash
 ## mismatch warns in a debug build and is silent in a release.
 
-const SCHEMA_VERSION := 3
+const SCHEMA_VERSION := 4
 const FLIGHT_SINCE_SCHEMA := 3
 
 static var migrations: Array = []
@@ -43,6 +52,7 @@ static func _static_init() -> void:
 	migrations = [
 		Callable(WyrdSave, &"_fill_belief_bags"),
 		Callable(WyrdSave, &"_keep_document"),
+		Callable(WyrdSave, &"_add_generator"),
 	]
 
 
@@ -59,6 +69,14 @@ static func _fill_belief_bags(data: Dictionary) -> Dictionary:
 ## Schema 2 documents have no [code]flight[/code] key. Leaving the document
 ## unchanged is the migration. Load treats the missing key as empty in-flight state.
 static func _keep_document(data: Dictionary) -> Dictionary:
+	return data
+
+
+## Schema 3 documents have no [code]generator[/code] key. The empty object is
+## the migration. This step does not write [code]schema_version[/code].
+static func _add_generator(data: Dictionary) -> Dictionary:
+	if not data.has("generator"):
+		data["generator"] = {}
 	return data
 
 
@@ -138,6 +156,9 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 	var flight := _capture_flight(runtime)
 	if not flight.is_empty():
 		data["flight"] = flight
+	var generator := runtime.quests.export_generator()
+	if not generator.is_empty():
+		data["generator"] = generator
 	return data
 
 
@@ -200,6 +221,10 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 	runtime.deeds.import_state(_dict(working.get("deeds", {})))
 	runtime.social.import_state(_dict(working.get("social", {})))
 	runtime.roles.import_state(_dict(working.get("roles", {})))
+	var generator := {}
+	if working.get("generator") is Dictionary:
+		generator = working.get("generator")
+	runtime.quests.import_generator(generator, report)
 	runtime.quests.import_state(_dict(working.get("quests", {})))
 	runtime.effects.import_state(_dict(working.get("provenance", {})))
 	if not runtime.import_rng(rng_data):

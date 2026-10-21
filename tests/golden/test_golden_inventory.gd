@@ -19,6 +19,8 @@ const _ALLOWLIST: PackedStringArray = [
 	"E_SAVE_VERSION",
 	# Runtime and save only.
 	"W_SAVE_MANIFEST",
+	# Runtime and save only.
+	"W_SAVE_TEMPLATE",
 	# Declared, never emitted.
 	"E_RESOLVER_INVALIDATION",
 ]

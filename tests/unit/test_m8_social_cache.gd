@@ -203,7 +203,7 @@ func test_social_cache_trace_filters_and_load_is_quiet() -> void:
 	assert_eq(str(hits[0]["path"]), "affinity")
 	assert_eq(str(hits[0]["cache"]), "axis")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	var packed := JSON.stringify(saved)
 	assert_false(packed.contains("social_cache"))
 	assert_false(packed.contains("axis\t"))
@@ -219,7 +219,7 @@ func test_social_cache_trace_filters_and_load_is_quiet() -> void:
 	assert_eq(loaded.social.cache_entries(), 0)
 	assert_eq(loaded.scheduler().carry("cache_refresh"), refresh.size())
 	assert_eq(loaded.social.axis(&"ferry", &"player", &"affinity"), 5.0)
-	assert_eq(int(loaded.save_state()["schema_version"]), 3)
+	assert_eq(int(loaded.save_state()["schema_version"]), 4)
 
 
 func test_path_exists_follows_directed_kinds() -> void:

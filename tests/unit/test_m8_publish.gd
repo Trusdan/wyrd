@@ -284,7 +284,7 @@ func test_save_keeps_the_frozen_fact_and_drops_the_queue() -> void:
 	runtime.tick(60)
 	var frozen := String(runtime.facts.get(&"harbor.gazette"))
 	var data := runtime.save_state()
-	assert_eq(int(data["schema_version"]), 3)
+	assert_eq(int(data["schema_version"]), 4)
 	assert_false(data.has("publish"))
 	assert_false(data.has("issues"))
 	var raw := JSON.stringify(data)
@@ -502,7 +502,7 @@ func test_skipped_issues_match_across_save() -> void:
 	var live := _jumped(4)
 	var paused := _jumped(4)
 	var data := paused.save_state()
-	assert_eq(int(data["schema_version"]), 3)
+	assert_eq(int(data["schema_version"]), 4)
 	assert_false(data.has("publish"))
 	assert_false(data.has("issues"))
 	assert_false(data.has("believers"))
@@ -658,7 +658,7 @@ func test_sliced_issue_matches_one_shot_and_restarts_on_load() -> void:
 	var paused_token := String(paused.scheduler().carry_tokens("publish")[0])
 	assert_false(paused.publish.issue(paused_token))
 	var data := paused.save_state()
-	assert_eq(int(data["schema_version"]), 3)
+	assert_eq(int(data["schema_version"]), 4)
 	var flight: Dictionary = data["flight"]
 	var publish: Dictionary = flight["publish"]
 	assert_eq(String(publish["cursor"]), paused_token)

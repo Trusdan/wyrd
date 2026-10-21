@@ -177,6 +177,8 @@ func export_state() -> Dictionary:
 		var parts := String(lock).split("\t")
 		if parts.size() != 2:
 			continue
+		if parts[0].contains("#"):
+			continue
 		if not frozen.has(parts[0]):
 			frozen[parts[0]] = {}
 		var snap: Dictionary = _frozen[lock]
@@ -788,6 +790,103 @@ func revealed(agent: StringName, key: StringName) -> bool:
 	return _binding(role)["holder"] != &""
 
 
+## Appends slot rows for one generated instance. Content rows stay first.
+func bind_instance(instance_id: String, quest: WyrdQuestDef) -> void:
+	if quest == null or instance_id.is_empty():
+		return
+	for slot in quest.slots:
+		var name := String(slot.name)
+		if not _slots.has(name):
+			_slots[name] = []
+		var rows: Array = _slots[name]
+		var found := false
+		for item in rows:
+			if str((item as Dictionary).get("quest", "")) == instance_id:
+				found = true
+				break
+		if found:
+			continue
+		rows.append({
+			"kind": slot.kind,
+			"mode": slot.mode,
+			"quest": instance_id,
+			"role": StringName(slot.role),
+			"stage": slot.locked_stage,
+		})
+
+
+## Drops freeze keys and slot rows whose quest id contains [code]#[/code].
+func drop_instances() -> void:
+	var locks: Array = _frozen.keys()
+	for lock in locks:
+		var parts := String(lock).split("\t")
+		if parts.size() > 0 and parts[0].contains("#"):
+			_frozen.erase(lock)
+	var names: Array = _slots.keys()
+	for name in names:
+		var rows: Array = _slots[name]
+		var kept: Array = []
+		for item in rows:
+			if not str((item as Dictionary).get("quest", "")).contains("#"):
+				kept.append(item)
+		if kept.is_empty():
+			_slots.erase(name)
+		else:
+			_slots[name] = kept
+
+
+## Freezes one supplied cast and logs [code]reason=given[/code].
+func freeze_given(quest_id: String, slot: WyrdSlotDef, holder: StringName) -> void:
+	if slot == null:
+		return
+	var status := DEFAULT if holder != &"" else EMPTY
+	var snap := {"holder": holder, "status": status}
+	if slot.kind == "item" and holder != &"":
+		var inventory := _inventory()
+		if inventory != null:
+			snap["owner"] = String(inventory.owner_of(holder))
+	_frozen[_freeze_key(quest_id, slot.name)] = snap
+	_trace_cast(quest_id, slot, holder, snap, "given")
+
+
+## Loads saved instance casts. Load logs nothing.
+func install_casts(quest_id: String, casts: Dictionary) -> void:
+	for slot_name in casts.keys():
+		var snap: Variant = casts[slot_name]
+		if not (snap is Dictionary):
+			continue
+		var item: Dictionary = snap
+		var row := {
+			"holder": StringName(str(item.get("holder", ""))),
+			"status": StringName(str(item.get("status", ""))),
+		}
+		if item.has("owner"):
+			row["owner"] = String(item.get("owner", ""))
+		_frozen[_freeze_key(quest_id, String(slot_name))] = row
+
+
+## Instance id to slot name to [code]{holder, status[, owner]}[/code].
+func instance_casts() -> Dictionary:
+	var out := {}
+	var locks: Array = _frozen.keys()
+	locks.sort()
+	for lock in locks:
+		var parts := String(lock).split("\t")
+		if parts.size() != 2 or not parts[0].contains("#"):
+			continue
+		if not out.has(parts[0]):
+			out[parts[0]] = {}
+		var snap: Dictionary = _frozen[lock]
+		var row := {
+			"holder": String(snap.get("holder", "")),
+			"status": String(snap.get("status", "")),
+		}
+		if snap.has("owner"):
+			row["owner"] = String(snap.get("owner", ""))
+		(out[parts[0]] as Dictionary)[parts[1]] = row
+	return out
+
+
 func begin_quest(quest_id: String) -> void:
 	var quest := _quest(quest_id)
 	if quest == null:
@@ -979,13 +1078,16 @@ func _cast_accepts(slot: WyrdSlotDef, entity: StringName) -> bool:
 	return bool(eval_with.call(slot.cast_when, {"candidate": entity}))
 
 
-func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName, snap: Dictionary) -> void:
+func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName, snap: Dictionary, reason: String = "") -> void:
 	if not trace_of.is_valid():
 		return
+	var why := reason
+	if why.is_empty():
+		why = "picked" if picked != &"" else "empty"
 	var fields := {
 		"entity": String(picked),
 		"quest": quest_id,
-		"reason": "picked" if picked != &"" else "empty",
+		"reason": why,
 		"slot": slot.name,
 	}
 	if slot.kind.is_empty():
@@ -1483,9 +1585,12 @@ func _quest(quest_id: String) -> WyrdQuestDef:
 	if content == null or not (content is WyrdContent):
 		return null
 	var pack := content as WyrdContent
-	if not pack.quests.has(quest_id):
-		return null
-	return pack.quests[quest_id] as WyrdQuestDef
+	if pack.quests.has(quest_id):
+		return pack.quests[quest_id] as WyrdQuestDef
+	if quest_id.contains("#"):
+		var template_id := quest_id.split("#")[0]
+		return pack.templates.get(template_id) as WyrdQuestDef
+	return null
 
 
 func _now() -> int:

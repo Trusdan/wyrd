@@ -29,3 +29,4 @@ facts
 // @when seen(harbor_news)
 // @value slot_state(ferry)
 // @value stage(ferry_toll)
+// @value active_count(harbor_errand)

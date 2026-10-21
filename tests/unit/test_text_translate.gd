@@ -238,7 +238,7 @@ func test_save_round_trip_leaves_the_cache_out() -> void:
 	var saved := runtime.save_state()
 	assert_eq(JSON.stringify(saved), before)
 	assert_false(JSON.stringify(saved).contains("ZZZCACHE"))
-	assert_eq(int(saved.get("schema_version", 0)), 3)
+	assert_eq(int(saved.get("schema_version", 0)), 4)
 	var loaded := _named(0)
 	assert_true(loaded.load_state(saved).ok)
 	assert_eq(loaded.facts.get(&"player.coins"), 3)

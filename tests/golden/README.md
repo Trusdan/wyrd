@@ -21,7 +21,7 @@ Review the diff before committing. The script is the only writer. CI never calls
 
 `tests/golden/test_golden_inventory.gd` fails when an expected file has no source, when a diagnostic code declared in `addons/wyrd/compiler/wyrd_diagnostic.gd` appears in no expected JSON, or when a built-in in `addons/wyrd/compiler/wyrd_signatures.gd` appears in no golden source. A built-in counts when a source contains a call written as `name(`. A bare keyword does not. The allowlist is exactly:
 
-- `E_SAVE_OPEN`, `E_SAVE_POLICY`, `E_SAVE_VERSION`, `W_SAVE_MANIFEST` (runtime and save only)
+- `E_SAVE_OPEN`, `E_SAVE_POLICY`, `E_SAVE_VERSION`, `W_SAVE_MANIFEST`, `W_SAVE_TEMPLATE` (runtime and save only)
 - `E_RESOLVER_INVALIDATION` (declared, never emitted)
 
 ## Determinism

@@ -271,7 +271,7 @@ func test_scheduler_lines_filter_and_stay_out_of_saves() -> void:
 	for _frame in 15:
 		runtime.tick(1.0 / 30.0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("scheduler"))
 	assert_eq(runtime.slice_remainder_units(), 360)
 	runtime.trace.clear()

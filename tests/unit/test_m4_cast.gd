@@ -149,8 +149,8 @@ func test_cast_freeze_round_trips() -> void:
 	runtime.roles.begin_quest("gate")
 	var picked := String(runtime.roles.slot_holder("gate", &"lookout"))
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
-	assert_eq(WyrdSave.migrations.size(), 2)
+	assert_eq(int(saved["schema_version"]), 4)
+	assert_eq(WyrdSave.migrations.size(), 3)
 	var frozen: Dictionary = ((saved["roles"] as Dictionary)["frozen"] as Dictionary)["gate"]
 	assert_eq(String((frozen["lookout"] as Dictionary)["holder"]), picked)
 	assert_eq(String((frozen["lookout"] as Dictionary)["status"]), "default")

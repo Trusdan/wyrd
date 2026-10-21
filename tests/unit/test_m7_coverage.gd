@@ -57,7 +57,7 @@ func test_hits_trace_save_and_merge() -> void:
 	assert_true(runtime.can_save())
 	var saved := runtime.save_state()
 	assert_false(saved.has("coverage"))
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	var before := runtime.coverage.count("storylet", "harbor.rumor")
 	runtime.start_new_game(4)
 	assert_eq(runtime.coverage.count("storylet", "harbor.rumor"), before)

@@ -63,6 +63,15 @@ var _step_level: String = ""
 var _from_advance: bool = false
 ## Top-level stage to enter after the current region step list returns.
 var _lift_to: String = ""
+## Template id to the last issued instance number.
+var _counters: Dictionary = {}
+## Instance id to a quest row whose template is no longer in the content.
+var _raw_rows: Dictionary = {}
+## Instance id to a generator entry whose template is no longer in the content.
+var _raw_instances: Dictionary = {}
+## Template id to the set of instance ids kept raw on this load.
+var _missing: Dictionary = {}
+var _load_report: WyrdLoadReport
 
 
 class QuestState extends RefCounted:
@@ -83,6 +92,9 @@ class QuestState extends RefCounted:
 	var step_at: int = 0
 	## Region id to [code]{stage, entered, step_at, regions}[/code]. Not a flat quest.
 	var regions: Dictionary = {}
+	## Set on a generated instance. Empty for a hand-written quest.
+	var template: String = ""
+	var n: int = 0
 
 
 func bind(host: WyrdRuntime) -> void:
@@ -99,6 +111,13 @@ func reset() -> void:
 	_wake.clear()
 	_by_cond.clear()
 	_pure_start.clear()
+	_counters.clear()
+	_raw_rows.clear()
+	_raw_instances.clear()
+	_missing.clear()
+	_load_report = null
+	if runtime != null and runtime.roles != null:
+		runtime.roles.drop_instances()
 	if runtime == null or runtime.content() == null:
 		return
 	var content := runtime.content()
@@ -314,12 +333,89 @@ func offer_for(scene_id: String) -> Dictionary:
 	return {"quest": "", "slots": PackedStringArray()}
 
 
+func active_count(template_id: String) -> int:
+	var count := 0
+	for quest_id in _states.keys():
+		var state := _states[quest_id] as QuestState
+		if state == null:
+			continue
+		if state.template == template_id and state.status == ACTIVE:
+			count += 1
+	return count
+
+
+func export_generator() -> Dictionary:
+	if _counters.is_empty():
+		return {}
+	var counters := {}
+	var names: Array = _counters.keys()
+	names.sort()
+	for name in names:
+		counters[String(name)] = int(_counters[name])
+	var live := {}
+	if runtime != null and runtime.roles != null:
+		live = runtime.roles.instance_casts()
+	var ids := {}
+	for instance_id in live.keys():
+		ids[String(instance_id)] = true
+	for instance_id in _raw_instances.keys():
+		ids[String(instance_id)] = true
+	var ordered: Array = ids.keys()
+	ordered.sort()
+	var instances := {}
+	for instance_id in ordered:
+		var key := String(instance_id)
+		if live.has(key):
+			instances[key] = {"casts": live[key]}
+		elif _raw_instances.has(key):
+			instances[key] = (_raw_instances[key] as Dictionary).duplicate(true)
+	return {"counters": counters, "instances": instances}
+
+
+func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
+	_counters.clear()
+	_raw_instances.clear()
+	_missing.clear()
+	_load_report = report
+	if runtime != null and runtime.roles != null:
+		runtime.roles.drop_instances()
+	var counters: Dictionary = data.get("counters", {}) if data.get("counters") is Dictionary else {}
+	var names: Array = counters.keys()
+	names.sort()
+	for name in names:
+		_counters[String(name)] = int(counters[name])
+	var listed: Dictionary = data.get("instances", {}) if data.get("instances") is Dictionary else {}
+	var ids: Array = listed.keys()
+	ids.sort()
+	var content := runtime.content() if runtime != null else null
+	for instance_id in ids:
+		var key := String(instance_id)
+		var entry: Dictionary = listed[instance_id] if listed[instance_id] is Dictionary else {}
+		var template_id := _template_id(key, {})
+		var known: bool = content != null and template_id != "" and content.templates.has(template_id)
+		if known and runtime != null and runtime.roles != null:
+			var quest: WyrdQuestDef = content.templates[template_id]
+			runtime.roles.bind_instance(key, quest)
+			var casts: Dictionary = entry.get("casts", {}) if entry.get("casts") is Dictionary else {}
+			runtime.roles.install_casts(key, casts)
+		else:
+			_raw_instances[key] = entry.duplicate(true)
+			_note_missing(template_id, key)
+
+
 func export_state() -> Dictionary:
 	var out := {}
 	var ids: Array = _states.keys()
+	for quest_id in _raw_rows.keys():
+		if not _states.has(quest_id):
+			ids.append(quest_id)
 	ids.sort()
 	for quest_id in ids:
-		var state := _states[quest_id] as QuestState
+		var key := String(quest_id)
+		if _raw_rows.has(key) and not _states.has(key):
+			out[key] = (_raw_rows[key] as Dictionary).duplicate(true)
+			continue
+		var state := _states.get(key) as QuestState
 		if state == null:
 			continue
 		var fields: Array = []
@@ -348,53 +444,78 @@ func export_state() -> Dictionary:
 		var regions := _export_regions(state.regions)
 		if not regions.is_empty():
 			row["regions"] = regions
-		out[String(quest_id)] = row
+		if state.template != "":
+			row["n"] = state.n
+			row["template"] = state.template
+		out[key] = row
 	return out
 
 
 func import_state(data: Dictionary) -> void:
 	_fired.clear()
+	_drop_instance_states()
+	_raw_rows.clear()
 	for quest_id in data.keys():
-		var state := _states.get(String(quest_id)) as QuestState
+		var key := String(quest_id)
 		var row: Variant = data[quest_id]
-		if state == null or not (row is Dictionary):
+		if not (row is Dictionary):
 			continue
 		var item: Dictionary = row
-		state.status = StringName(str(item.get("status", "dormant")))
-		state.stage_id = String(item.get("stage", ""))
-		state.variant = String(item.get("variant", ""))
-		state.outcomes = (item.get("outcomes", {}) as Dictionary).duplicate(true)
-		state.offered = String(item.get("offered", ""))
-		state.scene_done = bool(item.get("scene_done", false))
-		state.host_screen = String(item.get("host_screen", ""))
-		state.host_returns = (item.get("host_returns", {}) as Dictionary).duplicate(true)
-		var journal: Array = []
-		for entry in item.get("journal", []):
-			if entry is Dictionary:
-				var copy: Dictionary = (entry as Dictionary).duplicate(true)
-				copy["minutes"] = int(copy.get("minutes", 0))
-				journal.append(copy)
-		state.journal = journal
-		state.entered = bool(item.get("entered", false))
-		state.held_empty = bool(item.get("held_empty", false))
-		state.waiting = String(item.get("waiting", ""))
-		state.step_at = int(item.get("step_at", 0))
-		var slots := PackedStringArray()
-		for slot_name in item.get("slots", []):
-			slots.append(String(slot_name))
-		state.slots = slots
-		var fields := PackedStringArray()
-		for field in item.get("host_fields", []):
-			fields.append(String(field))
-		state.host_fields = fields
-		state.regions = {}
-		var quest := _quest(String(quest_id))
-		var packed: Variant = item.get("regions", null)
-		if quest != null and packed is Dictionary:
-			var body := _body_now(quest, state)
-			if body != null:
-				state.regions = _import_regions(body.regions, packed)
+		if _instance_row(key, item):
+			_import_instance(key, item)
+			continue
+		var state := _states.get(key) as QuestState
+		if state == null:
+			continue
+		_load_row(key, state, item)
 	_retrack()
+	_warn_missing()
+
+
+## Creates [code]<template>#<n>[/code] and starts it. Returns [code]""[/code] when the
+## template is unknown or a cast key is not a [code]mode: cast[/code] slot.
+## A refusal changes nothing. There is no facade method and no replay input.
+##
+## @experimental
+func create_instance(template_id: String, casts: Dictionary = {}) -> String:
+	var template := _template(template_id)
+	if template == null:
+		_trace_gen(template_id, "", 0, false, "unknown_template")
+		return ""
+	var cast_slots := {}
+	for slot in template.slots:
+		if slot.mode == &"cast":
+			cast_slots[slot.name] = slot
+	for key in casts.keys():
+		if not cast_slots.has(String(key)):
+			_trace_gen(template_id, "", 0, false, "bad_cast")
+			return ""
+	var n := int(_counters.get(template_id, 0)) + 1
+	var id := "%s#%d" % [template_id, n]
+	_counters[template_id] = n
+	var state := QuestState.new()
+	state.template = template_id
+	state.n = n
+	_states[id] = state
+	_declared[id] = _collect(template)
+	if runtime != null and runtime.roles != null:
+		runtime.roles.bind_instance(id, template)
+		for slot in template.slots:
+			if slot.mode != &"cast":
+				continue
+			runtime.roles.freeze_given(id, slot, StringName(str(casts.get(slot.name, ""))))
+	_trace_gen(template_id, id, n, true, "created")
+	if runtime != null:
+		runtime.note_instance_change()
+	var pack_id := ""
+	if runtime != null and runtime.content() != null:
+		pack_id = runtime.content().pack_id
+	if pack_id != "" and not _requires_ok(template, pack_id):
+		_set_status(id, state, UNAVAILABLE)
+		content_unavailable.emit(id, _missing_pack(template, pack_id))
+		return id
+	start(id)
+	return id
 
 
 ## Starts [param quest_id] whatever its [code]start when[/code] says.
@@ -550,7 +671,7 @@ func _continue(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: i
 		return
 	if state.held_empty:
 		var held := _stage_by_id(quest, state.stage_id)
-		if held != null and _pick(quest, held)["hold"]:
+		if held != null and _pick(quest_id, quest, held)["hold"]:
 			state.waiting = "on_empty"
 			return
 		state.held_empty = false
@@ -592,7 +713,7 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 		push_error("WyrdQuestRunner: unknown stage \"%s\"" % state.stage_id)
 		return
 	runtime.roles.enter_stage(quest_id, state.stage_id)
-	var pick := _pick(quest, stage)
+	var pick := _pick(quest_id, quest, stage)
 	state.variant = String(pick["key"])
 	_note_variant(quest_id, state.stage_id, state.variant)
 	state.entered = true
@@ -804,7 +925,7 @@ func _adopt_pick(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops:
 	var stage := _stage_by_id(quest, state.stage_id)
 	if stage == null:
 		return false
-	var pick := _pick(quest, stage)
+	var pick := _pick(quest_id, quest, stage)
 	var key := String(pick["key"])
 	var hold := bool(pick["hold"])
 	if key == state.variant and hold == state.held_empty:
@@ -833,11 +954,11 @@ func _note_variant(quest_id: String, stage_id: String, key: String) -> void:
 	runtime.coverage.hit("variant", "%s.%s.%s" % [quest_id, stage_id, key])
 
 
-func _pick(quest: WyrdQuestDef, stage: WyrdStageDef) -> Dictionary:
+func _pick(quest_id: String, quest: WyrdQuestDef, stage: WyrdStageDef) -> Dictionary:
 	var chosen: WyrdVariantDef = null
 	var chosen_at := -1
 	for slot in quest.slots:
-		var found: Dictionary = runtime.roles.resolve_slot(quest.id, StringName(slot.name), true)
+		var found: Dictionary = runtime.roles.resolve_slot(quest_id, StringName(slot.name), true)
 		var variant: Variant = found.get("variant", null)
 		if variant == null or not (variant is WyrdVariantDef):
 			continue
@@ -853,7 +974,7 @@ func _pick(quest: WyrdQuestDef, stage: WyrdStageDef) -> Dictionary:
 			"hold": false,
 			"key": "%s.%s" % [chosen.slot, String(chosen.state)],
 		}
-	if quest.on_empty == "wait" and _any_empty(quest):
+	if quest.on_empty == "wait" and _any_empty(quest_id, quest):
 		return {"body": null, "hold": true, "key": ""}
 	return {"body": stage, "hold": false, "key": ""}
 
@@ -865,9 +986,9 @@ func _variant_index(stage: WyrdStageDef, variant: WyrdVariantDef) -> int:
 	return -1
 
 
-func _any_empty(quest: WyrdQuestDef) -> bool:
+func _any_empty(quest_id: String, quest: WyrdQuestDef) -> bool:
 	for slot in quest.slots:
-		var state: StringName = runtime.roles.resolve_slot(quest.id, StringName(slot.name), false)["state"]
+		var state: StringName = runtime.roles.resolve_slot(quest_id, StringName(slot.name), false)["state"]
 		if state == &"empty" or state == &"contested":
 			return true
 	return false
@@ -1248,6 +1369,8 @@ func _set_status(quest_id: String, state: QuestState, next: StringName) -> void:
 	_sync_watch(quest_id, state)
 	if runtime != null:
 		runtime.trace_quest_status(quest_id, previous, String(next))
+		if state.template != "":
+			runtime.note_instance_change()
 	quest_state_changed.emit(quest_id, next)
 
 
@@ -1348,10 +1471,180 @@ func _catch_up() -> void:
 			_wake[String(quest_id)] = true
 
 
+func _load_row(quest_id: String, state: QuestState, item: Dictionary) -> void:
+	state.status = StringName(str(item.get("status", "dormant")))
+	state.stage_id = String(item.get("stage", ""))
+	state.variant = String(item.get("variant", ""))
+	state.outcomes = (item.get("outcomes", {}) as Dictionary).duplicate(true)
+	state.offered = String(item.get("offered", ""))
+	state.scene_done = bool(item.get("scene_done", false))
+	state.host_screen = String(item.get("host_screen", ""))
+	state.host_returns = (item.get("host_returns", {}) as Dictionary).duplicate(true)
+	var journal: Array = []
+	for entry in item.get("journal", []):
+		if entry is Dictionary:
+			var copy: Dictionary = (entry as Dictionary).duplicate(true)
+			copy["minutes"] = int(copy.get("minutes", 0))
+			journal.append(copy)
+	state.journal = journal
+	state.entered = bool(item.get("entered", false))
+	state.held_empty = bool(item.get("held_empty", false))
+	state.waiting = String(item.get("waiting", ""))
+	state.step_at = int(item.get("step_at", 0))
+	var slots := PackedStringArray()
+	for slot_name in item.get("slots", []):
+		slots.append(String(slot_name))
+	state.slots = slots
+	var fields := PackedStringArray()
+	for field in item.get("host_fields", []):
+		fields.append(String(field))
+	state.host_fields = fields
+	state.regions = {}
+	var quest := _quest(quest_id)
+	var packed: Variant = item.get("regions", null)
+	if quest != null and packed is Dictionary:
+		var body := _body_now(quest, state)
+		if body != null:
+			state.regions = _import_regions(body.regions, packed)
+
+
+func _import_instance(quest_id: String, item: Dictionary) -> void:
+	var template_id := _template_id(quest_id, item)
+	var content := runtime.content() if runtime != null else null
+	var known: bool = content != null and template_id != "" and content.templates.has(template_id)
+	if not known:
+		_raw_rows[quest_id] = _coerce_row(item)
+		_note_missing(template_id, quest_id)
+		return
+	var quest: WyrdQuestDef = content.templates[template_id]
+	var state := QuestState.new()
+	state.template = template_id
+	state.n = int(item.get("n", 0))
+	_states[quest_id] = state
+	_declared[quest_id] = _collect(quest)
+	_load_row(quest_id, state, item)
+	state.template = template_id
+	state.n = int(item.get("n", 0))
+
+
+func _instance_row(quest_id: String, item: Dictionary) -> bool:
+	if quest_id.contains("#"):
+		return true
+	return str(item.get("template", "")) != ""
+
+
+func _drop_instance_states() -> void:
+	var ids: Array = _states.keys()
+	for quest_id in ids:
+		var key := String(quest_id)
+		var state := _states.get(key) as QuestState
+		if not key.contains("#") and (state == null or state.template == ""):
+			continue
+		_states.erase(key)
+		_declared.erase(key)
+		_watch.erase(key)
+		_wake.erase(key)
+		if not _pure_start.has(key):
+			continue
+		var index := int(_pure_start[key])
+		_pure_start.erase(key)
+		if not _by_cond.has(index):
+			continue
+		var kept: Array = []
+		for item in _by_cond[index]:
+			if String(item) != key:
+				kept.append(item)
+		if kept.is_empty():
+			_by_cond.erase(index)
+		else:
+			_by_cond[index] = kept
+
+
+func _template(template_id: String) -> WyrdQuestDef:
+	if runtime == null or runtime.content() == null:
+		return null
+	return runtime.content().templates.get(template_id) as WyrdQuestDef
+
+
+func _template_id(instance_id: String, row: Dictionary) -> String:
+	var named := str(row.get("template", ""))
+	if named != "":
+		return named
+	var hash := instance_id.find("#")
+	if hash <= 0:
+		return ""
+	return instance_id.substr(0, hash)
+
+
+func _note_missing(template_id: String, instance_id: String) -> void:
+	if template_id == "" or instance_id == "":
+		return
+	var bag: Dictionary = _missing.get(template_id, {})
+	bag[instance_id] = true
+	_missing[template_id] = bag
+
+
+func _warn_missing() -> void:
+	if _load_report == null:
+		_missing.clear()
+		return
+	var names: Array = _missing.keys()
+	names.sort()
+	for template_id in names:
+		var count := (_missing[template_id] as Dictionary).size()
+		_load_report.diagnostics.add(
+			WyrdDiagnostic.W_SAVE_TEMPLATE,
+			"load_missing kind=template id=%s instances=%d" % [String(template_id), count],
+			"",
+			1,
+			1,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+	_missing.clear()
+	_load_report = null
+
+
+func _trace_gen(template_id: String, instance_id: String, n: int, ok: bool, reason: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_gen_create(template_id, instance_id, n, ok, reason)
+
+
+func _coerce_row(item: Dictionary) -> Dictionary:
+	var copy: Dictionary = item.duplicate(true)
+	_coerce_numbers(copy)
+	return copy
+
+
+func _coerce_numbers(row: Dictionary) -> void:
+	if row.has("step_at"):
+		row["step_at"] = int(row["step_at"])
+	if row.has("n"):
+		row["n"] = int(row["n"])
+	if row.has("minutes"):
+		row["minutes"] = int(row["minutes"])
+	var journal: Variant = row.get("journal", null)
+	if journal is Array:
+		for entry in journal:
+			if entry is Dictionary:
+				_coerce_numbers(entry)
+	var regions: Variant = row.get("regions", null)
+	if regions is Dictionary:
+		for region_id in (regions as Dictionary).keys():
+			if (regions as Dictionary)[region_id] is Dictionary:
+				_coerce_numbers((regions as Dictionary)[region_id])
+
+
 func _quest(quest_id: String) -> WyrdQuestDef:
 	if runtime == null or runtime.content() == null:
 		return null
-	return runtime.content().quests.get(quest_id) as WyrdQuestDef
+	var content := runtime.content()
+	if content.quests.has(quest_id):
+		return content.quests[quest_id] as WyrdQuestDef
+	var state := _states.get(quest_id) as QuestState
+	if state != null and state.template != "" and content.templates.has(state.template):
+		return content.templates[state.template] as WyrdQuestDef
+	return null
 
 
 func _stage_by_id(quest: WyrdQuestDef, stage_id: String) -> WyrdStageDef:
