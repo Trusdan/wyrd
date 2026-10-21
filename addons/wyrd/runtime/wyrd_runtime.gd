@@ -64,6 +64,13 @@ var _collecting: bool = false
 var _collected: Dictionary = {}
 var _locals: Dictionary = {}
 var _slot_traced: Dictionary = {}
+## Quest ids. [method scope_instance] is set only when the top id contains [code]#[/code].
+var _scope: Array[String] = []
+var _provisional_scope: String = ""
+var _provisional_casts: Dictionary = {}
+var _provisional_params: Dictionary = {}
+## End-of-tick creation enters the stage without evaluating waits. The next tick checks them.
+var _defer_waits: bool = false
 ## Agent to precedence list. Not saved. Dropped by [method invalidate_groups].
 var _group_cache: Dictionary = {}
 var _group_order: Callable = Callable()
@@ -93,6 +100,8 @@ func _init() -> void:
 	generator = WyrdGenerator.new()
 	generator.config_of = Callable(self, &"config")
 	generator.trace_of = Callable(self, &"_trace_gen_offer")
+	generator.bind(self)
+	generator.generate_handler = Callable(self, &"_on_generate")
 	_queue.generate_has_work = Callable(self, &"_generate_has_work")
 	_queue.generate_unit = Callable(self, &"_generate_unit")
 	_queue.generate_pending = Callable(self, &"_generate_pending")
@@ -346,6 +355,7 @@ func start_new_game(seed_value: int) -> void:
 	roles.note_started()
 	if generator != null:
 		generator.clear()
+	_clear_generation_scope()
 	if storylets != null:
 		storylets.set_seed(_seed)
 
@@ -416,6 +426,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_hooks_by_verb = {}
 	if generator != null:
 		generator.clear()
+	_clear_generation_scope()
 	if coverage != null:
 		coverage.bind(null)
 	if storylets != null:
@@ -546,6 +557,7 @@ func _game_tick(advance: int) -> void:
 		quests.on_tick()
 	if dialogue != null:
 		dialogue.on_tick()
+	_apply_generations()
 
 
 func _run_scheduler() -> void:
@@ -623,6 +635,9 @@ func eval_value(cond: WyrdCompiledCondition) -> Variant:
 	if index >= 0:
 		_ctx.record_id = _content.records[index]
 		_ctx.site = _content.sites[index]
+		var instance := scope_instance()
+		if instance != "" and _record_is_template(_ctx.record_id, instance):
+			_ctx.record_id = instance
 	else:
 		_ctx.record_id = ""
 		_ctx.site = ""
@@ -638,6 +653,7 @@ func eval_bool(cond: WyrdCompiledCondition) -> bool:
 func eval_storylet(cond: WyrdCompiledCondition, storylet_id: String) -> bool:
 	if cond == null:
 		return true
+	push_scope("")
 	var saved_id := _ctx.record_id
 	var saved_site := _ctx.site
 	_ctx.record_id = storylet_id
@@ -645,6 +661,7 @@ func eval_storylet(cond: WyrdCompiledCondition, storylet_id: String) -> bool:
 	var result: Variant = _rpn.eval(cond, {}, _ctx.funcs())
 	_ctx.record_id = saved_id
 	_ctx.site = saved_site
+	pop_scope()
 	return result == true
 
 
@@ -654,6 +671,160 @@ func eval_with_locals(cond: WyrdCompiledCondition, locals: Dictionary) -> bool:
 	var ok := eval_bool(cond)
 	_locals = saved
 	return ok
+
+
+## Pushes a quest id. An empty id hides any instance scope above it.
+func push_scope(quest_id: String) -> void:
+	_scope.append(quest_id)
+
+
+func pop_scope() -> void:
+	if _scope.is_empty():
+		return
+	_scope.remove_at(_scope.size() - 1)
+
+
+## The top id when it is [code]<template>#<n>[/code]. Empty for a hand-written quest or an empty push.
+func scope_instance() -> String:
+	if _scope.is_empty():
+		return ""
+	var top := _scope[_scope.size() - 1]
+	if top.contains("#"):
+		return top
+	return ""
+
+
+func defer_instance_waits() -> bool:
+	return _defer_waits
+
+
+## Provisional casts for a proposal that has not been created yet.
+func begin_provisional(instance_id: String) -> void:
+	_provisional_scope = instance_id
+	_provisional_casts = {}
+	_provisional_params = {}
+
+
+func provisional_cast(slot_name: String, entity: StringName) -> void:
+	_provisional_casts[slot_name] = entity
+
+
+func provisional_param(param_name: String, entity: StringName) -> void:
+	_provisional_params[param_name] = entity
+
+
+func end_provisional() -> void:
+	_provisional_scope = ""
+	_provisional_casts = {}
+	_provisional_params = {}
+
+
+## The instance cast or param, or null when [param name] is not one of this template's.
+func scoped_holder(name: StringName) -> Variant:
+	var scope := scope_instance()
+	if scope == "" or _content == null:
+		return null
+	var quest := _content.quest_def(scope)
+	if quest == null:
+		return null
+	var text := String(name)
+	if _declares_slot(quest, text):
+		if _provisional_scope == scope and _provisional_casts.has(text):
+			return _provisional_casts[text]
+		if roles == null:
+			return &""
+		return roles.slot_holder(scope, name)
+	if quest is WyrdTemplateDef and _declares_param(quest as WyrdTemplateDef, text):
+		if _provisional_scope == scope and _provisional_params.has(text):
+			return _provisional_params[text]
+		if quests == null:
+			return &""
+		return quests.param_entity(scope, text)
+	return null
+
+
+## Slot state for a template slot, or [code]default[/code]/[code]empty[/code] for a bound param.
+## Null when the name is neither on this template.
+func scoped_slot_state(name: StringName) -> Variant:
+	var scope := scope_instance()
+	if scope == "" or _content == null:
+		return null
+	var quest := _content.quest_def(scope)
+	if quest == null:
+		return null
+	var text := String(name)
+	if _declares_slot(quest, text):
+		if roles == null:
+			return &""
+		return roles.slot_state(name, scope)
+	if quest is WyrdTemplateDef and _declares_param(quest as WyrdTemplateDef, text):
+		var entity: StringName = &""
+		var held: Variant = scoped_holder(name)
+		if held != null:
+			entity = StringName(str(held))
+		return &"default" if entity != &"" else &"empty"
+	return null
+
+
+func trace_gen_line(kind: String, fields: Dictionary, line: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add(kind, fields)
+	print(line)
+
+
+func _declares_slot(quest: WyrdQuestDef, name: String) -> bool:
+	if quest == null:
+		return false
+	for slot in quest.slots:
+		if slot.name == name:
+			return true
+	return false
+
+
+func _declares_param(template: WyrdTemplateDef, name: String) -> bool:
+	if template == null:
+		return false
+	for param in template.params:
+		if param.name == name:
+			return true
+	return false
+
+
+func _record_is_template(record: String, instance: String) -> bool:
+	var mark := instance.find("#")
+	if mark <= 0:
+		return false
+	var template_id := instance.substr(0, mark)
+	if record == template_id:
+		return true
+	return record.begins_with(template_id + ".")
+
+
+func _clear_generation_scope() -> void:
+	_scope.clear()
+	end_provisional()
+	_defer_waits = false
+
+
+func _apply_generations() -> void:
+	if generator == null:
+		return
+	_defer_waits = true
+	var batch: Array = generator.pending_creations()
+	for item in batch:
+		if item is WyrdProposal:
+			generator.accept(item)
+	generator.finish_reservations()
+	_defer_waits = false
+
+
+func _on_generate(entry: Dictionary) -> void:
+	if generator == null:
+		return
+	generator.fulfill(entry)
 
 
 func _trace_role(kind: String, fields: Dictionary) -> void:
@@ -1102,7 +1273,7 @@ func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path", "instance"]:
+	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path", "instance", "template"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true
@@ -1139,6 +1310,7 @@ func save_state() -> Dictionary:
 func load_state(data: Dictionary) -> WyrdLoadReport:
 	if generator != null:
 		generator.clear()
+	_clear_generation_scope()
 	if not can_save():
 		push_error("Wyrd.load_state: a scene is open")
 		var refused := WyrdLoadReport.new()
@@ -1317,7 +1489,10 @@ func _offer_from_deed(deed: Dictionary) -> void:
 				"deed.place": deed.get("place", &""),
 				"deed.target": deed.get("target", &""),
 			}
-			if not eval_with_locals(hook.where_cond, locals):
+			push_scope("")
+			var matched := eval_with_locals(hook.where_cond, locals)
+			pop_scope()
+			if not matched:
 				continue
 		generator.queue_deed(str(row["template"]), str(int(deed.get("id", 0))), {
 			"actor": deed.get("actor", &""),
@@ -1489,7 +1664,9 @@ func resolve_line(line_def: WyrdLineDef) -> Dictionary:
 	var holder_id := ""
 	if line_def != null and not line_def.variant_slot.is_empty():
 		if roles != null:
-			var found := roles.holder(StringName(line_def.variant_slot))
+			var slot_name := StringName(line_def.variant_slot)
+			var scoped: Variant = scoped_holder(slot_name)
+			var found: StringName = scoped if scoped != null else roles.holder(slot_name)
 			if found != &"":
 				holder_id = String(found)
 		if not holder_id.is_empty():

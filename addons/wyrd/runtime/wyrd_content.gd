@@ -362,6 +362,17 @@ func _condition_pure(cond: WyrdCompiledCondition) -> bool:
 	return true
 
 
+## A quest id, or the template behind [code]<template>#<n>[/code].
+## Quests win when an id is in both tables.
+func quest_def(id: String) -> WyrdQuestDef:
+	if quests.has(id):
+		return quests[id] as WyrdQuestDef
+	var mark := id.find("#")
+	if mark <= 0:
+		return null
+	return templates.get(id.substr(0, mark)) as WyrdQuestDef
+
+
 func index_of(cond: WyrdCompiledCondition) -> int:
 	if cond == null:
 		return -1

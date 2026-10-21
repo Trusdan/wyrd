@@ -14,7 +14,7 @@ const EXPECTED_DIR := "res://tests/golden/statements/expected"
 static func compile(source: WyrdSource) -> Dictionary:
 	var diagnostics := WyrdDiagnostics.new()
 	var tree := WyrdParser.new().parse(source, diagnostics)
-	var file := WyrdStatements.new().compile(source, tree, diagnostics)
+	var file := WyrdStatements.new().compile(source, tree, diagnostics, _events_for(source, tree))
 	var quests: Array = []
 	for quest in file.quests:
 		quests.append(_quest(quest))
@@ -43,6 +43,24 @@ static func compile(source: WyrdSource) -> Dictionary:
 			templates.append(_template(template))
 		data["templates"] = templates
 	return data
+
+
+## Statement goldens compile one file and do not run the pack linker, so an
+## event declared in that file is unknown. st_err_sequence records that.
+## The spatial case needs met known, or the clean wait is E_EVENT_UNKNOWN
+## as well as a spatial wait. Only that file gets its own event table.
+static func _events_for(source: WyrdSource, tree: WyrdNode) -> Dictionary:
+	if not source.path.ends_with("st_err_template_spatial.wyrd"):
+		return {}
+	var events := {}
+	for child in tree.children:
+		if child.keyword != "events":
+			continue
+		for event in child.events:
+			if event.name.is_empty() or events.has(event.name):
+				continue
+			events[event.name] = event
+	return events
 
 
 static func write_expected() -> int:

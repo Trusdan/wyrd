@@ -1,0 +1,177 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 5,
+      "line": 11,
+      "message": "a spatial wait in a template cannot read its own slots or params",
+      "path": "res://tests/golden/statements/st_err_template_spatial.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "template \"bad\" specificity 0 priority 0",
+      "path": "res://tests/golden/statements/st_err_template_spatial.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 13,
+      "message": "template \"clean\" specificity 0 priority 0",
+      "path": "res://tests/golden/statements/st_err_template_spatial.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": false,
+      "assumes": null,
+      "assumes_text": "",
+      "assumption_texts": [],
+      "id": "bad",
+      "max_active": 1,
+      "on_empty": "",
+      "params": [],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 36,
+              "end_col": 62,
+              "end_line": 7,
+              "line": 7
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_text": "has_tag(candidate, runner)",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "courier",
+          "reads": [],
+          "role": "runner",
+          "span": {
+            "col": 3,
+            "end_col": 63,
+            "end_line": 7,
+            "line": 7
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 61,
+        "end_line": 11,
+        "line": 6
+      },
+      "specificity": 0,
+      "stages": [
+        {
+          "effects": [],
+          "id": "work",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 61,
+            "end_line": 11,
+            "line": 8
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "nearby(holder(courier), 1m, tag: runner) > 0",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 61,
+              "end_line": 11,
+              "line": 11
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Bad",
+      "weight": 1,
+      "when": null,
+      "when_text": ""
+    },
+    {
+      "allow_protected": false,
+      "assumes": null,
+      "assumes_text": "",
+      "assumption_texts": [],
+      "id": "clean",
+      "max_active": 1,
+      "on_empty": "",
+      "params": [],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 52,
+        "end_line": 17,
+        "line": 13
+      },
+      "specificity": 0,
+      "stages": [
+        {
+          "effects": [],
+          "id": "work",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 52,
+            "end_line": 17,
+            "line": 14
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "nearby(player, 1m, tag: runner) > 0",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 52,
+              "end_line": 17,
+              "line": 17
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Clean",
+      "weight": 1,
+      "when": null,
+      "when_text": ""
+    }
+  ]
+}

@@ -65,6 +65,8 @@ var _from_advance: bool = false
 var _lift_to: String = ""
 ## Template id to the last issued instance number.
 var _counters: Dictionary = {}
+## Instance id to param name to [code]{entity, kind, owner?, place?}[/code].
+var _params: Dictionary = {}
 ## Instance id to a quest row whose template is no longer in the content.
 var _raw_rows: Dictionary = {}
 ## Instance id to a generator entry whose template is no longer in the content.
@@ -112,6 +114,7 @@ func reset() -> void:
 	_by_cond.clear()
 	_pure_start.clear()
 	_counters.clear()
+	_params.clear()
 	_raw_rows.clear()
 	_raw_instances.clear()
 	_missing.clear()
@@ -173,14 +176,19 @@ func on_tick() -> void:
 		_wake.clear()
 	ids.sort()
 	for quest_id in ids:
+		var key := String(quest_id)
 		var state := _states[quest_id] as QuestState
-		var quest := _quest(String(quest_id))
+		var quest := _quest(key)
 		if quest == null or state == null:
 			continue
+		if runtime != null:
+			runtime.push_scope(key)
 		if state.status == DORMANT or state.status == AVAILABLE:
-			_consider_start(String(quest_id), quest, state)
+			_consider_start(key, quest, state)
 		elif state.status == ACTIVE:
-			_continue(String(quest_id), quest, state, 0, true)
+			_continue(key, quest, state, 0, true)
+		if runtime != null:
+			runtime.pop_scope()
 
 
 func clear_event_fires() -> void:
@@ -207,30 +215,44 @@ func on_world_event(emit_id: int, event_name: StringName, payload: Dictionary) -
 		var quest := _quest(String(quest_id))
 		if quest == null:
 			continue
-		var body := _body_now(quest, state)
-		if body == null:
-			continue
-		var before := state.stage_id
-		if not body.handlers.is_empty():
-			var token := "%d|%s|%s" % [emit_id, String(quest_id), state.stage_id]
-			if not _fired.has(token):
-				runtime.bind_locals(locals)
-				for handler in body.handlers:
-					if handler.event_name != String(event_name):
-						continue
-					if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
-						continue
-					_fired[token] = true
-					_arm_effects(String(quest_id))
-					runtime.effects.run_all(handler.effects)
-					_take_handler_transition(String(quest_id), quest, state, handler)
-					break
-				runtime.clear_locals()
-		if state.status == ACTIVE and state.stage_id == before:
-			runtime.bind_locals(locals)
-			_dispatch_regions(String(quest_id), quest, state, body, state.regions, emit_id, String(event_name), "")
-			runtime.clear_locals()
+		if runtime != null:
+			runtime.push_scope(String(quest_id))
+		_on_world_event_body(String(quest_id), quest, state, emit_id, String(event_name), locals)
+		if runtime != null:
+			runtime.pop_scope()
 	runtime.clear_locals()
+
+
+func _on_world_event_body(
+	quest_id: String,
+	quest: WyrdQuestDef,
+	state: QuestState,
+	emit_id: int,
+	event_name: String,
+	locals: Dictionary
+) -> void:
+	var body := _body_now(quest, state)
+	if body == null:
+		return
+	var before := state.stage_id
+	if not body.handlers.is_empty():
+		var token := "%d|%s|%s" % [emit_id, quest_id, state.stage_id]
+		if not _fired.has(token):
+			runtime.bind_locals(locals)
+			for handler in body.handlers:
+				if handler.event_name != event_name:
+					continue
+				if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
+					continue
+				_fired[token] = true
+				_run_armed_all(quest_id, handler.effects)
+				_take_handler_transition(quest_id, quest, state, handler)
+				break
+			runtime.clear_locals()
+	if state.status == ACTIVE and state.stage_id == before:
+		runtime.bind_locals(locals)
+		_dispatch_regions(quest_id, quest, state, body, state.regions, emit_id, event_name, "")
+		runtime.clear_locals()
 
 
 func on_scene_ended(scene_id: String, status: StringName, _reason: StringName) -> void:
@@ -333,6 +355,20 @@ func offer_for(scene_id: String) -> Dictionary:
 	return {"quest": "", "slots": PackedStringArray()}
 
 
+func template_counter(template_id: String) -> int:
+	return int(_counters.get(template_id, 0))
+
+
+func param_entity(instance_id: String, name: String) -> StringName:
+	var rows: Variant = _params.get(instance_id, {})
+	if not (rows is Dictionary) or not (rows as Dictionary).has(name):
+		return &""
+	var snap: Variant = (rows as Dictionary)[name]
+	if not (snap is Dictionary):
+		return &""
+	return StringName(str((snap as Dictionary).get("entity", "")))
+
+
 func active_count(template_id: String) -> int:
 	var count := 0
 	for quest_id in _states.keys():
@@ -360,6 +396,8 @@ func export_generator() -> Dictionary:
 		ids[String(instance_id)] = true
 	for instance_id in _raw_instances.keys():
 		ids[String(instance_id)] = true
+	for instance_id in _params.keys():
+		ids[String(instance_id)] = true
 	var ordered: Array = ids.keys()
 	ordered.sort()
 	var instances := {}
@@ -369,11 +407,31 @@ func export_generator() -> Dictionary:
 			instances[key] = {"casts": live[key]}
 		elif _raw_instances.has(key):
 			instances[key] = (_raw_instances[key] as Dictionary).duplicate(true)
+		var params := _param_row(key)
+		if not params.is_empty():
+			if not instances.has(key):
+				instances[key] = {}
+			(instances[key] as Dictionary)["params"] = params
 	return {"counters": counters, "instances": instances}
+
+
+func _param_row(instance_id: String) -> Dictionary:
+	var rows: Variant = _params.get(instance_id, {})
+	if not (rows is Dictionary) or (rows as Dictionary).is_empty():
+		return {}
+	var copy := {}
+	var names: Array = (rows as Dictionary).keys()
+	names.sort()
+	for name in names:
+		var snap: Variant = (rows as Dictionary)[name]
+		if snap is Dictionary:
+			copy[String(name)] = (snap as Dictionary).duplicate(true)
+	return copy
 
 
 func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 	_counters.clear()
+	_params.clear()
 	_raw_instances.clear()
 	_missing.clear()
 	_load_report = report
@@ -398,6 +456,7 @@ func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 			runtime.roles.bind_instance(key, quest)
 			var casts: Dictionary = entry.get("casts", {}) if entry.get("casts") is Dictionary else {}
 			runtime.roles.install_casts(key, casts)
+			_install_params(key, entry)
 		else:
 			_raw_instances[key] = entry.duplicate(true)
 			_note_missing(template_id, key)
@@ -473,11 +532,12 @@ func import_state(data: Dictionary) -> void:
 
 
 ## Creates [code]<template>#<n>[/code] and starts it. Returns [code]""[/code] when the
-## template is unknown or a cast key is not a [code]mode: cast[/code] slot.
-## A refusal changes nothing. There is no facade method and no replay input.
+## template is unknown, a cast key is not a [code]mode: cast[/code] slot, or a
+## param key is not a param. A refusal changes nothing. There is no facade method
+## and no replay input.
 ##
 ## @experimental
-func create_instance(template_id: String, casts: Dictionary = {}) -> String:
+func create_instance(template_id: String, casts: Dictionary = {}, params: Dictionary = {}) -> String:
 	var template := _template(template_id)
 	if template == null:
 		_trace_gen(template_id, "", 0, false, "unknown_template")
@@ -490,6 +550,21 @@ func create_instance(template_id: String, casts: Dictionary = {}) -> String:
 		if not cast_slots.has(String(key)):
 			_trace_gen(template_id, "", 0, false, "bad_cast")
 			return ""
+	var param_names := {}
+	if template is WyrdTemplateDef:
+		for param in (template as WyrdTemplateDef).params:
+			param_names[param.name] = true
+	var stored := {}
+	for key in params.keys():
+		var name := String(key)
+		if not param_names.has(name):
+			_trace_gen(template_id, "", 0, false, "bad_param")
+			return ""
+		var snap := _normalize_param(params[key])
+		if snap.is_empty():
+			_trace_gen(template_id, "", 0, false, "bad_param")
+			return ""
+		stored[name] = snap
 	var n := int(_counters.get(template_id, 0)) + 1
 	var id := "%s#%d" % [template_id, n]
 	_counters[template_id] = n
@@ -498,12 +573,16 @@ func create_instance(template_id: String, casts: Dictionary = {}) -> String:
 	state.n = n
 	_states[id] = state
 	_declared[id] = _collect(template)
+	if not stored.is_empty():
+		_params[id] = stored
 	if runtime != null and runtime.roles != null:
 		runtime.roles.bind_instance(id, template)
 		for slot in template.slots:
 			if slot.mode != &"cast":
 				continue
 			runtime.roles.freeze_given(id, slot, StringName(str(casts.get(slot.name, ""))))
+	if runtime != null:
+		runtime.push_scope(id)
 	_trace_gen(template_id, id, n, true, "created")
 	if runtime != null:
 		runtime.note_instance_change()
@@ -513,9 +592,45 @@ func create_instance(template_id: String, casts: Dictionary = {}) -> String:
 	if pack_id != "" and not _requires_ok(template, pack_id):
 		_set_status(id, state, UNAVAILABLE)
 		content_unavailable.emit(id, _missing_pack(template, pack_id))
+		if runtime != null:
+			runtime.pop_scope()
 		return id
 	start(id)
+	if runtime != null:
+		runtime.pop_scope()
 	return id
+
+
+func _normalize_param(value: Variant) -> Dictionary:
+	if value is String or value is StringName:
+		return {"entity": String(value), "kind": ""}
+	if not (value is Dictionary):
+		return {}
+	var copy := (value as Dictionary).duplicate(true)
+	if not copy.has("entity"):
+		return {}
+	copy["entity"] = String(copy["entity"])
+	if copy.has("kind"):
+		copy["kind"] = String(copy["kind"])
+	if copy.has("owner"):
+		copy["owner"] = String(copy["owner"])
+	if copy.has("place"):
+		copy["place"] = String(copy["place"])
+	return copy
+
+
+func _install_params(instance_id: String, entry: Dictionary) -> void:
+	var params: Variant = entry.get("params", {})
+	if not (params is Dictionary) or (params as Dictionary).is_empty():
+		return
+	var stored := {}
+	for name in (params as Dictionary).keys():
+		var snap := _normalize_param((params as Dictionary)[name])
+		if snap.is_empty():
+			continue
+		stored[String(name)] = snap
+	if not stored.is_empty():
+		_params[instance_id] = stored
 
 
 ## Starts [param quest_id] whatever its [code]start when[/code] says.
@@ -528,6 +643,14 @@ func create_instance(template_id: String, casts: Dictionary = {}) -> String:
 ##
 ## @experimental
 func start(quest_id: String) -> void:
+	if runtime != null:
+		runtime.push_scope(quest_id)
+	_start_quest(quest_id)
+	if runtime != null:
+		runtime.pop_scope()
+
+
+func _start_quest(quest_id: String) -> void:
 	var state := _states.get(quest_id) as QuestState
 	var quest := _quest(quest_id)
 	if state == null or quest == null:
@@ -633,6 +756,14 @@ func complete_host_step(quest_id: String, values: Dictionary) -> void:
 	if state == null or state.host_screen.is_empty():
 		push_error("WyrdQuestRunner.complete_host_step: \"%s\" is not waiting on the host" % quest_id)
 		return
+	if runtime != null:
+		runtime.push_scope(quest_id)
+	_complete_host_body(quest_id, state, values)
+	if runtime != null:
+		runtime.pop_scope()
+
+
+func _complete_host_body(quest_id: String, state: QuestState, values: Dictionary) -> void:
 	if runtime != null:
 		runtime.trace_add("complete_host", {"quest": quest_id, "values": values.duplicate(true)})
 	state.host_returns = values.duplicate(true)
@@ -801,8 +932,7 @@ func _run_step_list(quest_id: String, state: QuestState, body: WyrdStageDef) -> 
 		if kind == &"journal":
 			_write_journal(quest_id, state, step["journal"])
 		elif kind == &"effect":
-			_arm_effects(quest_id)
-			var divert := runtime.effects.run_one(step["effect"])
+			var divert := _run_armed_one(quest_id, step["effect"])
 			if divert != "":
 				return divert
 		elif kind == &"scene" and not offered:
@@ -915,6 +1045,9 @@ func _maybe_finish(quest_id: String, state: QuestState, body: WyrdStageDef) -> v
 func _wait_blocks(state: QuestState, body: WyrdStageDef) -> bool:
 	if body == null or body.waits_until == null:
 		return false
+	if state.template != "" and runtime != null and runtime.defer_instance_waits():
+		state.waiting = "waits_until: %s" % body.waits_text
+		return true
 	if _cond_ready(body.waits_until):
 		return false
 	state.waiting = "waits_until: %s" % body.waits_text
@@ -1163,8 +1296,7 @@ func _run_region_list(quest_id: String, state: QuestState, stage: WyrdStageDef, 
 		if kind == &"journal":
 			_write_journal(quest_id, state, step["journal"])
 		elif kind == &"effect":
-			_arm_effects(quest_id)
-			var divert := runtime.effects.run_one(step["effect"])
+			var divert := _run_armed_one(quest_id, step["effect"])
 			if divert == _LIFT:
 				return {"blocked": false, "divert": "", "lift": true}
 			if divert != "":
@@ -1228,8 +1360,7 @@ func _dispatch_regions(quest_id: String, quest: WyrdQuestDef, state: QuestState,
 				if handler.where_cond == null or not runtime.eval_bool(handler.where_cond):
 					continue
 				_fired[token] = true
-				_arm_effects(quest_id)
-				runtime.effects.run_all(handler.effects)
+				_run_armed_all(quest_id, handler.effects)
 				if _take_region_handler(quest_id, quest, state, region, row, handler, path + region.id):
 					moved = true
 				break
@@ -1359,6 +1490,28 @@ func _arm_effects(quest_id: String) -> void:
 	runtime.effects.quest_id = quest_id
 	runtime.effects.scene_id = ""
 	runtime.effects.choice_id = ""
+
+
+func _run_armed_all(quest_id: String, effects: Array) -> void:
+	if runtime != null:
+		runtime.push_scope(quest_id)
+	_arm_effects(quest_id)
+	if runtime != null and runtime.effects != null:
+		runtime.effects.run_all(effects)
+	if runtime != null:
+		runtime.pop_scope()
+
+
+func _run_armed_one(quest_id: String, effect: WyrdEffectDef) -> String:
+	if runtime != null:
+		runtime.push_scope(quest_id)
+	_arm_effects(quest_id)
+	var divert := ""
+	if runtime != null and runtime.effects != null:
+		divert = runtime.effects.run_one(effect)
+	if runtime != null:
+		runtime.pop_scope()
+	return divert
 
 
 func _set_status(quest_id: String, state: QuestState, next: StringName) -> void:

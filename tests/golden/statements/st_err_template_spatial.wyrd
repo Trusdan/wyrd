@@ -1,0 +1,17 @@
+language 1
+
+events
+  met()
+
+template bad "Bad"
+  slot courier = runner mode: cast(has_tag(candidate, runner))
+  stage work
+    on met where true:
+      ~ outcome finished = done
+    waits_until nearby(holder(courier), 1m, tag: runner) > 0
+
+template clean "Clean"
+  stage work
+    on met where true:
+      ~ outcome finished = done
+    waits_until nearby(player, 1m, tag: runner) > 0

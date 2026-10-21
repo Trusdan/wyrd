@@ -371,10 +371,7 @@ func _bare_name(text: String) -> bool:
 func _is_slot(name: String) -> bool:
 	if quest_id.is_empty() or runtime == null or runtime.content() == null:
 		return false
-	var content := runtime.content()
-	if not content.quests.has(quest_id):
-		return false
-	var quest := content.quests[quest_id] as WyrdQuestDef
+	var quest := runtime.content().quest_def(quest_id)
 	if quest == null:
 		return false
 	for slot in quest.slots:
