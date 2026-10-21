@@ -42,6 +42,18 @@ func members(faction: StringName) -> PackedStringArray:
 	return PackedStringArray()
 
 
+## Default is not protected. This is a default, not an unimplemented stub,
+## so it does not [code]push_error[/code].
+func is_protected(_id: StringName) -> bool:
+	return false
+
+
+## Default is inside every pack's bounds. This is a default, not an unimplemented
+## stub, so it does not [code]push_error[/code].
+func in_bounds(_id: StringName, _pack: String) -> bool:
+	return true
+
+
 ## Groups this agent belongs to, in precedence order. The default is empty and
 ## does not [code]push_error[/code]: a host with no factions has no group beliefs.
 ## A membership change is not seen until the host emits [code]groups_changed[/code]

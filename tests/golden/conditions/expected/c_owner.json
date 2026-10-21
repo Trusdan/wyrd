@@ -1,0 +1,89 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "a": {
+          "col": 10,
+          "kids": [
+            {
+              "a": {
+                "col": 19,
+                "kind": "name",
+                "line": 3,
+                "text": "x",
+                "type": "entity"
+              },
+              "col": 19,
+              "kind": "arg",
+              "line": 3,
+              "type": "entity"
+            }
+          ],
+          "kind": "call",
+          "line": 3,
+          "text": "owner_of",
+          "type": "entity"
+        },
+        "b": {
+          "col": 25,
+          "kind": "name",
+          "line": 3,
+          "text": "y",
+          "type": "entity"
+        },
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            21,
+            1,
+            1,
+            1,
+            2,
+            12
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "x"
+            },
+            {
+              "t": "name",
+              "v": "owner_of"
+            },
+            {
+              "t": "name",
+              "v": "y"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"x\"",
+            "0002 CALL \"owner_of\" 1",
+            "0005 PUSH_CONST \"y\"",
+            "0007 EQ"
+          ],
+          "reads": [],
+          "source_span": {
+            "col": 10,
+            "end_col": 26,
+            "end_line": 3,
+            "line": 3
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kind": "binary",
+        "line": 3,
+        "text": "==",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "owner_of(x) == y",
+      "kind": "when",
+      "line": 3
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

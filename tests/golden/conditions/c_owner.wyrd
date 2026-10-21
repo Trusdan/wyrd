@@ -1,0 +1,3 @@
+language 1
+
+// @when owner_of(x) == y

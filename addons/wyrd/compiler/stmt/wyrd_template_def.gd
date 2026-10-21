@@ -7,7 +7,7 @@ extends WyrdQuestDef
 ## The body reuses quest slots, [code]on_empty[/code], [code]requires[/code], and stages.
 ## There is no [code]start[/code]. [member when_cond] is a storylet condition.
 ## [member assumes] is a wait condition. A bare slot or param name in an entity
-## argument there compiles as [code]holder(<name>)[/code].
+## argument, or compared with an entity, compiles as [code]holder(<name>)[/code].
 ## An empty tier overlaps every tier. A range overlaps every tier. Two single
 ## names overlap only when they are equal. [member weight] does not break a tie.
 
@@ -29,7 +29,11 @@ var assumes: WyrdCompiledCondition = null
 var assumes_text: String = ""
 ## One source text per top-level [code]and[/code] part, before holder rewriting.
 var assumption_texts: PackedStringArray = PackedStringArray()
+## Compiled [code]and[/code] parts after holder rewriting. Validators eval these.
+var assumption_conds: Array[WyrdCompiledCondition] = []
 var allow_protected: bool = false
+## Minutes after creation before an instance is abandoned. 0 never expires.
+var expires_minutes: int = 0
 ## [code]on_deed[/code] hooks, in source order. One verb at most once.
 var deed_hooks: Array[WyrdDeedHookDef] = []
 

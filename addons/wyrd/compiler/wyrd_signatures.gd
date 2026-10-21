@@ -27,6 +27,7 @@ const T_FACT_KEY: StringName = &"fact_key"
 const _BUILTINS: PackedStringArray = [
 	"has(holder:entity, item_or_tag:symbol)->bool",
 	"count(holder:entity, item_or_tag:symbol)->int",
+	"owner_of(item:entity)->entity",
 	"nearby(center:entity, radius:distance, tag:symbol)->int",
 	"can_perceive(a:entity, b:entity)->bool",
 	"can_reach(a:entity, place:entity)->bool",

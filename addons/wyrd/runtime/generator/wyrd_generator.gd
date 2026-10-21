@@ -18,6 +18,8 @@ var _proposals: Dictionary = {}
 var _pending: Array[WyrdProposal] = []
 var _reserved: Dictionary = {}
 var _seq: int = 0
+## Template id to the last decision that considered it. Not saved.
+var _why: Dictionary = {}
 
 
 func offer(source: StringName, key: String, tier: StringName = &"", payload: Dictionary = {}) -> bool:
@@ -61,6 +63,7 @@ func clear() -> void:
 	_proposals.clear()
 	_pending.clear()
 	_reserved.clear()
+	_why.clear()
 	_seq = 0
 
 
@@ -236,7 +239,7 @@ func propose(context: Dictionary) -> WyrdProposal:
 	if not _payload_ok(payload):
 		push_error("Wyrd.generator.propose: payload values must be string, number, or bool")
 		return null
-	return _decide(source, key, tier, "", _copy_payload(payload), "host", false)
+	return _decide(source, key, tier, str(context.get("template", "")), _copy_payload(payload), "host", false)
 
 
 ## One generate-queue unit. Reserves a successful proposal for the end of the tick.
@@ -278,6 +281,7 @@ func accept(proposal: WyrdProposal) -> String:
 			proposal.instance = instance
 			ok = true
 			reason = "created"
+			_why_put(proposal.template, "created")
 	_trace_line("gen_accept", {
 		"instance": instance,
 		"ok": "true" if ok else "false",
@@ -289,6 +293,24 @@ func accept(proposal: WyrdProposal) -> String:
 	return instance
 
 
+## [code]{template, reason, rules}[/code], or [code]{reason: missing}[/code] for an unknown id.
+## An existing template with no decision yet has an empty reason. Not saved.
+func why_not(template_id: String) -> Dictionary:
+	if runtime == null or runtime.content() == null or not runtime.content().templates.has(template_id):
+		return {"reason": "missing"}
+	if not _why.has(template_id):
+		return {"filter": "", "name": "", "reason": "", "rules": [], "template": template_id}
+	var row: Dictionary = _why[template_id]
+	var rules: Array = row.get("rules", [])
+	return {
+		"filter": str(row.get("filter", "")),
+		"name": str(row.get("name", "")),
+		"reason": str(row.get("reason", "")),
+		"rules": rules.duplicate(true),
+		"template": template_id,
+	}
+
+
 func _decide(
 	source: StringName,
 	key: String,
@@ -298,73 +320,107 @@ func _decide(
 	origin: String,
 	reserve: bool
 ) -> WyrdProposal:
-	var eligible := _eligible(tier, template_filter)
-	_trace_line("gen_tier", {
-		"eligible": eligible.size(),
-		"key": key,
-		"source": String(source),
-		"tier": String(tier),
-	}, "wyrd gen_tier source=%s key=%s tier=%s eligible=%d" % [String(source), key, String(tier), eligible.size()])
-	var seed_key := "pick:%s:%s" % [String(source), key]
-	if eligible.is_empty():
-		_trace_line("gen_pick", {
-			"band": 0,
+	var retries := _retry_limit()
+	var excluded := {}
+	var rejected := false
+	var stop_reason := ""
+	for attempt in range(retries + 1):
+		var eligible := _eligible(tier, template_filter)
+		var seed_key := _attempt_key("pick:%s:%s" % [String(source), key], attempt)
+		_trace_line("gen_tier", {
+			"eligible": eligible.size(),
 			"key": key,
-			"reason": "no_template",
-			"score": "0/0",
+			"source": String(source),
+			"tier": String(tier),
+		}, "wyrd gen_tier source=%s key=%s tier=%s eligible=%d" % [String(source), key, String(tier), eligible.size()])
+		if eligible.is_empty():
+			_trace_line("gen_pick", {
+				"band": 0,
+				"key": key,
+				"reason": "no_template",
+				"score": "0/0",
+				"seed_key": seed_key,
+				"source": String(source),
+				"template": "",
+			}, "wyrd gen_pick source=%s key=%s template= reason=no_template score=0/0 band=0 seed_key=%s" % [String(source), key, seed_key])
+			stop_reason = "no_template"
+			break
+		var band := _top_band(eligible)
+		var chosen: WyrdTemplateDef = _weighted(band, seed_key)
+		for template in eligible:
+			if template.id != chosen.id:
+				_why_put(template.id, "not_picked")
+		var score := "%d/%d" % [chosen.priority, chosen.specificity]
+		_trace_line("gen_pick", {
+			"band": band.size(),
+			"key": key,
+			"score": score,
 			"seed_key": seed_key,
 			"source": String(source),
-			"template": "",
-		}, "wyrd gen_pick source=%s key=%s template= reason=no_template score=0/0 band=0 seed_key=%s" % [String(source), key, seed_key])
-		if not reserve:
-			_trace_propose(source, key, tier, payload, false, "no_template", "")
-		return null
-	var band := _top_band(eligible)
-	var chosen: WyrdTemplateDef = _weighted(band, seed_key)
-	var score := "%d/%d" % [chosen.priority, chosen.specificity]
-	_trace_line("gen_pick", {
-		"band": band.size(),
-		"key": key,
-		"score": score,
-		"seed_key": seed_key,
-		"source": String(source),
-		"template": chosen.id,
-	}, "wyrd gen_pick source=%s key=%s template=%s score=%s band=%d seed_key=%s" % [String(source), key, chosen.id, score, band.size(), seed_key])
-	var expected := _counter(chosen.id) + _reserved_count(chosen.id)
-	var instance := "%s#%d" % [chosen.id, expected + 1]
-	var casts := {}
-	var params := {}
-	if runtime != null:
-		runtime.begin_provisional(instance)
-		runtime.push_scope(instance)
-	var bound := _bind_template(chosen, instance, casts, params)
-	if runtime != null:
-		runtime.pop_scope()
-		runtime.end_provisional()
-	if not bound:
-		if not reserve:
-			_trace_propose(source, key, tier, payload, false, "no_candidate", "")
-		return null
-	var proposal := WyrdProposal.new()
-	_seq += 1
-	proposal.id = "p%d" % _seq
-	proposal.source = String(source)
-	proposal.key = key
-	proposal.tier = String(tier)
-	proposal.origin = origin
-	proposal.template = chosen.id
-	proposal.instance = instance
-	proposal.casts = casts
-	proposal.params = params
-	proposal.payload = _copy_payload(payload)
-	proposal.expected_counter = expected
-	_proposals[proposal.id] = proposal
-	if reserve:
-		_reserved[chosen.id] = _reserved_count(chosen.id) + 1
-		_pending.append(proposal)
-	else:
-		_trace_propose(source, key, tier, payload, true, "proposed", proposal.id)
-	return proposal
+			"template": chosen.id,
+		}, "wyrd gen_pick source=%s key=%s template=%s score=%s band=%d seed_key=%s" % [String(source), key, chosen.id, score, band.size(), seed_key])
+		var expected := _counter(chosen.id) + _reserved_count(chosen.id)
+		var instance := "%s#%d" % [chosen.id, expected + 1]
+		var casts := {}
+		var params := {}
+		if runtime != null:
+			runtime.begin_provisional(instance)
+			runtime.push_scope(instance)
+		var failed_name := _bind_template(chosen, instance, casts, params, attempt, excluded)
+		var problem := {}
+		if failed_name.is_empty():
+			problem = _validate(chosen, instance, casts, params, attempt)
+		if runtime != null:
+			runtime.pop_scope()
+			runtime.end_provisional()
+		if not failed_name.is_empty():
+			_why_put(chosen.id, "no_candidate", "", failed_name)
+			stop_reason = "no_candidate"
+			break
+		if not problem.is_empty():
+			rejected = true
+			var rule := str(problem.get("rule", ""))
+			var ident := str(problem.get("id", ""))
+			_trace_line("gen_reject", {
+				"attempt": attempt,
+				"id": ident,
+				"instance": instance,
+				"rule": rule,
+				"template": chosen.id,
+			}, "wyrd gen_reject template=%s instance=%s rule=%s id=%s attempt=%d" % [chosen.id, instance, rule, ident, attempt])
+			_why_reject(chosen.id, rule, ident, attempt)
+			if rule == "exists" or rule == "place" or rule == "protected" or rule == "bounds":
+				excluded[ident] = true
+			continue
+		_why_put(chosen.id, "proposed")
+		var proposal := WyrdProposal.new()
+		_seq += 1
+		proposal.id = "p%d" % _seq
+		proposal.source = String(source)
+		proposal.key = key
+		proposal.tier = String(tier)
+		proposal.origin = origin
+		proposal.template = chosen.id
+		proposal.instance = instance
+		proposal.casts = casts
+		proposal.params = params
+		proposal.payload = _copy_payload(payload)
+		proposal.expected_counter = expected
+		_proposals[proposal.id] = proposal
+		if reserve:
+			_reserved[chosen.id] = _reserved_count(chosen.id) + 1
+			_pending.append(proposal)
+		else:
+			_trace_propose(source, key, tier, payload, true, "proposed", proposal.id)
+		return proposal
+	var reason := stop_reason
+	if rejected:
+		reason = "rejected"
+	if reason.is_empty():
+		reason = "no_template"
+	if not reserve:
+		_trace_propose(source, key, tier, payload, false, reason, "")
+	return null
 
 
 func _trace_propose(
@@ -401,15 +457,26 @@ func _eligible(tier: StringName, template_filter: String) -> Array[WyrdTemplateD
 		if not template_filter.is_empty() and template.id != template_filter:
 			continue
 		if not tier_matches(tier, template):
+			_why_put(template.id, "filtered", "tier")
 			continue
 		if template.weight <= 0:
+			_why_put(template.id, "filtered", "weight")
 			continue
 		if not _when_ok(template):
+			_why_put(template.id, "filtered", "when")
 			continue
 		var live := 0
 		if runtime.quests != null:
 			live = runtime.quests.active_count(template.id)
-		if live + _reserved_count(template.id) >= template.max_active:
+		var reserved := _reserved_count(template.id)
+		if live + reserved >= template.max_active:
+			_trace_line("gen_cap", {
+				"active": live,
+				"max": template.max_active,
+				"reserved": reserved,
+				"template": template.id,
+			}, "wyrd gen_cap template=%s active=%d reserved=%d max=%d" % [template.id, live, reserved, template.max_active])
+			_why_put(template.id, "filtered", "cap")
 			continue
 		found.append(template)
 	return found
@@ -453,18 +520,25 @@ func _weighted(band: Array[WyrdTemplateDef], seed_key: String) -> WyrdTemplateDe
 	return band[band.size() - 1]
 
 
-func _bind_template(template: WyrdTemplateDef, instance: String, casts: Dictionary, params: Dictionary) -> bool:
+func _bind_template(
+	template: WyrdTemplateDef,
+	instance: String,
+	casts: Dictionary,
+	params: Dictionary,
+	attempt: int,
+	excluded: Dictionary
+) -> String:
 	if runtime == null or runtime.roles == null:
-		return false
+		return "bind"
 	for slot in template.slots:
 		if slot.mode != &"cast":
 			continue
 		var pool := runtime.roles.cast_pool(slot)
-		var decision := "cast:%s.%s" % [instance, slot.name]
+		var decision := _attempt_key("cast:%s.%s" % [instance, slot.name], attempt)
 		_trace_candidates(decision, pool["raw"])
-		var picked := runtime.roles.pick_id(pool["accepted"], &"generator", decision)
+		var picked := runtime.roles.pick_id(_without(pool["accepted"], excluded), &"generator", decision)
 		if picked == &"":
-			return false
+			return slot.name
 		casts[slot.name] = String(picked)
 		runtime.provisional_cast(slot.name, picked)
 		_trace_line("gen_cast", {
@@ -475,11 +549,11 @@ func _bind_template(template: WyrdTemplateDef, instance: String, casts: Dictiona
 		}, "wyrd gen_cast instance=%s slot=%s kind=%s entity=%s" % [instance, slot.name, slot.kind, String(picked)])
 	for param in template.params:
 		var pool := runtime.roles.param_pool(param)
-		var decision := "param:%s.%s" % [instance, param.name]
+		var decision := _attempt_key("param:%s.%s" % [instance, param.name], attempt)
 		_trace_candidates(decision, pool["raw"])
-		var picked := runtime.roles.pick_id(pool["accepted"], &"generator", decision)
+		var picked := runtime.roles.pick_id(_without(pool["accepted"], excluded), &"generator", decision)
 		if picked == &"":
-			return false
+			return param.name
 		params[param.name] = _param_snapshot(param, picked)
 		runtime.provisional_param(param.name, picked)
 		_trace_line("gen_bind", {
@@ -488,7 +562,7 @@ func _bind_template(template: WyrdTemplateDef, instance: String, casts: Dictiona
 			"kind": param.kind,
 			"param": param.name,
 		}, "wyrd gen_bind instance=%s param=%s kind=%s entity=%s" % [instance, param.name, param.kind, String(picked)])
-	return true
+	return ""
 
 
 func _param_snapshot(param: WyrdParamDef, entity: StringName) -> Dictionary:
@@ -529,3 +603,151 @@ func _counter(template_id: String) -> int:
 
 func _reserved_count(template_id: String) -> int:
 	return int(_reserved.get(template_id, 0))
+
+
+func _retry_limit() -> int:
+	if not config_of.is_valid():
+		return 8
+	var config: Variant = config_of.call()
+	if config is WyrdConfig:
+		return maxi((config as WyrdConfig).generator_retries, 0)
+	return 8
+
+
+func _attempt_key(base: String, attempt: int) -> String:
+	if attempt <= 0:
+		return base
+	return "%s:%d" % [base, attempt]
+
+
+func _without(ids: Array, excluded: Dictionary) -> Array:
+	var kept: Array = []
+	for item in ids:
+		if excluded.has(String(item)):
+			continue
+		kept.append(item)
+	return kept
+
+
+func _why_put(template_id: String, reason: String, filter_name: String = "", slot_name: String = "") -> void:
+	var row: Dictionary = _why.get(template_id, {"filter": "", "name": "", "reason": "", "rules": []})
+	if reason == "not_picked" and str(row.get("reason", "")) == "rejected":
+		return
+	row["reason"] = reason
+	if reason == "filtered":
+		row["filter"] = filter_name
+	elif reason != "rejected":
+		row["filter"] = ""
+	if reason == "no_candidate":
+		row["name"] = slot_name
+	elif reason != "rejected":
+		row["name"] = ""
+	_why[template_id] = row
+
+
+func _why_reject(template_id: String, rule: String, ident: String, attempt: int) -> void:
+	var row: Dictionary = _why.get(template_id, {"filter": "", "name": "", "reason": "", "rules": []})
+	var rules: Array = row.get("rules", [])
+	rules.append({"attempt": attempt, "id": ident, "rule": rule})
+	row["reason"] = "rejected"
+	row["rules"] = rules
+	_why[template_id] = row
+
+
+## Empty when the proposal passes. Otherwise [code]{rule, id}[/code].
+## [code]place[/code] stays in this order and rejects nothing: an empty
+## [code]place_of[/code] is "not tracked", and the adapters cannot tell that
+## from a place the host tracks and left empty.
+func _validate(
+	template: WyrdTemplateDef,
+	_instance: String,
+	casts: Dictionary,
+	params: Dictionary,
+	_attempt: int
+) -> Dictionary:
+	var world := _world()
+	for row in _bound_rows(template, casts, params):
+		var id := StringName(str(row.get("id", "")))
+		var kind := str(row.get("kind", ""))
+		if world != null and not world.exists(id):
+			return {"id": String(id), "rule": "exists"}
+		if _spatial() != null and _place_rejected(id, kind):
+			return {"id": String(id), "rule": "place"}
+		if world != null and not template.allow_protected and world.is_protected(id):
+			return {"id": String(id), "rule": "protected"}
+		var pack := ""
+		if runtime != null and runtime.content() != null:
+			pack = runtime.content().pack_id
+		if world != null and not world.in_bounds(id, pack):
+			return {"id": String(id), "rule": "bounds"}
+	var index := 0
+	for cond in template.assumption_conds:
+		index += 1
+		if not _assumption_true(cond):
+			return {"id": "assumes.%d" % index, "rule": "assumes"}
+		var known := _known_conflict(cond)
+		if not known.is_empty():
+			return known
+	return {}
+
+
+func _bound_rows(template: WyrdTemplateDef, casts: Dictionary, params: Dictionary) -> Array:
+	var rows: Array = []
+	for slot in template.slots:
+		if slot.mode != &"cast":
+			continue
+		if not casts.has(slot.name):
+			continue
+		rows.append({"id": String(casts[slot.name]), "kind": slot.kind})
+	for param in template.params:
+		if not params.has(param.name):
+			continue
+		var snap: Variant = params[param.name]
+		var entity := ""
+		if snap is Dictionary:
+			entity = str((snap as Dictionary).get("entity", ""))
+		rows.append({"id": entity, "kind": param.kind})
+	return rows
+
+
+## The carried-item case this rule would reject cannot be told from an untracked
+## place, so the step passes.
+func _place_rejected(_id: StringName, _kind: String) -> bool:
+	return false
+
+
+func _assumption_true(cond: WyrdCompiledCondition) -> bool:
+	if cond == null or runtime == null:
+		return true
+	# eval_storylet pushes an empty scope, which would hide this provisional
+	# instance and could read another instance's casts.
+	return runtime.eval_bool(cond)
+
+
+func _known_conflict(cond: WyrdCompiledCondition) -> Dictionary:
+	if cond == null or runtime == null or runtime.facts == null:
+		return {}
+	for key in cond.reads:
+		var known: Variant = runtime.facts.get_in(key, &"known/player")
+		if not _known_differs(known, runtime.facts.get_in(key)):
+			continue
+		return {"id": String(key), "rule": "known"}
+	return {}
+
+
+func _known_differs(known: Variant, world_value: Variant) -> bool:
+	if known == null:
+		return false
+	return known != world_value
+
+
+func _world() -> WyrdWorldAdapter:
+	if runtime == null:
+		return null
+	return runtime.adapter(WyrdWorldAdapter) as WyrdWorldAdapter
+
+
+func _spatial() -> WyrdSpatialAdapter:
+	if runtime == null:
+		return null
+	return runtime.adapter(WyrdSpatialAdapter) as WyrdSpatialAdapter

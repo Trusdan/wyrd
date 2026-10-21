@@ -21,7 +21,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [code]test[/code] stays unimplemented until the runtime can run a scene.
 ## Engine unit tests stay on GUT.
 
-const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "pot", "defs", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage", "console"]
+const COMMANDS: PackedStringArray = ["check", "test", "tag-lines", "export-json", "pot", "defs", "facts", "roles", "why-not", "voice-check", "script-export", "unvoiced-report", "storylets", "cooldowns", "choices", "coverage", "console", "generate"]
 const CONSOLE_SCRIPT := "res://addons/wyrd/runtime/console/wyrd_console.gd"
 const CONSOLE_ABSENT := "wyrd: console is not in this build\n"
 
@@ -49,6 +49,7 @@ static func command_lines() -> PackedStringArray:
 		"choices: list fact writes by scene, choice, prefix, or time",
 		"coverage: list storylets, variants, and lines that were never hit",
 		"console: playtest prompt for facts, roles, time, events, and scenes",
+		"generate: --dry-run shows one proposal or why there is none",
 	])
 
 
@@ -97,6 +98,8 @@ static func execute(args: PackedStringArray) -> Dictionary:
 		return _pot(args)
 	if command == "defs":
 		return _defs(args)
+	if command == "generate":
+		return _generate(args)
 	return {"exit_code": 1, "output": "wyrd: unknown command \"%s\"\n" % command}
 
 
@@ -481,6 +484,8 @@ static func _why_not(args: PackedStringArray) -> Dictionary:
 		return {"exit_code": 1, "output": str(played["output"])}
 	var runtime: WyrdRuntime = played["runtime"]
 	var storylet_id := str(parsed["storylet"])
+	if runtime.content().templates.has(storylet_id) and not runtime.content().storylets.has(storylet_id):
+		return _why_not_template(runtime, parsed, storylet_id)
 	var scope := str(parsed["scope"])
 	var scope_id := str(parsed["scope_id"])
 	var speaker := str(parsed["speaker"])
@@ -502,6 +507,153 @@ static func _why_not(args: PackedStringArray) -> Dictionary:
 		return {"exit_code": 1, "output": "wyrd: unknown storylet \"%s\"\n" % storylet_id}
 	lines.append(WyrdDirector.format_why_not(row))
 	return {"exit_code": 0, "output": "\n".join(lines) + "\n"}
+
+
+static func _why_not_template(runtime: WyrdRuntime, parsed: Dictionary, template_id: String) -> Dictionary:
+	var world := _register_world(runtime, parsed)
+	if int(world["exit_code"]) != 0:
+		return world
+	var source := str(parsed.get("source", ""))
+	if not bool(parsed.get("source_set", false)):
+		source = "cli"
+	var key := str(parsed.get("offer_key", ""))
+	if not bool(parsed.get("key_set", false)):
+		key = "why-not"
+	var context := {
+		"key": key,
+		"source": source,
+		"template": template_id,
+		"tier": str(parsed.get("offer_tier", "")),
+	}
+	runtime.generator.propose(context)
+	var row := runtime.generator.why_not(template_id)
+	var lines := PackedStringArray()
+	lines.append("why_not template=%s reason=%s" % [template_id, str(row.get("reason", ""))])
+	var rules: Array = row.get("rules", [])
+	for item in rules:
+		if not (item is Dictionary):
+			continue
+		var rule: Dictionary = item
+		lines.append("  rule=%s id=%s attempt=%s" % [str(rule.get("rule", "")), str(rule.get("id", "")), str(rule.get("attempt", ""))])
+	return {"exit_code": 0, "output": "\n".join(lines) + "\n"}
+
+
+static func _generate(args: PackedStringArray) -> Dictionary:
+	var parsed := _options(args)
+	if not str(parsed["error"]).is_empty():
+		return {"exit_code": 1, "output": str(parsed["error"])}
+	var played := _runtime_from(parsed)
+	if int(played["exit_code"]) != 0:
+		return {"exit_code": 1, "output": str(played["output"])}
+	var runtime: WyrdRuntime = played["runtime"]
+	var world := _register_world(runtime, parsed)
+	if int(world["exit_code"]) != 0:
+		return world
+	runtime.trace.enabled = true
+	runtime.trace.clear()
+	var context := {
+		"key": str(parsed.get("offer_key", "")),
+		"source": str(parsed.get("source", "")),
+		"tier": str(parsed.get("offer_tier", "")),
+	}
+	var template_id := str(parsed.get("template", ""))
+	if not template_id.is_empty():
+		context["template"] = template_id
+	var proposal := runtime.generator.propose(context)
+	var lines := PackedStringArray()
+	for item in runtime.trace.events:
+		if not (item is Dictionary):
+			continue
+		var text := _format_gen(item)
+		if not text.is_empty():
+			lines.append(text)
+	if proposal == null:
+		var reason := "no_template"
+		for item in runtime.trace.events:
+			if item is Dictionary and str((item as Dictionary).get("kind", "")) == "gen_propose":
+				reason = str((item as Dictionary).get("reason", reason))
+		lines.append("none reason=%s" % reason)
+		if reason == "rejected":
+			for item in runtime.trace.events:
+				if not (item is Dictionary) or str((item as Dictionary).get("kind", "")) != "gen_reject":
+					continue
+				var row: Dictionary = item
+				lines.append("  rule=%s id=%s attempt=%s" % [str(row.get("rule", "")), str(row.get("id", "")), str(row.get("attempt", ""))])
+	else:
+		lines.append("proposal template=%s instance=%s casts=%s params=%s" % [
+			proposal.template,
+			proposal.instance,
+			_pair_list(runtime, proposal, true),
+			_pair_list(runtime, proposal, false),
+		])
+	return {"exit_code": 0, "output": "\n".join(lines) + "\n"}
+
+
+static func _pair_list(runtime: WyrdRuntime, proposal: WyrdProposal, casts: bool) -> String:
+	var template: WyrdTemplateDef = runtime.content().templates.get(proposal.template) as WyrdTemplateDef
+	var parts := PackedStringArray()
+	if template == null:
+		return ""
+	if casts:
+		for slot in template.slots:
+			if slot.mode != &"cast" or not proposal.casts.has(slot.name):
+				continue
+			parts.append("%s=%s" % [slot.name, str(proposal.casts[slot.name])])
+	else:
+		for param in template.params:
+			if not proposal.params.has(param.name):
+				continue
+			var snap: Variant = proposal.params[param.name]
+			var entity := ""
+			if snap is Dictionary:
+				entity = str((snap as Dictionary).get("entity", ""))
+			parts.append("%s=%s" % [param.name, entity])
+	return ",".join(parts)
+
+
+static func _format_gen(row: Dictionary) -> String:
+	var kind := str(row.get("kind", ""))
+	match kind:
+		"gen_tier":
+			return "wyrd gen_tier source=%s key=%s tier=%s eligible=%s" % [str(row.get("source", "")), str(row.get("key", "")), str(row.get("tier", "")), str(row.get("eligible", ""))]
+		"gen_pick":
+			if str(row.get("reason", "")) == "no_template":
+				return "wyrd gen_pick source=%s key=%s template= reason=no_template score=0/0 band=0 seed_key=%s" % [str(row.get("source", "")), str(row.get("key", "")), str(row.get("seed_key", ""))]
+			return "wyrd gen_pick source=%s key=%s template=%s score=%s band=%s seed_key=%s" % [str(row.get("source", "")), str(row.get("key", "")), str(row.get("template", "")), str(row.get("score", "")), str(row.get("band", "")), str(row.get("seed_key", ""))]
+		"gen_candidates":
+			return "wyrd gen_candidates key=%s count=%s digest=%s" % [str(row.get("key", "")), str(row.get("count", "")), str(row.get("digest", ""))]
+		"gen_cast":
+			return "wyrd gen_cast instance=%s slot=%s kind=%s entity=%s" % [str(row.get("instance", "")), str(row.get("slot", "")), str(row.get("slot_kind", "")), str(row.get("entity", ""))]
+		"gen_bind":
+			return "wyrd gen_bind instance=%s param=%s kind=%s entity=%s" % [str(row.get("instance", "")), str(row.get("param", "")), str(row.get("slot_kind", "")), str(row.get("entity", ""))]
+		"gen_propose":
+			return "wyrd gen_propose source=%s key=%s ok=%s reason=%s proposal=%s" % [str(row.get("source", "")), str(row.get("key", "")), str(row.get("ok", "")), str(row.get("reason", "")), str(row.get("proposal", ""))]
+		"gen_reject":
+			return "wyrd gen_reject template=%s instance=%s rule=%s id=%s attempt=%s" % [str(row.get("template", "")), str(row.get("instance", "")), str(row.get("rule", "")), str(row.get("id", "")), str(row.get("attempt", ""))]
+		"gen_cap":
+			return "wyrd gen_cap template=%s active=%s reserved=%s max=%s" % [str(row.get("template", "")), str(row.get("active", "")), str(row.get("reserved", "")), str(row.get("max", ""))]
+		"gen_expire":
+			return "wyrd gen_expire instance=%s reason=%s" % [str(row.get("instance", "")), str(row.get("reason", ""))]
+		_:
+			return ""
+
+
+static func _register_world(runtime: WyrdRuntime, parsed: Dictionary) -> Dictionary:
+	var path := str(parsed.get("world", ""))
+	if path.is_empty():
+		return {"exit_code": 0, "output": ""}
+	var resolved := _resolve(path)
+	if not FileAccess.file_exists(resolved):
+		return {"exit_code": 1, "output": "wyrd: no such file: %s\n" % path}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(resolved))
+	var loaded := WyrdCliWorld.from_data(data)
+	if not bool(loaded.get("ok", false)):
+		return {"exit_code": 1, "output": str(loaded.get("error", ""))}
+	var world: WyrdCliWorld = loaded["world"]
+	runtime.register_adapter(WyrdWorldAdapter, world)
+	runtime.register_adapter(WyrdSpatialAdapter, world.spatial)
+	runtime.register_adapter(WyrdInventoryAdapter, world.inventory)
+	return {"exit_code": 0, "output": ""}
 
 
 static func _storylets(args: PackedStringArray) -> Dictionary:
@@ -647,7 +799,10 @@ static func _runtime_from(parsed: Dictionary) -> Dictionary:
 	var report := runtime.load_content(_manifest(parsed))
 	if not report.ok:
 		return {"exit_code": 1, "output": report.diagnostics.format(), "runtime": null}
-	runtime.start_new_game(1)
+	var seed := 1
+	if bool(parsed.get("seed_set", false)):
+		seed = int(parsed.get("seed", 1))
+	runtime.start_new_game(seed)
 	var save_path := str(parsed["save"])
 	if not save_path.is_empty():
 		var resolved := _resolve(save_path)
@@ -1035,6 +1190,15 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var to_set := false
 	var file_path := ""
 	var file_set := false
+	var source_name := ""
+	var source_set := false
+	var offer_key := ""
+	var key_set := false
+	var offer_tier := ""
+	var template_id := ""
+	var seed_value := 1
+	var seed_set := false
+	var world_path := ""
 	var cmds := PackedStringArray()
 	var positionals: PackedStringArray = PackedStringArray()
 	var listed := command == "why-not" or command == "storylets" or command == "cooldowns"
@@ -1158,6 +1322,39 @@ static func _options(args: PackedStringArray) -> Dictionary:
 			filter = args[i]
 		elif (command == "why-not" or command == "storylets") and arg == "--trace-director":
 			trace_director = true
+		elif (command == "generate" or command == "why-not") and arg == "--source":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --source needs an id\n")
+			source_name = args[i].strip_edges()
+			source_set = true
+		elif (command == "generate" or command == "why-not") and arg == "--key":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --key needs an id\n")
+			offer_key = args[i].strip_edges()
+			key_set = true
+		elif (command == "generate" or command == "why-not") and arg == "--tier":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--"):
+				return _fail("wyrd: --tier needs a name\n")
+			offer_tier = args[i]
+		elif command == "generate" and arg == "--template":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --template needs an id\n")
+			template_id = args[i].strip_edges()
+		elif (command == "generate" or command == "why-not") and arg == "--seed":
+			i += 1
+			if i >= args.size() or not args[i].is_valid_int():
+				return _fail("wyrd: --seed needs a whole number\n")
+			seed_value = int(args[i])
+			seed_set = true
+		elif (command == "generate" or command == "why-not") and arg == "--world":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
+				return _fail("wyrd: --world needs a path\n")
+			world_path = args[i].strip_edges()
 		elif command == "unvoiced-report" and arg == "--locale":
 			i += 1
 			if i >= args.size():
@@ -1181,7 +1378,18 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		return _fail("wyrd: pot needs --manifest\n")
 	if command == "defs" and (manifest.is_empty() or not positionals.is_empty()):
 		return _fail("wyrd: defs needs --manifest\n")
-	if listed:
+	if command == "generate":
+		if not dry_run:
+			return _fail("wyrd: generate needs --dry-run\n")
+		if manifest.is_empty():
+			return _fail("wyrd: generate needs --manifest\n")
+		if not source_set:
+			return _fail("wyrd: generate needs --source\n")
+		if not key_set:
+			return _fail("wyrd: generate needs --key\n")
+		if not positionals.is_empty():
+			return _fail("wyrd: generate takes no path\n")
+	elif listed:
 		if manifest.is_empty():
 			return _fail("wyrd: %s needs --manifest\n" % command)
 		if command == "why-not" and positionals.size() != 1:
@@ -1259,6 +1467,15 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"speaker": speaker,
 		"speaker_set": speaker_set,
 		"storylet": positionals[0] if command == "why-not" and positionals.size() == 1 else "",
+		"source": source_name,
+		"source_set": source_set,
+		"offer_key": offer_key,
+		"key_set": key_set,
+		"offer_tier": offer_tier,
+		"template": template_id,
+		"seed": seed_value,
+		"seed_set": seed_set,
+		"world": world_path,
 		"strict": strict,
 		"watch": watch,
 		"pressure_set": pressure_set,

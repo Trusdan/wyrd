@@ -1,0 +1,149 @@
+language 1
+
+facts
+  gate.flag : bool stored
+  gate.rank : bool stored
+  gate.expire : bool stored
+
+template exists_one "Exists"
+  priority: 20
+  max_active: 4
+  when: true
+  slot who kind: object mode: cast(has_tag(candidate, person))
+  stage work
+    waits_until false
+
+template protected_one "Protected"
+  max_active: 4
+  when: true
+  slot guard kind: object mode: cast(has_tag(candidate, guarded))
+  stage work
+    waits_until false
+
+template protected_ok "Protected Ok"
+  max_active: 4
+  allow_protected: true
+  when: true
+  slot guard kind: object mode: cast(has_tag(candidate, guarded))
+  stage work
+    waits_until false
+
+template bounds_one "Bounds"
+  max_active: 4
+  when: true
+  slot who kind: object mode: cast(has_tag(candidate, bounded))
+  stage work
+    waits_until false
+
+template assumes_one "Assumes"
+  max_active: 4
+  when: true
+  assumes: alive(parcel)
+  param parcel: item cast(has_tag(candidate, parcel))
+  stage work
+    waits_until false
+
+template parts "Parts"
+  max_active: 4
+  when: true
+  assumes: alive(parcel) and gate.flag
+  param parcel: item cast(has_tag(candidate, parcel))
+  stage work
+    waits_until false
+
+template owner_one "Owner"
+  max_active: 4
+  when: true
+  assumes: owner_of(item) == victim
+  slot victim kind: object mode: cast(has_tag(candidate, victim))
+  param item: item cast(has_tag(candidate, parcel))
+  stage work
+    waits_until false
+
+template known_one "Known"
+  max_active: 4
+  when: true
+  assumes: gate.flag
+  stage work
+    waits_until false
+
+template unplaced "Unplaced"
+  max_active: 4
+  when: true
+  slot who kind: object mode: cast(has_tag(candidate, person))
+  stage work
+    waits_until false
+
+template carried "Carried"
+  max_active: 4
+  when: true
+  param item: item cast(has_tag(candidate, parcel))
+  stage work
+    waits_until false
+
+template capped "Capped"
+  max_active: 1
+  when: true
+  stage work
+    waits_until false
+
+template tiered "Tiered"
+  max_active: 4
+  tier: mid
+  when: true
+  stage work
+    waits_until false
+
+template rank_high "Rank High"
+  priority: 30
+  max_active: 4
+  when: gate.rank
+  stage work
+    waits_until false
+
+template rank_low "Rank Low"
+  priority: 1
+  max_active: 4
+  when: gate.rank
+  stage work
+    waits_until false
+
+template gap_one "Gap"
+  max_active: 4
+  when: true
+  slot ghost kind: object mode: cast(has_tag(candidate, missing))
+  stage work
+    waits_until false
+
+template lasting "Lasting"
+  priority: 40
+  max_active: 4
+  when: gate.expire
+  expires: 2h
+  stage work
+    journal: Keep this note. #line:expire1
+    scene expire.bet
+    waits_until false
+
+template beside "Beside"
+  max_active: 4
+  when: true
+  stage work
+    scene other.bet
+    waits_until false
+
+template plain "Plain"
+  max_active: 4
+  when: true
+  stage work
+    waits_until false
+
+scene expire.bet
+  * {true} -> done
+  - (done)
+  -> end
+
+scene other.bet
+  * {true} -> done
+  - (done)
+  -> end
