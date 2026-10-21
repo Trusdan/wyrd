@@ -193,8 +193,217 @@ func _assert_rumors(dir: String, profile_name: String, npcs: int, friends: int, 
 		assert_eq(str(row["kind"]), "friend")
 
 
+func test_m9_bench_metrics_are_registered() -> void:
+	var names: PackedStringArray = []
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		names.append(str(row["name"]))
+	var added: PackedStringArray = [
+		"generator.propose",
+		"generator.cast_object",
+		"generator.cast_person",
+		"generator.validate",
+		"generator.tick",
+		"memory.generated",
+		"save.generated_bytes",
+		"load.generated",
+	]
+	var units: PackedStringArray = ["s", "s", "s", "s", "s", "B", "B", "s"]
+	var scan := names.find("deeds.scan")
+	assert_gt(scan, 0)
+	for index in added.size():
+		assert_eq(names[scan + 1 + index], added[index])
+		assert_eq(names.count(added[index]), 1)
+	assert_eq(names[names.size() - 1], "memory.resident")
+	var flight_bytes := 0.0
+	var flight_load := 0.0
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		if str(row["name"]) == "save.flight_bytes":
+			flight_bytes = float(row["budget"])
+		elif str(row["name"]) == "load.flight":
+			flight_load = float(row["budget"])
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		var name := str(row["name"])
+		if not added.has(name):
+			continue
+		assert_eq(str(row["stat"]), "median")
+		assert_eq(str(row["unit"]), units[added.find(name)])
+		assert_gt(float(row["budget"]), 0.0)
+		assert_false(row.has("absolute"))
+	assert_eq(_budget("generator.propose"), 0.002)
+	assert_eq(_budget("save.generated_bytes"), flight_bytes)
+	assert_eq(_budget("load.generated"), flight_load)
+
+
+func test_m9_gen_counts() -> void:
+	var full := WyrdPerfScale.gen_counts("full")
+	var smoke := WyrdPerfScale.gen_counts("smoke")
+	assert_eq(int(full["objects"]), 5000)
+	assert_eq(int(full["generated"]), 100)
+	assert_eq(int(smoke["objects"]), 500)
+	assert_eq(int(smoke["generated"]), 10)
+	assert_true(WyrdPerfScale.gen_counts("missing").is_empty())
+	var profile := WyrdPerfScale.profile("full")
+	assert_false(profile.has("objects"))
+	assert_false(profile.has("generated"))
+	var smoke_profile := WyrdPerfScale.profile("smoke")
+	assert_false(smoke_profile.has("objects"))
+	assert_false(smoke_profile.has("generated"))
+	assert_eq(WyrdPerfScale.GEN_OFFERS, 32)
+	var added: PackedStringArray = [
+		"generator.propose",
+		"generator.cast_object",
+		"generator.cast_person",
+		"generator.validate",
+		"generator.tick",
+		"memory.generated",
+		"save.generated_bytes",
+		"load.generated",
+	]
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		var name := str(row["name"])
+		if added.has(name):
+			assert_gte(int(row["warmups"]), 1)
+			assert_gte(int(row["samples"]), 3)
+		else:
+			assert_false(row.has("warmups"))
+			assert_false(row.has("samples"))
+
+
+func test_smoke_templates_propose_and_validate() -> void:
+	var written := _write("smoke")
+	var before := str(written["hash"])
+	WyrdScalePack.write_templates(written["dir"], "smoke")
+	assert_eq(WyrdScalePack.hash_release(written["dir"]), before)
+	var full := _write("full")
+	WyrdScalePack.write_templates(full["dir"], "full")
+	var expected := FileAccess.get_file_as_string(_EXPECTED).strip_edges()
+	assert_eq(WyrdScalePack.hash_release(full["dir"]), expected)
+	var templates := WyrdCli.execute(PackedStringArray([
+		"check", "--strict", "--pressure-tiers", "low,mid,high,dire",
+		WyrdScalePack.templates_root(written["dir"]),
+	]))
+	assert_eq(int(templates["exit_code"]), 0, str(templates["output"]))
+	var together := _combined_pack(written["dir"])
+	var joined := WyrdCli.execute(PackedStringArray([
+		"check", "--strict", "--pressure-tiers", "low,mid,high,dire", together,
+	]))
+	assert_eq(int(joined["exit_code"]), 0, str(joined["output"]))
+	var runtime := WyrdRuntime.new()
+	var config := WyrdConfig.new()
+	config.scheduler_work_per_tick = 64
+	config.pressure_tiers = WyrdPerfScale.GEN_TIERS
+	runtime.configure(config)
+	var host := WyrdFakeHost.new()
+	host.register_into(runtime)
+	var world := host.world
+	assert_true(world.reports_changes())
+	world.add_entity(&"player", &"person", "player", PackedStringArray(), true)
+	var counts := WyrdPerfScale.gen_counts("smoke")
+	var npcs := int(written["info"]["npcs"])
+	for index in npcs:
+		var id := "dock_hand_%03d" % index
+		world.add_entity(StringName(id), &"person", id, PackedStringArray([WyrdPerfScale.GEN_CLIENT_TAG]), true)
+	for index in int(counts["objects"]):
+		var id := "scale_obj_%05d" % index
+		world.add_entity(StringName(id), &"object", id, PackedStringArray([WyrdPerfScale.GEN_OBJECT_TAG]), true)
+	var files := _wyrd_files(written["dir"])
+	files.append_array(_wyrd_files(WyrdScalePack.templates_root(written["dir"])))
+	var manifest := WyrdContentManifest.new()
+	manifest.pack_id = &"gullhaven"
+	manifest.language_version = 1
+	manifest.files = files
+	var report := runtime.load_content(manifest)
+	assert_true(report.ok, report.diagnostics.format())
+	runtime.start_new_game(WyrdPerfScale.SEED)
+	runtime.facts.set(&"harbor.gen_scale_open", true)
+	runtime.facts.set(&"harbor.gen_scale_mark", true)
+	for n in 8:
+		var template: WyrdTemplateDef = runtime.content().templates["gen_scale_%d" % n]
+		for slot in template.slots:
+			var pool := runtime.roles.cast_pool(slot)
+			assert_true(runtime.roles.indexed_pool(), slot.name)
+			assert_gt((pool["accepted"] as Array).size(), 0, slot.name)
+	runtime.trace.enabled = true
+	runtime.trace.clear()
+	for index in WyrdPerfScale.GEN_OFFERS:
+		var proposal := runtime.generator.propose({
+			"key": "scale_%02d" % index,
+			"source": WyrdPerfScale.GEN_SOURCE,
+			"tier": WyrdPerfScale.GEN_TIERS[index % 4],
+		})
+		assert_not_null(proposal)
+	for event in runtime.trace.events:
+		assert_ne(str(event.get("kind", "")), "gen_reject")
+	assert_true(WyrdGenerator.new().has_method("_validate"))
+	var accepted := 0
+	for index in int(counts["generated"]):
+		var proposal := runtime.generator.propose({
+			"key": "mem_%03d" % index,
+			"source": WyrdPerfScale.GEN_SOURCE,
+			"tier": WyrdPerfScale.GEN_TIERS[index % 4],
+		})
+		assert_not_null(proposal)
+		var instance := runtime.generator.accept(proposal)
+		assert_false(instance.is_empty())
+		assert_ne(instance, "unknown")
+		assert_ne(instance, "stale")
+		accepted += 1
+	assert_eq(accepted, int(counts["generated"]))
+	var data := runtime.save_state()
+	assert_eq(int(data["schema_version"]), 4)
+	var block: Variant = data.get("generator", {})
+	assert_true(block is Dictionary)
+	assert_false((block as Dictionary).is_empty())
+	var loaded := runtime.load_state(data)
+	assert_true(loaded.ok, loaded.diagnostics.format())
+	assert_false(loaded.diagnostics.has_warnings(), loaded.diagnostics.format())
+
+
+func _budget(metric_name: String) -> float:
+	for item in WyrdPerfScale.metrics():
+		var row: Dictionary = item
+		if str(row["name"]) == metric_name:
+			return float(row["budget"])
+	return -1.0
+
+
+func _wyrd_files(dir: String) -> PackedStringArray:
+	var rows := PackedStringArray()
+	var listing := DirAccess.open(dir)
+	if listing == null:
+		return rows
+	listing.list_dir_begin()
+	var name := listing.get_next()
+	while name != "":
+		if name.ends_with(".wyrd") and not listing.current_is_dir():
+			rows.append(dir.path_join(name))
+		name = listing.get_next()
+	listing.list_dir_end()
+	rows.sort()
+	return rows
+
+
+func _combined_pack(dir: String) -> String:
+	var combined := dir + "_combined"
+	WyrdScalePack.remove_dir(combined)
+	DirAccess.make_dir_recursive_absolute(combined)
+	_dirs.append(combined)
+	for source in [dir, WyrdScalePack.templates_root(dir)]:
+		for path in _wyrd_files(source):
+			var text := FileAccess.get_file_as_string(path)
+			var file := FileAccess.open(combined.path_join(path.get_file()), FileAccess.WRITE)
+			file.store_string(text)
+			file.close()
+	return combined
+
+
 func after_each() -> void:
 	for dir in _dirs:
+		WyrdScalePack.remove_dir(WyrdScalePack.templates_root(dir))
 		WyrdScalePack.remove_dir(WyrdScalePack.rumors_root(dir))
 		WyrdScalePack.remove_dir(WyrdScalePack.storylets_root(dir))
 		WyrdScalePack.remove_dir(dir)

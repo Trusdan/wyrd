@@ -33,10 +33,12 @@ func _init() -> void:
 		quit(1)
 		return
 	WyrdScalePack.write_rumors(out_dir, profile_name)
+	WyrdScalePack.write_templates(out_dir, profile_name)
 	print("hash=%s" % digest)
 	print("dir=%s" % out_dir)
 	print("profile=%s" % profile_name)
 	print("rumors=%s" % WyrdScalePack.rumors_root(out_dir))
+	print("templates=%s" % WyrdScalePack.templates_root(out_dir))
 	if not check:
 		quit(0)
 		return
@@ -50,6 +52,14 @@ func _init() -> void:
 	]))
 	if int(rumors["exit_code"]) != 0:
 		push_error(str(rumors["output"]))
+		quit(1)
+		return
+	var templates := WyrdCli.execute(PackedStringArray([
+		"check", "--strict", "--pressure-tiers", "low,mid,high,dire",
+		WyrdScalePack.templates_root(out_dir),
+	]))
+	if int(templates["exit_code"]) != 0:
+		push_error(str(templates["output"]))
 		quit(1)
 		return
 	print("strict=ok")
