@@ -976,7 +976,7 @@ func _enqueue_targets(stage: WyrdStageDef, by_id: Dictionary, queue: Array) -> v
 			_enqueue_targets(variant.body, by_id, queue)
 
 
-## A quest stage no [code]->[/code], [code]advance[/code], or region path reaches.
+## A quest stage no [code]->[/code], [code]do … on_fail[/code], [code]advance[/code], or region path reaches.
 ## [method _reachable] is unchanged. A host [code]advance()[/code] call is not visible here.
 func _warn_unreachable(units: Array) -> void:
 	var advances := _advance_targets(units)
@@ -1072,6 +1072,7 @@ func _enqueue_reach(stage: WyrdStageDef, by_id: Dictionary, queue: Array) -> voi
 	if stage == null:
 		return
 	_enqueue_ids(stage.transitions, by_id, queue)
+	_enqueue_fail_targets(stage.effects, by_id, queue)
 	for handler in stage.handlers:
 		_enqueue_ids(handler.transitions, by_id, queue)
 	for item in stage.variants:
@@ -1087,6 +1088,17 @@ func _enqueue_ids(rows: Array, by_id: Dictionary, queue: Array) -> void:
 		var target := str(row.get("target", ""))
 		if by_id.has(target):
 			queue.append(by_id[target])
+
+
+## A failed stage [code]do[/code] diverts to its [code]on_fail[/code] stage, so that
+## target is an edge. Handler effects are not: they run without a divert.
+func _enqueue_fail_targets(effects: Array, by_id: Dictionary, queue: Array) -> void:
+	for item in effects:
+		var effect := item as WyrdEffectDef
+		if effect == null or effect.kind != &"do" or effect.on_fail.is_empty():
+			continue
+		if by_id.has(effect.on_fail):
+			queue.append(by_id[effect.on_fail])
 
 
 func _advance_targets(units: Array) -> Dictionary:
