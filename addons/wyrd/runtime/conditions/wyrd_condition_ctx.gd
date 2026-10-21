@@ -14,7 +14,9 @@ extends RefCounted
 ## hold different values for one key. [code]perceived[/code] returns the latest
 ## witness mode for an agent and verb. [code]reputation[/code] is the mean disposition
 ## of a group's members toward the subject. [code]nearby[/code] counts adapter ids.
-## [code]has[/code] is a positive [code]count[/code]. [code]active_count(template)[/code]
+## [code]has[/code] is a positive [code]count[/code]. [code]owner_of(item)[/code]
+## reads the inventory adapter and is empty when none is registered.
+## [code]active_count(template)[/code]
 ## counts active generated instances of that template. An unknown id is 0 and
 ## logs nothing. A missing adapter returns 0 or false and does not call the
 ## unimplemented base. A compiled key argument loads the fact; the key is the
@@ -58,6 +60,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"display_name": Callable(self, &"_display_name"),
 		&"filled": Callable(self, &"_filled"),
 		&"has": Callable(self, &"_has"),
+		&"owner_of": Callable(self, &"_owner_of"),
 		&"has_read": Callable(self, &"_has_read"),
 		&"has_tag": Callable(self, &"_has_tag"),
 		&"held": Callable(self, &"_held"),
@@ -162,6 +165,15 @@ func _count(args: Array) -> int:
 	if inventory == null:
 		return 0
 	return inventory.count(StringName(str(args[0])), StringName(str(args[1])))
+
+
+func _owner_of(args: Array) -> StringName:
+	if args.is_empty() or args[0] == null:
+		return &""
+	var inventory := _inventory()
+	if inventory == null:
+		return &""
+	return inventory.owner_of(StringName(str(args[0])))
 
 
 func _kind(args: Array) -> StringName:

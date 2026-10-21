@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generator: validators reject proposals that use missing, protected or out-of-bounds entities, or whose `assumes:` is false or contradicts what the player knows (`gen_reject`); rejected proposals retry up to `generator_retries` (8) with varied keys; `gen_cap` logs a `max_active` exclusion; an optional template `expires:` abandons old instances (`gen_expire`); `why-not <template>` and `generate --dry-run` explain picks; conditions can read `owner_of(<item>)`. An empty place is not a rejection. Save schema stays 4.
 - Generator: propose/accept pick, cast and bind templates with per-decision seeds; the generate queue creates instances at the end of the tick; offers, proposals and accepts replay; conditions, effects and chance inside a generated instance use that instance's casts and params.
 - Generator: `Wyrd.generator.offer` queues unsaved story pressure; `WyrdConfig.pressure_tiers` ranks tiers; template `on_deed` hooks queue deed offers; a fifth scheduler queue, `generate`, has share 0 by default (`W_TEMPLATE_TIER_UNKNOWN`, `W_TEMPLATE_TIER_ORDER` with `check --pressure-tiers`).
 - Compiler: `template` blocks (params, when/priority/weight/max_active/tier/assumes/allow_protected) compile, link and lint like quests, with W_TEMPLATE_TIE, E_TEMPLATE_REF and E_TEMPLATE_UNKNOWN; content.templates is filled from the pack.

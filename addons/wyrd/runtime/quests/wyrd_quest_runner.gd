@@ -67,6 +67,8 @@ var _lift_to: String = ""
 var _counters: Dictionary = {}
 ## Instance id to param name to [code]{entity, kind, owner?, place?}[/code].
 var _params: Dictionary = {}
+## Instance id to the minute [method create_instance] ran. Not a quest-row field.
+var _created: Dictionary = {}
 ## Instance id to a quest row whose template is no longer in the content.
 var _raw_rows: Dictionary = {}
 ## Instance id to a generator entry whose template is no longer in the content.
@@ -115,6 +117,7 @@ func reset() -> void:
 	_pure_start.clear()
 	_counters.clear()
 	_params.clear()
+	_created.clear()
 	_raw_rows.clear()
 	_raw_instances.clear()
 	_missing.clear()
@@ -398,6 +401,9 @@ func export_generator() -> Dictionary:
 		ids[String(instance_id)] = true
 	for instance_id in _params.keys():
 		ids[String(instance_id)] = true
+	for instance_id in _created.keys():
+		if _expires_minutes(_template_id(String(instance_id), {})) > 0:
+			ids[String(instance_id)] = true
 	var ordered: Array = ids.keys()
 	ordered.sort()
 	var instances := {}
@@ -412,6 +418,10 @@ func export_generator() -> Dictionary:
 			if not instances.has(key):
 				instances[key] = {}
 			(instances[key] as Dictionary)["params"] = params
+		if _expires_minutes(_template_id(key, {})) > 0 and _created.has(key):
+			if not instances.has(key):
+				instances[key] = {}
+			(instances[key] as Dictionary)["created"] = int(_created[key])
 	return {"counters": counters, "instances": instances}
 
 
@@ -432,6 +442,7 @@ func _param_row(instance_id: String) -> Dictionary:
 func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 	_counters.clear()
 	_params.clear()
+	_created.clear()
 	_raw_instances.clear()
 	_missing.clear()
 	_load_report = report
@@ -457,6 +468,7 @@ func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 			var casts: Dictionary = entry.get("casts", {}) if entry.get("casts") is Dictionary else {}
 			runtime.roles.install_casts(key, casts)
 			_install_params(key, entry)
+			_install_created(key, entry)
 		else:
 			_raw_instances[key] = entry.duplicate(true)
 			_note_missing(template_id, key)
@@ -575,6 +587,10 @@ func create_instance(template_id: String, casts: Dictionary = {}, params: Dictio
 	_declared[id] = _collect(template)
 	if not stored.is_empty():
 		_params[id] = stored
+	var minute := 0
+	if runtime != null:
+		minute = runtime.now_minutes()
+	_created[id] = minute
 	if runtime != null and runtime.roles != null:
 		runtime.roles.bind_instance(id, template)
 		for slot in template.slots:
@@ -617,6 +633,33 @@ func _normalize_param(value: Variant) -> Dictionary:
 	if copy.has("place"):
 		copy["place"] = String(copy["place"])
 	return copy
+
+
+func _install_created(instance_id: String, entry: Dictionary) -> void:
+	if entry.has("created"):
+		_created[instance_id] = int(entry["created"])
+		return
+	var minute := 0
+	if runtime != null:
+		minute = runtime.now_minutes()
+	_created[instance_id] = minute
+
+
+func _expires_minutes(template_id: String) -> int:
+	var found := _template(template_id)
+	if found is WyrdTemplateDef:
+		return (found as WyrdTemplateDef).expires_minutes
+	return 0
+
+
+func _trace_expire(instance_id: String) -> void:
+	if runtime == null:
+		return
+	runtime.trace_gen_line(
+		"gen_expire",
+		{"instance": instance_id, "reason": "timeout"},
+		"wyrd gen_expire instance=%s reason=timeout" % instance_id
+	)
 
 
 func _install_params(instance_id: String, entry: Dictionary) -> void:
@@ -714,6 +757,36 @@ func advance(quest_id: String, stage_id: String) -> String:
 		return _LIFT
 	_move(quest_id, quest, state, stage_id, _next_hop())
 	return ""
+
+
+## Abandons generated instances whose [code]expires:[/code] has elapsed.
+## An open scene of that instance waits for the next tick. Hand-written quests
+## are skipped. This does not call [method abandon], so another open scene stays up.
+func expire_due(now: int) -> void:
+	var ids: Array = _states.keys()
+	ids.sort()
+	for quest_id in ids:
+		var key := String(quest_id)
+		var state := _states.get(key) as QuestState
+		if state == null or state.template == "":
+			continue
+		var limit := _expires_minutes(state.template)
+		if limit <= 0:
+			continue
+		if state.status != AVAILABLE and state.status != ACTIVE:
+			continue
+		var created := now
+		if _created.has(key):
+			created = int(_created[key])
+		if now - created < limit:
+			continue
+		if runtime != null and runtime.dialogue != null and runtime.dialogue.is_open() and runtime.dialogue.open_quest_id() == key:
+			continue
+		state.waiting = ""
+		state.entered = false
+		state.held_empty = false
+		_set_status(key, state, ABANDONED)
+		_trace_expire(key)
 
 
 func abandon(quest_id: String) -> void:

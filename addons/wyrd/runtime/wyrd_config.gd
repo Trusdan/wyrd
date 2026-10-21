@@ -18,6 +18,7 @@ extends Resource
 ## [member credibility_threshold],
 ## [member compact_after],
 ## [member secrecy_tiers], [member secrecy_fact], [member pressure_tiers],
+## [member generator_retries],
 ## and [member trace_director].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
@@ -69,6 +70,9 @@ extends Resource
 @export var secrecy_tiers: PackedStringArray = PackedStringArray()
 ## Ordered pressure names, lowest first. Not saved. An empty list makes every named tier unknown.
 @export var pressure_tiers: PackedStringArray = PackedStringArray()
+## Extra candidate sets after a validator rejects a proposal. The default is 8.
+## A negative value is read as 0. Not saved.
+@export var generator_retries: int = 8
 ## World fact whose symbol is the unlocked secrecy name. Not saved.
 @export var secrecy_fact: String = "player.clearance"
 ## When true, a director query logs one line per scope-and-speaker match. Not saved.

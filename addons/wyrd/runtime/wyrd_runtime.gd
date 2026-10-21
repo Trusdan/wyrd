@@ -554,6 +554,7 @@ func _game_tick(advance: int) -> void:
 		sequences.on_tick()
 	_run_scheduler()
 	if quests != null:
+		quests.expire_due(now_minutes())
 		quests.on_tick()
 	if dialogue != null:
 		dialogue.on_tick()

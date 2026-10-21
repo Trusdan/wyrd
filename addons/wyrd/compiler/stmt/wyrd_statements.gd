@@ -720,6 +720,7 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 const _TEMPLATE_FIELDS := {
 	"allow_protected": true,
 	"assumes": true,
+	"expires": true,
 	"max_active": true,
 	"priority": true,
 	"tier": true,
@@ -936,6 +937,8 @@ func _template_field(node: WyrdNode, template: WyrdTemplateDef, field: String, n
 			_template_assumes(node, template, names)
 		"allow_protected":
 			_template_allow_protected(node, template)
+		"expires":
+			_template_expires(node, template)
 
 
 func _template_when(node: WyrdNode, template: WyrdTemplateDef) -> void:
@@ -1039,7 +1042,14 @@ func _template_assumes(node: WyrdNode, template: WyrdTemplateDef, names: Diction
 	if not _expr_failed(before) and ast != null and _rewrite_entity_holders(ast, names):
 		var rewritten := _render_expr(ast)
 		compiled = _expr(rewritten, line, col, _WAIT, true, &"", template.reads)
+		ast = compiled["ast"] as WyrdExprNode
 	template.assumes = compiled["compiled"]
+	if not _expr_failed(before) and ast != null and ast.kind != &"error":
+		for part in WyrdStoryletTie.and_parts(ast):
+			var part_compiled := _expr(WyrdStoryletTie.render(part), line, col, _WAIT, true, &"", template.reads)
+			var piece: WyrdCompiledCondition = part_compiled["compiled"]
+			if piece != null:
+				template.assumption_conds.append(piece)
 
 
 func _expr_failed(before: int) -> bool:
@@ -1083,6 +1093,16 @@ func _rewrite_entity_holders(node: WyrdExprNode, names: Dictionary) -> bool:
 	for kid in node.kids:
 		if _rewrite_entity_holders(kid, names):
 			changed = true
+	# A comparison such as owner_of(item) == victim is rendered from kids, not
+	# from the call payload the argument rewrite updates. Sync those kids, and
+	# wrap a bare slot or param name that was typed as an entity.
+	if node.kind == &"binary" and (node.text == "==" or node.text == "!="):
+		_sync_call_kids(node.a)
+		_sync_call_kids(node.b)
+		if _wrap_compared_name(node, true, names):
+			changed = true
+		if _wrap_compared_name(node, false, names):
+			changed = true
 	return changed
 
 
@@ -1112,7 +1132,49 @@ func _holder_call(source: WyrdExprNode, name: String) -> WyrdExprNode:
 	arg.end_line = source.end_line
 	arg.end_col = source.end_col
 	call.payload = [arg]
+	var wrapped := WyrdExprNode.new()
+	wrapped.kind = &"arg"
+	wrapped.a = arg
+	wrapped.line = source.line
+	wrapped.col = source.col
+	wrapped.end_line = source.end_line
+	wrapped.end_col = source.end_col
+	call.kids = [wrapped]
 	return call
+
+
+## Point a call's rendered arguments at the payload the entity rewrite updated.
+func _sync_call_kids(node: WyrdExprNode) -> void:
+	if node == null or node.kind != &"call" or not (node.payload is Array):
+		return
+	var args: Array = node.payload
+	for index in args.size():
+		if index >= node.kids.size() or not (args[index] is WyrdExprNode):
+			continue
+		var kid := node.kids[index]
+		if kid != null and kid.kind == &"arg":
+			kid.a = args[index]
+		else:
+			node.kids[index] = args[index]
+
+
+## Replace one side of [param node] when it is a bare slot or param name.
+func _wrap_compared_name(node: WyrdExprNode, left: bool, names: Dictionary) -> bool:
+	var side: WyrdExprNode = node.a if left else node.b
+	var bare := _bare_entity_name(side)
+	if bare.is_empty() or not names.has(bare):
+		return false
+	var other: WyrdExprNode = node.b if left else node.a
+	var side_entity := side.type_name == WyrdSignatures.T_ENTITY
+	var other_entity := other != null and other.type_name == WyrdSignatures.T_ENTITY
+	if not side_entity and not other_entity:
+		return false
+	var holder := _holder_call(side, bare)
+	if left:
+		node.a = holder
+	else:
+		node.b = holder
+	return true
 
 
 func _render_expr(node: WyrdExprNode) -> String:
@@ -1172,6 +1234,38 @@ func _param(node: WyrdNode, template: WyrdTemplateDef) -> void:
 	template.params.append(param)
 	WyrdStmtSpan.add_reads(template.reads, param.reads)
 	_no_block(node)
+
+
+func _template_expires(node: WyrdNode, template: WyrdTemplateDef) -> void:
+	var minutes := _template_duration_minutes(node, "expires")
+	if minutes < 0:
+		return
+	if minutes <= 0:
+		_template_error(node, "expires must be greater than 0")
+		return
+	template.expires_minutes = minutes
+
+
+func _template_duration_minutes(node: WyrdNode, label: String) -> int:
+	var at := _colon_at(node)
+	if at >= 0 and at < node.head.size() and node.head[at].kind == &"minus":
+		_template_error(node, "%s cannot be negative" % label)
+		return -1
+	if at < 0 or at + 1 >= node.head.size() or node.head[at].kind != &"int" or node.head[at + 1].kind != &"ident" or at + 2 != node.head.size():
+		_template_error(node, "%s needs a duration" % label)
+		return -1
+	var scale := 0
+	match node.head[at + 1].text:
+		"m":
+			scale = 1
+		"h":
+			scale = 60
+		"d":
+			scale = WyrdCondition.MINUTES_PER_DAY
+		_:
+			_template_error(node, "%s unit must be m, h, or d" % label)
+			return -1
+	return int(node.head[at].text) * scale
 
 
 func _template_error(node: WyrdNode, message: String) -> void:

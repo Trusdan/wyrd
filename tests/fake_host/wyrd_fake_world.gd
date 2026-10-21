@@ -14,6 +14,13 @@ class EntityRecord extends RefCounted:
 var _entities: Dictionary = {}
 var _members: Dictionary = {}
 var _groups: Dictionary = {}
+var _protected: Dictionary = {}
+var _out_of_bounds: Dictionary = {}
+## Pack string from the latest [method in_bounds] call. Tests read it.
+var bounds_pack: String = ""
+var bounds_id: String = ""
+## When set, [method exists] is false for this id even though it stays a candidate.
+var deny_exists: StringName = &""
 
 
 func add_entity(
@@ -40,7 +47,27 @@ func set_attr(id: StringName, key: StringName, value: Variant) -> void:
 
 
 func exists(id: StringName) -> bool:
+	if deny_exists != &"" and id == deny_exists:
+		return false
 	return _entities.has(id)
+
+
+func set_protected(id: StringName, on: bool) -> void:
+	_protected[id] = on
+
+
+func set_out_of_bounds(id: StringName, on: bool) -> void:
+	_out_of_bounds[id] = on
+
+
+func is_protected(id: StringName) -> bool:
+	return bool(_protected.get(id, false))
+
+
+func in_bounds(id: StringName, pack: String) -> bool:
+	bounds_id = String(id)
+	bounds_pack = pack
+	return not bool(_out_of_bounds.get(id, false))
 
 
 func remove_entity(id: StringName) -> void:
