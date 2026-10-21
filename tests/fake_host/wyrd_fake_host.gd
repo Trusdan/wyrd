@@ -31,6 +31,7 @@ func adapter_count() -> int:
 
 
 func register_into(runtime: WyrdRuntime) -> void:
+	world.changed = Callable(runtime, &"invalidate_world")
 	for path in _by_base_path.keys():
 		var base := load(str(path)) as Script
 		if base == null:

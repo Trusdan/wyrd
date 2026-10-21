@@ -62,10 +62,20 @@ func groups_of(_agent: StringName) -> PackedStringArray:
 	return PackedStringArray()
 
 
+## Default is false. This is a default, not an unimplemented stub, so it does
+## not [code]push_error[/code]. A host that returns true promises to call
+## [method Wyrd.invalidate_world] whenever an entity is added or removed, or
+## its kind, tags, liveness, attributes, or [method candidates] membership change.
+func reports_changes() -> bool:
+	return false
+
+
 ## Entity ids that match [param filter]. An empty kind and tag means every entity
 ## the host is willing to offer. Order is not significant. Role casts pass an
 ## empty filter. Object and item casts set [member WyrdEntityFilter.kind] and
-## [member WyrdEntityFilter.tag]. Items use kind [code]item[/code].
+## [member WyrdEntityFilter.tag]. Items use kind [code]item[/code]. When
+## [method reports_changes] is true, Wyrd may reuse an earlier answer until the
+## next [method Wyrd.invalidate_world].
 func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
 	var kind := ""
 	var tag := ""

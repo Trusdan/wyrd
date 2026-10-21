@@ -4,8 +4,9 @@
 
 ## 0.7.0-m9 - 2026-10-21
 
-M9 procedural generator (M9 PRs 1–8). `addons/wyrd/VERSION` is `0.7.0-m9`. `plugin.cfg` version is `0.7.0-m9`. Save schema is 4. The tag `v0.7.0-m9` is cut only on request, after the M9 bench.
+M9 procedural generator (M9 PRs 1–9). `addons/wyrd/VERSION` is `0.7.0-m9`. `plugin.cfg` version is `0.7.0-m9`. Save schema is 4. The tag `v0.7.0-m9` is cut only on request, after the M9 bench.
 
+- Casting: cast slots and params compile a cast plan from their top-level `and` clauses. For a world adapter that returns `reports_changes()` true and calls `Wyrd.invalidate_world(ids)` on entity changes, casts reuse the host's candidate answer and cache per-entity clause results until the next change. Other hosts scan as before. With tracing off, the generator no longer hashes candidates or builds `gen_*` lines. Cast results, traces with tracing on, and saves are unchanged. Save schema stays 4.
 - Example: Gullhaven gains seven generated-quest templates (deliver, recover, investigate, escort and a three-tier recurring favor) and an M9 exit suite that validates, plays every route, saves mid-generation and replays them; version `0.7.0-m9`. Save schema stays 4.
 - Generator: validators reject proposals that use missing, protected or out-of-bounds entities, or whose `assumes:` is false or contradicts what the player knows (`gen_reject`); rejected proposals retry up to `generator_retries` (8) with varied keys; `gen_cap` logs a `max_active` exclusion; an optional template `expires:` abandons old instances (`gen_expire`); `why-not <template>` and `generate --dry-run` explain picks; conditions can read `owner_of(<item>)`. An empty place is not a rejection. Save schema stays 4.
 - Generator: propose/accept pick, cast and bind templates with per-decision seeds; the generate queue creates instances at the end of the tick; offers, proposals and accepts replay; conditions, effects and chance inside a generated instance use that instance's casts and params.

@@ -16,11 +16,44 @@ var _members: Dictionary = {}
 var _groups: Dictionary = {}
 var _protected: Dictionary = {}
 var _out_of_bounds: Dictionary = {}
+## Called with the ids whose candidate facts may have changed. An empty list
+## means anything may have changed. Not saved.
+var changed: Callable = Callable()
+var _bounds_pack: String = ""
+var _bounds_id: String = ""
+var _deny_exists: StringName = &""
 ## Pack string from the latest [method in_bounds] call. Tests read it.
-var bounds_pack: String = ""
-var bounds_id: String = ""
+## Assigning it reports a world change.
+var bounds_pack: String:
+	get:
+		return _bounds_pack
+	set(value):
+		_bounds_pack = value
+		_emit_change(PackedStringArray())
+## Entity id from the latest [method in_bounds] call. Assigning it reports a world change.
+var bounds_id: String:
+	get:
+		return _bounds_id
+	set(value):
+		_bounds_id = value
+		_emit_change(PackedStringArray())
 ## When set, [method exists] is false for this id even though it stays a candidate.
-var deny_exists: StringName = &""
+## Assigning it reports the previous id and the new id.
+var deny_exists: StringName:
+	get:
+		return _deny_exists
+	set(value):
+		var previous := _deny_exists
+		var nxt := StringName(value)
+		if previous == nxt:
+			return
+		_deny_exists = nxt
+		var ids := PackedStringArray()
+		if previous != &"":
+			ids.append(String(previous))
+		if nxt != &"":
+			ids.append(String(nxt))
+		_emit_change(ids)
 
 
 func add_entity(
@@ -36,6 +69,11 @@ func add_entity(
 	record.tags = entity_tags
 	record.alive = alive
 	_entities[id] = record
+	_emit_id(id)
+
+
+func reports_changes() -> bool:
+	return true
 
 
 func set_attr(id: StringName, key: StringName, value: Variant) -> void:
@@ -44,6 +82,7 @@ func set_attr(id: StringName, key: StringName, value: Variant) -> void:
 		push_error("WyrdFakeWorld.set_attr: unknown entity %s." % id)
 		return
 	record.attrs[key] = value
+	_emit_id(id)
 
 
 func exists(id: StringName) -> bool:
@@ -54,10 +93,12 @@ func exists(id: StringName) -> bool:
 
 func set_protected(id: StringName, on: bool) -> void:
 	_protected[id] = on
+	_emit_id(id)
 
 
 func set_out_of_bounds(id: StringName, on: bool) -> void:
 	_out_of_bounds[id] = on
+	_emit_id(id)
 
 
 func is_protected(id: StringName) -> bool:
@@ -65,8 +106,8 @@ func is_protected(id: StringName) -> bool:
 
 
 func in_bounds(id: StringName, pack: String) -> bool:
-	bounds_id = String(id)
-	bounds_pack = pack
+	_bounds_id = String(id)
+	_bounds_pack = pack
 	return not bool(_out_of_bounds.get(id, false))
 
 
@@ -75,6 +116,7 @@ func remove_entity(id: StringName) -> void:
 	_groups.erase(id)
 	for faction in _members.keys():
 		(_members[faction] as Dictionary).erase(id)
+	_emit_id(id)
 
 
 func kind(id: StringName) -> StringName:
@@ -119,6 +161,7 @@ func add_member(faction: StringName, entity: StringName) -> void:
 	if not _members.has(faction):
 		_members[faction] = {}
 	(_members[faction] as Dictionary)[entity] = true
+	_emit_change(PackedStringArray())
 
 
 ## Precedence order for [param agent]. [method members] is the other direction and sorts.
@@ -130,6 +173,7 @@ func set_groups(agent: StringName, groups: PackedStringArray) -> void:
 	for id in groups:
 		rows.append(String(id))
 	_groups[agent] = rows
+	_emit_change(PackedStringArray())
 
 
 func groups_of(agent: StringName) -> PackedStringArray:
@@ -164,6 +208,18 @@ func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
 		rows.append(String(id))
 	rows.sort()
 	return rows
+
+
+func _emit_id(id: StringName) -> void:
+	var ids := PackedStringArray()
+	if id != &"":
+		ids.append(String(id))
+	_emit_change(ids)
+
+
+func _emit_change(ids: PackedStringArray) -> void:
+	if changed.is_valid():
+		changed.call(ids)
 
 
 func _record(id: StringName) -> EntityRecord:

@@ -20,6 +20,8 @@ var _reserved: Dictionary = {}
 var _seq: int = 0
 ## Template id to the last decision that considered it. Not saved.
 var _why: Dictionary = {}
+## How many times [method _trace_candidates] ran. Not saved.
+var candidate_traces: int = 0
 
 
 func offer(source: StringName, key: String, tier: StringName = &"", payload: Dictionary = {}) -> bool:
@@ -65,6 +67,7 @@ func clear() -> void:
 	_reserved.clear()
 	_why.clear()
 	_seq = 0
+	candidate_traces = 0
 
 
 ## [code]-1[/code] when [param name] is empty or not in [member WyrdConfig.pressure_tiers].
@@ -324,25 +327,28 @@ func _decide(
 	var excluded := {}
 	var rejected := false
 	var stop_reason := ""
+	var tracing := _tracing()
 	for attempt in range(retries + 1):
-		var eligible := _eligible(tier, template_filter)
+		var eligible := _eligible(tier, template_filter, tracing)
 		var seed_key := _attempt_key("pick:%s:%s" % [String(source), key], attempt)
-		_trace_line("gen_tier", {
-			"eligible": eligible.size(),
-			"key": key,
-			"source": String(source),
-			"tier": String(tier),
-		}, "wyrd gen_tier source=%s key=%s tier=%s eligible=%d" % [String(source), key, String(tier), eligible.size()])
-		if eligible.is_empty():
-			_trace_line("gen_pick", {
-				"band": 0,
+		if tracing:
+			_trace_line("gen_tier", {
+				"eligible": eligible.size(),
 				"key": key,
-				"reason": "no_template",
-				"score": "0/0",
-				"seed_key": seed_key,
 				"source": String(source),
-				"template": "",
-			}, "wyrd gen_pick source=%s key=%s template= reason=no_template score=0/0 band=0 seed_key=%s" % [String(source), key, seed_key])
+				"tier": String(tier),
+			}, "wyrd gen_tier source=%s key=%s tier=%s eligible=%d" % [String(source), key, String(tier), eligible.size()])
+		if eligible.is_empty():
+			if tracing:
+				_trace_line("gen_pick", {
+					"band": 0,
+					"key": key,
+					"reason": "no_template",
+					"score": "0/0",
+					"seed_key": seed_key,
+					"source": String(source),
+					"template": "",
+				}, "wyrd gen_pick source=%s key=%s template= reason=no_template score=0/0 band=0 seed_key=%s" % [String(source), key, seed_key])
 			stop_reason = "no_template"
 			break
 		var band := _top_band(eligible)
@@ -350,15 +356,16 @@ func _decide(
 		for template in eligible:
 			if template.id != chosen.id:
 				_why_put(template.id, "not_picked")
-		var score := "%d/%d" % [chosen.priority, chosen.specificity]
-		_trace_line("gen_pick", {
-			"band": band.size(),
-			"key": key,
-			"score": score,
-			"seed_key": seed_key,
-			"source": String(source),
-			"template": chosen.id,
-		}, "wyrd gen_pick source=%s key=%s template=%s score=%s band=%d seed_key=%s" % [String(source), key, chosen.id, score, band.size(), seed_key])
+		if tracing:
+			var score := "%d/%d" % [chosen.priority, chosen.specificity]
+			_trace_line("gen_pick", {
+				"band": band.size(),
+				"key": key,
+				"score": score,
+				"seed_key": seed_key,
+				"source": String(source),
+				"template": chosen.id,
+			}, "wyrd gen_pick source=%s key=%s template=%s score=%s band=%d seed_key=%s" % [String(source), key, chosen.id, score, band.size(), seed_key])
 		var expected := _counter(chosen.id) + _reserved_count(chosen.id)
 		var instance := "%s#%d" % [chosen.id, expected + 1]
 		var casts := {}
@@ -366,7 +373,7 @@ func _decide(
 		if runtime != null:
 			runtime.begin_provisional(instance)
 			runtime.push_scope(instance)
-		var failed_name := _bind_template(chosen, instance, casts, params, attempt, excluded)
+		var failed_name := _bind_template(chosen, instance, casts, params, attempt, excluded, tracing)
 		var problem := {}
 		if failed_name.is_empty():
 			problem = _validate(chosen, instance, casts, params, attempt)
@@ -381,13 +388,14 @@ func _decide(
 			rejected = true
 			var rule := str(problem.get("rule", ""))
 			var ident := str(problem.get("id", ""))
-			_trace_line("gen_reject", {
-				"attempt": attempt,
-				"id": ident,
-				"instance": instance,
-				"rule": rule,
-				"template": chosen.id,
-			}, "wyrd gen_reject template=%s instance=%s rule=%s id=%s attempt=%d" % [chosen.id, instance, rule, ident, attempt])
+			if tracing:
+				_trace_line("gen_reject", {
+					"attempt": attempt,
+					"id": ident,
+					"instance": instance,
+					"rule": rule,
+					"template": chosen.id,
+				}, "wyrd gen_reject template=%s instance=%s rule=%s id=%s attempt=%d" % [chosen.id, instance, rule, ident, attempt])
 			_why_reject(chosen.id, rule, ident, attempt)
 			if rule == "exists" or rule == "place" or rule == "protected" or rule == "bounds":
 				excluded[ident] = true
@@ -411,14 +419,15 @@ func _decide(
 			_reserved[chosen.id] = _reserved_count(chosen.id) + 1
 			_pending.append(proposal)
 		else:
-			_trace_propose(source, key, tier, payload, true, "proposed", proposal.id)
+			if tracing:
+				_trace_propose(source, key, tier, payload, true, "proposed", proposal.id)
 		return proposal
 	var reason := stop_reason
 	if rejected:
 		reason = "rejected"
 	if reason.is_empty():
 		reason = "no_template"
-	if not reserve:
+	if not reserve and tracing:
 		_trace_propose(source, key, tier, payload, false, reason, "")
 	return null
 
@@ -444,7 +453,7 @@ func _trace_propose(
 	}, "wyrd gen_propose source=%s key=%s ok=%s reason=%s proposal=%s" % [String(source), key, flag, reason, proposal_id])
 
 
-func _eligible(tier: StringName, template_filter: String) -> Array[WyrdTemplateDef]:
+func _eligible(tier: StringName, template_filter: String, tracing: bool = false) -> Array[WyrdTemplateDef]:
 	var found: Array[WyrdTemplateDef] = []
 	if runtime == null or runtime.content() == null:
 		return found
@@ -470,12 +479,13 @@ func _eligible(tier: StringName, template_filter: String) -> Array[WyrdTemplateD
 			live = runtime.quests.active_count(template.id)
 		var reserved := _reserved_count(template.id)
 		if live + reserved >= template.max_active:
-			_trace_line("gen_cap", {
-				"active": live,
-				"max": template.max_active,
-				"reserved": reserved,
-				"template": template.id,
-			}, "wyrd gen_cap template=%s active=%d reserved=%d max=%d" % [template.id, live, reserved, template.max_active])
+			if tracing:
+				_trace_line("gen_cap", {
+					"active": live,
+					"max": template.max_active,
+					"reserved": reserved,
+					"template": template.id,
+				}, "wyrd gen_cap template=%s active=%d reserved=%d max=%d" % [template.id, live, reserved, template.max_active])
 			_why_put(template.id, "filtered", "cap")
 			continue
 		found.append(template)
@@ -526,7 +536,8 @@ func _bind_template(
 	casts: Dictionary,
 	params: Dictionary,
 	attempt: int,
-	excluded: Dictionary
+	excluded: Dictionary,
+	tracing: bool = false
 ) -> String:
 	if runtime == null or runtime.roles == null:
 		return "bind"
@@ -535,33 +546,37 @@ func _bind_template(
 			continue
 		var pool := runtime.roles.cast_pool(slot)
 		var decision := _attempt_key("cast:%s.%s" % [instance, slot.name], attempt)
-		_trace_candidates(decision, pool["raw"])
+		if tracing:
+			_trace_candidates(decision, pool["raw"])
 		var picked := runtime.roles.pick_id(_without(pool["accepted"], excluded), &"generator", decision)
 		if picked == &"":
 			return slot.name
 		casts[slot.name] = String(picked)
 		runtime.provisional_cast(slot.name, picked)
-		_trace_line("gen_cast", {
-			"entity": String(picked),
-			"instance": instance,
-			"kind": slot.kind,
-			"slot": slot.name,
-		}, "wyrd gen_cast instance=%s slot=%s kind=%s entity=%s" % [instance, slot.name, slot.kind, String(picked)])
+		if tracing:
+			_trace_line("gen_cast", {
+				"entity": String(picked),
+				"instance": instance,
+				"kind": slot.kind,
+				"slot": slot.name,
+			}, "wyrd gen_cast instance=%s slot=%s kind=%s entity=%s" % [instance, slot.name, slot.kind, String(picked)])
 	for param in template.params:
 		var pool := runtime.roles.param_pool(param)
 		var decision := _attempt_key("param:%s.%s" % [instance, param.name], attempt)
-		_trace_candidates(decision, pool["raw"])
+		if tracing:
+			_trace_candidates(decision, pool["raw"])
 		var picked := runtime.roles.pick_id(_without(pool["accepted"], excluded), &"generator", decision)
 		if picked == &"":
 			return param.name
 		params[param.name] = _param_snapshot(param, picked)
 		runtime.provisional_param(param.name, picked)
-		_trace_line("gen_bind", {
-			"entity": String(picked),
-			"instance": instance,
-			"kind": param.kind,
-			"param": param.name,
-		}, "wyrd gen_bind instance=%s param=%s kind=%s entity=%s" % [instance, param.name, param.kind, String(picked)])
+		if tracing:
+			_trace_line("gen_bind", {
+				"entity": String(picked),
+				"instance": instance,
+				"kind": param.kind,
+				"param": param.name,
+			}, "wyrd gen_bind instance=%s param=%s kind=%s entity=%s" % [instance, param.name, param.kind, String(picked)])
 	return ""
 
 
@@ -579,14 +594,35 @@ func _param_snapshot(param: WyrdParamDef, entity: StringName) -> Dictionary:
 
 
 func _trace_candidates(decision_key: String, raw: Array) -> void:
+	candidate_traces += 1
+	var digest := _candidate_digest(raw)
+	var shown := WyrdRng.format_u64(digest)
+	_trace_line("gen_candidates", {
+		"count": raw.size(),
+		"digest": shown,
+		"key": decision_key,
+	}, "wyrd gen_candidates key=%s count=%d digest=%s" % [decision_key, raw.size(), shown])
+
+
+func _candidate_digest(raw: Array) -> int:
+	if runtime != null and runtime.roles != null and runtime.roles.indexed_pool():
+		if runtime.roles.indexed_digest_ready():
+			return runtime.roles.indexed_digest()
+		var stored := _hash_candidates(raw)
+		runtime.roles.store_indexed_digest(stored)
+		return stored
+	return _hash_candidates(raw)
+
+
+func _hash_candidates(raw: Array) -> int:
 	var digest := WyrdHash.of_int(0)
 	for id in raw:
 		digest = WyrdHash.combine(digest, WyrdHash.of_string_name(StringName(str(id))))
-	_trace_line("gen_candidates", {
-		"count": raw.size(),
-		"digest": WyrdRng.format_u64(digest),
-		"key": decision_key,
-	}, "wyrd gen_candidates key=%s count=%d digest=%s" % [decision_key, raw.size(), WyrdRng.format_u64(digest)])
+	return digest
+
+
+func _tracing() -> bool:
+	return runtime != null and runtime.trace != null and runtime.trace.enabled
 
 
 func _trace_line(kind: String, fields: Dictionary, line: String) -> void:
@@ -621,6 +657,8 @@ func _attempt_key(base: String, attempt: int) -> String:
 
 
 func _without(ids: Array, excluded: Dictionary) -> Array:
+	if excluded.is_empty():
+		return ids
 	var kept: Array = []
 	for item in ids:
 		if excluded.has(String(item)):

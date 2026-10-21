@@ -13,3 +13,5 @@ var kind: String = ""
 var cast_when: WyrdCompiledCondition = null
 var cast_text: String = ""
 var cast_tag: String = ""
+## Cast-clause split. Not exported, not saved, and not dumped by goldens.
+var cast_plan: WyrdCastPlan = null
