@@ -8,7 +8,8 @@ extends RefCounted
 ## rejects it, and rejects resolved facts invalidated [code]per_query[/code] or not at all
 ## ([code]E_WAIT_RESOLVER_MODE[/code]). [param allow_spatial] lets a wait name
 ## [code]nearby[/code], [code]can_perceive[/code], or [code]can_reach[/code].
-## [param event_fields] types [code]event.<field>[/code].
+## [param event_fields] types [code]event.<field>[/code], or [code]deed.<field>[/code]
+## when [param binding_prefix] is [code]deed[/code].
 ## [param bindings] types a bare name, such as [code]candidate[/code] in a role eligibility condition.
 ## [param minutes_per_day] defaults to 1440 until a calendar resource exists.
 ## [param expected] is used when [param require_bool] is false, so a value
@@ -36,7 +37,8 @@ func compile(
 	expected: StringName = &"",
 	event_fields: Dictionary = {},
 	bindings: Dictionary = {},
-	allow_spatial: bool = false
+	allow_spatial: bool = false,
+	binding_prefix: String = "event"
 ) -> WyrdCompiledCondition:
 	if signatures == null:
 		signatures = WyrdSignatures.new()
@@ -50,6 +52,7 @@ func compile(
 	checker.context = context
 	checker.minutes_per_day = minutes_per_day
 	checker.event_fields = event_fields
+	checker.binding_prefix = binding_prefix
 	checker.bindings = bindings
 	checker.allow_spatial = allow_spatial
 	var want := expected

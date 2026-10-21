@@ -392,7 +392,9 @@ A top-level `template <id> "<title>"` block is a quest body plus generator field
 
 `when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` are colon fields, each at most once. `when:` uses the storylet context and sets specificity from the compiled condition. `priority:` defaults to 0. `weight:` defaults to 1 and cannot be negative. `max_active:` defaults to 1 and must be at least 1. `tier:` is `<name>` or `<low>..<high>`. `tier` stays reserved as an identifier and is accepted as this field word only. `assumes:` uses the wait context. Each top-level `and` part keeps its source text. An identifier in an entity argument that names a slot or param of this template compiles as `holder(<name>)` there only. `allow_protected:` is `true` or `false`, default false.
 
-`start` is `E_TEMPLATE_SYNTAX` with `a template has no start; the generator starts its instances`. `on_deed` is `E_TEMPLATE_SYNTAX` with `on_deed is not supported yet`. A compiled template prints `info[I_TEMPLATE_SCORE]` as `template "<id>" specificity <n> priority <n>`.
+`start` is `E_TEMPLATE_SYNTAX` with `a template has no start; the generator starts its instances`. `on_deed <verb>` or `on_deed <verb> where <condition>` may appear any number of times. The same verb twice is `E_TEMPLATE_SYNTAX` with `duplicate deed hook "<verb>"`. The condition is a wait. It may read `deed.actor`, `deed.target`, and `deed.place` as entities and `deed.magnitude` as a float. A bare name compared with one of those entities is an entity. A statement line has no `!=`, so write `not deed.target == player`. An unknown `deed.` field is `E_EVENT_ARG` with `unknown deed field "<name>"`. A bare name, `holder(<name>)`, or `slot_state(<name>)` that names a slot or param of this template is `E_TEMPLATE_SYNTAX` with `a deed hook runs before anything is cast`. A compiled template prints `info[I_TEMPLATE_SCORE]` as `template "<id>" specificity <n> priority <n>`.
+
+`check --pressure-tiers a,b,c` warns `W_TEMPLATE_TIER_UNKNOWN` when a template tier name is not in that list, and `W_TEMPLATE_TIER_ORDER` when `low..high` names a low tier above the high tier. Without the list, neither warning is emitted.
 
 Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPLICATE`, and the message names `template` when the template is the later one. Quest lints walk template bodies: empty coverage, unreachable stages, unused slots, fact xref, secrecy, line ids, and holder and role checks. An unused name passed with `with` is `W_SLOT_UNUSED`; a param uses the noun `param`. `start quest`, `advance`, `quest(...)`, `stage(...)`, `outcome(...)`, and a beat scope on a template stage are `E_TEMPLATE_REF` with `"<id>" is a template; content cannot name its instances`. `active_count(<id>)` of an id that is neither a template nor a quest is `E_TEMPLATE_UNKNOWN` with `unknown template "<id>"`. A quest id is allowed: the instance tests promote that quest into `content.templates` in memory.
 
@@ -404,6 +406,8 @@ Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPL
 | `E_TEMPLATE_REF` | Content names a template where a quest or an instance is meant |
 | `E_TEMPLATE_UNKNOWN` | `active_count` names an id that is neither a declared template nor a declared quest |
 | `W_TEMPLATE_TIE` | Two templates can tie for a pick |
+| `W_TEMPLATE_TIER_UNKNOWN` | A template tier name is not in `--pressure-tiers` |
+| `W_TEMPLATE_TIER_ORDER` | `tier: low..high` names a low tier above the high tier |
 | `I_TEMPLATE_SCORE` | The template's specificity and priority |
 
 ## Not in this draft

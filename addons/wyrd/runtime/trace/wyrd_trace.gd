@@ -48,6 +48,11 @@ var enabled: bool = false
 ## instance is [code]<template>#<n>[/code], or empty when creation was refused.
 ## n is the new counter, or 0 when nothing was created. ok is true or false.
 ## reason is created, unknown_template, or bad_cast. Replay skips it. Load does not log one.
+## A gen_offer line is one queued or replaced story-pressure offer.
+## source is host or deed. key is the offer key. tier may be empty.
+## origin is host or deed. template is empty for a host offer.
+## queued is the queue length after the change. replaced is true or false.
+## The prefix matches key. Replay skips it. Load does not log one.
 ## An object or item cast stores the slot kind as [code]slot_kind[/code].
 ## The printed line labels that field [code]kind[/code]. [code]kind[/code] on the
 ## record stays the event name ([code]cast[/code] or [code]slot_state[/code]).
@@ -60,7 +65,7 @@ var enabled: bool = false
 ## bucket is the time bucket. entries is how many entries were dropped.
 ## Reads and hits log only when tracing is on. Replay skips the line. Load does not log one.
 ## A scheduler line is one queue's units for a game tick, or one enqueued item.
-## key and queue are waits, rumor, publish, cache_refresh, or frame.
+## key and queue are waits, rumor, publish, cache_refresh, generate, or frame.
 ## units is the work done. carry is the unfinished count. A frame line is the
 ## debug soft warning: us is the measured time and threshold is the config.
 ## The default threshold is 2000 microseconds (2 ms). 0 disables the line.
@@ -160,7 +165,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 			"create_copy":
 				if runtime.documents != null:
 					runtime.documents.create_copy(StringName(str(row.get("doc", ""))), str(row.get("copy", "")))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
+			"console", "storylet_index", "deed_index", "gen_offer", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:
 				pass

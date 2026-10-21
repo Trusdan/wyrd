@@ -1,0 +1,12 @@
+language 1
+
+template favor "Favor"
+  tier: low..high
+  stage work
+    waits_until false
+
+template theft_report "Theft"
+  on_deed theft where not deed.target == player
+  on_deed assault
+  stage work
+    waits_until false

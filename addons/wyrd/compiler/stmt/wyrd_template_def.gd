@@ -30,6 +30,8 @@ var assumes_text: String = ""
 ## One source text per top-level [code]and[/code] part, before holder rewriting.
 var assumption_texts: PackedStringArray = PackedStringArray()
 var allow_protected: bool = false
+## [code]on_deed[/code] hooks, in source order. One verb at most once.
+var deed_hooks: Array[WyrdDeedHookDef] = []
 
 
 ## Missing tiers overlap everything. A range overlaps anything. Two names overlap only if equal.

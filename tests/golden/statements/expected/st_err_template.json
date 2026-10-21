@@ -76,7 +76,7 @@
       "code": "E_TEMPLATE_SYNTAX",
       "col": 3,
       "line": 16,
-      "message": "on_deed is not supported yet",
+      "message": "on_deed needs <verb> or <verb> where <condition>",
       "path": "res://tests/golden/statements/st_err_template.wyrd",
       "severity": "error"
     },

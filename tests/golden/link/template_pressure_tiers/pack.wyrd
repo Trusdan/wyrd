@@ -1,0 +1,21 @@
+language 1
+
+template low_one "Low"
+  tier: low
+  stage work
+    waits_until false
+
+template inverted "Inverted"
+  tier: high..low
+  stage work
+    waits_until false
+
+template mythic_one "Mythic"
+  tier: mythic
+  stage work
+    waits_until false
+
+template span "Span"
+  tier: low..high
+  stage work
+    waits_until false

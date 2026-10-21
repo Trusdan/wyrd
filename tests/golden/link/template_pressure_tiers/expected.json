@@ -1,0 +1,235 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "template \"low_one\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 8,
+      "message": "template \"inverted\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 8,
+      "message": "template \"inverted\" ties \"low_one\": priority 0 specificity 0 weights 1 and 1",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_TEMPLATE_TIER_ORDER",
+      "col": 1,
+      "line": 8,
+      "message": "pressure tier \"high\" is above \"low\"",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 13,
+      "message": "template \"mythic_one\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 13,
+      "message": "template \"mythic_one\" ties \"inverted\": priority 0 specificity 0 weights 1 and 1",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_TEMPLATE_TIER_UNKNOWN",
+      "col": 1,
+      "line": 13,
+      "message": "unknown pressure tier \"mythic\"",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 18,
+      "message": "template \"span\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 18,
+      "message": "template \"span\" ties \"low_one\": priority 0 specificity 0 weights 1 and 1",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 18,
+      "message": "template \"span\" ties \"inverted\": priority 0 specificity 0 weights 1 and 1",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 18,
+      "message": "template \"span\" ties \"mythic_one\": priority 0 specificity 0 weights 1 and 1",
+      "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "2370abad4f62babd",
+        "path": "res://tests/golden/link/template_pressure_tiers/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "template_pressure_tiers",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "templates": [
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+        "id": "low_one",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "low",
+        "tier_range": false,
+        "title": "Low",
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+        "id": "inverted",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "low",
+        "tier_low": "high",
+        "tier_range": true,
+        "title": "Inverted",
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+        "id": "mythic_one",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "mythic",
+        "tier_range": false,
+        "title": "Mythic",
+        "weight": 1,
+        "when": ""
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_pressure_tiers/pack.wyrd",
+        "id": "span",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "work",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "high",
+        "tier_low": "low",
+        "tier_range": true,
+        "title": "Span",
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

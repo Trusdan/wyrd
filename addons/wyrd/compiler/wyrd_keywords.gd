@@ -100,6 +100,7 @@ const FIELDS: PackedStringArray = [
 	"max_active",
 	"assumes",
 	"allow_protected",
+	"on_deed",
 ]
 const EFFECTS: PackedStringArray = [
 	"set",

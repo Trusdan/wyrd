@@ -1,0 +1,13 @@
+language 1
+
+template bad "Bad"
+  slot giver = dock_keeper mode: live
+  param toll: item cast(true)
+  on_deed theft where not deed.target == player
+  on_deed theft
+  on_deed paid where deed.nope == 1
+  on_deed met where alive(giver)
+  on_deed seen where alive(toll)
+  on_deed chance_hook where chance(0.5)
+  stage one
+    waits_until false

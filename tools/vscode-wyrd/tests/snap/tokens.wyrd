@@ -95,3 +95,4 @@ template ferry.errand "The Errand"
   allow_protected: true
   stage ask
     journal: Ask the giver. #line:ask1
+  on_deed theft where not deed.target == player

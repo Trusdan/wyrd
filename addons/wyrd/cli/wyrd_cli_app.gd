@@ -32,7 +32,7 @@ static func version_line() -> String:
 
 static func command_lines() -> PackedStringArray:
 	return PackedStringArray([
-		"check: compile and link a content pack; --watch re-checks on change; --tiers a,b runs the secrecy lint",
+		"check: compile and link a content pack; --watch re-checks on change; --tiers a,b runs the secrecy lint; --pressure-tiers a,b lints template tiers",
 		"test: not implemented",
 		"tag-lines: write missing #line: ids",
 		"export-json: write the linked pack as JSON",
@@ -669,14 +669,18 @@ static func _runtime_from(parsed: Dictionary) -> Dictionary:
 
 
 static func _split_tiers(text: String) -> Dictionary:
+	return _split_named(text, "--tiers")
+
+
+static func _split_named(text: String, flag: String) -> Dictionary:
 	var names := PackedStringArray()
 	for part in text.split(","):
 		var name := part.strip_edges()
 		if name.is_empty():
-			return {"error": "wyrd: --tiers has an empty name\n", "tiers": PackedStringArray()}
+			return {"error": "wyrd: %s has an empty name\n" % flag, "tiers": PackedStringArray()}
 		names.append(name)
 	if names.is_empty():
-		return {"error": "wyrd: --tiers has an empty name\n", "tiers": PackedStringArray()}
+		return {"error": "wyrd: %s has an empty name\n" % flag, "tiers": PackedStringArray()}
 	return {"error": "", "tiers": names}
 
 
@@ -975,28 +979,23 @@ static func _load(parsed: Dictionary) -> Dictionary:
 		var read := WyrdPack.read_commands(commands_path, diagnostics)
 		commands = read["schema"]
 		skip_commands_note = bool(read["skip_note"])
-	var pack: WyrdLinkedPack
-	if str(parsed["command"]) == "check" and bool(parsed["tiers_set"]):
-		pack = WyrdPack.compile(
-			files,
-			str(parsed["pack_id"]),
-			int(parsed["language_version"]),
-			commands,
-			diagnostics,
-			str(parsed["note_path"]),
-			skip_commands_note,
-			parsed["tiers"]
-		)
-	else:
-		pack = WyrdPack.compile(
-			files,
-			str(parsed["pack_id"]),
-			int(parsed["language_version"]),
-			commands,
-			diagnostics,
-			str(parsed["note_path"]),
-			skip_commands_note
-		)
+	var secrecy := PackedStringArray()
+	if str(parsed["command"]) == "check" and bool(parsed.get("tiers_set", false)):
+		secrecy = _tier_names(parsed["tiers"])
+	var pressure := PackedStringArray()
+	if str(parsed["command"]) == "check" and bool(parsed.get("pressure_set", false)):
+		pressure = _tier_names(parsed["pressure_tiers"])
+	var pack := WyrdPack.compile(
+		files,
+		str(parsed["pack_id"]),
+		int(parsed["language_version"]),
+		commands,
+		diagnostics,
+		str(parsed["note_path"]),
+		skip_commands_note,
+		secrecy,
+		pressure
+	)
 	return {"diagnostics": diagnostics, "exit_code": 0, "output": "", "pack": pack}
 
 
@@ -1020,6 +1019,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 	var locales := PackedStringArray()
 	var tiers := PackedStringArray()
 	var tiers_set := false
+	var pressure_tiers := PackedStringArray()
+	var pressure_set := false
 	var secrecy_fact := ""
 	var secrecy_fact_set := false
 	var trace_director := false
@@ -1095,6 +1096,15 @@ static func _options(args: PackedStringArray) -> Dictionary:
 				return _fail(str(tier_list["error"]))
 			tiers = tier_list["tiers"]
 			tiers_set = true
+		elif command == "check" and arg == "--pressure-tiers":
+			i += 1
+			if i >= args.size() or args[i].begins_with("--"):
+				return _fail("wyrd: --pressure-tiers needs a list\n")
+			var pressure_list := _split_named(args[i], "--pressure-tiers")
+			if not str(pressure_list["error"]).is_empty():
+				return _fail(str(pressure_list["error"]))
+			pressure_tiers = pressure_list["tiers"]
+			pressure_set = true
 		elif listed and arg == "--secrecy-fact":
 			i += 1
 			if i >= args.size() or args[i].begins_with("--") or args[i].strip_edges().is_empty():
@@ -1251,6 +1261,8 @@ static func _options(args: PackedStringArray) -> Dictionary:
 		"storylet": positionals[0] if command == "why-not" and positionals.size() == 1 else "",
 		"strict": strict,
 		"watch": watch,
+		"pressure_set": pressure_set,
+		"pressure_tiers": pressure_tiers,
 		"tiers": tiers,
 		"tiers_set": tiers_set,
 		"trace_director": trace_director,

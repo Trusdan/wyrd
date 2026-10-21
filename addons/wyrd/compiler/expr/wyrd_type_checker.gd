@@ -27,6 +27,8 @@ var uses_spatial: bool = false
 var allow_spatial: bool = false
 ## Field name to type for [code]event.<field>[/code] inside an [code]on[/code] handler.
 var event_fields: Dictionary = {}
+## [code]event[/code] or [code]deed[/code]. Deed fields use the same table.
+var binding_prefix: String = "event"
 ## Bare name to type. Eligibility compiles [code]candidate[/code] as an entity.
 var bindings: Dictionary = {}
 
@@ -157,6 +159,14 @@ func _check_cmp(node: WyrdExprNode, ordered: bool) -> void:
 	elif right_t == &"name" and left_t != &"name" and left_t != &"error":
 		_check(node.a, &"")
 		_check(node.b, _name_expect(node.a.type_name))
+	elif _binding_type(node.a) == WyrdSignatures.T_ENTITY and right_t == &"name":
+		# deed.target is not a fact, so both sides infer as a name. Check the
+		# field first, then the bare name as that entity.
+		_check(node.a, &"")
+		_check(node.b, _name_expect(node.a.type_name))
+	elif _binding_type(node.b) == WyrdSignatures.T_ENTITY and left_t == &"name":
+		_check(node.b, &"")
+		_check(node.a, _name_expect(node.b.type_name))
 	else:
 		_check(node.a, &"")
 		_check(node.b, &"")
@@ -410,7 +420,7 @@ func _resolve(node: WyrdExprNode, expected: StringName, force_fact: bool) -> voi
 		query.append(node.text)
 	if _named_binding(node, query):
 		return
-	if _event_binding(node, query):
+	if _event_binding(node, query, binding_prefix):
 		return
 	var fact := schema.lookup(query)
 	if fact == null:
@@ -510,15 +520,18 @@ func _named_binding(node: WyrdExprNode, query: PackedStringArray) -> bool:
 	return true
 
 
-func _event_binding(node: WyrdExprNode, query: PackedStringArray) -> bool:
-	if query.size() != 2 or query[0] != "event" or event_fields.is_empty():
+func _event_binding(node: WyrdExprNode, query: PackedStringArray, prefix: String = "event") -> bool:
+	if query.size() != 2 or query[0] != prefix:
+		return false
+	if prefix == "event" and event_fields.is_empty():
 		return false
 	var field := query[1]
 	node.kind = &"fact"
-	node.text = "event.%s" % field
+	node.text = "%s.%s" % [prefix, field]
 	node.kids.clear()
 	if not event_fields.has(field):
-		_error(WyrdDiagnostic.E_EVENT_ARG, "unknown event field \"%s\"" % field, node)
+		var noun := "deed" if prefix == "deed" else "event"
+		_error(WyrdDiagnostic.E_EVENT_ARG, "unknown %s field \"%s\"" % [noun, field], node)
 		node.type_name = &"error"
 		return true
 	node.type_name = StringName(event_fields[field])
@@ -588,6 +601,24 @@ func _infer_path(node: WyrdExprNode) -> StringName:
 	if fact != null:
 		return fact.type_name
 	return &"name"
+
+
+func _binding_type(node: WyrdExprNode) -> StringName:
+	if node == null or (node.kind != &"path" and node.kind != &"name" and node.kind != &"fact"):
+		return &""
+	if binding_prefix == "event" and event_fields.is_empty():
+		return &""
+	var query := PackedStringArray()
+	for kid in node.kids:
+		var text := _static_text(kid)
+		if text.is_empty():
+			return &""
+		query.append(text)
+	if query.is_empty() and node.text != "":
+		query.append(node.text)
+	if query.size() != 2 or query[0] != binding_prefix or not event_fields.has(query[1]):
+		return &""
+	return StringName(event_fields[query[1]])
 
 
 func _name_expect(type_name: StringName) -> StringName:
