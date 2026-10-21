@@ -152,7 +152,7 @@ func test_beliefs_round_trip_and_schema_1_fills_empty_bags() -> void:
 	var runtime := _boot(_PLAY)
 	runtime.tick(0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	var parsed: Dictionary = JSON.parse_string(JSON.stringify(saved))
 	var fresh := _boot(_PLAY)
 	fresh.trace.enabled = true
@@ -173,7 +173,7 @@ func test_beliefs_round_trip_and_schema_1_fills_empty_bags() -> void:
 	assert_eq(migrated.facts.get(&"player.coins"), 3)
 	assert_null(migrated.facts.get_in(&"world.storm_heard", &"believed/ferry_master"))
 	var again := migrated.save_state()
-	assert_eq(int(again["schema_version"]), 3)
+	assert_eq(int(again["schema_version"]), 4)
 	assert_eq((again["facts"] as Dictionary)["believed"], {})
 	assert_eq((again["facts"] as Dictionary)["held"], {})
 

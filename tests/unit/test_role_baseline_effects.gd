@@ -356,7 +356,7 @@ func test_save_round_trip_keeps_the_effects_and_load_is_quiet() -> void:
 	var social := _reload(opened)
 	assert_eq(_baseline(social, "ada", "bea", "affinity"), 3.5)
 	assert_eq(_reasons(social, "baseline_adjust").size(), 0)
-	assert_eq(int(social.save_state()["schema_version"]), 3)
+	assert_eq(int(social.save_state()["schema_version"]), 4)
 
 
 func test_stage_effects_resolve_slots_holders_and_facts() -> void:

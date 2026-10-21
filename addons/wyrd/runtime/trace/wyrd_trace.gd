@@ -15,7 +15,7 @@ extends RefCounted
 
 var enabled: bool = false
 ## When set, a line is kept when its quest, role, slot, who, key, scope,
-## speaker, or path equals this text or begins with it. Empty keeps every line.
+## speaker, path, or instance equals this text or begins with it. Empty keeps every line.
 ## Belief, knowledge, credibility, event witness, and evidence lines use who and key.
 ## A credibility line's who is the listener. An evidence line's who is empty.
 ## A director line and a why_not line use scope, speaker, and key. Key is the scope id.
@@ -44,6 +44,10 @@ var enabled: bool = false
 ## scope is deeds, social, or precedence. key is the caller prefix.
 ## ids is the deed-row count, or the agent-name count for precedence.
 ## Replay skips it. Load does not log one. Lookup off does not log one.
+## A gen_create line is one generated instance. template is the template id.
+## instance is [code]<template>#<n>[/code], or empty when creation was refused.
+## n is the new counter, or 0 when nothing was created. ok is true or false.
+## reason is created, unknown_template, or bad_cast. Replay skips it. Load does not log one.
 ## An object or item cast stores the slot kind as [code]slot_kind[/code].
 ## The printed line labels that field [code]kind[/code]. [code]kind[/code] on the
 ## record stays the event name ([code]cast[/code] or [code]slot_state[/code]).

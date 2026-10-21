@@ -1,0 +1,25 @@
+language 1
+
+facts
+  harbor.release : bool stored
+
+quest gate "Gate"
+  start when true
+  stage hold
+    waits_until active_count(errand) >= 2
+    -> next
+  stage next
+    waits_until false
+
+quest dormant "Dormant"
+  start when false
+  stage idle
+    waits_until false
+
+quest errand "Errand"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  slot coin kind: item mode: cast(has_tag(candidate, toll))
+  stage work
+    journal: The errand is open. #line:e1aa
+    ~ outcome finished = done
+    waits_until harbor.release

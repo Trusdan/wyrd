@@ -152,11 +152,11 @@ func test_a_changed_paragraph_renders_live_and_logs_document_stale() -> void:
 	assert_ne(opened.pages[0][0]["text"], "Coins: 1.")
 
 
-func test_save_bag_round_trip_keeps_unknown_ids_and_stays_schema_3() -> void:
+func test_save_bag_round_trip_keeps_unknown_ids() -> void:
 	var runtime := _boot(_FROZEN)
 	_player(runtime)
 	var empty := runtime.save_state()
-	assert_eq(int(empty["schema_version"]), 3)
+	assert_eq(int(empty["schema_version"]), 4)
 	assert_false(empty.has("documents"))
 	runtime.facts.set(&"player.coins", 2)
 	runtime.documents.create_copy(&"letter", "kept")

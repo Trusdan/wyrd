@@ -135,7 +135,7 @@ func test_save_and_load_keep_the_deadline() -> void:
 	var runtime: WyrdRuntime = opened["runtime"]
 	_pour(runtime, [{"id": "ferry_master", "mode": "saw"}])
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	var facts: Dictionary = saved["facts"]
 	assert_true(facts.has("evidence"))
 	var listed: Array = facts["evidence"]

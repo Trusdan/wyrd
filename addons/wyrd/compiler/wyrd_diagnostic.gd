@@ -116,6 +116,7 @@ const E_SAVE_OPEN: StringName = &"E_SAVE_OPEN"
 const E_SAVE_POLICY: StringName = &"E_SAVE_POLICY"
 const E_SAVE_VERSION: StringName = &"E_SAVE_VERSION"
 const W_SAVE_MANIFEST: StringName = &"W_SAVE_MANIFEST"
+const W_SAVE_TEMPLATE: StringName = &"W_SAVE_TEMPLATE"
 
 var severity: StringName = SEVERITY_ERROR
 var code: StringName = &""

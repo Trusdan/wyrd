@@ -113,7 +113,7 @@ func test_save_load_keeps_the_fact_and_does_not_log() -> void:
 	_tiers(runtime)
 	runtime.facts.set(&"player.clearance", &"sealed")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("secrecy"))
 	assert_eq(str(saved["facts"]["world"]["player.clearance"]), "sealed")
 	var loaded := _boot(_PACK)

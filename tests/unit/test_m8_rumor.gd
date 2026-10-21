@@ -207,7 +207,7 @@ func test_load_keeps_the_in_flight_queue() -> void:
 	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"stolen")
 	assert_gt(runtime.scheduler().carry("rumor"), 0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("rumor"))
 	assert_false(saved.has("rumors"))
 	assert_true(_queue_has(saved, "rumor", "1\tline_fisher\tferry_master\t1"))

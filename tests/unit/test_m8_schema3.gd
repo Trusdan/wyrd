@@ -57,7 +57,10 @@ func test_schema_2_fixture_loads_with_empty_flight() -> void:
 	assert_eq(runtime.scheduler().carry("publish"), 0)
 	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
 	assert_eq(runtime.slice_remainder_units(), 0)
-	assert_eq(int(runtime.save_state()["schema_version"]), 3)
+	var resaved := runtime.save_state()
+	assert_eq(int(resaved["schema_version"]), 4)
+	assert_false(resaved.has("generator"))
+	assert_eq(runtime.quests.active_count("errand"), 0)
 	runtime.tick(1)
 	assert_eq(runtime.scheduler().carry("rumor"), 0)
 	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"stolen")
@@ -76,12 +79,13 @@ func test_schema_3_fixture_loads_and_round_trips() -> void:
 	assert_true(report.ok, report.diagnostics.format())
 	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
 	assert_eq(runtime.play_minutes(), 1)
+	assert_eq(runtime.quests.status("mooring_post"), &"dormant")
 	assert_eq(runtime.quests.status("bell_repair"), &"active")
 	assert_eq(runtime.quests.stage("bell_repair"), "repair")
 	assert_eq(runtime.roles.holder(&"ferry_master"), &"ferry_master")
 	var covered: Dictionary = runtime.publish.export_state().get("covered", {})
 	assert_eq(int(covered.get("harbor_gazette", -1)), 1)
-	assert_eq(JSON.stringify(runtime.save_state(), "\t", true), text)
+	assert_eq(JSON.stringify(runtime.save_state(), "\t", true), text.replace("\"schema_version\": 3,", "\"schema_version\": 4,"))
 	runtime.tick(1)
 
 
@@ -102,6 +106,7 @@ func test_schema_3_save_without_flight_clears_dirty_waits() -> void:
 	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
 	assert_eq(runtime.scheduler().carry("waits"), 0)
 	assert_eq(runtime.slice_remainder_units(), 0)
+	assert_eq(WyrdSave.FLIGHT_SINCE_SCHEMA, 3)
 
 
 func test_mid_spread_save_matches_an_unsaved_run() -> void:

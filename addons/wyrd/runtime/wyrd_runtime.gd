@@ -1085,7 +1085,7 @@ func _trace_allows(fields: Dictionary) -> bool:
 	if trace == null or trace.prefix.is_empty():
 		return true
 	var prefix := trace.prefix
-	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path"]:
+	for name in ["quest", "role", "slot", "who", "key", "scope", "speaker", "path", "instance"]:
 		var value := str(fields.get(name, ""))
 		if value == prefix or value.begins_with(prefix):
 			return true
@@ -1221,6 +1221,20 @@ func trace_quest_advance(quest_id: String, from_stage: String, to_stage: String,
 		"reason": reason,
 		"to": to_stage,
 	}, "quest_advance", "wyrd quest_advance quest=%s from=%s to=%s ok=%s reason=%s" % [quest_id, from_stage, to_stage, flag, reason])
+
+
+## One line when [method WyrdQuestRunner.create_instance] creates or refuses an instance.
+## [param ok] is stored as [code]true[/code] or [code]false[/code]. [param n] is the
+## new counter, or 0 when nothing was created. Load does not call it.
+func trace_gen_create(template: String, instance: String, n: int, ok: bool, reason: String) -> void:
+	var flag := "true" if ok else "false"
+	_trace_quest_line({
+		"instance": instance,
+		"n": n,
+		"ok": flag,
+		"reason": reason,
+		"template": template,
+	}, "gen_create", "wyrd gen_create template=%s instance=%s n=%s ok=%s reason=%s" % [template, instance, n, flag, reason])
 
 
 ## One line for every status change in [method WyrdQuestRunner._set_status]. Load does not call it.
@@ -2273,6 +2287,18 @@ func note_sequence_change() -> void:
 			_collected[int(index)] = true
 
 
+func note_instance_change() -> void:
+	if _content == null:
+		return
+	var hits := _content.indexes_for_calls(PackedStringArray(["active_count"]))
+	if hits.is_empty():
+		return
+	_queue.mark(hits)
+	if _collecting:
+		for index in hits:
+			_collected[int(index)] = true
+
+
 func _tracked_calls() -> PackedStringArray:
 	var names := _DEED_CALLS.duplicate()
 	for name in _ROLE_CALLS:
@@ -2286,6 +2312,8 @@ func _tracked_calls() -> PackedStringArray:
 		names.append("path_exists")
 	if not names.has("has_read"):
 		names.append("has_read")
+	if not names.has("active_count"):
+		names.append("active_count")
 	return names
 
 

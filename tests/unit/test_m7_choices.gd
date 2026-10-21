@@ -55,7 +55,7 @@ func test_trace_filters_and_load_keeps_rows() -> void:
 	assert_eq(_rows(runtime, "choice_summary").size(), 1)
 	assert_eq(str(_rows(runtime, "choice_summary")[0]["path"]), "toll_booth")
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_eq(str(saved["provenance"]["harbor.coins"]["choice"]), "pay")
 	assert_false(saved.has("recap"))
 	var loaded := _boot()

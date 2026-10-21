@@ -17,6 +17,8 @@ var manifest_hash: int = 0
 var schema: WyrdFactSchema
 var events: Dictionary = {}
 var quests: Dictionary = {}
+## Template id to [WyrdQuestDef]. Empty until a later pack compiler fills it.
+var templates: Dictionary = {}
 var scenes: Dictionary = {}
 ## Role id to [WyrdRoleDef]. Compiled with the pack. Not a save document.
 var roles: Dictionary = {}

@@ -286,7 +286,7 @@ func test_load_keeps_the_copy_and_continues() -> void:
 	assert_eq(runtime.facts.get_in(&"harbor.toll_fate", &"believed/dock_hand"), &"waived")
 	assert_gt(runtime.scheduler().carry("rumor"), 0)
 	var saved := runtime.save_state()
-	assert_eq(int(saved["schema_version"]), 3)
+	assert_eq(int(saved["schema_version"]), 4)
 	assert_false(saved.has("mutations"))
 	assert_eq(JSON.stringify(saved).find("mutate\t"), -1)
 	var raw := JSON.stringify(saved)
