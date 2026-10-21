@@ -146,6 +146,94 @@ func test_stage_nested_in_an_unreached_stage_is_not_reported() -> void:
 	]))
 
 
+func test_on_fail_target_is_reached() -> void:
+	var diagnostics := _compile("""
+		language 1
+		quest ferry_toll "The Ferry Toll"
+		  stage arrive
+		    ~ do ring_bell() on_fail -> silent
+		    -> done
+		  stage silent
+		    -> done
+		  stage done
+		  stage side
+		""")
+	assert_false(diagnostics.has_errors(), diagnostics.format())
+	assert_eq(_hits(diagnostics), PackedStringArray([
+		"stage \"ferry_toll.side\" is never reached from \"ferry_toll.arrive\"",
+	]))
+
+
+func test_on_fail_in_a_variant_body_reaches_its_target() -> void:
+	var diagnostics := _compile("""
+		language 1
+		quest ferry_toll "The Ferry Toll"
+		  slot keeper = dock_keeper mode: live
+		  stage arrive
+		    variant keeper.empty:
+		      ~ do ring_bell() on_fail -> silent
+		    -> done
+		  stage silent
+		  stage done
+		""")
+	assert_false(diagnostics.has_errors(), diagnostics.format())
+	assert_eq(_hits(diagnostics).size(), 0, diagnostics.format())
+
+
+func test_on_fail_in_a_region_reaches_its_sibling() -> void:
+	var diagnostics := _compile("""
+		language 1
+		quest ferry_toll "The Ferry Toll"
+		  stage arrive
+		    region rope
+		      stage coil
+		        ~ do ring_bell() on_fail -> frayed
+		        -> tied
+		      stage tied
+		      stage frayed
+		    -> done
+		  stage done
+		""")
+	assert_false(diagnostics.has_errors(), diagnostics.format())
+	assert_eq(_hits(diagnostics).size(), 0, diagnostics.format())
+
+
+func test_on_fail_from_an_unreached_stage_does_not_reach() -> void:
+	var diagnostics := _compile("""
+		language 1
+		quest ferry_toll "The Ferry Toll"
+		  stage arrive
+		    -> done
+		  stage done
+		  stage side
+		    ~ do ring_bell() on_fail -> silent
+		  stage silent
+		""")
+	assert_false(diagnostics.has_errors(), diagnostics.format())
+	assert_eq(_hits(diagnostics), PackedStringArray([
+		"stage \"ferry_toll.side\" is never reached from \"ferry_toll.arrive\"",
+		"stage \"ferry_toll.silent\" is never reached from \"ferry_toll.arrive\"",
+	]))
+
+
+func test_on_fail_in_a_handler_is_not_an_edge() -> void:
+	var diagnostics := _compile("""
+		language 1
+		events
+		  bell_rung()
+		quest ferry_toll "The Ferry Toll"
+		  stage arrive
+		    on bell_rung where true:
+		      ~ do ring_bell() on_fail -> silent
+		    -> done
+		  stage silent
+		  stage done
+		""")
+	assert_eq(_hits(diagnostics), PackedStringArray([
+		"stage \"ferry_toll.silent\" is never reached from \"ferry_toll.arrive\"",
+	]))
+
+
 func _compile(body: String) -> WyrdDiagnostics:
 	var diagnostics := WyrdDiagnostics.new()
 	var path := "user://wyrd_stage_%d.wyrd" % Time.get_ticks_usec()
