@@ -93,7 +93,11 @@ func _has_read(args: Array) -> bool:
 func _holder(args: Array) -> Variant:
 	if args.is_empty() or args[0] == null or _runtime == null:
 		return null
-	var found := _runtime.roles.holder(StringName(str(args[0])))
+	var name := StringName(str(args[0]))
+	var scoped: Variant = _runtime.scoped_holder(name)
+	var found: StringName = _runtime.roles.holder(name)
+	if scoped != null:
+		found = StringName(str(scoped))
 	if found == &"":
 		return null
 	return found
@@ -284,7 +288,11 @@ func _outcome(args: Array) -> Variant:
 func _slot_state(args: Array) -> Variant:
 	if args.is_empty() or args[0] == null or _runtime == null:
 		return null
-	var state := _runtime.roles.slot_state(StringName(str(args[0])))
+	var name := StringName(str(args[0]))
+	var scoped: Variant = _runtime.scoped_slot_state(name)
+	var state: StringName = _runtime.roles.slot_state(name)
+	if scoped != null:
+		state = StringName(str(scoped))
 	if state == &"":
 		return null
 	return state

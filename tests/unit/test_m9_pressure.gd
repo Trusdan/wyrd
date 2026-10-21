@@ -233,6 +233,7 @@ func test_generate_is_idle_without_a_handler() -> void:
 	runtime.trace.enabled = true
 	assert_true(runtime.generator.offer(&"guild", "toll", &"low", {"note": "waiting"}))
 	runtime.trace.clear()
+	runtime.generator.generate_handler = Callable()
 	runtime.tick(0)
 	assert_eq(runtime.generator.pending_count(), 1)
 	assert_eq(int(runtime.scheduler().carry("generate")), 0)

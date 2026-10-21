@@ -247,7 +247,9 @@ func choose(index: int) -> void:
 	runtime.effects.quest_id = frame.quest_id
 	runtime.effects.scene_id = frame.scene_id
 	runtime.effects.choice_id = choice.line_id
+	runtime.push_scope(frame.quest_id)
 	var divert := runtime.effects.run_all(choice.effects)
+	runtime.pop_scope()
 	runtime.effects.quest_id = saved_quest
 	runtime.effects.scene_id = saved_scene
 	runtime.effects.choice_id = saved_choice
@@ -275,7 +277,9 @@ func abort(reason: StringName) -> void:
 		runtime.effects.quest_id = frame.quest_id
 		runtime.effects.scene_id = frame.scene_id
 		runtime.effects.choice_id = ""
+		runtime.push_scope(frame.quest_id)
 		runtime.effects.run_all(scene.on_abort)
+		runtime.pop_scope()
 	_aborting = false
 	_finish(&"aborted", reason)
 
@@ -406,7 +410,9 @@ func _run_scene_effect(frame: Frame, item: WyrdSceneItem) -> String:
 	runtime.effects.quest_id = frame.quest_id
 	_in_step = true
 	runtime.trace_effect_run("scene", frame.scene_id, String(item.effect.kind))
+	runtime.push_scope(frame.quest_id)
 	var divert := runtime.effects.run_one(item.effect)
+	runtime.pop_scope()
 	_in_step = false
 	runtime.effects.scene_id = saved_scene
 	runtime.effects.choice_id = saved_choice
@@ -417,6 +423,14 @@ func _run_scene_effect(frame: Frame, item: WyrdSceneItem) -> String:
 
 
 func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
+	if runtime != null:
+		runtime.push_scope(frame.quest_id)
+	_show_line_body(frame, line_def)
+	if runtime != null:
+		runtime.pop_scope()
+
+
+func _show_line_body(frame: Frame, line_def: WyrdLineDef) -> void:
 	var view := WyrdLineView.new()
 	var shown_id := line_def.line_id
 	var shown_text := ""
@@ -568,7 +582,7 @@ func _line_ok(line_def: WyrdLineDef) -> bool:
 		return false
 	if line_def.condition == null:
 		return true
-	return runtime.eval_bool(line_def.condition)
+	return _eval_in_scene(line_def.condition)
 
 
 func _choice_ok(choice: WyrdChoiceDef) -> bool:
@@ -576,7 +590,20 @@ func _choice_ok(choice: WyrdChoiceDef) -> bool:
 		return false
 	if choice.condition == null:
 		return true
-	return runtime.eval_bool(choice.condition)
+	return _eval_in_scene(choice.condition)
+
+
+func _eval_in_scene(cond: WyrdCompiledCondition) -> bool:
+	if cond == null or runtime == null:
+		return true
+	var quest_id := ""
+	var frame := _top()
+	if frame != null:
+		quest_id = frame.quest_id
+	runtime.push_scope(quest_id)
+	var result := runtime.eval_bool(cond)
+	runtime.pop_scope()
+	return result
 
 
 func _secrecy_ok(name: String, line_id: String, speaker: String) -> bool:
@@ -589,15 +616,21 @@ func _secrecy_ok(name: String, line_id: String, speaker: String) -> bool:
 func _is_disabled(choice: WyrdChoiceDef) -> bool:
 	if choice.disabled_condition == null or runtime == null:
 		return false
-	return runtime.eval_bool(choice.disabled_condition)
+	return _eval_in_scene(choice.disabled_condition)
 
 
 func _check_args(choice: WyrdChoiceDef) -> Dictionary:
 	var out := {}
 	if runtime == null or choice.check_skill.is_empty():
 		return out
+	var quest_id := ""
+	var frame := _top()
+	if frame != null:
+		quest_id = frame.quest_id
+	runtime.push_scope(quest_id)
 	for row in choice.check_args:
 		out[String(row["name"])] = runtime.eval_value(row.get("compiled"))
+	runtime.pop_scope()
 	return out
 
 
@@ -717,7 +750,7 @@ func _scene(scene_id: String) -> WyrdSceneDef:
 func _quest(quest_id: String) -> WyrdQuestDef:
 	if quest_id.is_empty() or runtime == null or runtime.content() == null:
 		return null
-	return runtime.content().quests.get(quest_id) as WyrdQuestDef
+	return runtime.content().quest_def(quest_id)
 
 
 func _slot(quest_id: String, slot_name: String) -> WyrdSlotDef:

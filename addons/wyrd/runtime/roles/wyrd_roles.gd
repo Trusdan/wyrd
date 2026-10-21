@@ -1045,37 +1045,75 @@ func _record_role_changed(role: StringName, old: StringName, next: StringName) -
 	deeds.record(&"role_changed", old, next, &"", PackedStringArray([String(role)]), 1.0, null, &"public", false)
 
 
-func _cast_pick(quest_id: String, slot: WyrdSlotDef) -> StringName:
-	var world := _world()
-	if world == null:
-		return &""
-	var seen := {}
-	var ids: Array = []
-	var filter := WyrdEntityFilter.new()
-	if slot.kind == "object" or slot.kind == "item":
-		filter = WyrdEntityFilter.new(StringName(slot.cast_tag), StringName(slot.kind))
-	for raw in world.candidates(filter):
-		var who := StringName(str(raw))
-		if who == &"" or seen.has(who):
-			continue
-		seen[who] = true
-		if _cast_accepts(slot, who):
-			ids.append(String(who))
+## Sorted candidate ids and the ids the cast condition accepts.
+## [code]raw[/code] is every deduped host answer. [code]accepted[/code] is that
+## list after the condition. Both are sorted. A missing world yields two empty lists.
+func cast_pool(slot: WyrdSlotDef) -> Dictionary:
+	if slot == null:
+		return {"accepted": [], "raw": []}
+	var filtered := slot.kind == "object" or slot.kind == "item"
+	return _candidate_pool(slot.cast_when, slot.cast_tag, slot.kind, filtered)
+
+
+## Sorted candidate ids for one param. The filter always carries the param kind and tag.
+func param_pool(param: WyrdParamDef) -> Dictionary:
+	if param == null:
+		return {"accepted": [], "raw": []}
+	return _candidate_pool(param.cast_when, param.cast_tag, param.kind, true)
+
+
+## Picks one id from an already sorted list. Empty yields [code]&""[/code].
+func pick_id(ids: Array, stream: StringName, decision_key: String) -> StringName:
 	if ids.is_empty():
 		return &""
-	ids.sort()
-	var key := StringName("%s|%s" % [quest_id, slot.name])
-	var rng := WyrdRng.for_decision(_game_seed(), &"cast", key, _now())
+	var rng := WyrdRng.for_decision(_game_seed(), stream, StringName(decision_key), _now())
 	return StringName(String(ids[rng.randi_bounded(ids.size())]))
 
 
+func _cast_pick(quest_id: String, slot: WyrdSlotDef, stream: StringName = &"cast", decision_key: String = "") -> StringName:
+	var key := decision_key
+	if key.is_empty():
+		key = "%s|%s" % [quest_id, slot.name]
+	var accepted: Array = cast_pool(slot)["accepted"]
+	return pick_id(accepted, stream, key)
+
+
+func _candidate_pool(cond: WyrdCompiledCondition, tag: String, kind: String, use_filter: bool) -> Dictionary:
+	var raw: Array = []
+	var accepted: Array = []
+	var world := _world()
+	if world == null:
+		return {"accepted": accepted, "raw": raw}
+	var seen := {}
+	var filter := WyrdEntityFilter.new()
+	if use_filter:
+		filter = WyrdEntityFilter.new(StringName(tag), StringName(kind))
+	for item in world.candidates(filter):
+		var who := StringName(str(item))
+		if who == &"" or seen.has(who):
+			continue
+		seen[who] = true
+		raw.append(String(who))
+		if _condition_accepts(cond, who):
+			accepted.append(String(who))
+	raw.sort()
+	accepted.sort()
+	return {"accepted": accepted, "raw": raw}
+
+
 func _cast_accepts(slot: WyrdSlotDef, entity: StringName) -> bool:
-	if slot.cast_when == null:
+	if slot == null:
+		return false
+	return _condition_accepts(slot.cast_when, entity)
+
+
+func _condition_accepts(cond: WyrdCompiledCondition, entity: StringName) -> bool:
+	if cond == null:
 		return true
 	if not eval_with.is_valid():
 		push_error("WyrdRoles: cast has no condition evaluator")
 		return false
-	return bool(eval_with.call(slot.cast_when, {"candidate": entity}))
+	return bool(eval_with.call(cond, {"candidate": entity}))
 
 
 func _trace_cast(quest_id: String, slot: WyrdSlotDef, picked: StringName, snap: Dictionary, reason: String = "") -> void:

@@ -46,6 +46,9 @@ var _track_labels: bool = false
 var _events: Dictionary = {}
 var _event_fields: Dictionary = {}
 var _binding_prefix := "event"
+## Set while a template's stages compile, so a spatial wait can see its own slots.
+var _open_template: WyrdTemplateDef = null
+var _open_names: Dictionary = {}
 
 
 func compile(
@@ -68,6 +71,8 @@ func compile(
 	_events = events
 	_event_fields = {}
 	_binding_prefix = "event"
+	_open_template = null
+	_open_names = {}
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
 	var seen_roles := {}
@@ -736,6 +741,10 @@ func _template(node: WyrdNode) -> WyrdTemplateDef:
 		template.id = ""
 	var names := _template_names(node)
 	var saved_owner := _line_owner
+	var saved_template := _open_template
+	var saved_names := _open_names
+	_open_template = template
+	_open_names = names
 	_line_owner = template.id
 	var seen := {}
 	for child in node.children:
@@ -790,6 +799,8 @@ func _template(node: WyrdNode) -> WyrdTemplateDef:
 			WyrdDiagnostic.SEVERITY_INFO
 		)
 	_line_owner = saved_owner
+	_open_template = saved_template
+	_open_names = saved_names
 	_finish_quest(template)
 	return template
 
@@ -1808,6 +1819,10 @@ func _waits(node: WyrdNode, stage: WyrdStageDef) -> void:
 	stage.waits_text = span["text"]
 	var compiled := _expr(span["text"], int(span["line"]), int(span["col"]), _WAIT, true, &"", stage.reads, {}, true)
 	stage.waits_until = compiled["compiled"]
+	if _open_template != null and stage.waits_until != null and stage.waits_until.uses_spatial:
+		var ast := compiled["ast"] as WyrdExprNode
+		if _hook_reads_cast(ast, _open_names):
+			_template_error(node, "a spatial wait in a template cannot read its own slots or params")
 	_no_block(node)
 
 

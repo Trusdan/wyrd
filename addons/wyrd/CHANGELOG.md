@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generator: propose/accept pick, cast and bind templates with per-decision seeds; the generate queue creates instances at the end of the tick; offers, proposals and accepts replay; conditions, effects and chance inside a generated instance use that instance's casts and params.
 - Generator: `Wyrd.generator.offer` queues unsaved story pressure; `WyrdConfig.pressure_tiers` ranks tiers; template `on_deed` hooks queue deed offers; a fifth scheduler queue, `generate`, has share 0 by default (`W_TEMPLATE_TIER_UNKNOWN`, `W_TEMPLATE_TIER_ORDER` with `check --pressure-tiers`).
 - Compiler: `template` blocks (params, when/priority/weight/max_active/tier/assumes/allow_protected) compile, link and lint like quests, with W_TEMPLATE_TIE, E_TEMPLATE_REF and E_TEMPLATE_UNKNOWN; content.templates is filled from the pack.
 - Saves: schema 4. Generated quest instances (`<template>#<n>`) save with `template` and `n` on their quest row, and a `generator` block holds instance counters and casts; it is omitted when there are none. Schema 2 and 3 saves load as before, with an empty generator block. A schema 4 save is refused by an older Wyrd. A save whose template is no longer in the content keeps those instances ignored and warns `W_SAVE_TEMPLATE`. Conditions can read `active_count(<template>)`. Hand-written quests, their saves and traces are unchanged apart from `schema_version`.

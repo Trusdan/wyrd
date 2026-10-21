@@ -1,0 +1,146 @@
+language 1
+
+facts
+  guild.band : bool stored
+  guild.urgent : bool stored
+  guild.open : bool stored
+  guild.favor : bool stored
+  guild.tiered : bool stored
+  guild.capped : bool stored
+  guild.deed : bool stored
+  guild.errand : bool stored
+  guild.roll : bool stored
+  guild.gap : bool stored
+  guild.silent : bool stored
+  guild.tick : bool stored
+
+events
+  met(who: int)
+
+quest beat "Beat"
+  stage work
+    ~ outcome finished = done
+    waits_until guild.tick
+
+quest clock "Clock"
+  stage work
+    scene clock.bet
+    waits_until false
+
+quest alpha "Alpha"
+  slot guide kind: object mode: cast(has_tag(candidate, guide_a))
+  stage work
+    waits_until false
+
+quest beta "Beta"
+  slot guide kind: object mode: cast(has_tag(candidate, guide_b))
+  stage work
+    waits_until false
+
+quest watch "Watch"
+  stage work
+    on met where true:
+      ~ record deed theft(actor: player, target: clerk)
+    waits_until false
+
+template light "Light"
+  weight: 1
+  when: guild.band
+  stage work
+    ~ outcome finished = done
+    waits_until true
+
+template heavy "Heavy"
+  weight: 9
+  when: guild.band
+  stage work
+    ~ outcome finished = done
+    waits_until true
+
+template urgent "Urgent"
+  priority: 3
+  when: guild.urgent
+  stage work
+    waits_until false
+
+template specific "Specific"
+  priority: 1
+  weight: 1
+  when: guild.open and guild.favor
+  stage work
+    waits_until false
+
+template broad "Broad"
+  priority: 1
+  weight: 50
+  when: guild.open
+  stage work
+    waits_until false
+
+template silent "Silent"
+  priority: 9
+  weight: 0
+  when: guild.silent
+  stage work
+    waits_until false
+
+template tiered "Tiered"
+  priority: 4
+  tier: mid
+  when: guild.tiered
+  stage work
+    waits_until false
+
+template capped "Capped"
+  priority: 4
+  max_active: 1
+  when: guild.capped
+  stage work
+    waits_until false
+
+template deeded "Deeded"
+  when: guild.deed
+  on_deed theft where not deed.target == player
+  stage work
+    waits_until false
+
+template errand "Errand"
+  priority: 2
+  max_active: 4
+  when: guild.errand
+  assumes: alive(parcel)
+  slot courier kind: object mode: cast(alive(candidate) and has_tag(candidate, runner))
+  slot partner kind: object mode: cast(candidate == holder(courier))
+  param parcel: item cast(alive(candidate) and has_tag(candidate, parcel))
+  param site: object cast(has_tag(candidate, bollard))
+  stage work
+    journal: The courier is {holder(courier).name}. #line:errand1
+    ~ record deed delivery(actor: player, target: holder(courier))
+    ~ outcome finished = done
+    waits_until holder(courier) == ada
+
+template gap "Gap"
+  priority: 4
+  when: guild.gap
+  slot courier kind: object mode: cast(alive(candidate) and has_tag(candidate, runner))
+  slot ghost kind: object mode: cast(has_tag(candidate, ghost))
+  stage work
+    waits_until false
+
+template roll "Roll"
+  priority: 4
+  max_active: 4
+  when: guild.roll
+  stage work
+    scene roll.bet
+    waits_until false
+
+scene roll.bet
+  * {chance(0.5)} -> done
+  - (done)
+  -> end
+
+scene clock.bet
+  * {chance(0.5)} -> done
+  - (done)
+  -> end
