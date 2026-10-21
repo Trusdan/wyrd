@@ -27,12 +27,14 @@ extends RefCounted
 ## [code]facts.believed[/code] and [code]facts.held[/code]. Step 1 leaves the
 ## document as it is. A schema 2 file has no [code]flight[/code] key: token
 ## queues and the slice come back empty, and the dirty waits stay armed.
-## A schema 3 file omits [code]flight[/code] only when that set was empty too,
-## so that load clears it.
+## A save from schema 3 on omits [code]flight[/code] only when that set was
+## empty, so load clears the dirty waits. [constant FLIGHT_SINCE_SCHEMA] pins
+## that rule, and a later schema bump leaves it in place.
 ## 64-bit values are lowercase hex. A scene must be closed. A manifest hash
 ## mismatch warns in a debug build and is silent in a release.
 
 const SCHEMA_VERSION := 3
+const FLIGHT_SINCE_SCHEMA := 3
 
 static var migrations: Array = []
 
@@ -269,7 +271,7 @@ static func _import_flight(runtime: WyrdRuntime, data: Dictionary, report: WyrdL
 		runtime.set_slice_remainder(0)
 		if runtime.scheduler() != null:
 			runtime.scheduler().clear_carry()
-			if _whole(data.get("schema_version", -1), -1) >= SCHEMA_VERSION:
+			if _whole(data.get("schema_version", -1), -1) >= FLIGHT_SINCE_SCHEMA:
 				runtime.scheduler().clear_dirty()
 		if runtime.rumors != null:
 			runtime.rumors.clear_flight()

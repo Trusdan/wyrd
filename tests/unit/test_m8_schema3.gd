@@ -1,6 +1,11 @@
 extends GutTest
 
 ## Schema 3 keeps a mid-spread save on the same path as a run that never saved.
+##
+## tests/fixtures/schema3_harbor.json is save_state() after open_pack(HARBOR)
+## and tick(1), written with JSON.stringify(state, "\t", true): tab indent,
+## sorted keys, no trailing newline. The content hash is the Gullhaven
+## manifest hash at capture. Update the fixture by hand if that content changes.
 
 
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
@@ -47,6 +52,7 @@ func test_schema_2_fixture_loads_with_empty_flight() -> void:
 	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
 	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"stolen")
 	assert_eq(runtime.facts.get(&"player.coins"), 4)
+	assert_gt(runtime.scheduler().dirty_count(), 0)
 	assert_eq(runtime.scheduler().carry("rumor"), 0)
 	assert_eq(runtime.scheduler().carry("publish"), 0)
 	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
@@ -55,6 +61,47 @@ func test_schema_2_fixture_loads_with_empty_flight() -> void:
 	runtime.tick(1)
 	assert_eq(runtime.scheduler().carry("rumor"), 0)
 	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"stolen")
+
+
+func test_schema_3_fixture_loads_and_round_trips() -> void:
+	var text := FileAccess.get_file_as_string("res://tests/fixtures/schema3_harbor.json")
+	var parsed: Variant = JSON.parse_string(text)
+	assert_true(parsed is Dictionary)
+	var data: Dictionary = parsed
+	assert_eq(int(data["schema_version"]), 3)
+	assert_true(data.has("flight"))
+	var opened := _Harness.new().open_pack(_Harness.HARBOR)
+	var runtime: WyrdRuntime = opened["runtime"]
+	var report := runtime.load_state(data)
+	assert_true(report.ok, report.diagnostics.format())
+	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(runtime.play_minutes(), 1)
+	assert_eq(runtime.quests.status("bell_repair"), &"active")
+	assert_eq(runtime.quests.stage("bell_repair"), "repair")
+	assert_eq(runtime.roles.holder(&"ferry_master"), &"ferry_master")
+	var covered: Dictionary = runtime.publish.export_state().get("covered", {})
+	assert_eq(int(covered.get("harbor_gazette", -1)), 1)
+	assert_eq(JSON.stringify(runtime.save_state(), "\t", true), text)
+	runtime.tick(1)
+
+
+func test_schema_3_save_without_flight_clears_dirty_waits() -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/schema3_harbor.json"))
+	assert_true(parsed is Dictionary)
+	var data: Dictionary = parsed
+	data.erase("flight")
+	var opened := _Harness.new().open_pack(_Harness.HARBOR)
+	var runtime: WyrdRuntime = opened["runtime"]
+	assert_gt(runtime.scheduler().dirty_count(), 0)
+	var report := runtime.load_state(data)
+	assert_true(report.ok, report.diagnostics.format())
+	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(runtime.scheduler().dirty_count(), 0)
+	assert_eq(runtime.scheduler().carry("rumor"), 0)
+	assert_eq(runtime.scheduler().carry("publish"), 0)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
+	assert_eq(runtime.scheduler().carry("waits"), 0)
+	assert_eq(runtime.slice_remainder_units(), 0)
 
 
 func test_mid_spread_save_matches_an_unsaved_run() -> void:
