@@ -1,0 +1,19 @@
+language 1
+
+quest shared "Shared"
+  stage work
+    waits_until false
+
+quest gate "Gate"
+  stage hold
+    waits_until quest(errand) == done and stage(errand) == work and outcome(errand, crossing) == done and active_count(missing) >= 1
+    ~ start quest errand
+    ~ advance errand to work
+    -> next
+  stage next
+    waits_until false
+
+storylet harbor.news
+  scope: beat errand.work
+  speaker: any
+  - The beat is open. #line:beat1

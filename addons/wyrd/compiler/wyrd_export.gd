@@ -45,6 +45,9 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	var documents := _documents(pack)
 	if not documents.is_empty():
 		data["documents"] = documents
+	var templates := _templates(pack)
+	if not templates.is_empty():
+		data["templates"] = templates
 	return data
 
 
@@ -156,6 +159,61 @@ static func _quests(pack: WyrdLinkedPack) -> Array:
 				"stages": stages,
 				"start": _cond(quest.start_when),
 				"title": quest.title,
+			})
+	return rows
+
+
+static func _templates(pack: WyrdLinkedPack) -> Array:
+	var rows: Array = []
+	if pack == null:
+		return rows
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for template in file.templates:
+			var slots: Array = []
+			for slot in template.slots:
+				var slot_row := {
+					"locked_stage": slot.locked_stage,
+					"mode": String(slot.mode),
+					"name": slot.name,
+					"role": slot.role,
+				}
+				if not slot.kind.is_empty():
+					slot_row["cast_tag"] = slot.cast_tag
+					slot_row["kind"] = slot.kind
+				slots.append(slot_row)
+			var params: Array = []
+			for param in template.params:
+				params.append({
+					"cast_tag": param.cast_tag,
+					"cast_text": param.cast_text,
+					"kind": param.kind,
+					"name": param.name,
+				})
+			var stages: Array = []
+			for stage in template.stages:
+				stages.append(_stage(stage))
+			rows.append({
+				"allow_protected": template.allow_protected,
+				"assumes": template.assumes_text,
+				"file": str(unit["path"]),
+				"id": template.id,
+				"max_active": template.max_active,
+				"on_empty": template.on_empty,
+				"params": params,
+				"priority": template.priority,
+				"requires": _strings(template.requires),
+				"slots": slots,
+				"specificity": template.specificity,
+				"stages": stages,
+				"tier_high": template.tier_high,
+				"tier_low": template.tier_low,
+				"tier_range": template.tier_range,
+				"title": template.title,
+				"weight": template.weight,
+				"when": template.when_text,
 			})
 	return rows
 
@@ -373,7 +431,7 @@ static func _lines(pack: WyrdLinkedPack) -> Array:
 	for unit in pack.units:
 		var path := str(unit["path"])
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_line_stage(rows, stage, path, pack.pack_id)
 		for scene in file.scenes:

@@ -1,0 +1,292 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 6,
+      "message": "template \"errand\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/template_lints/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_EMPTY_UNCOVERED",
+      "col": 3,
+      "line": 7,
+      "message": "slot \"giver\" can become empty and has no empty variant or on_empty",
+      "path": "res://tests/golden/link/template_lints/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_UNUSED",
+      "col": 28,
+      "line": 11,
+      "message": "slot \"spare\" is not used in scene \"room\"",
+      "path": "res://tests/golden/link/template_lints/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_UNUSED",
+      "col": 35,
+      "line": 11,
+      "message": "param \"toll\" is not used in scene \"room\"",
+      "path": "res://tests/golden/link/template_lints/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_STAGE_UNREACHABLE",
+      "col": 3,
+      "line": 19,
+      "message": "stage \"errand.side\" is never reached from \"errand.arrive\"",
+      "path": "res://tests/golden/link/template_lints/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "b06093710af68e2c",
+        "path": "res://tests/golden/link/template_lints/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/template_lints/pack.wyrd",
+        "id": "template_lints/bb01",
+        "kind": "journal",
+        "scene": "",
+        "speaker": "",
+        "tags": []
+      },
+      {
+        "condition": null,
+        "file": "res://tests/golden/link/template_lints/pack.wyrd",
+        "id": "template_lints/aa01",
+        "kind": "spoken",
+        "scene": "room",
+        "speaker": "giver",
+        "tags": []
+      }
+    ],
+    "pack_id": "template_lints",
+    "quests": [],
+    "roles": [],
+    "scenes": [
+      {
+        "file": "res://tests/golden/link/template_lints/pack.wyrd",
+        "id": "room",
+        "items": [
+          {
+            "divert": "",
+            "kind": "line",
+            "label": "",
+            "line_id": "aa01",
+            "speaker": "giver",
+            "target": ""
+          },
+          {
+            "divert": "end",
+            "kind": "divert",
+            "label": "",
+            "target": "end"
+          }
+        ],
+        "on_abort": []
+      }
+    ],
+    "templates": [
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_lints/pack.wyrd",
+        "id": "errand",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [
+          {
+            "cast_tag": "toll",
+            "cast_text": "has_tag(candidate, toll)",
+            "kind": "item",
+            "name": "toll"
+          }
+        ],
+        "priority": 0,
+        "requires": [],
+        "slots": [
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "giver",
+            "role": "dock_keeper"
+          },
+          {
+            "locked_stage": "",
+            "mode": "live",
+            "name": "spare",
+            "role": "clerk"
+          }
+        ],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "id": "arrive",
+            "journals": [],
+            "scenes": [
+              {
+                "id": "room",
+                "with": [
+                  "giver",
+                  "spare",
+                  "toll"
+                ]
+              }
+            ],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [
+              {
+                "body": {
+                  "effects": [],
+                  "id": "",
+                  "journals": [
+                    "bb01"
+                  ],
+                  "scenes": [],
+                  "transitions": [],
+                  "variants": [],
+                  "waits": ""
+                },
+                "slot": "spare",
+                "state": "empty"
+              }
+            ],
+            "waits": "player.coins > 0"
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          },
+          {
+            "effects": [],
+            "id": "side",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Errand",
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/template_lints/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 3,
+              "file": "res://tests/golden/link/template_lints/pack.wyrd",
+              "id": "errand.arrive",
+              "kind": "stage",
+              "line": 10
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/template_lints/pack.wyrd",
+              "id": "errand.arrive",
+              "kind": "effect",
+              "line": 15
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

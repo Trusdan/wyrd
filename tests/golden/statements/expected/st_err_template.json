@@ -1,0 +1,212 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_RESERVED_WORD",
+      "col": 7,
+      "line": 3,
+      "message": "reserved word \"tier\"",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SLOT_DUPLICATE",
+      "col": 3,
+      "line": 7,
+      "message": "duplicate slot \"giver\"",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 8,
+      "message": "unknown param kind \"npc\"",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 10,
+      "message": "duplicate template field \"when\"",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 11,
+      "message": "weight cannot be negative",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 12,
+      "message": "max_active needs an integer of at least 1",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 13,
+      "message": "allow_protected needs true or false",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHANCE_CONTEXT",
+      "col": 12,
+      "line": 14,
+      "message": "chance is not allowed in a wait, trigger, or eligibility condition",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 15,
+      "message": "a template has no start; the generator starts its instances",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 16,
+      "message": "on_deed is not supported yet",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 5,
+      "message": "template \"bad\" specificity 1 priority 0",
+      "path": "res://tests/golden/statements/st_err_template.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [
+    {
+      "id": "tier",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 15,
+        "end_line": 3,
+        "line": 3
+      },
+      "stages": [],
+      "start_text": "",
+      "start_when": null,
+      "title": "C"
+    }
+  ],
+  "reads": [],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": false,
+      "assumes": {
+        "reads": [],
+        "source_span": {
+          "col": 12,
+          "end_col": 23,
+          "end_line": 14,
+          "line": 14
+        },
+        "specificity": 1,
+        "uses_chance": true
+      },
+      "assumes_text": "chance(0.5)",
+      "assumption_texts": [
+        "chance(0.5)"
+      ],
+      "id": "bad",
+      "max_active": 1,
+      "on_empty": "",
+      "params": [],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "giver",
+          "reads": [],
+          "role": "dock_keeper",
+          "span": {
+            "col": 3,
+            "end_col": 38,
+            "end_line": 6,
+            "line": 6
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 18,
+        "line": 5
+      },
+      "specificity": 1,
+      "stages": [
+        {
+          "effects": [],
+          "id": "one",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 18,
+            "line": 17
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 18,
+              "line": 18
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Bad",
+      "weight": 1,
+      "when": {
+        "reads": [],
+        "source_span": {
+          "col": 9,
+          "end_col": 13,
+          "end_line": 9,
+          "line": 9
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "when_text": "true"
+    }
+  ]
+}

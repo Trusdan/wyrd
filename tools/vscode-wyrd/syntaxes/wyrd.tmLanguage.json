@@ -574,6 +574,23 @@
       ]
     },
     {
+      "begin": "^(template)(\\s+)([A-Za-z_][\\w.]*)",
+      "end": "^(?=\\S)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.block.wyrd"
+        },
+        "3": {
+          "name": "entity.name.type.template.wyrd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#code"
+        }
+      ]
+    },
+    {
       "include": "#code"
     }
   ],
@@ -583,7 +600,7 @@
       "name": "keyword.other.header.wyrd"
     },
     "blocks": {
-      "match": "\\b(?:facts|events|quest|scene|role|storylet|sequence|document)\\b",
+      "match": "\\b(?:facts|events|quest|scene|role|storylet|sequence|document|template)\\b",
       "name": "keyword.other.block.wyrd"
     },
     "reserved": {
@@ -595,7 +612,7 @@
       "name": "storage.type.wyrd"
     },
     "fields": {
-      "match": "\\b(?:default_holder|eligibility|scope|succession|vacancy|visibility|cooldown|priority|secrecy|speaker|speaker_cooldown|weight|when|fragment|text|meta|page|on_read|on_first_read|claim|fact|verb|publishes_by|every|delay|stored|source|recap|invalidate|doc|slot|on_empty|start|requires|stage|waits_until|journal|variant|await_host|on|region|redirect|on_abort|on_fail|check|disabled_when|show_disabled_when|ordered|any|where|leaves|decays|mode|live|frozen|cast|locked_at|lines|within|reset|with|topic|quest|role|baseline|copy|deed|to|by|of|beat|event|witnesses|actor|magnitude|memorable|place|statement|tags|target|auto|slant)\\b",
+      "match": "\\b(?:default_holder|eligibility|scope|succession|vacancy|visibility|cooldown|priority|secrecy|speaker|speaker_cooldown|weight|when|fragment|text|meta|page|on_read|on_first_read|claim|fact|verb|publishes_by|every|delay|stored|source|recap|invalidate|doc|slot|on_empty|start|requires|stage|waits_until|journal|variant|await_host|on|region|redirect|on_abort|on_fail|check|disabled_when|show_disabled_when|ordered|any|where|leaves|decays|mode|live|frozen|cast|locked_at|lines|within|reset|with|topic|quest|role|baseline|copy|deed|to|by|of|beat|event|witnesses|actor|magnitude|memorable|place|statement|tags|target|auto|slant|param|max_active|assumes|allow_protected)\\b",
       "name": "keyword.other.wyrd"
     },
     "effects": {

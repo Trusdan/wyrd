@@ -17,7 +17,7 @@ static func rows(pack: WyrdLinkedPack) -> Array:
 	for unit in pack.units:
 		var path := _display_path(str(unit["path"]))
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_stage(found, stage, path)
 		for scene in file.scenes:

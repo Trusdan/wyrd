@@ -17,7 +17,7 @@ var manifest_hash: int = 0
 var schema: WyrdFactSchema
 var events: Dictionary = {}
 var quests: Dictionary = {}
-## Template id to [WyrdQuestDef]. Empty until a later pack compiler fills it.
+## Template id to [WyrdTemplateDef]. Filled by [method from_pack]. Not a save document.
 var templates: Dictionary = {}
 var scenes: Dictionary = {}
 ## Role id to [WyrdRoleDef]. Compiled with the pack. Not a save document.
@@ -70,6 +70,16 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 				content._add(slot.cast_when, "%s.%s" % [quest.id, slot.name], "cast")
 			for stage in quest.stages:
 				content._stage(quest.id, stage)
+		for template in file.templates:
+			if template.id.is_empty():
+				continue
+			content.templates[template.id] = template
+			for slot in template.slots:
+				content._add(slot.cast_when, "%s.%s" % [template.id, slot.name], "cast")
+			for param in template.params:
+				content._add(param.cast_when, "%s.%s" % [template.id, param.name], "cast")
+			for stage in template.stages:
+				content._stage(template.id, stage)
 		for scene in file.scenes:
 			content.scenes[scene.id] = scene
 			for item in scene.items:
@@ -234,7 +244,7 @@ func _index_coverage(file: WyrdFileDef, path: String) -> void:
 				item.choice.source_path = path
 				if not item.choice.line_id.is_empty():
 					_add_site(seen, "line", item.choice.line_id, path, item.choice.line)
-	for quest in file.quests:
+	for quest in file.quest_bodies():
 		for stage in quest.stages:
 			_index_stage(seen, quest.id, stage, path)
 

@@ -1,0 +1,12 @@
+language 1
+
+facts
+  harbor.release : bool stored
+
+template errand "Errand"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  slot coin kind: item mode: cast(has_tag(candidate, toll))
+  stage work
+    journal: The errand is open. #line:e1aa
+    ~ outcome finished = done
+    waits_until harbor.release

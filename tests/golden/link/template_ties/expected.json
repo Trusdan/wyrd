@@ -1,0 +1,503 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 10,
+      "message": "template \"alpha\" specificity 1 priority 0",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 17,
+      "message": "template \"bravo\" specificity 1 priority 0",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 17,
+      "message": "template \"bravo\" ties \"alpha\": priority 0 specificity 1 weights 1 and 3",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 24,
+      "message": "template \"fox\" specificity 1 priority 0",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 31,
+      "message": "template \"cede\" specificity 1 priority 1",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 37,
+      "message": "template \"dune\" specificity 1 priority 2",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 44,
+      "message": "template \"echo\" specificity 1 priority 2",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 51,
+      "message": "template \"span\" specificity 1 priority 3",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 59,
+      "message": "template \"named\" specificity 1 priority 3",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "W_TEMPLATE_TIE",
+      "col": 1,
+      "line": 59,
+      "message": "template \"named\" ties \"span\": priority 3 specificity 1 weights 4 and 2",
+      "path": "res://tests/golden/link/template_ties/pack.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [
+      {
+        "doc": "",
+        "invalidate": "",
+        "invalidate_arg": "",
+        "key": "player.coins",
+        "line": 4,
+        "origin": "stored",
+        "pattern": false,
+        "resolver": "",
+        "source": "stored",
+        "type": "int"
+      }
+    ],
+    "files": [
+      {
+        "hash": "3c734c8fbb2b3adc",
+        "path": "res://tests/golden/link/template_ties/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "template_ties",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "writer",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [],
+                "branch": "",
+                "command": "",
+                "fact_key": "player.coins",
+                "kind": "set",
+                "on_fail": "",
+                "outcome": "",
+                "target": {
+                  "code": [
+                    5,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "name",
+                      "v": "player.coins"
+                    }
+                  ],
+                  "reads": [
+                    "player.coins"
+                  ],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "topic": "",
+                "value": {
+                  "code": [
+                    1,
+                    0
+                  ],
+                  "consts": [
+                    {
+                      "t": "int",
+                      "v": 1
+                    }
+                  ],
+                  "reads": [],
+                  "specificity": 1,
+                  "uses_chance": false
+                },
+                "verb": ""
+              }
+            ],
+            "id": "once",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Writer"
+      }
+    ],
+    "roles": [],
+    "scenes": [],
+    "templates": [
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "alpha",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Alpha",
+        "weight": 1,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "bravo",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Bravo",
+        "weight": 3,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "fox",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Fox",
+        "weight": 1,
+        "when": "not player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "cede",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 1,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Cede",
+        "weight": 1,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "dune",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 2,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "low",
+        "tier_range": false,
+        "title": "Dune",
+        "weight": 1,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "echo",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 2,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "high",
+        "tier_range": false,
+        "title": "Echo",
+        "weight": 1,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "span",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 3,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "high",
+        "tier_low": "low",
+        "tier_range": true,
+        "title": "Span",
+        "weight": 2,
+        "when": "player.coins == 1"
+      },
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/template_ties/pack.wyrd",
+        "id": "named",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 3,
+        "requires": [],
+        "slots": [],
+        "specificity": 1,
+        "stages": [
+          {
+            "effects": [],
+            "id": "idle",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": "false"
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "mid",
+        "tier_range": false,
+        "title": "Named",
+        "weight": 4,
+        "when": "player.coins == 1"
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": [
+        {
+          "col": 3,
+          "doc": "",
+          "file": "res://tests/golden/link/template_ties/pack.wyrd",
+          "key": "player.coins",
+          "line": 4,
+          "readers": [
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "alpha",
+              "kind": "template",
+              "line": 10
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "bravo",
+              "kind": "template",
+              "line": 17
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "fox",
+              "kind": "template",
+              "line": 24
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "cede",
+              "kind": "template",
+              "line": 31
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "dune",
+              "kind": "template",
+              "line": 37
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "echo",
+              "kind": "template",
+              "line": 44
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "span",
+              "kind": "template",
+              "line": 51
+            },
+            {
+              "col": 1,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "named",
+              "kind": "template",
+              "line": 59
+            }
+          ],
+          "source": "stored",
+          "type": "int",
+          "writers": [
+            {
+              "col": 5,
+              "file": "res://tests/golden/link/template_ties/pack.wyrd",
+              "id": "writer.once",
+              "kind": "effect",
+              "line": 8
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

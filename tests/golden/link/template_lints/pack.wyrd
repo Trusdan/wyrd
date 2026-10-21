@@ -1,0 +1,23 @@
+language 1
+
+facts
+  player.coins : int stored recap: false
+
+template errand "Errand"
+  slot giver = dock_keeper mode: live
+  slot spare = clerk mode: live
+  param toll: item cast(has_tag(candidate, toll))
+  stage arrive
+    scene room with giver, spare, toll
+    variant spare.empty:
+      journal: The clerk is gone. #line:bb01
+    waits_until player.coins > 0
+    ~ set player.coins = 1
+    -> done
+  stage done
+    waits_until false
+  stage side
+
+scene room
+  giver: Hello. #line:aa01
+  -> end

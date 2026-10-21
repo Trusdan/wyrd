@@ -615,3 +615,74 @@
 #                      ^ source.wyrd
 #                       ^^^^ source.wyrd constant.language.wyrd
 >
+>template ferry.errand "The Errand"
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^ source.wyrd entity.name.type.template.wyrd
+#                     ^ source.wyrd
+#                      ^ source.wyrd string.quoted.double.wyrd
+#                       ^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                 ^ source.wyrd string.quoted.double.wyrd
+>  slot giver = dock_keeper mode: live
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^ source.wyrd
+#             ^ source.wyrd keyword.operator.wyrd
+#              ^^^^^^^^^^^^^ source.wyrd
+#                           ^^^^ source.wyrd keyword.other.wyrd
+#                               ^^ source.wyrd
+#                                 ^^^^ source.wyrd keyword.other.wyrd
+>  param toll: item cast(has_tag(candidate, toll))
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^^^^^^^^ source.wyrd
+#                   ^^^^ source.wyrd keyword.other.wyrd
+#                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
+>  when: player.coins > 0
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.wyrd
+#      ^^^^^^^^^^^^^^^ source.wyrd
+#                     ^ source.wyrd keyword.operator.wyrd
+#                      ^ source.wyrd
+#                       ^ source.wyrd constant.numeric.wyrd
+>  priority: 1
+#^^ source.wyrd
+#  ^^^^^^^^ source.wyrd keyword.other.wyrd
+#          ^^ source.wyrd
+#            ^ source.wyrd constant.numeric.wyrd
+>  weight: 2
+#^^ source.wyrd
+#  ^^^^^^ source.wyrd keyword.other.wyrd
+#        ^^ source.wyrd
+#          ^ source.wyrd constant.numeric.wyrd
+>  max_active: 1
+#^^ source.wyrd
+#  ^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#            ^^ source.wyrd
+#              ^ source.wyrd constant.numeric.wyrd
+>  tier: low..high
+#^^ source.wyrd
+#  ^^^^ source.wyrd keyword.other.reserved.wyrd
+#      ^^^^^ source.wyrd
+#           ^^ source.wyrd keyword.operator.wyrd
+#             ^^^^^ source.wyrd
+>  assumes: alive(giver)
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^^^^^^^^^ source.wyrd
+>  allow_protected: true
+#^^ source.wyrd
+#  ^^^^^^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#                 ^^ source.wyrd
+#                   ^^^^ source.wyrd constant.language.wyrd
+>  stage ask
+#^^ source.wyrd
+#  ^^^^^ source.wyrd keyword.other.wyrd
+#       ^^^^^ source.wyrd
+>    journal: Ask the giver. #line:ask1
+#^^^^ source.wyrd
+#    ^^^^^^^ source.wyrd keyword.other.wyrd
+#           ^^^^^^^^^^^^^^^^^ source.wyrd
+#                            ^^^^^^ source.wyrd entity.name.tag.wyrd
+#                                  ^^^^ source.wyrd constant.other.wyrd
+>

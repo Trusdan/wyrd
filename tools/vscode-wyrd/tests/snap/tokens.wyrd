@@ -82,3 +82,16 @@ document ferry_schedule "Ferry Schedule" publishes_by harbor_guild every 1 day d
 
 sequence harbor.bell ordered within 1 h reset on season_changed
   season_changed where true
+
+template ferry.errand "The Errand"
+  slot giver = dock_keeper mode: live
+  param toll: item cast(has_tag(candidate, toll))
+  when: player.coins > 0
+  priority: 1
+  weight: 2
+  max_active: 1
+  tier: low..high
+  assumes: alive(giver)
+  allow_protected: true
+  stage ask
+    journal: Ask the giver. #line:ask1

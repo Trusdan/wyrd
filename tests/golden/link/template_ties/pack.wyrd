@@ -1,0 +1,65 @@
+language 1
+
+facts
+  player.coins : int stored recap: false
+
+quest writer "Writer"
+  stage once
+    ~ set player.coins = 1
+
+template alpha "Alpha"
+  when: player.coins == 1
+  priority: 0
+  weight: 1
+  stage idle
+    waits_until false
+
+template bravo "Bravo"
+  when: player.coins == 1
+  priority: 0
+  weight: 3
+  stage idle
+    waits_until false
+
+template fox "Fox"
+  when: not player.coins == 1
+  priority: 0
+  weight: 1
+  stage idle
+    waits_until false
+
+template cede "Cede"
+  when: player.coins == 1
+  priority: 1
+  stage idle
+    waits_until false
+
+template dune "Dune"
+  when: player.coins == 1
+  priority: 2
+  tier: low
+  stage idle
+    waits_until false
+
+template echo "Echo"
+  when: player.coins == 1
+  priority: 2
+  tier: high
+  stage idle
+    waits_until false
+
+template span "Span"
+  when: player.coins == 1
+  priority: 3
+  weight: 2
+  tier: low..high
+  stage idle
+    waits_until false
+
+template named "Named"
+  when: player.coins == 1
+  priority: 3
+  weight: 4
+  tier: mid
+  stage idle
+    waits_until false

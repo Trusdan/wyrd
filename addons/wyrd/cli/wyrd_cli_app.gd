@@ -879,7 +879,7 @@ static func _voice_rows(pack: WyrdLinkedPack) -> Array:
 		return rows
 	for unit in pack.units:
 		var file: WyrdFileDef = unit["file"]
-		for quest in file.quests:
+		for quest in file.quest_bodies():
 			for stage in quest.stages:
 				_voice_stage(rows, quest.id, stage)
 		for scene in file.scenes:
