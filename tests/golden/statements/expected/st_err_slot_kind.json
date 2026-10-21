@@ -1,0 +1,880 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 4,
+      "message": "an object or item slot needs mode: cast(...)",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 9,
+      "message": "an object or item slot needs mode: cast(...)",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 14,
+      "message": "unknown slot kind \"person\"",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_OBJECT_SUCCESSION",
+      "col": 3,
+      "line": 19,
+      "message": "object or item slot \"post\" cannot name a role",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 19,
+      "message": "object slot \"post\" has no locked_gone variant",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_OBJECT_SUCCESSION",
+      "col": 5,
+      "line": 26,
+      "message": "object or item slot \"post\" cannot use state \"successor\"",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 24,
+      "message": "object slot \"post\" has no locked_gone variant",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_COND_ALWAYS",
+      "col": 35,
+      "line": 31,
+      "message": "cast condition is always true",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_OBJECT_SUCCESSION",
+      "col": 5,
+      "line": 33,
+      "message": "object or item slot \"post\" cannot use state \"contested\"",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 31,
+      "message": "item slot \"post\" has no locked_gone variant",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_COND_ALWAYS",
+      "col": 37,
+      "line": 38,
+      "message": "cast condition is always true",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_COND_ALWAYS",
+      "col": 28,
+      "line": 42,
+      "message": "unwilling condition is always true",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_SLOT_COND_ALWAYS",
+      "col": 25,
+      "line": 44,
+      "message": "barred condition is always true",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_SLOT_STATE",
+      "col": 5,
+      "line": 40,
+      "message": "slot state \"hostile\" does not apply to an object or item slot",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SLOT_STATE",
+      "col": 5,
+      "line": 42,
+      "message": "slot state \"unwilling\" does not apply to an object or item slot",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_SLOT_STATE",
+      "col": 5,
+      "line": 44,
+      "message": "slot state \"barred\" does not apply to an object or item slot",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 38,
+      "message": "object slot \"post\" has no locked_gone variant",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_LOCKED_GONE_UNCOVERED",
+      "col": 3,
+      "line": 49,
+      "message": "object slot \"post\" has no locked_gone variant",
+      "path": "res://tests/golden/statements/st_err_slot_kind.wyrd",
+      "severity": "warning"
+    }
+  ],
+  "quests": [
+    {
+      "id": "bad_mode",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 6,
+        "line": 3
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 6,
+            "line": 5
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 6,
+              "line": 6
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Mode"
+    },
+    {
+      "id": "bad_lock",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 11,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 11,
+            "line": 10
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 11,
+              "line": 11
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Lock"
+    },
+    {
+      "id": "bad_kind",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 16,
+        "line": 13
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 16,
+            "line": 15
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 16,
+              "line": 16
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Kind"
+    },
+    {
+      "id": "named",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 46,
+              "end_col": 73,
+              "end_line": 19,
+              "line": 19
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "bollard",
+          "cast_text": "has_tag(candidate, bollard)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "keeper",
+          "span": {
+            "col": 3,
+            "end_col": 74,
+            "end_line": 19,
+            "line": 19
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 21,
+        "line": 18
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 21,
+            "line": 20
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 21,
+              "line": 21
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Named"
+    },
+    {
+      "id": "succeed",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 37,
+              "end_col": 64,
+              "end_line": 24,
+              "line": 24
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "bollard",
+          "cast_text": "has_tag(candidate, bollard)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 65,
+            "end_line": 24,
+            "line": 24
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 28,
+        "line": 23
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 28,
+            "line": 25
+          },
+          "transitions": [],
+          "variants": [
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 27,
+                  "line": 26
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 27,
+                    "line": 27
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 27,
+                "line": 26
+              },
+              "state": "successor"
+            }
+          ],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 28,
+              "line": 28
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Succeed"
+    },
+    {
+      "id": "contest",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 35,
+              "end_col": 39,
+              "end_line": 31,
+              "line": 31
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "",
+          "cast_text": "true",
+          "kind": "item",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 31,
+            "line": 31
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 35,
+        "line": 30
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 35,
+            "line": 32
+          },
+          "transitions": [],
+          "variants": [
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 34,
+                  "line": 33
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 34,
+                    "line": 34
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 34,
+                "line": 33
+              },
+              "state": "contested"
+            }
+          ],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 35,
+              "line": 35
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Contest"
+    },
+    {
+      "id": "moods",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 37,
+              "end_col": 41,
+              "end_line": 38,
+              "line": 38
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "",
+          "cast_text": "true",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 42,
+            "end_line": 38,
+            "line": 38
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 46,
+        "line": 37
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 46,
+            "line": 39
+          },
+          "transitions": [],
+          "variants": [
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 41,
+                  "line": 40
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 41,
+                    "line": 41
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": null,
+              "condition_text": "",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 41,
+                "line": 40
+              },
+              "state": "hostile"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 43,
+                  "line": 42
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 43,
+                    "line": 43
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": {
+                "reads": [],
+                "source_span": {
+                  "col": 28,
+                  "end_col": 32,
+                  "end_line": 42,
+                  "line": 42
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "condition_text": "true",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 43,
+                "line": 42
+              },
+              "state": "unwilling"
+            },
+            {
+              "body": {
+                "effects": [],
+                "id": "",
+                "journals": [],
+                "reads": [],
+                "scenes": [],
+                "span": {
+                  "col": 5,
+                  "end_col": 24,
+                  "end_line": 45,
+                  "line": 44
+                },
+                "transitions": [],
+                "variants": [],
+                "waits_text": "false",
+                "waits_until": {
+                  "reads": [],
+                  "source_span": {
+                    "col": 19,
+                    "end_col": 24,
+                    "end_line": 45,
+                    "line": 45
+                  },
+                  "specificity": 1,
+                  "uses_chance": false
+                }
+              },
+              "condition": {
+                "reads": [],
+                "source_span": {
+                  "col": 25,
+                  "end_col": 29,
+                  "end_line": 44,
+                  "line": 44
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "condition_text": "true",
+              "reads": [],
+              "redirects": [],
+              "slot": "post",
+              "span": {
+                "col": 5,
+                "end_col": 24,
+                "end_line": 45,
+                "line": 44
+              },
+              "state": "barred"
+            }
+          ],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 46,
+              "line": 46
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Moods"
+    },
+    {
+      "id": "uncovered",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 37,
+              "end_col": 64,
+              "end_line": 49,
+              "line": 49
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "bollard",
+          "cast_text": "has_tag(candidate, bollard)",
+          "kind": "object",
+          "locked_stage": "",
+          "mode": "cast",
+          "name": "post",
+          "reads": [],
+          "role": "",
+          "span": {
+            "col": 3,
+            "end_col": 65,
+            "end_line": 49,
+            "line": 49
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 51,
+        "line": 48
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "hold",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 51,
+            "line": 50
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 51,
+              "line": 51
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Uncovered"
+    }
+  ],
+  "reads": [],
+  "scenes": []
+}

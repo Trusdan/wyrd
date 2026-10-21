@@ -194,7 +194,7 @@ func _gullhaven_pack() -> WyrdLinkedPack:
 func _gullhaven_line_ids() -> Dictionary:
 	var ids := {}
 	var pattern := RegEx.new()
-	pattern.compile("#line:([A-Za-z_][A-Za-z0-9_]*)")
+	pattern.compile("#line:([A-Za-z0-9_]+)")
 	var dir := DirAccess.open("res://example/content/gullhaven")
 	dir.list_dir_begin()
 	var file_name := dir.get_next()

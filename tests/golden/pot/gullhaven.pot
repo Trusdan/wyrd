@@ -386,3 +386,18 @@ msgstr ""
 msgctxt "tale_claim"
 msgid "A fisher swears the toll was {belief(line_fisher, harbor.toll_fate)}."
 msgstr ""
+
+#: example/content/gullhaven/mooring_post.wyrd:12
+msgctxt "f9fe"
+msgid "The {holder(post).name} holds the mooring."
+msgstr ""
+
+#: example/content/gullhaven/mooring_post.wyrd:16
+msgctxt "5b47"
+msgid "No bollard stands for the mooring."
+msgstr ""
+
+#: example/content/gullhaven/mooring_post.wyrd:19
+msgctxt "6481"
+msgid "The mooring post is gone."
+msgstr ""

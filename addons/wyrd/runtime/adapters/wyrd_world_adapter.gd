@@ -51,8 +51,9 @@ func groups_of(_agent: StringName) -> PackedStringArray:
 
 
 ## Entity ids that match [param filter]. An empty kind and tag means every entity
-## the host is willing to offer. Order is not significant. Object and item
-## casting is not a separate path.
+## the host is willing to offer. Order is not significant. Role casts pass an
+## empty filter. Object and item casts set [member WyrdEntityFilter.kind] and
+## [member WyrdEntityFilter.tag]. Items use kind [code]item[/code].
 func candidates(filter: WyrdEntityFilter) -> PackedStringArray:
 	var kind := ""
 	var tag := ""

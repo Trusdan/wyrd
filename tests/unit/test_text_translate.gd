@@ -40,7 +40,7 @@ func test_span_lines_without_a_translation_match_today() -> void:
 		var today := text.render(row["prose"], str(row["id"]))
 		var again := text.render(rebuilt["node"], str(row["id"]))
 		assert_eq(again, today, str(row["id"]))
-	assert_eq(count, 6)
+	assert_eq(count, 7)
 	assert_eq(text.compile_count, 0)
 	assert_eq(_rows(runtime, "text_translate").size(), 0)
 

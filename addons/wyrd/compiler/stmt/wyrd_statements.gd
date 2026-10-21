@@ -723,6 +723,9 @@ func _finish_quest(quest: WyrdQuestDef) -> void:
 			)
 	for stage in quest.stages:
 		_finish_body(stage, stage_names, slot_names, 1)
+	for stage in quest.stages:
+		_check_kind_variants(quest, stage)
+	_warn_kind_gone(quest)
 
 
 func _finish_body(stage: WyrdStageDef, stage_names: Dictionary, slot_names: Dictionary, depth: int) -> void:
@@ -778,21 +781,59 @@ func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
 	var items := node.head
 	var slot := WyrdSlotDef.new()
 	slot.take_span(node)
-	if items.size() < 5 or items[0].kind != &"ident" or items[1].kind != &"eq":
+	if items.is_empty() or items[0].kind != &"ident":
 		_unknown_msg(node, "slot needs <name> = <role> mode: ...")
 		return
 	slot.name = items[0].text
-	var role := _dotted_at(items, 2)
-	slot.role = String(role["name"])
-	var i := int(role["next"])
-	if slot.role.is_empty() or i >= items.size() or items[i].text != "mode" or i + 1 >= items.size() or items[i + 1].kind != &"colon":
+	var i := 1
+	var named_role := false
+	if i < items.size() and items[i].kind == &"eq":
+		var role := _dotted_at(items, 2)
+		slot.role = String(role["name"])
+		i = int(role["next"])
+		named_role = true
+		if slot.role.is_empty():
+			_unknown_msg(node, "slot needs <name> = <role> mode: ...")
+			return
+	var has_kind := false
+	if i < items.size() and items[i].kind == &"ident" and items[i].text == "kind":
+		if i + 2 >= items.size() or items[i + 1].kind != &"colon" or items[i + 2].kind != &"ident":
+			_unknown_msg(node, "slot kind needs object or item")
+			return
+		var kind_name := items[i + 2].text
+		if kind_name != "object" and kind_name != "item":
+			_unknown_msg(node, "unknown slot kind \"%s\"" % kind_name)
+			return
+		slot.kind = kind_name
+		has_kind = true
+		i += 3
+		if named_role:
+			_error(
+				WyrdDiagnostic.E_OBJECT_SUCCESSION,
+				"object or item slot \"%s\" cannot name a role" % slot.name,
+				node.start_line,
+				node.start_col
+			)
+	elif not named_role:
+		_unknown_msg(node, "slot needs <name> = <role> mode: ...")
+		return
+	if has_kind and (i >= items.size() or items[i].text != "mode" or i + 1 >= items.size() or items[i + 1].kind != &"colon"):
+		_unknown_msg(node, "an object or item slot needs mode: cast(...)")
+		return
+	if not has_kind and (i >= items.size() or items[i].text != "mode" or i + 1 >= items.size() or items[i + 1].kind != &"colon"):
 		_unknown_msg(node, "slot needs <name> = <role> mode: ...")
 		return
 	i += 2
 	if i >= items.size() or items[i].kind != &"ident":
-		_unknown_msg(node, "slot needs a mode")
+		if has_kind:
+			_unknown_msg(node, "an object or item slot needs mode: cast(...)")
+		else:
+			_unknown_msg(node, "slot needs a mode")
 		return
 	var mode := items[i].text
+	if has_kind and mode != "cast":
+		_unknown_msg(node, "an object or item slot needs mode: cast(...)")
+		return
 	if mode == "live" and i + 1 == items.size():
 		slot.mode = &"live"
 	elif mode == "locked_at":
@@ -822,6 +863,8 @@ func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
 		slot.cast_when = compiled["compiled"]
 		if compiled["ast"] != null:
 			_warn_slot_const("cast", compiled["ast"], int(span["line"]), int(span["col"]))
+			if has_kind:
+				slot.cast_tag = _cast_tag_of(compiled["ast"])
 	else:
 		_unknown_msg(node, "unknown slot mode \"%s\"" % mode)
 		return
@@ -833,6 +876,132 @@ func _slot(node: WyrdNode, quest: WyrdQuestDef) -> void:
 	quest.slots.append(slot)
 	WyrdStmtSpan.add_reads(quest.reads, slot.reads)
 	_no_block(node)
+
+
+## The top-level [code]and[/code] conjunct [code]has_tag(candidate, <symbol>)[/code], or empty.
+func _cast_tag_of(root: WyrdExprNode) -> String:
+	var parts: Array[WyrdExprNode] = []
+	_cast_and_parts(root, parts)
+	for part in parts:
+		var found := _cast_has_tag(part)
+		if not found.is_empty():
+			return found
+	return ""
+
+
+func _cast_and_parts(node: WyrdExprNode, into: Array[WyrdExprNode]) -> void:
+	if node == null:
+		return
+	if node.kind == &"binary" and node.text == "and":
+		_cast_and_parts(node.a, into)
+		_cast_and_parts(node.b, into)
+		return
+	into.append(node)
+
+
+func _cast_has_tag(node: WyrdExprNode) -> String:
+	if node == null or node.kind != &"call" or node.text != "has_tag":
+		return ""
+	if not (node.payload is Array):
+		return ""
+	var args: Array = node.payload
+	if args.size() != 2 or not (args[0] is WyrdExprNode) or not (args[1] is WyrdExprNode):
+		return ""
+	var who := args[0] as WyrdExprNode
+	var tag := args[1] as WyrdExprNode
+	var who_is_candidate := (who.kind == &"fact" or who.kind == &"name") and who.text == "candidate"
+	if not who_is_candidate:
+		return ""
+	if tag.kind != &"name" or tag.type_name != WyrdSignatures.T_SYMBOL:
+		return ""
+	if tag.text.is_empty() or tag.text.contains("."):
+		return ""
+	return tag.text
+
+
+func _check_kind_variants(quest: WyrdQuestDef, stage: WyrdStageDef) -> void:
+	if stage == null:
+		return
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null:
+			continue
+		var slot := _kind_slot(quest, variant.slot)
+		if slot != null:
+			var state := String(variant.state)
+			if state == "successor" or state == "contested":
+				_error(
+					WyrdDiagnostic.E_OBJECT_SUCCESSION,
+					"object or item slot \"%s\" cannot use state \"%s\"" % [slot.name, state],
+					variant.line,
+					variant.col
+				)
+			elif state == "hostile" or state == "unwilling" or state == "barred":
+				_error(
+					WyrdDiagnostic.E_SLOT_STATE,
+					"slot state \"%s\" does not apply to an object or item slot" % state,
+					variant.line,
+					variant.col
+				)
+		if variant.body != null:
+			_check_kind_variants(quest, variant.body)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for nested in region.stages:
+			_check_kind_variants(quest, nested)
+
+
+func _warn_kind_gone(quest: WyrdQuestDef) -> void:
+	for slot in quest.slots:
+		if slot.kind != "object" and slot.kind != "item":
+			continue
+		if slot.name.is_empty() or _kind_gone_covered(quest, slot.name):
+			continue
+		_diagnostics.add(
+			WyrdDiagnostic.W_LOCKED_GONE_UNCOVERED,
+			"%s slot \"%s\" has no locked_gone variant" % [slot.kind, slot.name],
+			_path,
+			slot.line,
+			slot.col,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+
+
+func _kind_gone_covered(quest: WyrdQuestDef, slot_name: String) -> bool:
+	for stage in quest.stages:
+		if _stage_covers_gone(stage, slot_name):
+			return true
+	return false
+
+
+func _stage_covers_gone(stage: WyrdStageDef, slot_name: String) -> bool:
+	if stage == null:
+		return false
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant == null:
+			continue
+		if variant.slot == slot_name and variant.state == &"locked_gone":
+			return true
+		if variant.body != null and _stage_covers_gone(variant.body, slot_name):
+			return true
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for nested in region.stages:
+			if _stage_covers_gone(nested, slot_name):
+				return true
+	return false
+
+
+func _kind_slot(quest: WyrdQuestDef, slot_name: String) -> WyrdSlotDef:
+	for slot in quest.slots:
+		if slot.name == slot_name and not slot.kind.is_empty():
+			return slot
+	return null
 
 
 func _call_shape(items: Array[WyrdToken], at: int, idents: int) -> bool:

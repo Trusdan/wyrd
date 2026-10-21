@@ -31,6 +31,8 @@ Subclass each base directly and pass the instance to `register_adapter(base, ada
 - `WyrdTimeAdapter`
 - `WyrdActionAdapter`
 
+`candidates(filter)` must honor `kind` and `tag`. An item cast asks for kind `item`.
+
 `register_adapter` accepts a script whose parent is that base. An adapter method that stays on the stub reports an error and returns a typed fallback. Typed host functions use `register_function`.
 
 `WyrdActionAdapter.execute` runs commands. `load_content` reads `wyrd_commands.json` beside the manifest.

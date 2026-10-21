@@ -5,6 +5,7 @@
 - Fixed: CLI runs other than `check --watch` no longer print a `tick` on Nil script error after their output. CI runs every command headless and fails on a script error.
 - Fixed: `tag-lines` proposes ids exactly where `check` requires them: no longer on a choice's skill-check line, and now on variant lines. Document titles and paragraphs still get ids. Ids already written never change; an untagged line after a fixed site may get a different proposed id.
 - Tests: a schema 3 Gullhaven save fixture loads and round-trips on every run, and a schema 3 save without `flight` is checked to clear the dirty waits. The flight check is pinned to schema 3, so a later schema bump can't change how schema 3 saves load. No behavior change; save schema stays 3.
+- Quests: a slot can be cast from world objects or items by tag (`slot <name> kind: object|item mode: cast(has_tag(candidate, <tag>) and …)`). The world adapter's `candidates` gets the kind and tag. The pick is frozen at quest start and saved. The slot is `empty` when nothing matches and `locked_gone` when the object no longer exists or the item changed owner. `E_OBJECT_SUCCESSION` rejects a role or succession state on such a slot. Gullhaven adds the mooring post quest. Role casts are unchanged. Save schema stays 3.
 
 ## 0.6.4-m3 - 2026-10-20
 

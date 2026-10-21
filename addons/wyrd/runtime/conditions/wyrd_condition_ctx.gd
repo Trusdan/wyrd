@@ -64,6 +64,7 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"outcome": Callable(self, &"_outcome"),
 		&"progress": Callable(self, &"_progress"),
 		&"perceived": Callable(self, &"_perceived"),
+		&"kind": Callable(self, &"_kind"),
 		&"knows": Callable(self, &"_knows"),
 		&"path_exists": Callable(self, &"_path_exists"),
 		&"rel": Callable(self, &"_rel"),
@@ -154,6 +155,15 @@ func _count(args: Array) -> int:
 	if inventory == null:
 		return 0
 	return inventory.count(StringName(str(args[0])), StringName(str(args[1])))
+
+
+func _kind(args: Array) -> StringName:
+	if args.is_empty() or args[0] == null:
+		return &""
+	var world := _world()
+	if world == null:
+		return &""
+	return world.kind(StringName(str(args[0])))
 
 
 func _has_tag(args: Array) -> bool:

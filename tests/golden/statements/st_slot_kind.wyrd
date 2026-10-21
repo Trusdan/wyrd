@@ -1,0 +1,29 @@
+language 1
+
+facts
+  player.coins : int stored
+
+quest posts "Posts"
+  slot post kind: object mode: cast(has_tag(candidate, bollard))
+  slot coin kind: item mode: cast(has_tag(candidate, toll) and player.coins >= 0)
+  slot spare kind: object mode: cast(alive(candidate) and has_tag(candidate, spare))
+  slot rope kind: object mode: cast(alive(candidate))
+  stage hold
+    ~ set player.coins = 1
+    variant post.locked_gone:
+      waits_until false
+    variant post.empty:
+      waits_until false
+    variant coin.locked_gone:
+      waits_until false
+    variant coin.empty:
+      waits_until false
+    variant spare.locked_gone:
+      waits_until false
+    variant spare.empty:
+      waits_until false
+    variant rope.locked_gone:
+      waits_until false
+    variant rope.empty:
+      waits_until false
+    waits_until false
