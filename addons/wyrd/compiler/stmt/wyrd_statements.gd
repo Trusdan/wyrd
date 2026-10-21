@@ -45,6 +45,7 @@ var _label_uses: Array = []
 var _track_labels: bool = false
 var _events: Dictionary = {}
 var _event_fields: Dictionary = {}
+var _binding_prefix := "event"
 
 
 func compile(
@@ -66,6 +67,7 @@ func compile(
 	_track_labels = false
 	_events = events
 	_event_fields = {}
+	_binding_prefix = "event"
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
 	var seen_roles := {}
@@ -743,8 +745,7 @@ func _template(node: WyrdNode) -> WyrdTemplateDef:
 			_no_block(child)
 			continue
 		if field == "on_deed":
-			_template_error(child, "on_deed is not supported yet")
-			_no_block(child)
+			_deed_hook(child, template, names)
 			continue
 		if field == "slot":
 			var slot_name := _head_ident(child)
@@ -791,6 +792,88 @@ func _template(node: WyrdNode) -> WyrdTemplateDef:
 	_line_owner = saved_owner
 	_finish_quest(template)
 	return template
+
+
+func _deed_hook(node: WyrdNode, template: WyrdTemplateDef, names: Dictionary) -> void:
+	_line_id(node, false)
+	var items := node.head
+	var verb := ""
+	var where_at := -1
+	if not items.is_empty() and items[0].kind == &"ident":
+		verb = items[0].text
+		if items.size() == 1:
+			where_at = items.size()
+		elif items.size() >= 2 and items[1].text == "where":
+			where_at = 2
+	if verb.is_empty() or where_at < 0:
+		_template_error(node, "on_deed needs <verb> or <verb> where <condition>")
+		_no_block(node)
+		return
+	for prior in template.deed_hooks:
+		if prior.verb == verb:
+			_template_error(node, "duplicate deed hook \"%s\"" % verb)
+			_no_block(node)
+			return
+	var hook := WyrdDeedHookDef.new()
+	hook.take_span(node)
+	hook.verb = verb
+	if where_at < items.size():
+		var span := _span_text(items, where_at, items.size())
+		hook.where_text = span["text"]
+		if hook.where_text.strip_edges().is_empty():
+			_template_error(node, "on_deed needs <verb> or <verb> where <condition>")
+		else:
+			var saved_fields := _event_fields.duplicate()
+			var saved_prefix := _binding_prefix
+			_event_fields = {
+				"actor": WyrdSignatures.T_ENTITY,
+				"magnitude": WyrdSignatures.T_FLOAT,
+				"place": WyrdSignatures.T_ENTITY,
+				"target": WyrdSignatures.T_ENTITY,
+			}
+			_binding_prefix = "deed"
+			var compiled := _expr(
+				hook.where_text,
+				int(span["line"]),
+				int(span["col"]),
+				_WAIT,
+				true,
+				&"",
+				hook.reads,
+				{},
+				false,
+				"deed"
+			)
+			_event_fields = saved_fields
+			_binding_prefix = saved_prefix
+			hook.where_cond = compiled["compiled"]
+			var ast := compiled["ast"] as WyrdExprNode
+			if _hook_reads_cast(ast, names):
+				_template_error(node, "a deed hook runs before anything is cast")
+	template.deed_hooks.append(hook)
+	WyrdStmtSpan.add_reads(template.reads, hook.reads)
+	_no_block(node)
+
+
+func _hook_reads_cast(node: WyrdExprNode, names: Dictionary) -> bool:
+	if node == null or names.is_empty():
+		return false
+	if node.kind == &"name" and names.has(node.text):
+		return true
+	if node.kind == &"call" and (node.text == "holder" or node.text == "slot_state"):
+		var args: Array = node.payload if node.payload is Array else []
+		if not args.is_empty() and args[0] is WyrdExprNode and names.has((args[0] as WyrdExprNode).text):
+			return true
+	if _hook_reads_cast(node.a, names) or _hook_reads_cast(node.b, names) or _hook_reads_cast(node.c, names):
+		return true
+	for kid in node.kids:
+		if _hook_reads_cast(kid, names):
+			return true
+	if node.payload is Array:
+		for arg in node.payload:
+			if arg is WyrdExprNode and _hook_reads_cast(arg, names):
+				return true
+	return false
 
 
 func _template_names(node: WyrdNode) -> Dictionary:
@@ -2935,7 +3018,8 @@ func _expr(
 	expected: StringName,
 	into: Array[StringName],
 	bindings: Dictionary = {},
-	allow_spatial: bool = false
+	allow_spatial: bool = false,
+	binding_prefix: String = "event"
 ) -> Dictionary:
 	if text.strip_edges().is_empty():
 		_error(WyrdDiagnostic.E_EXPR_SYNTAX, "expected an expression", line, col)
@@ -2955,7 +3039,8 @@ func _expr(
 		expected,
 		_event_fields,
 		bindings,
-		allow_spatial
+		allow_spatial,
+		binding_prefix
 	)
 	WyrdStmtSpan.add_reads(into, compiled.reads)
 	return {"ast": compiler.ast, "compiled": compiled}

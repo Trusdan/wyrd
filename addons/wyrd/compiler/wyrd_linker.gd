@@ -1778,3 +1778,48 @@ func _host_stage(stage: WyrdStageDef, path: String) -> void:
 			continue
 		for child in region.stages:
 			_host_stage(child, path)
+
+
+static func warn_pressure(pack: WyrdLinkedPack, diagnostics: WyrdDiagnostics, tiers: PackedStringArray) -> void:
+	if pack == null or diagnostics == null or tiers.is_empty():
+		return
+	var rank := {}
+	for index in tiers.size():
+		rank[String(tiers[index])] = index
+	for unit in pack.units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		var path := str(unit["path"])
+		for template in file.templates:
+			if template.tier_low.is_empty() and not template.tier_range:
+				continue
+			var low := template.tier_low
+			var high := template.tier_high if template.tier_range else ""
+			if not low.is_empty() and not rank.has(low):
+				diagnostics.add(
+					WyrdDiagnostic.W_TEMPLATE_TIER_UNKNOWN,
+					"unknown pressure tier \"%s\"" % low,
+					path,
+					template.line,
+					template.col,
+					WyrdDiagnostic.SEVERITY_WARNING
+				)
+			if template.tier_range and not high.is_empty() and not rank.has(high):
+				diagnostics.add(
+					WyrdDiagnostic.W_TEMPLATE_TIER_UNKNOWN,
+					"unknown pressure tier \"%s\"" % high,
+					path,
+					template.line,
+					template.col,
+					WyrdDiagnostic.SEVERITY_WARNING
+				)
+			if template.tier_range and rank.has(low) and rank.has(high) and int(rank[low]) > int(rank[high]):
+				diagnostics.add(
+					WyrdDiagnostic.W_TEMPLATE_TIER_ORDER,
+					"pressure tier \"%s\" is above \"%s\"" % [low, high],
+					path,
+					template.line,
+					template.col,
+					WyrdDiagnostic.SEVERITY_WARNING
+				)

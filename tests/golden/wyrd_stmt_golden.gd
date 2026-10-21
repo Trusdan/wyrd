@@ -89,6 +89,15 @@ static func _template(template: WyrdTemplateDef) -> Dictionary:
 	data["weight"] = template.weight
 	data["when"] = _cond(template.when_cond)
 	data["when_text"] = template.when_text
+	if not template.deed_hooks.is_empty():
+		var hooks: Array = []
+		for hook in template.deed_hooks:
+			hooks.append({
+				"verb": hook.verb,
+				"where": _cond(hook.where_cond),
+				"where_text": hook.where_text,
+			})
+		data["on_deed"] = hooks
 	return data
 
 

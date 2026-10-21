@@ -11,12 +11,14 @@ extends Resource
 ## [member kind_scale_values], [member scheduler_work_per_tick],
 ## [member scheduler_tick_minutes], [member scheduler_share_waits],
 ## [member scheduler_share_rumor], [member scheduler_share_publish],
-## [member scheduler_share_cache], [member scheduler_frame_warn_usec],
+## [member scheduler_share_cache], [member scheduler_share_generate],
+## [member scheduler_frame_warn_usec],
 ## [member rumor_coarse_minutes], [member publish_catchup_max],
 ## [member publish_slice_rows],
 ## [member credibility_threshold],
 ## [member compact_after],
-## [member secrecy_tiers], [member secrecy_fact], and [member trace_director].
+## [member secrecy_tiers], [member secrecy_fact], [member pressure_tiers],
+## and [member trace_director].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -35,12 +37,15 @@ extends Resource
 ## Game minutes in one scheduler tick. Slices of [code]Wyrd.tick[/code] add up
 ## until this many minutes have accumulated. Not saved.
 @export var scheduler_tick_minutes: int = 1
-## Weights for waits, rumor, publish, and cache refresh. They split
+## Weights for waits, rumor, publish, cache refresh, and generate. They split
 ## [member scheduler_work_per_tick]. Not saved.
 @export var scheduler_share_waits: int = 40
 @export var scheduler_share_rumor: int = 12
 @export var scheduler_share_publish: int = 8
 @export var scheduler_share_cache: int = 4
+## Weight of the generate queue. The default is 0, so a generate unit runs
+## only when earlier queues are idle and a handler is set. Not saved.
+@export var scheduler_share_generate: int = 0
 ## Debug builds log [code]wyrd scheduler queue=frame[/code] when one game tick's
 ## units take longer than this many microseconds. The default is 2000 (2 ms).
 ## [code]0[/code] disables it. The line does not change the work. Not saved.
@@ -62,6 +67,8 @@ extends Resource
 @export var compact_after: int = 0
 ## Ordered secrecy names, lowest first. Not saved. An empty list locks every named tier.
 @export var secrecy_tiers: PackedStringArray = PackedStringArray()
+## Ordered pressure names, lowest first. Not saved. An empty list makes every named tier unknown.
+@export var pressure_tiers: PackedStringArray = PackedStringArray()
 ## World fact whose symbol is the unlocked secrecy name. Not saved.
 @export var secrecy_fact: String = "player.clearance"
 ## When true, a director query logs one line per scope-and-speaker match. Not saved.

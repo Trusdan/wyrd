@@ -32,6 +32,7 @@ var dialogue: WyrdSceneRunner
 var storylets: WyrdStoryletDeck
 var sequences: WyrdSequences
 var director: WyrdDirector
+var generator: WyrdGenerator
 var trace: WyrdTrace
 var debug: WyrdDebug
 var coverage: WyrdCoverage
@@ -41,6 +42,8 @@ var _config: WyrdConfig
 var _secrecy_warned: Dictionary = {}
 var _content: WyrdContent
 var _queue: WyrdScheduler
+## verb -> rows of template id and [WyrdDeedHookDef]. Not saved.
+var _hooks_by_verb: Dictionary = {}
 ## Units of a game minute still waiting to complete [member WyrdConfig.scheduler_tick_minutes]. Not saved.
 var _slice_carry: int = 0
 var _ctx: WyrdConditionCtx
@@ -87,6 +90,12 @@ func _init() -> void:
 	_queue = WyrdScheduler.new()
 	_queue.trace_hook = Callable(self, &"_trace_scheduler")
 	_queue.tracing_of = Callable(self, &"_tracing_on")
+	generator = WyrdGenerator.new()
+	generator.config_of = Callable(self, &"config")
+	generator.trace_of = Callable(self, &"_trace_gen_offer")
+	_queue.generate_has_work = Callable(self, &"_generate_has_work")
+	_queue.generate_unit = Callable(self, &"_generate_unit")
+	_queue.generate_pending = Callable(self, &"_generate_pending")
 	_ctx = WyrdConditionCtx.new()
 	_rpn = WyrdRpnEval.new()
 	_signatures = WyrdSignatures.new()
@@ -335,6 +344,8 @@ func start_new_game(seed_value: int) -> void:
 	_arm_queue()
 	_reset_play()
 	roles.note_started()
+	if generator != null:
+		generator.clear()
 	if storylets != null:
 		storylets.set_seed(_seed)
 
@@ -402,6 +413,9 @@ func now_minutes() -> int:
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	var report := WyrdLoadReport.new()
 	_content = null
+	_hooks_by_verb = {}
+	if generator != null:
+		generator.clear()
 	if coverage != null:
 		coverage.bind(null)
 	if storylets != null:
@@ -462,6 +476,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 		sequences.bind(self)
 	report.ok = true
 	report.manifest_hash = _content.manifest_hash
+	_index_deed_hooks()
 	facts.bind_schema(_content.schema)
 	roles.bind_content(_content)
 	_reset_event_memory()
@@ -546,6 +561,7 @@ func _run_scheduler() -> void:
 			_config.scheduler_share_rumor,
 			_config.scheduler_share_publish,
 			_config.scheduler_share_cache,
+			_config.scheduler_share_generate,
 		])
 		threshold = _config.scheduler_frame_warn_usec
 	if rumors != null:
@@ -567,6 +583,7 @@ func _run_scheduler() -> void:
 	if left is PackedInt32Array:
 		for count in left as PackedInt32Array:
 			carry += int(count)
+	carry += int(report.get("generate_carry", 0))
 	_trace_scheduler({
 		"carry": carry,
 		"key": "frame",
@@ -1120,6 +1137,8 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> WyrdLoadReport:
+	if generator != null:
+		generator.clear()
 	if not can_save():
 		push_error("Wyrd.load_state: a scene is open")
 		var refused := WyrdLoadReport.new()
@@ -1226,6 +1245,89 @@ func trace_quest_advance(quest_id: String, from_stage: String, to_stage: String,
 ## One line when [method WyrdQuestRunner.create_instance] creates or refuses an instance.
 ## [param ok] is stored as [code]true[/code] or [code]false[/code]. [param n] is the
 ## new counter, or 0 when nothing was created. Load does not call it.
+func _trace_gen_offer(fields: Dictionary) -> void:
+	if trace == null or not trace.enabled:
+		return
+	if not _trace_allows(fields):
+		return
+	trace_add("gen_offer", fields)
+	print(
+		"wyrd gen_offer source=%s key=%s tier=%s origin=%s template=%s queued=%s replaced=%s"
+		% [
+			str(fields.get("source", "")),
+			str(fields.get("key", "")),
+			str(fields.get("tier", "")),
+			str(fields.get("origin", "")),
+			str(fields.get("template", "")),
+			str(fields.get("queued", "")),
+			str(fields.get("replaced", "")),
+		]
+	)
+
+
+func _generate_has_work() -> bool:
+	return generator != null and generator.generate_handler.is_valid() and generator.pending_count() > 0
+
+
+func _generate_pending() -> int:
+	if generator == null or not generator.generate_handler.is_valid():
+		return 0
+	return generator.pending_count()
+
+
+func _generate_unit() -> void:
+	if generator == null or not generator.generate_handler.is_valid():
+		return
+	var entry := generator.take_next()
+	if entry.is_empty():
+		return
+	generator.generate_handler.call(entry)
+
+
+func _index_deed_hooks() -> void:
+	_hooks_by_verb = {}
+	if _content == null:
+		return
+	var ids: Array = _content.templates.keys()
+	ids.sort()
+	for id in ids:
+		var template: Variant = _content.templates[id]
+		if not (template is WyrdTemplateDef):
+			continue
+		for hook in (template as WyrdTemplateDef).deed_hooks:
+			if hook.verb.is_empty():
+				continue
+			if not _hooks_by_verb.has(hook.verb):
+				_hooks_by_verb[hook.verb] = []
+			(_hooks_by_verb[hook.verb] as Array).append({"hook": hook, "template": String(id)})
+
+
+func _offer_from_deed(deed: Dictionary) -> void:
+	if generator == null or _hooks_by_verb.is_empty():
+		return
+	var verb := String(deed.get("verb", ""))
+	if verb.is_empty() or not _hooks_by_verb.has(verb):
+		return
+	for row in _hooks_by_verb[verb]:
+		var hook: WyrdDeedHookDef = row["hook"]
+		if hook.where_cond != null:
+			var locals := {
+				"deed.actor": deed.get("actor", &""),
+				"deed.magnitude": float(deed.get("magnitude", 0.0)),
+				"deed.place": deed.get("place", &""),
+				"deed.target": deed.get("target", &""),
+			}
+			if not eval_with_locals(hook.where_cond, locals):
+				continue
+		generator.queue_deed(str(row["template"]), str(int(deed.get("id", 0))), {
+			"actor": deed.get("actor", &""),
+			"deed": int(deed.get("id", 0)),
+			"place": deed.get("place", &""),
+			"target": deed.get("target", &""),
+			"verb": deed.get("verb", &""),
+		})
+
+
 func trace_gen_create(template: String, instance: String, n: int, ok: bool, reason: String) -> void:
 	var flag := "true" if ok else "false"
 	_trace_quest_line({
@@ -2192,9 +2294,9 @@ func loaded_fact_key() -> String:
 
 func _on_deed(deed: Dictionary) -> void:
 	_mark_calls(_DEED_CALLS)
-	if rumors == null or _perception_key.is_empty():
-		return
-	rumors.note_deed(deed, _perception_key, _perception_value)
+	if rumors != null and not _perception_key.is_empty():
+		rumors.note_deed(deed, _perception_key, _perception_value)
+	_offer_from_deed(deed)
 
 
 func _on_perceived(agent: StringName, mode: StringName, verb: StringName) -> void:

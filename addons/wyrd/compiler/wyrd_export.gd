@@ -195,7 +195,10 @@ static func _templates(pack: WyrdLinkedPack) -> Array:
 			var stages: Array = []
 			for stage in template.stages:
 				stages.append(_stage(stage))
-			rows.append({
+			var hooks: Array = []
+			for hook in template.deed_hooks:
+				hooks.append({"verb": hook.verb, "where": hook.where_text})
+			var row := {
 				"allow_protected": template.allow_protected,
 				"assumes": template.assumes_text,
 				"file": str(unit["path"]),
@@ -214,7 +217,10 @@ static func _templates(pack: WyrdLinkedPack) -> Array:
 				"title": template.title,
 				"weight": template.weight,
 				"when": template.when_text,
-			})
+			}
+			if not hooks.is_empty():
+				row["on_deed"] = hooks
+			rows.append(row)
 	return rows
 
 

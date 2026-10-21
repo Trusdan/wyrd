@@ -685,4 +685,18 @@
 #           ^^^^^^^^^^^^^^^^^ source.wyrd
 #                            ^^^^^^ source.wyrd entity.name.tag.wyrd
 #                                  ^^^^ source.wyrd constant.other.wyrd
+>  on_deed theft where not deed.target == player
+#^^ source.wyrd
+#  ^^^^^^^ source.wyrd keyword.other.wyrd
+#         ^^^^^^^ source.wyrd
+#                ^^^^^ source.wyrd keyword.other.wyrd
+#                     ^ source.wyrd
+#                      ^^^ source.wyrd keyword.operator.wyrd
+#                         ^ source.wyrd
+#                          ^^^^ source.wyrd keyword.other.wyrd
+#                              ^ source.wyrd
+#                               ^^^^^^ source.wyrd keyword.other.wyrd
+#                                     ^ source.wyrd
+#                                      ^^ source.wyrd keyword.operator.wyrd
+#                                        ^^^^^^^^ source.wyrd
 >

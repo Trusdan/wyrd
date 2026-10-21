@@ -1,0 +1,242 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_SLOT_COND_ALWAYS",
+      "col": 25,
+      "line": 5,
+      "message": "cast condition is always true",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 7,
+      "message": "duplicate deed hook \"theft\"",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_EVENT_ARG",
+      "col": 22,
+      "line": 8,
+      "message": "unknown deed field \"nope\"",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 9,
+      "message": "a deed hook runs before anything is cast",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_TEMPLATE_SYNTAX",
+      "col": 3,
+      "line": 10,
+      "message": "a deed hook runs before anything is cast",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_CHANCE_CONTEXT",
+      "col": 29,
+      "line": 11,
+      "message": "chance is not allowed in a wait, trigger, or eligibility condition",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "template \"bad\" specificity 0 priority 0",
+      "path": "res://tests/golden/statements/st_err_deed_hooks.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": false,
+      "assumes": null,
+      "assumes_text": "",
+      "assumption_texts": [],
+      "id": "bad",
+      "max_active": 1,
+      "on_deed": [
+        {
+          "verb": "theft",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 23,
+              "end_col": 48,
+              "end_line": 6,
+              "line": 6
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "where_text": "not deed.target == player"
+        },
+        {
+          "verb": "paid",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 22,
+              "end_col": 36,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "where_text": "deed.nope == 1"
+        },
+        {
+          "verb": "met",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 21,
+              "end_col": 33,
+              "end_line": 9,
+              "line": 9
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "where_text": "alive(giver)"
+        },
+        {
+          "verb": "seen",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 22,
+              "end_col": 33,
+              "end_line": 10,
+              "line": 10
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "where_text": "alive(toll)"
+        },
+        {
+          "verb": "chance_hook",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 29,
+              "end_col": 40,
+              "end_line": 11,
+              "line": 11
+            },
+            "specificity": 1,
+            "uses_chance": true
+          },
+          "where_text": "chance(0.5)"
+        }
+      ],
+      "on_empty": "",
+      "params": [
+        {
+          "cast": {
+            "reads": [],
+            "source_span": {
+              "col": 25,
+              "end_col": 29,
+              "end_line": 5,
+              "line": 5
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "cast_tag": "",
+          "cast_text": "true",
+          "kind": "item",
+          "name": "toll",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 30,
+            "end_line": 5,
+            "line": 5
+          }
+        }
+      ],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "giver",
+          "reads": [],
+          "role": "dock_keeper",
+          "span": {
+            "col": 3,
+            "end_col": 38,
+            "end_line": 4,
+            "line": 4
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 13,
+        "line": 3
+      },
+      "specificity": 0,
+      "stages": [
+        {
+          "effects": [],
+          "id": "one",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 13,
+            "line": 12
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 13,
+              "line": 13
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Bad",
+      "weight": 1,
+      "when": null,
+      "when_text": ""
+    }
+  ]
+}

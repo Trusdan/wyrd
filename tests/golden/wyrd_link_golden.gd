@@ -50,17 +50,14 @@ static func compile_dir(dir: String) -> Dictionary:
 
 
 static func _compile(dir: String, files: PackedStringArray, read: Dictionary, diagnostics: WyrdDiagnostics) -> WyrdLinkedPack:
+	var secrecy := PackedStringArray()
 	var tier_path := dir + "/secrecy_tiers.txt"
-	if not FileAccess.file_exists(tier_path):
-		return WyrdPack.compile(
-			files,
-			dir.get_file(),
-			1,
-			read["schema"],
-			diagnostics,
-			dir,
-			bool(read["skip_note"])
-		)
+	if FileAccess.file_exists(tier_path):
+		secrecy = _tiers(tier_path)
+	var pressure := PackedStringArray()
+	var pressure_path := dir + "/pressure_tiers.txt"
+	if FileAccess.file_exists(pressure_path):
+		pressure = _tiers(pressure_path)
 	return WyrdPack.compile(
 		files,
 		dir.get_file(),
@@ -69,7 +66,8 @@ static func _compile(dir: String, files: PackedStringArray, read: Dictionary, di
 		diagnostics,
 		dir,
 		bool(read["skip_note"]),
-		_tiers(tier_path)
+		secrecy,
+		pressure
 	)
 
 

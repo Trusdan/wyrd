@@ -1,0 +1,98 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 3,
+      "message": "template \"theft_report\" specificity 0 priority 0",
+      "path": "res://tests/golden/statements/st_deed_hooks.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [],
+  "reads": [],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": false,
+      "assumes": null,
+      "assumes_text": "",
+      "assumption_texts": [],
+      "id": "theft_report",
+      "max_active": 1,
+      "on_deed": [
+        {
+          "verb": "theft",
+          "where": {
+            "reads": [],
+            "source_span": {
+              "col": 23,
+              "end_col": 48,
+              "end_line": 4,
+              "line": 4
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "where_text": "not deed.target == player"
+        },
+        {
+          "verb": "assault",
+          "where": null,
+          "where_text": ""
+        }
+      ],
+      "on_empty": "",
+      "params": [],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 7,
+        "line": 3
+      },
+      "specificity": 0,
+      "stages": [
+        {
+          "effects": [],
+          "id": "work",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 7,
+            "line": 6
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 7,
+              "line": 7
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Theft",
+      "weight": 1,
+      "when": null,
+      "when_text": ""
+    }
+  ]
+}

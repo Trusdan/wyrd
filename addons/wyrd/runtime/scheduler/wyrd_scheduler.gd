@@ -4,11 +4,13 @@ extends RefCounted
 ## Fixed-work queues for one game tick.
 ##
 ## @experimental
-## Queues, in round-robin order: waits, rumor, publish, cache_refresh.
+## Queues, in round-robin order: waits, rumor, publish, cache_refresh, generate.
 ## A unit is one waiting-condition recheck, one rumor hop, one slice of a
-## frozen issue, or one cache-entry rebuild. [code]run[/code] spends at most
-## the tick budget. Token queues keep a read cursor so a unit does not shift
-## the array. The saved tokens are the ones still waiting.
+## frozen issue, one cache-entry rebuild, or one generate offer. [code]run[/code]
+## spends at most the tick budget. Token queues keep a read cursor so a unit
+## does not shift the array. The saved tokens are the ones still waiting.
+## Generate has no tokens. Its share defaults to 0, so it runs only by spill
+## when a handler has work and the earlier queues are idle.
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
 ## still spends the whole budget. A pass that would only run rumor is handled
@@ -18,11 +20,13 @@ extends RefCounted
 ## round-robin starts at waits every tick. Token queues and the dirty waits
 ## are saved in [code]flight.scheduler[/code]. The leftover slice is saved there too.
 
-const QUEUE_COUNT := 4
+const QUEUE_COUNT := 5
+## waits, rumor, publish, and cache_refresh. Generate is not in [code]spent[/code] or [code]carry[/code].
+const _SAVED_QUEUES := 4
 
 
 static func queues() -> PackedStringArray:
-	return PackedStringArray(["waits", "rumor", "publish", "cache_refresh"])
+	return PackedStringArray(["waits", "rumor", "publish", "cache_refresh", "generate"])
 ## One game minute, in units. 720 divides a 30 fps slice and a 144 fps slice
 ## when one real second advances one game minute.
 const SLICE_UNITS_PER_MINUTE := 720
@@ -35,6 +39,12 @@ var tracing_of: Callable = Callable()
 var rumor_handler: Callable = Callable()
 var publish_handler: Callable = Callable()
 var cache_handler: Callable = Callable()
+## [code]() -> bool[/code]. True when a generate handler is set and an offer is waiting.
+var generate_has_work: Callable = Callable()
+## [code]() -> void[/code]. Hands the oldest offer to the generate handler.
+var generate_unit: Callable = Callable()
+## [code]() -> int[/code]. Pending offers when a handler is set, otherwise 0.
+var generate_pending: Callable = Callable()
 
 var _waits := WyrdTickQueue.new()
 var _rumor: Array[String] = []
@@ -111,6 +121,8 @@ func push(queue: String, token: String) -> void:
 		"cache_refresh":
 			_cache.append(token)
 			_emit(queue, 0, _live(_cache, _cache_at))
+		"generate":
+			return
 		_:
 			push_error("WyrdScheduler.push: unknown queue \"%s\"" % queue)
 
@@ -125,6 +137,10 @@ func carry(queue: String) -> int:
 			return _live(_publish, _publish_at)
 		"cache_refresh":
 			return _live(_cache, _cache_at)
+		"generate":
+			if generate_pending.is_valid():
+				return int(generate_pending.call())
+			return 0
 		_:
 			return 0
 
@@ -194,7 +210,8 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 	var split := apportion(_weights(weights), cap)
 	for index in split.size():
 		shares.append(int(split[index]))
-	var spent := PackedInt32Array([0, 0, 0, 0])
+	var spent := PackedInt32Array()
+	spent.resize(QUEUE_COUNT)
 	var total := 0
 	var guard := cap * 3 + 4
 	while total < cap and guard > 0:
@@ -227,10 +244,26 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 		_live(_cache, _cache_at),
 	])
 	var names := queues()
-	for index in QUEUE_COUNT:
+	for index in _SAVED_QUEUES:
 		if int(spent[index]) > 0 or int(left[index]) > 0:
 			_emit(String(names[index]), int(spent[index]), int(left[index]))
-	return {"carry": left, "spent": spent, "total": total}
+	var generate_spent := int(spent[4])
+	var generate_carry := carry("generate")
+	if generate_spent > 0 or generate_carry > 0:
+		_emit("generate", generate_spent, generate_carry)
+	var spent_saved := PackedInt32Array([
+		int(spent[0]),
+		int(spent[1]),
+		int(spent[2]),
+		int(spent[3]),
+	])
+	return {
+		"carry": left,
+		"generate_carry": generate_carry,
+		"generate_spent": generate_spent,
+		"spent": spent_saved,
+		"total": total,
+	}
 
 
 static func apportion(weights: PackedInt32Array, budget: int) -> PackedInt32Array:
@@ -268,7 +301,8 @@ static func apportion(weights: PackedInt32Array, budget: int) -> PackedInt32Arra
 
 
 func _weights(weights: PackedInt32Array) -> PackedInt32Array:
-	var out := PackedInt32Array([0, 0, 0, 0])
+	var out := PackedInt32Array()
+	out.resize(QUEUE_COUNT)
 	for index in mini(weights.size(), out.size()):
 		out[index] = maxi(int(weights[index]), 0)
 	return out
@@ -358,6 +392,8 @@ func _has_work(index: int) -> bool:
 			return _publish_at < _publish.size()
 		3:
 			return _cache_at < _cache.size()
+		4:
+			return generate_has_work.is_valid() and bool(generate_has_work.call())
 		_:
 			return false
 
@@ -372,6 +408,11 @@ func _run_one(index: int, waits_eval: Callable) -> bool:
 			return _take_publish()
 		3:
 			return _take_cache()
+		4:
+			if not generate_unit.is_valid():
+				return false
+			generate_unit.call()
+			return true
 		_:
 			return false
 
