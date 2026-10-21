@@ -13,7 +13,7 @@ func test_tags_header_format_sort_ascii_and_repeat() -> void:
 	assert_eq(lines[2], "!_TAG_PROGRAM_NAME\twyrd defs\t//")
 	var address := RegEx.new()
 	assert_eq(address.compile("^\\d+;\"$"), OK)
-	var kinds := ["d", "f", "g", "q", "r", "s", "t"]
+	var kinds := ["d", "f", "g", "p", "q", "r", "s", "t"]
 	var previous_name := ""
 	var previous_file := ""
 	var previous_line := 0

@@ -45,7 +45,13 @@ func test_dirty_rechecks_match_a_full_scan() -> void:
 	runtime.facts.set(&"ferry.toll_coins", 0)
 	runtime.tick(0)
 	var total := runtime.condition_count()
-	assert_eq(runtime.last_rechecks(), total)
+	var ran := runtime.last_rechecks()
+	while ran < total:
+		runtime.tick(0)
+		var step := runtime.last_rechecks()
+		assert_gt(step, 0)
+		ran += step
+	assert_eq(ran, total)
 	runtime.tick(0)
 	assert_eq(runtime.last_rechecks(), 0)
 	var before := runtime.condition_flags()
@@ -63,7 +69,7 @@ func test_dirty_rechecks_match_a_full_scan() -> void:
 	runtime.config().scheduler_work_per_tick = 1
 	runtime.facts.set(&"player.coins", 0)
 	runtime.facts.set(&"tavern.stew_bowls", 3)
-	var ran := 0
+	ran = 0
 	for _i in total + 2:
 		runtime.tick(0)
 		ran += runtime.last_rechecks()

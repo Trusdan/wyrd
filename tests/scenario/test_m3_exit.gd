@@ -18,6 +18,13 @@ const _BASELINE: PackedStringArray = [
 	"res://example/content/gullhaven/harbor_storylets.wyrd:55:1: info[I_STORYLET_SCORE]: storylet \"harbor_ledger.sealed\" specificity 1 priority 1 generic=false",
 	"res://example/content/gullhaven/harbor_storylets.wyrd:63:1: info[I_STORYLET_SCORE]: storylet \"harbor_gossip.storm\" specificity 0 priority 0 generic=true",
 	"res://example/content/gullhaven/harbor_tale.wyrd:42:41: warning[W_CLAIM]: interpolation presents \"harbor.toll_fate\" as a claim",
+	"res://example/content/gullhaven/harbor_templates.wyrd:30:1: info[I_TEMPLATE_SCORE]: template \"net_delivery\" specificity 1 priority 2",
+	"res://example/content/gullhaven/harbor_templates.wyrd:50:1: info[I_TEMPLATE_SCORE]: template \"stolen_catch\" specificity 1 priority 4",
+	"res://example/content/gullhaven/harbor_templates.wyrd:74:1: info[I_TEMPLATE_SCORE]: template \"cut_line\" specificity 1 priority 5",
+	"res://example/content/gullhaven/harbor_templates.wyrd:101:1: info[I_TEMPLATE_SCORE]: template \"night_walk\" specificity 1 priority 3",
+	"res://example/content/gullhaven/harbor_templates.wyrd:123:1: info[I_TEMPLATE_SCORE]: template \"tavern_stew_low\" specificity 1 priority 1",
+	"res://example/content/gullhaven/harbor_templates.wyrd:145:1: info[I_TEMPLATE_SCORE]: template \"tavern_stew_mid\" specificity 1 priority 1",
+	"res://example/content/gullhaven/harbor_templates.wyrd:167:1: info[I_TEMPLATE_SCORE]: template \"tavern_stew_high\" specificity 2 priority 1",
 ]
 const _CODES: PackedStringArray = [
 	"W_EMPTY_UNCOVERED",

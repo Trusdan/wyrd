@@ -1,0 +1,15 @@
+wyrd gen_tier source=exit key=one tier= eligible=1
+wyrd gen_pick source=exit key=one template=net_delivery score=2/1 band=1 seed_key=pick:exit:one
+wyrd gen_candidates key=cast:net_delivery#1.sender count=17 digest=be380fe484a4f754
+wyrd gen_cast instance=net_delivery#1 slot=sender kind= entity=pier_fisher
+wyrd gen_candidates key=param:net_delivery#1.net count=1 digest=13bc71c1708e007e
+wyrd gen_bind instance=net_delivery#1 param=net kind=item entity=net.mended
+wyrd gen_reject template=net_delivery instance=net_delivery#1 rule=assumes id=assumes.1 attempt=0
+wyrd gen_tier source=exit key=one tier= eligible=1
+wyrd gen_pick source=exit key=one template=net_delivery score=2/1 band=1 seed_key=pick:exit:one:1
+wyrd gen_candidates key=cast:net_delivery#1.sender:1 count=17 digest=be380fe484a4f754
+wyrd gen_cast instance=net_delivery#1 slot=sender kind= entity=line_fisher
+wyrd gen_candidates key=param:net_delivery#1.net:1 count=1 digest=13bc71c1708e007e
+wyrd gen_bind instance=net_delivery#1 param=net kind=item entity=net.mended
+wyrd gen_propose source=exit key=one ok=true reason=proposed proposal=p1
+proposal template=net_delivery instance=net_delivery#1 casts=sender=line_fisher params=net=net.mended

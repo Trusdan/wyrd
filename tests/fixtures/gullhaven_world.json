@@ -1,0 +1,21 @@
+{
+	"entities": {
+		"catch.day": {"alive": true, "kind": "item", "name": "day's catch", "owner": "storm_watcher", "tags": ["catch"]},
+		"dock.bell": {"alive": true, "kind": "object", "name": "bell", "tags": []},
+		"dock.bollard_north": {"alive": true, "kind": "object", "name": "north bollard", "tags": ["bollard"]},
+		"dock_apprentice": {"alive": true, "kind": "person", "name": "Nia", "tags": ["dock"]},
+		"ferry_master": {"alive": true, "kind": "person", "name": "Bram", "tags": []},
+		"fish.one": {"alive": true, "kind": "item", "name": "fish", "tags": ["fish"]},
+		"fish.three": {"alive": true, "kind": "item", "name": "fish", "tags": ["fish"]},
+		"fish.two": {"alive": true, "kind": "item", "name": "fish", "tags": ["fish"]},
+		"harbor.north_steps": {"alive": true, "kind": "place", "name": "north steps", "tags": ["steps"]},
+		"line_fisher": {"alive": true, "kind": "person", "name": "fisher", "tags": ["fisher"]},
+		"net.mended": {"alive": true, "kind": "item", "name": "mended net", "owner": "line_fisher", "tags": ["net"]},
+		"net_mender": {"alive": true, "kind": "person", "name": "net mender", "tags": []},
+		"pier_fisher": {"alive": true, "kind": "person", "name": "pier fisher", "tags": ["fisher"]},
+		"player": {"alive": true, "kind": "person", "name": "traveler", "tags": []},
+		"storm_watcher": {"alive": true, "kind": "person", "name": "watcher", "tags": []},
+		"tavern_owner": {"alive": true, "kind": "person", "name": "innkeeper", "tags": []},
+		"visitor": {"alive": true, "kind": "person", "name": "visitor", "tags": ["visitor"]}
+	}
+}

@@ -29,3 +29,7 @@ A rejection tries the next candidate set, up to `generator_retries` (default 8; 
 `why_not(template)` reports the last decision that considered that template: `filtered` (with `tier`, `weight`, `when`, or `cap`), `not_picked`, `no_candidate` (the slot or param name), `rejected` (the rule list), `proposed`, or `created`. An unknown id is `missing`. A known template with no decision yet has an empty reason. The record is not saved and `clear` drops it. It adds no trace line.
 
 An optional template `expires: <duration>` (minutes greater than 0; a bad value is `E_TEMPLATE_SYNTAX`) abandons an available or active instance once `now - created` reaches that duration. `created` is the creation minute. The generator block writes it only when the template expires, and a missing value on load becomes the load minute. Save schema stays 4. Expiry runs in `_game_tick` after the scheduler and before `quests.on_tick`. An open scene of that instance waits until a later tick. Any other open scene stays open: expiry does not call `abandon`. The line is `gen_expire instance=<id> reason=timeout`. The journal and the counter stay.
+
+## Gullhaven examples
+
+`example/content/gullhaven/harbor_templates.wyrd` holds the seven example templates: deliver a net, recover a stolen catch, investigate a cut mooring, escort a visitor, and a three-tier stew favor. `tests/scenario/test_m9_exit.gd` validates them, plays every route, saves mid-generation, and replays those routes.
