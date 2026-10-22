@@ -14,6 +14,10 @@ Facts carry no secrecy name and no public marker, so this release includes only 
 
 `WyrdAIPacket.canonical` is the packet as JSON with sorted keys and no extra whitespace.
 
+`Wyrd.ai.cache_key` is 16 lowercase hex digits: FNV-1a 64 of the kind, that canonical JSON, the provider id, the provider's prompt version, and the locale, folded with `WyrdHash.combine`. Constraints are not part of the key. A host that sends the same packet under different constraints should vary the packet. A sent request stores the key on `WyrdAIRequest.key` before the provider runs. A provider may use it, for example as a seed.
+
+Only a result whose verdict is `-` is cached. The cache keeps at most `WyrdConfig.ai_cache_max` entries (default 256). The oldest inserted is evicted first. Re-inserting a key replaces its text and makes it the newest. `0` or less stores nothing. Lowering the cap takes effect at the next insert or load. The cache survives a provider change, a locale change, and turning the hook off, because the key already separates those. `start_new_game` clears it. `WyrdConfig.ai_save_cache` (default true) writes an optional top-level `ai` save key when the cache is not empty: `{v: 1, cache: [{k, t}, ...]}`, oldest first. Schema stays 4. An older loader ignores the key. A malformed key warns `W_SAVE_AI` and is ignored. Open requests are never saved. This release still shows nothing.
+
 `Wyrd.ai.deliver` still closes the request and discards the text. After the `ai_result` line (transport: the request was closed, `rule=-`), an accepted delivery is validated. The first failing rule is the `ai_validate` line. The order is:
 
 1. `limits`. Empty text fails. The cap starts at 240 characters, and `constraints.max_chars` can only lower it. A non-empty authored fallback lowers it again to twice that fallback's length. Newlines, control characters, zero-width characters, and `{ } # [ ] < >` fail. The validator does not edit the text.
@@ -24,7 +28,7 @@ Facts carry no secrecy name and no public marker, so this release includes only 
 
 `Wyrd.ai.register_classifier` sets one `fn(text, kind, packet) -> bool`. It runs on the main thread, synchronously, and must return exactly `true`. Any other return, or a classifier whose object was freed, fails the classifier rule. `Callable()` clears it. It is not saved, and it survives a new game and a load.
 
-The authored line is the fallback: `packet.text`, or for `journal_summary` the frozen `packet.entries` joined with newlines. That text is what would show on a cache miss, while a request is unanswered, when AI is off or the null provider is active, when the current locale is not in the provider's `locales()`, on a provider error, and on any validation failure. This release still shows nothing and caches nothing.
+The authored line is the fallback: `packet.text`, or for `journal_summary` the frozen `packet.entries` joined with newlines. That text is what would show on a cache miss, while a request is unanswered, when AI is off or the null provider is active, when the current locale is not in the provider's `locales()`, on a provider error, and on any validation failure. This release still shows nothing.
 
 Host-called kinds (`epilogue_stitch`, `tts_prep`) keep the packet the host passed to `request`. Their results are validated against that packet.
 

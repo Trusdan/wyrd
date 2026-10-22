@@ -34,6 +34,15 @@ func check(text: String, kind: StringName, packet: Dictionary, constraints: Dict
 	return &""
 
 
+## The cap-free part of the limits rule. Used when a saved packet is not available.
+static func safe_text(text: String) -> bool:
+	if text.strip_edges().is_empty():
+		return false
+	if text.length() > 240:
+		return false
+	return not _forbidden(text)
+
+
 func _over_limits(text: String, kind: StringName, packet: Dictionary, constraints: Dictionary) -> bool:
 	if text.strip_edges().is_empty():
 		return true
@@ -53,7 +62,7 @@ func _cap(kind: StringName, packet: Dictionary, constraints: Dictionary) -> int:
 	return cap
 
 
-func _forbidden(text: String) -> bool:
+static func _forbidden(text: String) -> bool:
 	var marks := "{}#[]<>"
 	for i in text.length():
 		var code := text.unicode_at(i)

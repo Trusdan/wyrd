@@ -31,7 +31,7 @@ Subclass each base directly and pass the instance to `register_adapter(base, ada
 - `WyrdTimeAdapter`
 - `WyrdActionAdapter`
 - `WyrdAIProvider` is optional. The null provider is registered by default, and a host that does not use AI does nothing.
-- `Wyrd.ai.register_classifier` and `WyrdConfig.ai_banned_terms` are optional. Both are unused with the null provider.
+- `Wyrd.ai.register_classifier`, `WyrdConfig.ai_banned_terms`, `WyrdConfig.ai_cache_max`, and `WyrdConfig.ai_save_cache` are optional. With the null provider nothing is cached.
 
 `candidates(filter)` must honor `kind` and `tag`. An item cast asks for kind `item`.
 
@@ -77,7 +77,7 @@ Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `
 
 Call `can_save()` before writing a save. It is false while a scene is open. Embed the dictionary from `save_state()` in the host save and pass that same dictionary to `load_state`. One shape is `save["wyrd"]`.
 
-The document is schema version 4. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, each named RNG stream, `flight` when a rumor, a document issue, or the scheduler still has work, and `generator` when a generated quest instance exists. 64-bit values are hex. The event log is not included. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when nothing is in flight, and that load clears the dirty waits. Both load on schema 4, with an empty generator when the save had no instances. An older Wyrd (0.6.x) refuses a schema 4 save. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. Quest signals pass an instance id `<template>#<n>` for a generated quest. See `addons/wyrd/runtime/save/README.md`.
+The document is schema version 4. It holds the pack id, manifest hash, language version, facts, deeds, relationships, roles, quests, frozen journal text, provenance, play minutes, the seed, each named RNG stream, `flight` when a rumor, a document issue, or the scheduler still has work, and `generator` when a generated quest instance exists. 64-bit values are hex. The event log is not included. A schema 2 save loads with empty token queues and a zero slice, and the dirty waits stay armed. A schema 3 save omits `flight` when nothing is in flight, and that load clears the dirty waits. Both load on schema 4, with an empty generator when the save had no instances. An older Wyrd (0.6.x) refuses a schema 4 save. A manifest hash that differs warns in a debug build and stays quiet in a release. The load still applies. Quest signals pass an instance id `<template>#<n>` for a generated quest. See `addons/wyrd/runtime/save/README.md`. An optional `ai` key holds validated cache rows when `ai_save_cache` is true and the cache is not empty; an older loader ignores it.
 
 ## Events
 
