@@ -24,7 +24,8 @@
     "apprentice": false,
     "short": false,
     "voice": false,
-    "watch_alive": false
+    "watch_alive": false,
+    "ai_local": false
   },
   "scenarios": [
     {

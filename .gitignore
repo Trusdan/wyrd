@@ -1,4 +1,5 @@
 .godot/
+*.gguf
 *.translation
 tests/bench/out/
 visual-playtest-out/

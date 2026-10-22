@@ -7,6 +7,8 @@ extends Control
 
 const _MANIFEST := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _LocalProvider := preload("res://example/ai/wyrd_local_provider.gd")
+const _LocalTransport := preload("res://example/ai/wyrd_local_transport.gd")
 const _SAVE_PATH := "user://playtest_save.json"
 const _FERRY_NAME := "Bram"
 const _SUCCESSOR_NAME := "Nia"
@@ -39,7 +41,10 @@ var _fact_baseline: Dictionary = {}
 var _highlight_from: Dictionary = {}
 var _seed: LineEdit
 var _buttons: Dictionary = {}
+var _local_provider = null
+var _local_transport: Node
 var _flags := {
+	"ai_local": false,
 	"apprentice": false,
 	"ferry_alive": true,
 	"local": false,
@@ -135,6 +140,24 @@ func line_text() -> String:
 	return line.text
 
 
+func speaker_text() -> String:
+	if _speaker == null:
+		return ""
+	return _speaker.text
+
+
+func ai_provider_id() -> String:
+	if _runtime == null or _runtime.ai == null:
+		return ""
+	return String(_runtime.ai.provider_id())
+
+
+func status_text() -> String:
+	if _status == null:
+		return ""
+	return _status.text
+
+
 func line_has_audio() -> bool:
 	var line: Variant = _dlg().line()
 	return line != null and line.audio != null
@@ -156,11 +179,19 @@ func journal_count() -> int:
 
 
 func set_flag(name: String, on: bool) -> void:
+	var previous := bool(_flags.get(name, false))
+	if name == "ai_local" and previous == on:
+		return
 	_begin_step()
 	_flags[name] = on
 	var button: CheckButton = _buttons.get(name) as CheckButton
 	if button != null:
 		button.set_pressed_no_signal(on)
+	if name == "ai_local":
+		_apply_local_ai(on)
+		_refresh()
+		_end_step()
+		return
 	if name == "voice" or not _started:
 		_refresh()
 		_end_step()
@@ -380,6 +411,8 @@ func _refresh() -> void:
 	var line: Variant = _dlg().line()
 	if line != null:
 		_speaker.text = line.display_name
+		if line.text_source == &"ai":
+			_speaker.text = "%s (AI)" % line.display_name
 		_body.text = line.text
 		_continue.disabled = false
 	else:
@@ -783,11 +816,12 @@ func _toggles() -> VBoxContainer:
 		["short", "Short on coins"],
 		["voice", "Voice"],
 		["watch_alive", "Watch alive"],
+		["ai_local", "Local AI flavor"],
 	]
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	for i in specs.size():
-		if i == 4:
+		if i == 4 or i == 9:
 			box.add_child(row)
 			row = HBoxContainer.new()
 			row.add_theme_constant_override("separation", 6)
@@ -886,6 +920,44 @@ func _choose_pressed(button: Button, index: int) -> void:
 	_open_offered()
 	_refresh()
 	_end_step()
+
+
+func _apply_local_ai(on: bool) -> void:
+	if _runtime == null:
+		return
+	if not on:
+		_runtime.register_adapter(WyrdAIProvider, WyrdNullAIProvider.new())
+		_status.text = "Local AI flavor off."
+		return
+	if _local_provider == null:
+		_local_transport = _LocalTransport.new()
+		_local_transport.name = "LocalAITransport"
+		add_child(_local_transport)
+		_local_provider = _LocalProvider.new()
+		_local_provider.attach(_local_transport)
+	_local_provider.bind_trace(_runtime)
+	var url := OS.get_environment("WYRD_LOCAL_AI_URL")
+	if not url.is_empty() and not bool(_local_provider.set_base_url(url)):
+		_status.text = "Local AI flavor: %s is not a loopback address. Use 127.0.0.1 or localhost." % url
+		return
+	var model := OS.get_environment("WYRD_LOCAL_AI_MODEL")
+	if not model.is_empty():
+		if not str(_LocalProvider.check_model(model)).is_empty():
+			_status.text = "Local AI flavor: model %s is refused because it names a cloud model." % model
+			return
+		_local_provider.model = model
+	_runtime.register_adapter(WyrdAIProvider, _local_provider as WyrdAIProvider)
+	var base := String(_local_provider.base_url)
+	var shown := String(_local_provider.model)
+	_status.text = "Local AI flavor: checking %s." % base
+	_local_provider.probe(func(ok: bool, _reason: String) -> void:
+		if not bool(_flags.get("ai_local", false)):
+			return
+		if ok:
+			_status.text = "Local AI flavor on: %s at %s." % [shown, base]
+		else:
+			_status.text = "Local AI flavor: server not reachable at %s." % base
+	)
 
 
 func _flag_toggled(on: bool, key: String) -> void:

@@ -31,3 +31,5 @@ That check reports `warning[W_CLAIM]` and `info[I_STORYLET_SCORE]` and no other 
 ## Playtest
 
 `playtest/gullhaven_playtest.tscn` is the project main scene. F5 opens a plain window: dialogue, choices, a journal dated `day N, HH:MM`, and a live fact and quest table. Toggles reach each ferry route. Voice plays a generated tone and leaves the text on screen. Save and Load use an in-memory slot and `user://playtest_save.json`. How to install Godot and walk the routes is [docs/playtest.md](../docs/playtest.md).
+
+`ai/` is the reference local AI provider. It is not part of `addons/wyrd`. The playtest's Local AI flavor toggle starts off, so a run still uses the null provider until you turn it on. Setup for a free local model is [docs/ai.md](../docs/ai.md).
