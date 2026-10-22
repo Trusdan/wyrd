@@ -630,7 +630,7 @@ func _run_scheduler() -> void:
 		"carry": carry,
 		"key": "frame",
 		"queue": "frame",
-		"threshold": threshold,
+		"threshold": threshold, "timing": true,
 		"units": int(report.get("total", 0)),
 		"us": elapsed,
 	})
