@@ -1,0 +1,17 @@
+// [EXAMPLE CONTENT] Gullhaven unknown ai_context. An invented fishing village, not a host game.
+language 1
+
+quest dock_watch "The Dock Watch"
+  start when true
+  stage watch
+    scene dock.watch
+
+scene dock.watch
+  ai_context: [harbor.missing, harbor.also]
+  narrator: The tide is high. #line:u_line
+
+storylet dock_watch.line
+  scope: bark
+  speaker: any
+  ai_context: [harbor.gone]
+  - The fog sits on the water. #line:u_fog

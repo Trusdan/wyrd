@@ -32,6 +32,20 @@ Examples use only the invented village Gullhaven.
 tavern: The stew is free tonight. #line:a91f // spoken by whoever holds the tavern slot
 ```
 
+`#tag:<name>` may sit before `#line:`. Non-breaking clarification, approved by Corey, 2026-10-21 (design v27): `#tag:ai` is an ordinary tag that marks a line AI may reword. It is allowed on a spoken line and on a storylet line (one `-` body, or each entry of a `lines:` set). Anywhere else it is `E_AI_LINE` ("only spoken and storylet lines can opt in to AI"), including a choice label, a journal entry, a `variant` line, and a document paragraph. On an allowed line, `E_AI_LINE` also rejects a line tagged `voiced` ("a voiced line cannot opt in to AI"), a line in a secrecy tier ("a line in a secrecy tier cannot opt in to AI"; the line's own `#secrecy:` or, for a storylet line, the storylet's `secrecy:` field), and a line that interpolates (`"an interpolating line cannot opt in to AI"`; a value, an `{if}`, or a `{holder(…)|variants}` span). A `{{` escape is plain text and is allowed. A storylet or a scene may add `ai_context: [<fact keys>]` to widen its packet. The keys are concrete dotted fact keys, in source order. An unknown key is `E_AI_CONTEXT_UNKNOWN` ("unknown fact \"<key>\" in ai_context"). A key whose fact is resolved `per_query` warns `W_AI_CONTEXT_RESOLVED_PER_QUERY` ("ai_context key \"<key>\" is resolved per query; the packet reads it once when built").
+
+```wyrd
+scene dock.watch
+  ai_context: [harbor.tide, harbor.fog]
+  narrator: The tide is high and the fog is thin. #tag:ai #line:dw_tide
+
+storylet dock_watch.fog
+  scope: bark
+  speaker: any
+  ai_context: [harbor.fog, harbor.tide]
+  - The fog sits on the water. #tag:ai #line:dw_fog
+```
+
 ## 4. Escapes
 
 In prose (spoken lines and other unquoted text):

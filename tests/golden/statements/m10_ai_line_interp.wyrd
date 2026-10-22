@@ -1,0 +1,20 @@
+// [EXAMPLE CONTENT] Gullhaven interpolating opt-in. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+  harbor.fog : bool stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.tide = high
+    ~ set harbor.fog = true
+    scene dock.watch
+
+scene dock.watch
+  narrator: The tide is {harbor.tide}. #tag:ai #line:dw_value
+  narrator: {if harbor.fog}Fog on the water.{else}The channel is clear.{end} #tag:ai #line:dw_if
+  narrator: Ask {holder(ferry)|variants}. #tag:ai #line:dw_hold
+    variant ferry: The ferry master keeps the channel. #line:dw_hold_ferry
+  narrator: The board lists {{two coins}}. #tag:ai #line:dw_plain

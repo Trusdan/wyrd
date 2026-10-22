@@ -1,0 +1,748 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 2,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 4,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 4,
+      "text": "dock_watch"
+    },
+    {
+      "col": 18,
+      "kind": "string",
+      "line": 4,
+      "text": "The Dock Watch"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "start"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 5,
+      "text": "when"
+    },
+    {
+      "col": 14,
+      "kind": "ident",
+      "line": 5,
+      "text": "true"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 6,
+      "text": "watch"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 7,
+      "text": "scene"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 7,
+      "text": "dock"
+    },
+    {
+      "col": 15,
+      "kind": "dot",
+      "line": 7,
+      "text": "."
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 7,
+      "text": "watch"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 7,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 9,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 9,
+      "text": "dock"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 9,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 9,
+      "text": "watch"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 10,
+      "text": "ai_context"
+    },
+    {
+      "col": 13,
+      "kind": "colon",
+      "line": 10,
+      "text": ":"
+    },
+    {
+      "col": 15,
+      "kind": "lbracket",
+      "line": 10,
+      "text": "["
+    },
+    {
+      "col": 16,
+      "kind": "prose",
+      "line": 10,
+      "text": "harbor.missing, harbor.also"
+    },
+    {
+      "col": 43,
+      "kind": "rbracket",
+      "line": 10,
+      "text": "]"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 11,
+      "text": "narrator"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 11,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "prose",
+      "line": 11,
+      "text": "The tide is high."
+    },
+    {
+      "col": 31,
+      "kind": "line_tag",
+      "line": 11,
+      "text": "u_line"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 11,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 13,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 13,
+      "text": "storylet"
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 13,
+      "text": "dock_watch"
+    },
+    {
+      "col": 20,
+      "kind": "dot",
+      "line": 13,
+      "text": "."
+    },
+    {
+      "col": 21,
+      "kind": "ident",
+      "line": 13,
+      "text": "line"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 13,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 14,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 14,
+      "text": "scope"
+    },
+    {
+      "col": 8,
+      "kind": "colon",
+      "line": 14,
+      "text": ":"
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 14,
+      "text": "bark"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 14,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 15,
+      "text": "speaker"
+    },
+    {
+      "col": 10,
+      "kind": "colon",
+      "line": 15,
+      "text": ":"
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 15,
+      "text": "any"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 15,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 16,
+      "text": "ai_context"
+    },
+    {
+      "col": 13,
+      "kind": "colon",
+      "line": 16,
+      "text": ":"
+    },
+    {
+      "col": 15,
+      "kind": "lbracket",
+      "line": 16,
+      "text": "["
+    },
+    {
+      "col": 16,
+      "kind": "prose",
+      "line": 16,
+      "text": "harbor.gone"
+    },
+    {
+      "col": 27,
+      "kind": "rbracket",
+      "line": 16,
+      "text": "]"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 16,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "minus",
+      "line": 17,
+      "text": "-"
+    },
+    {
+      "col": 5,
+      "kind": "prose",
+      "line": 17,
+      "text": "The fog sits on the water."
+    },
+    {
+      "col": 32,
+      "kind": "line_tag",
+      "line": 17,
+      "text": "u_fog"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 17,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 18,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 18,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 18,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 5,
+                "text": "when"
+              },
+              {
+                "col": 14,
+                "kind": "ident",
+                "line": 5,
+                "text": "true"
+              }
+            ],
+            "keyword": "start",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 21,
+                "end_line": 7,
+                "head": [
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 7,
+                    "text": "dock"
+                  },
+                  {
+                    "col": 15,
+                    "kind": "dot",
+                    "line": 7,
+                    "text": "."
+                  },
+                  {
+                    "col": 16,
+                    "kind": "ident",
+                    "line": 7,
+                    "text": "watch"
+                  }
+                ],
+                "keyword": "scene",
+                "kind": "scene",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 7,
+                "title": ""
+              }
+            ],
+            "end_col": 21,
+            "end_line": 7,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 6,
+                "text": "watch"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          }
+        ],
+        "end_col": 21,
+        "end_line": 7,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 4,
+            "text": "dock_watch"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 4,
+        "title": "The Dock Watch"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 44,
+            "end_line": 10,
+            "head": [
+              {
+                "col": 13,
+                "kind": "colon",
+                "line": 10,
+                "text": ":"
+              },
+              {
+                "col": 15,
+                "kind": "lbracket",
+                "line": 10,
+                "text": "["
+              },
+              {
+                "col": 16,
+                "kind": "prose",
+                "line": 10,
+                "text": "harbor.missing, harbor.also"
+              },
+              {
+                "col": 43,
+                "kind": "rbracket",
+                "line": 10,
+                "text": "]"
+              }
+            ],
+            "keyword": "ai_context",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 10,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 31,
+            "end_line": 11,
+            "head": [
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 11,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "prose",
+                "line": 11,
+                "text": "The tide is high."
+              }
+            ],
+            "keyword": "narrator",
+            "kind": "line",
+            "line_tag": "u_line",
+            "start_col": 3,
+            "start_line": 11,
+            "title": ""
+          }
+        ],
+        "end_col": 31,
+        "end_line": 11,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 9,
+            "text": "dock"
+          },
+          {
+            "col": 11,
+            "kind": "dot",
+            "line": 9,
+            "text": "."
+          },
+          {
+            "col": 12,
+            "kind": "ident",
+            "line": 9,
+            "text": "watch"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 9,
+        "title": ""
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 14,
+            "end_line": 14,
+            "head": [
+              {
+                "col": 8,
+                "kind": "colon",
+                "line": 14,
+                "text": ":"
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 14,
+                "text": "bark"
+              }
+            ],
+            "keyword": "scope",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 14,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 15,
+            "end_line": 15,
+            "head": [
+              {
+                "col": 10,
+                "kind": "colon",
+                "line": 15,
+                "text": ":"
+              },
+              {
+                "col": 12,
+                "kind": "ident",
+                "line": 15,
+                "text": "any"
+              }
+            ],
+            "keyword": "speaker",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 15,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 28,
+            "end_line": 16,
+            "head": [
+              {
+                "col": 13,
+                "kind": "colon",
+                "line": 16,
+                "text": ":"
+              },
+              {
+                "col": 15,
+                "kind": "lbracket",
+                "line": 16,
+                "text": "["
+              },
+              {
+                "col": 16,
+                "kind": "prose",
+                "line": 16,
+                "text": "harbor.gone"
+              },
+              {
+                "col": 27,
+                "kind": "rbracket",
+                "line": 16,
+                "text": "]"
+              }
+            ],
+            "keyword": "ai_context",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 16,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 32,
+            "end_line": 17,
+            "head": [
+              {
+                "col": 5,
+                "kind": "prose",
+                "line": 17,
+                "text": "The fog sits on the water."
+              }
+            ],
+            "keyword": "-",
+            "kind": "line",
+            "line_tag": "u_fog",
+            "start_col": 3,
+            "start_line": 17,
+            "title": ""
+          }
+        ],
+        "end_col": 32,
+        "end_line": 17,
+        "head": [
+          {
+            "col": 10,
+            "kind": "ident",
+            "line": 13,
+            "text": "dock_watch"
+          },
+          {
+            "col": 20,
+            "kind": "dot",
+            "line": 13,
+            "text": "."
+          },
+          {
+            "col": 21,
+            "kind": "ident",
+            "line": 13,
+            "text": "line"
+          }
+        ],
+        "keyword": "storylet",
+        "kind": "storylet",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 13,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 18,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

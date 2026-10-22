@@ -1,0 +1,478 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 16,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 17,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 18,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [
+        "harbor.tide",
+        "harbor.fog"
+      ],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 13,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "harbor.tide",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "harbor.tide"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 29,
+                "end_line": 11,
+                "line": 11
+              },
+              "target": {
+                "reads": [
+                  "harbor.tide"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 22,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "harbor.tide",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 25,
+                  "end_col": 29,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "high",
+              "verb": ""
+            },
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "harbor.fog",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "harbor.fog"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 28,
+                "end_line": 12,
+                "line": 12
+              },
+              "target": {
+                "reads": [
+                  "harbor.fog"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 21,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "harbor.fog",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 24,
+                  "end_col": 28,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "true",
+              "verb": ""
+            }
+          ],
+          "id": "watch",
+          "journals": [],
+          "reads": [
+            "harbor.tide",
+            "harbor.fog"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 13,
+              "id": "dock.watch",
+              "line": 13,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 13,
+            "line": 10
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "harbor.tide == high",
+      "start_when": {
+        "reads": [
+          "harbor.tide"
+        ],
+        "source_span": {
+          "col": 14,
+          "end_col": 33,
+          "end_line": 9,
+          "line": 9
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [
+    "harbor.tide",
+    "harbor.fog"
+  ],
+  "scenes": [
+    {
+      "id": "dock.watch",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_value",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 16,
+                  "text": "The tide is "
+                },
+                {
+                  "col": 25,
+                  "compiled": {
+                    "reads": [
+                      "harbor.tide"
+                    ],
+                    "source_span": {
+                      "col": 26,
+                      "end_col": 37,
+                      "end_line": 16,
+                      "line": 16
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "value",
+                  "line": 16
+                },
+                {
+                  "col": 38,
+                  "kind": "text",
+                  "line": 16,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 16
+            },
+            "reads": [
+              "harbor.tide"
+            ],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 40,
+              "end_line": 16,
+              "line": 16
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [
+            "harbor.tide"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 16,
+            "line": 16
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_if",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "compiled": {
+                    "reads": [
+                      "harbor.fog"
+                    ],
+                    "source_span": {
+                      "col": 17,
+                      "end_col": 27,
+                      "end_line": 17,
+                      "line": 17
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "else": {
+                    "col": 51,
+                    "kids": [
+                      {
+                        "col": 51,
+                        "kind": "text",
+                        "line": 17,
+                        "text": "The channel is clear."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 17
+                  },
+                  "kind": "if",
+                  "line": 17,
+                  "then": {
+                    "col": 28,
+                    "kids": [
+                      {
+                        "col": 28,
+                        "kind": "text",
+                        "line": 17,
+                        "text": "Fog on the water."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 17
+                  }
+                }
+              ],
+              "kind": "prose",
+              "line": 17
+            },
+            "reads": [
+              "harbor.fog"
+            ],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 77,
+              "end_line": 17,
+              "line": 17
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [
+            "harbor.fog"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 77,
+            "end_line": 17,
+            "line": 17
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_hold",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 18,
+                  "text": "Ask "
+                },
+                {
+                  "col": 17,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 18,
+                      "end_col": 31,
+                      "end_line": 18,
+                      "line": 18
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 18,
+                  "text": "variants"
+                },
+                {
+                  "col": 41,
+                  "kind": "text",
+                  "line": 18,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 18
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 56,
+              "end_line": 19,
+              "line": 18
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 56,
+            "end_line": 19,
+            "line": 18
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_plain",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 20,
+                  "text": "The board lists {two coins}}."
+                }
+              ],
+              "kind": "prose",
+              "line": 20
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 44,
+              "end_line": 20,
+              "line": 20
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 44,
+            "end_line": 20,
+            "line": 20
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "harbor.tide",
+        "harbor.fog"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 44,
+        "end_line": 20,
+        "line": 15
+      }
+    }
+  ]
+}

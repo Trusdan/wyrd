@@ -1,0 +1,624 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 19,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 15,
+      "message": "storylet \"dock_watch.nocolon\" specificity 0 priority 1 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 26,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 22,
+      "message": "storylet \"dock_watch.nobrack\" specificity 0 priority 2 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 33,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 29,
+      "message": "storylet \"dock_watch.trail\" specificity 0 priority 3 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 40,
+      "message": "ai_context needs at least one fact key",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 36,
+      "message": "storylet \"dock_watch.empty\" specificity 0 priority 4 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 47,
+      "message": "duplicate ai_context key \"harbor.tide\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 43,
+      "message": "storylet \"dock_watch.dupkey\" specificity 0 priority 5 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 54,
+      "message": "ai_context keys are concrete fact keys",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 50,
+      "message": "storylet \"dock_watch.pattern\" specificity 0 priority 6 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 61,
+      "message": "a line tag is not allowed on ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 57,
+      "message": "storylet \"dock_watch.tagged\" specificity 0 priority 7 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 69,
+      "message": "duplicate storylet field \"ai_context\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 64,
+      "message": "storylet \"dock_watch.twice\" specificity 0 priority 8 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 74,
+      "message": "duplicate ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 78,
+      "message": "ai_context cannot contain a block",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 5,
+      "line": 79,
+      "message": "unknown statement \"note\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 83,
+      "message": "a line tag is not allowed on ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [
+        "harbor.tide"
+      ],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 13,
+        "line": 7
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "harbor.tide",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "harbor.tide"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 29,
+                "end_line": 10,
+                "line": 10
+              },
+              "target": {
+                "reads": [
+                  "harbor.tide"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 22,
+                  "end_line": 10,
+                  "line": 10
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "harbor.tide",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 25,
+                  "end_col": 29,
+                  "end_line": 10,
+                  "line": 10
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "high",
+              "verb": ""
+            }
+          ],
+          "id": "watch",
+          "journals": [],
+          "reads": [
+            "harbor.tide"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 11,
+              "id": "dock.twice",
+              "line": 11,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 12,
+              "id": "dock.block",
+              "line": 12,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 22,
+              "end_line": 13,
+              "id": "dock.tagged",
+              "line": 13,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 13,
+            "line": 9
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "harbor.tide == high",
+      "start_when": {
+        "reads": [
+          "harbor.tide"
+        ],
+        "source_span": {
+          "col": 14,
+          "end_col": 33,
+          "end_line": 8,
+          "line": 8
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [
+    "harbor.tide"
+  ],
+  "scenes": [
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "id": "dock.twice",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "c_twice",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 75,
+                  "text": "The tide is high."
+                }
+              ],
+              "kind": "prose",
+              "line": 75
+            },
+            "reads": [],
+            "scene_id": "dock.twice",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 75,
+              "line": 75
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 75,
+            "line": 75
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 75,
+        "line": 72
+      }
+    },
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "id": "dock.block",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "c_block",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 80,
+                  "text": "The tide is high."
+                }
+              ],
+              "kind": "prose",
+              "line": 80
+            },
+            "reads": [],
+            "scene_id": "dock.block",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 80,
+              "line": 80
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 80,
+            "line": 80
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 80,
+        "line": 77
+      }
+    },
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "id": "dock.tagged",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "c_tag",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 84,
+                  "text": "The tide is high."
+                }
+              ],
+              "kind": "prose",
+              "line": 84
+            },
+            "reads": [],
+            "scene_id": "dock.tagged",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 84,
+              "line": 84
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 84,
+            "line": 84
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 84,
+        "line": 82
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.nocolon",
+      "line_ids": [
+        "s_colon"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 20,
+        "line": 15
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.nobrack",
+      "line_ids": [
+        "s_bracket"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 27,
+        "line": 22
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.trail",
+      "line_ids": [
+        "s_trail"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 34,
+        "line": 29
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.empty",
+      "line_ids": [
+        "s_empty"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 41,
+        "line": 36
+      },
+      "speaker": "any"
+    },
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.dupkey",
+      "line_ids": [
+        "s_dup"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 48,
+        "line": 43
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.pattern",
+      "line_ids": [
+        "s_pattern"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 55,
+        "line": 50
+      },
+      "speaker": "any"
+    },
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.tagged",
+      "line_ids": [
+        "s_tag"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 62,
+        "line": 57
+      },
+      "speaker": "any"
+    },
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.twice",
+      "line_ids": [
+        "s_twice"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 70,
+        "line": 64
+      },
+      "speaker": "any"
+    }
+  ]
+}

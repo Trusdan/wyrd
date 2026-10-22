@@ -1,0 +1,20 @@
+// [EXAMPLE CONTENT] Gullhaven voiced opt-in. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.tide = high
+    scene dock.watch
+
+scene dock.watch
+  narrator: The tide is high. #tag:voiced #tag:ai #line:dw_voiced
+
+storylet dock_watch.line
+  scope: bark
+  speaker: any
+  when: harbor.tide == high
+  - The fog sits low on the water. #tag:ai #tag:voiced #line:dw_bark

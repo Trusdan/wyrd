@@ -1,0 +1,31 @@
+// [EXAMPLE CONTENT] Gullhaven AI opt-in. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+  harbor.fog : bool stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.fog = true
+    scene dock.watch
+
+scene dock.watch
+  ai_context: [harbor.tide, harbor.fog]
+  narrator: The tide is high and the fog is thin. #tag:ai #line:dw_tide
+  ~ set harbor.tide = high
+
+storylet dock_watch.line
+  scope: bark
+  speaker: any
+  when: harbor.fog
+  ai_context: [harbor.fog, harbor.tide]
+  - The fog sits on the water. #tag:ai #line:dw_fog
+
+storylet dock_watch.set
+  scope: topic harbor_talk
+  speaker: any
+  lines:
+    - Mind the channel. #tag:ai #line:dw_channel
+    - The lamp is lit. #line:dw_lamp

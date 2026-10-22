@@ -1,0 +1,177 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_AI_CONTEXT_UNKNOWN",
+      "col": 3,
+      "line": 10,
+      "message": "unknown fact \"harbor.missing\" in ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_unknown.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_CONTEXT_UNKNOWN",
+      "col": 3,
+      "line": 10,
+      "message": "unknown fact \"harbor.also\" in ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_unknown.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_CONTEXT_UNKNOWN",
+      "col": 3,
+      "line": 16,
+      "message": "unknown fact \"harbor.gone\" in ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_unknown.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 13,
+      "message": "storylet \"dock_watch.line\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_unknown.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 7,
+        "line": 4
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "watch",
+          "journals": [],
+          "reads": [],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 7,
+              "id": "dock.watch",
+              "line": 7,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 7,
+            "line": 6
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "true",
+      "start_when": {
+        "reads": [],
+        "source_span": {
+          "col": 14,
+          "end_col": 18,
+          "end_line": 5,
+          "line": 5
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [],
+  "scenes": [
+    {
+      "ai_context": [
+        "harbor.missing",
+        "harbor.also"
+      ],
+      "id": "dock.watch",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "u_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 11,
+                  "text": "The tide is high."
+                }
+              ],
+              "kind": "prose",
+              "line": 11
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 11,
+              "line": 11
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 11,
+            "line": 11
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 11,
+        "line": 9
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "ai_context": [
+        "harbor.gone"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.line",
+      "line_ids": [
+        "u_fog"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 17,
+        "line": 13
+      },
+      "speaker": "any"
+    }
+  ]
+}

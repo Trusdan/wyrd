@@ -1,0 +1,1259 @@
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 2,
+      "text": "language"
+    },
+    {
+      "col": 10,
+      "kind": "int",
+      "line": 2,
+      "text": "1"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 2,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 4,
+      "text": "facts"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 4,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 5,
+      "text": "harbor"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 5,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 5,
+      "text": "tide"
+    },
+    {
+      "col": 15,
+      "kind": "colon",
+      "line": 5,
+      "text": ":"
+    },
+    {
+      "col": 17,
+      "kind": "ident",
+      "line": 5,
+      "text": "symbol"
+    },
+    {
+      "col": 24,
+      "kind": "ident",
+      "line": 5,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 5,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 6,
+      "text": "harbor"
+    },
+    {
+      "col": 9,
+      "kind": "dot",
+      "line": 6,
+      "text": "."
+    },
+    {
+      "col": 10,
+      "kind": "ident",
+      "line": 6,
+      "text": "fog"
+    },
+    {
+      "col": 14,
+      "kind": "colon",
+      "line": 6,
+      "text": ":"
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 6,
+      "text": "bool"
+    },
+    {
+      "col": 21,
+      "kind": "ident",
+      "line": 6,
+      "text": "stored"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 6,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 8,
+      "text": "quest"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 8,
+      "text": "dock_watch"
+    },
+    {
+      "col": 18,
+      "kind": "string",
+      "line": 8,
+      "text": "The Dock Watch"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 8,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 9,
+      "text": "start"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 9,
+      "text": "when"
+    },
+    {
+      "col": 14,
+      "kind": "ident",
+      "line": 9,
+      "text": "harbor"
+    },
+    {
+      "col": 20,
+      "kind": "dot",
+      "line": 9,
+      "text": "."
+    },
+    {
+      "col": 21,
+      "kind": "ident",
+      "line": 9,
+      "text": "tide"
+    },
+    {
+      "col": 26,
+      "kind": "eq",
+      "line": 9,
+      "text": "="
+    },
+    {
+      "col": 27,
+      "kind": "eq",
+      "line": 9,
+      "text": "="
+    },
+    {
+      "col": 29,
+      "kind": "ident",
+      "line": 9,
+      "text": "high"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 9,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 10,
+      "text": "stage"
+    },
+    {
+      "col": 9,
+      "kind": "ident",
+      "line": 10,
+      "text": "watch"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 10,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 11,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "tilde",
+      "line": 11,
+      "text": "~"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 11,
+      "text": "set"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 11,
+      "text": "harbor"
+    },
+    {
+      "col": 17,
+      "kind": "dot",
+      "line": 11,
+      "text": "."
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 11,
+      "text": "tide"
+    },
+    {
+      "col": 23,
+      "kind": "eq",
+      "line": 11,
+      "text": "="
+    },
+    {
+      "col": 25,
+      "kind": "ident",
+      "line": 11,
+      "text": "high"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 11,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "tilde",
+      "line": 12,
+      "text": "~"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 12,
+      "text": "set"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 12,
+      "text": "harbor"
+    },
+    {
+      "col": 17,
+      "kind": "dot",
+      "line": 12,
+      "text": "."
+    },
+    {
+      "col": 18,
+      "kind": "ident",
+      "line": 12,
+      "text": "fog"
+    },
+    {
+      "col": 22,
+      "kind": "eq",
+      "line": 12,
+      "text": "="
+    },
+    {
+      "col": 24,
+      "kind": "ident",
+      "line": 12,
+      "text": "true"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 12,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 13,
+      "text": "scene"
+    },
+    {
+      "col": 11,
+      "kind": "ident",
+      "line": 13,
+      "text": "dock"
+    },
+    {
+      "col": 15,
+      "kind": "dot",
+      "line": 13,
+      "text": "."
+    },
+    {
+      "col": 16,
+      "kind": "ident",
+      "line": 13,
+      "text": "watch"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 13,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 15,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 15,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "ident",
+      "line": 15,
+      "text": "scene"
+    },
+    {
+      "col": 7,
+      "kind": "ident",
+      "line": 15,
+      "text": "dock"
+    },
+    {
+      "col": 11,
+      "kind": "dot",
+      "line": 15,
+      "text": "."
+    },
+    {
+      "col": 12,
+      "kind": "ident",
+      "line": 15,
+      "text": "watch"
+    },
+    {
+      "col": 1,
+      "kind": "newline",
+      "line": 15,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 16,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 16,
+      "text": "narrator"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 16,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "prose",
+      "line": 16,
+      "text": "The tide is "
+    },
+    {
+      "col": 25,
+      "kind": "interp",
+      "line": 16,
+      "text": "harbor.tide"
+    },
+    {
+      "col": 38,
+      "kind": "prose",
+      "line": 16,
+      "text": "."
+    },
+    {
+      "col": 40,
+      "kind": "tag",
+      "line": 16,
+      "text": "ai"
+    },
+    {
+      "col": 48,
+      "kind": "line_tag",
+      "line": 16,
+      "text": "dw_value"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 16,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 17,
+      "text": "narrator"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 17,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "interp",
+      "line": 17,
+      "text": "if harbor.fog"
+    },
+    {
+      "col": 28,
+      "kind": "prose",
+      "line": 17,
+      "text": "Fog on the water."
+    },
+    {
+      "col": 45,
+      "kind": "interp",
+      "line": 17,
+      "text": "else"
+    },
+    {
+      "col": 51,
+      "kind": "prose",
+      "line": 17,
+      "text": "The channel is clear."
+    },
+    {
+      "col": 72,
+      "kind": "interp",
+      "line": 17,
+      "text": "end"
+    },
+    {
+      "col": 78,
+      "kind": "tag",
+      "line": 17,
+      "text": "ai"
+    },
+    {
+      "col": 86,
+      "kind": "line_tag",
+      "line": 17,
+      "text": "dw_if"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 17,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 18,
+      "text": "narrator"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 18,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "prose",
+      "line": 18,
+      "text": "Ask "
+    },
+    {
+      "col": 17,
+      "kind": "interp",
+      "line": 18,
+      "text": "holder(ferry)|variants"
+    },
+    {
+      "col": 41,
+      "kind": "prose",
+      "line": 18,
+      "text": "."
+    },
+    {
+      "col": 43,
+      "kind": "tag",
+      "line": 18,
+      "text": "ai"
+    },
+    {
+      "col": 51,
+      "kind": "line_tag",
+      "line": 18,
+      "text": "dw_hold"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 18,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "indent",
+      "line": 19,
+      "text": ""
+    },
+    {
+      "col": 5,
+      "kind": "ident",
+      "line": 19,
+      "text": "variant"
+    },
+    {
+      "col": 13,
+      "kind": "ident",
+      "line": 19,
+      "text": "ferry"
+    },
+    {
+      "col": 18,
+      "kind": "colon",
+      "line": 19,
+      "text": ":"
+    },
+    {
+      "col": 20,
+      "kind": "prose",
+      "line": 19,
+      "text": "The ferry master keeps the channel."
+    },
+    {
+      "col": 56,
+      "kind": "line_tag",
+      "line": 19,
+      "text": "dw_hold_ferry"
+    },
+    {
+      "col": 5,
+      "kind": "newline",
+      "line": 19,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 20,
+      "text": ""
+    },
+    {
+      "col": 3,
+      "kind": "ident",
+      "line": 20,
+      "text": "narrator"
+    },
+    {
+      "col": 11,
+      "kind": "colon",
+      "line": 20,
+      "text": ":"
+    },
+    {
+      "col": 13,
+      "kind": "prose",
+      "line": 20,
+      "text": "The board lists {two coins}}."
+    },
+    {
+      "col": 44,
+      "kind": "tag",
+      "line": 20,
+      "text": "ai"
+    },
+    {
+      "col": 52,
+      "kind": "line_tag",
+      "line": 20,
+      "text": "dw_plain"
+    },
+    {
+      "col": 3,
+      "kind": "newline",
+      "line": 20,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "dedent",
+      "line": 21,
+      "text": ""
+    },
+    {
+      "col": 1,
+      "kind": "eof",
+      "line": 21,
+      "text": ""
+    }
+  ],
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 30,
+            "end_line": 5,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 5,
+                "text": "harbor"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 5,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 5,
+                "text": "tide"
+              },
+              {
+                "col": 15,
+                "kind": "colon",
+                "line": 5,
+                "text": ":"
+              },
+              {
+                "col": 17,
+                "kind": "ident",
+                "line": 5,
+                "text": "symbol"
+              },
+              {
+                "col": 24,
+                "kind": "ident",
+                "line": 5,
+                "text": "stored"
+              }
+            ],
+            "keyword": "harbor.tide",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 5,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 27,
+            "end_line": 6,
+            "head": [
+              {
+                "col": 3,
+                "kind": "ident",
+                "line": 6,
+                "text": "harbor"
+              },
+              {
+                "col": 9,
+                "kind": "dot",
+                "line": 6,
+                "text": "."
+              },
+              {
+                "col": 10,
+                "kind": "ident",
+                "line": 6,
+                "text": "fog"
+              },
+              {
+                "col": 14,
+                "kind": "colon",
+                "line": 6,
+                "text": ":"
+              },
+              {
+                "col": 16,
+                "kind": "ident",
+                "line": 6,
+                "text": "bool"
+              },
+              {
+                "col": 21,
+                "kind": "ident",
+                "line": 6,
+                "text": "stored"
+              }
+            ],
+            "keyword": "harbor.fog",
+            "kind": "fact",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 6,
+            "title": ""
+          }
+        ],
+        "end_col": 27,
+        "end_line": 6,
+        "entries": [
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "harbor.tide",
+            "line": 5,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "harbor",
+              "tide"
+            ],
+            "type": "symbol"
+          },
+          {
+            "col": 3,
+            "doc": "",
+            "invalidate": "",
+            "invalidate_arg": "",
+            "key": "harbor.fog",
+            "line": 6,
+            "origin": "stored",
+            "pattern": false,
+            "resolver": "",
+            "segments": [
+              "harbor",
+              "fog"
+            ],
+            "type": "bool"
+          }
+        ],
+        "head": [],
+        "keyword": "facts",
+        "kind": "facts",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 4,
+        "title": ""
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 33,
+            "end_line": 9,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 9,
+                "text": "when"
+              },
+              {
+                "col": 14,
+                "kind": "ident",
+                "line": 9,
+                "text": "harbor"
+              },
+              {
+                "col": 20,
+                "kind": "dot",
+                "line": 9,
+                "text": "."
+              },
+              {
+                "col": 21,
+                "kind": "ident",
+                "line": 9,
+                "text": "tide"
+              },
+              {
+                "col": 26,
+                "kind": "eq",
+                "line": 9,
+                "text": "="
+              },
+              {
+                "col": 27,
+                "kind": "eq",
+                "line": 9,
+                "text": "="
+              },
+              {
+                "col": 29,
+                "kind": "ident",
+                "line": 9,
+                "text": "high"
+              }
+            ],
+            "keyword": "start",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 9,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 29,
+                "end_line": 11,
+                "head": [
+                  {
+                    "col": 7,
+                    "kind": "ident",
+                    "line": 11,
+                    "text": "set"
+                  },
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 11,
+                    "text": "harbor"
+                  },
+                  {
+                    "col": 17,
+                    "kind": "dot",
+                    "line": 11,
+                    "text": "."
+                  },
+                  {
+                    "col": 18,
+                    "kind": "ident",
+                    "line": 11,
+                    "text": "tide"
+                  },
+                  {
+                    "col": 23,
+                    "kind": "eq",
+                    "line": 11,
+                    "text": "="
+                  },
+                  {
+                    "col": 25,
+                    "kind": "ident",
+                    "line": 11,
+                    "text": "high"
+                  }
+                ],
+                "keyword": "~",
+                "kind": "line",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 11,
+                "title": ""
+              },
+              {
+                "children": [],
+                "end_col": 28,
+                "end_line": 12,
+                "head": [
+                  {
+                    "col": 7,
+                    "kind": "ident",
+                    "line": 12,
+                    "text": "set"
+                  },
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 12,
+                    "text": "harbor"
+                  },
+                  {
+                    "col": 17,
+                    "kind": "dot",
+                    "line": 12,
+                    "text": "."
+                  },
+                  {
+                    "col": 18,
+                    "kind": "ident",
+                    "line": 12,
+                    "text": "fog"
+                  },
+                  {
+                    "col": 22,
+                    "kind": "eq",
+                    "line": 12,
+                    "text": "="
+                  },
+                  {
+                    "col": 24,
+                    "kind": "ident",
+                    "line": 12,
+                    "text": "true"
+                  }
+                ],
+                "keyword": "~",
+                "kind": "line",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 12,
+                "title": ""
+              },
+              {
+                "children": [],
+                "end_col": 21,
+                "end_line": 13,
+                "head": [
+                  {
+                    "col": 11,
+                    "kind": "ident",
+                    "line": 13,
+                    "text": "dock"
+                  },
+                  {
+                    "col": 15,
+                    "kind": "dot",
+                    "line": 13,
+                    "text": "."
+                  },
+                  {
+                    "col": 16,
+                    "kind": "ident",
+                    "line": 13,
+                    "text": "watch"
+                  }
+                ],
+                "keyword": "scene",
+                "kind": "scene",
+                "line_tag": "",
+                "start_col": 5,
+                "start_line": 13,
+                "title": ""
+              }
+            ],
+            "end_col": 21,
+            "end_line": 13,
+            "head": [
+              {
+                "col": 9,
+                "kind": "ident",
+                "line": 10,
+                "text": "watch"
+              }
+            ],
+            "keyword": "stage",
+            "kind": "line",
+            "line_tag": "",
+            "start_col": 3,
+            "start_line": 10,
+            "title": ""
+          }
+        ],
+        "end_col": 21,
+        "end_line": 13,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 8,
+            "text": "dock_watch"
+          }
+        ],
+        "keyword": "quest",
+        "kind": "quest",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 8,
+        "title": "The Dock Watch"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "end_col": 40,
+            "end_line": 16,
+            "head": [
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 16,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "prose",
+                "line": 16,
+                "text": "The tide is "
+              },
+              {
+                "col": 25,
+                "kind": "interp",
+                "line": 16,
+                "text": "harbor.tide"
+              },
+              {
+                "col": 38,
+                "kind": "prose",
+                "line": 16,
+                "text": "."
+              }
+            ],
+            "keyword": "narrator",
+            "kind": "line",
+            "line_tag": "dw_value",
+            "start_col": 3,
+            "start_line": 16,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 77,
+            "end_line": 17,
+            "head": [
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 17,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "interp",
+                "line": 17,
+                "text": "if harbor.fog"
+              },
+              {
+                "col": 28,
+                "kind": "prose",
+                "line": 17,
+                "text": "Fog on the water."
+              },
+              {
+                "col": 45,
+                "kind": "interp",
+                "line": 17,
+                "text": "else"
+              },
+              {
+                "col": 51,
+                "kind": "prose",
+                "line": 17,
+                "text": "The channel is clear."
+              },
+              {
+                "col": 72,
+                "kind": "interp",
+                "line": 17,
+                "text": "end"
+              }
+            ],
+            "keyword": "narrator",
+            "kind": "line",
+            "line_tag": "dw_if",
+            "start_col": 3,
+            "start_line": 17,
+            "title": ""
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "end_col": 56,
+                "end_line": 19,
+                "head": [
+                  {
+                    "col": 13,
+                    "kind": "ident",
+                    "line": 19,
+                    "text": "ferry"
+                  },
+                  {
+                    "col": 18,
+                    "kind": "colon",
+                    "line": 19,
+                    "text": ":"
+                  },
+                  {
+                    "col": 20,
+                    "kind": "prose",
+                    "line": 19,
+                    "text": "The ferry master keeps the channel."
+                  }
+                ],
+                "keyword": "variant",
+                "kind": "line",
+                "line_tag": "dw_hold_ferry",
+                "start_col": 5,
+                "start_line": 19,
+                "title": ""
+              }
+            ],
+            "end_col": 56,
+            "end_line": 19,
+            "head": [
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 18,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "prose",
+                "line": 18,
+                "text": "Ask "
+              },
+              {
+                "col": 17,
+                "kind": "interp",
+                "line": 18,
+                "text": "holder(ferry)|variants"
+              },
+              {
+                "col": 41,
+                "kind": "prose",
+                "line": 18,
+                "text": "."
+              }
+            ],
+            "keyword": "narrator",
+            "kind": "line",
+            "line_tag": "dw_hold",
+            "start_col": 3,
+            "start_line": 18,
+            "title": ""
+          },
+          {
+            "children": [],
+            "end_col": 44,
+            "end_line": 20,
+            "head": [
+              {
+                "col": 11,
+                "kind": "colon",
+                "line": 20,
+                "text": ":"
+              },
+              {
+                "col": 13,
+                "kind": "prose",
+                "line": 20,
+                "text": "The board lists {two coins}}."
+              }
+            ],
+            "keyword": "narrator",
+            "kind": "line",
+            "line_tag": "dw_plain",
+            "start_col": 3,
+            "start_line": 20,
+            "title": ""
+          }
+        ],
+        "end_col": 44,
+        "end_line": 20,
+        "head": [
+          {
+            "col": 7,
+            "kind": "ident",
+            "line": 15,
+            "text": "dock"
+          },
+          {
+            "col": 11,
+            "kind": "dot",
+            "line": 15,
+            "text": "."
+          },
+          {
+            "col": 12,
+            "kind": "ident",
+            "line": 15,
+            "text": "watch"
+          }
+        ],
+        "keyword": "scene",
+        "kind": "scene",
+        "line_tag": "",
+        "start_col": 1,
+        "start_line": 15,
+        "title": ""
+      }
+    ],
+    "end_col": 1,
+    "end_line": 21,
+    "head": [],
+    "keyword": "",
+    "kind": "file",
+    "line_tag": "",
+    "start_col": 1,
+    "start_line": 1,
+    "title": ""
+  }
+}

@@ -1,0 +1,21 @@
+// [EXAMPLE CONTENT] Gullhaven per-query ai_context. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol source: world.tide invalidate: per_query
+
+quest dock_watch "The Dock Watch"
+  start when true
+  stage watch
+    scene dock.watch
+
+scene dock.watch
+  ai_context: [harbor.tide]
+  narrator: The tide is high. #tag:ai #line:p_line
+
+storylet dock_watch.line
+  scope: bark
+  speaker: any
+  when: harbor.tide == high
+  ai_context: [harbor.tide]
+  - The tide turns in the channel. #tag:ai #line:p_fog

@@ -1,0 +1,307 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 19,
+      "message": "storylet \"dock_watch.line\" specificity 1 priority 0 generic=false",
+      "path": "res://tests/golden/statements/m10_ai_opt_in_clean.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 26,
+      "message": "storylet \"dock_watch.set\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_opt_in_clean.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [
+        "harbor.tide",
+        "harbor.fog"
+      ],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 12,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "harbor.fog",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "harbor.fog"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 28,
+                "end_line": 11,
+                "line": 11
+              },
+              "target": {
+                "reads": [
+                  "harbor.fog"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 21,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "harbor.fog",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 24,
+                  "end_col": 28,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "true",
+              "verb": ""
+            }
+          ],
+          "id": "watch",
+          "journals": [],
+          "reads": [
+            "harbor.fog"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 12,
+              "id": "dock.watch",
+              "line": 12,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 12,
+            "line": 10
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "harbor.tide == high",
+      "start_when": {
+        "reads": [
+          "harbor.tide"
+        ],
+        "source_span": {
+          "col": 14,
+          "end_col": 33,
+          "end_line": 9,
+          "line": 9
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [
+    "harbor.tide",
+    "harbor.fog"
+  ],
+  "scenes": [
+    {
+      "ai_context": [
+        "harbor.tide",
+        "harbor.fog"
+      ],
+      "id": "dock.watch",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_tide",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 16,
+                  "text": "The tide is high and the fog is thin."
+                }
+              ],
+              "kind": "prose",
+              "line": 16
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 51,
+              "end_line": 16,
+              "line": 16
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 51,
+            "end_line": 16,
+            "line": 16
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "harbor.tide",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [
+              "harbor.tide"
+            ],
+            "span": {
+              "col": 3,
+              "end_col": 27,
+              "end_line": 17,
+              "line": 17
+            },
+            "target": {
+              "reads": [
+                "harbor.tide"
+              ],
+              "source_span": {
+                "col": 9,
+                "end_col": 20,
+                "end_line": 17,
+                "line": 17
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "target_text": "harbor.tide",
+            "topic": "",
+            "value": {
+              "reads": [],
+              "source_span": {
+                "col": 23,
+                "end_col": 27,
+                "end_line": 17,
+                "line": 17
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "value_text": "high",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [
+            "harbor.tide"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 27,
+            "end_line": 17,
+            "line": 17
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "harbor.tide"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 27,
+        "end_line": 17,
+        "line": 14
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "ai_context": [
+        "harbor.fog",
+        "harbor.tide"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.line",
+      "line_ids": [
+        "dw_fog"
+      ],
+      "reads": [
+        "harbor.fog"
+      ],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 32,
+        "end_line": 24,
+        "line": 19
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "set",
+      "effects": [],
+      "id": "dock_watch.set",
+      "line_ids": [
+        "dw_channel",
+        "dw_lamp"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "topic harbor_talk",
+      "span": {
+        "col": 1,
+        "end_col": 24,
+        "end_line": 31,
+        "line": 26
+      },
+      "speaker": "any"
+    }
+  ]
+}

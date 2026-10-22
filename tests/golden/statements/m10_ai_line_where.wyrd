@@ -1,0 +1,18 @@
+// [EXAMPLE CONTENT] Gullhaven opt-in placement. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.tide = high
+    journal: The tide log stays on the desk. #tag:ai #line:dw_journal
+    scene dock.watch
+
+scene dock.watch
+  narrator: Ask {holder(ferry)|variants}. #line:dw_parent
+    variant ferry: The ferry master knows the channel. #tag:ai #line:dw_var
+  * [Ask the tide] -> end #tag:ai #line:dw_choice
+  -> end

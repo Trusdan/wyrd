@@ -1,0 +1,21 @@
+// [EXAMPLE CONTENT] Gullhaven secrecy opt-in. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.tide = high
+    scene dock.watch
+
+scene dock.watch
+  narrator: The ledger is shut. #tag:ai #secrecy:sealed #line:dw_seal
+
+storylet dock_watch.sealed
+  scope: bark
+  speaker: any
+  when: harbor.tide == high
+  secrecy: sealed
+  - A later page stays shut. #tag:ai #line:dw_page

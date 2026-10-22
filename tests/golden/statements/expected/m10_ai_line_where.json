@@ -1,0 +1,312 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_AI_LINE",
+      "col": 5,
+      "line": 11,
+      "message": "only spoken and storylet lines can opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_where.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 5,
+      "line": 16,
+      "message": "only spoken and storylet lines can opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_where.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 17,
+      "message": "only spoken and storylet lines can opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_where.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [
+        "harbor.tide"
+      ],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 12,
+        "line": 7
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "harbor.tide",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "harbor.tide"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 29,
+                "end_line": 10,
+                "line": 10
+              },
+              "target": {
+                "reads": [
+                  "harbor.tide"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 22,
+                  "end_line": 10,
+                  "line": 10
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "harbor.tide",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 25,
+                  "end_col": 29,
+                  "end_line": 10,
+                  "line": 10
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "high",
+              "verb": ""
+            }
+          ],
+          "id": "watch",
+          "journals": [
+            {
+              "condition": null,
+              "condition_text": "",
+              "id": "dw_journal",
+              "kind": "journal",
+              "prose": {
+                "col": 14,
+                "kids": [
+                  {
+                    "col": 14,
+                    "kind": "text",
+                    "line": 11,
+                    "text": "The tide log stays on the desk."
+                  }
+                ],
+                "kind": "prose",
+                "line": 11
+              },
+              "reads": [],
+              "scene_id": "",
+              "span": {
+                "col": 5,
+                "end_col": 46,
+                "end_line": 11,
+                "line": 11
+              },
+              "speaker": "",
+              "tags": [
+                "ai"
+              ]
+            }
+          ],
+          "reads": [
+            "harbor.tide"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 12,
+              "id": "dock.watch",
+              "line": 12,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 12,
+            "line": 9
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "harbor.tide == high",
+      "start_when": {
+        "reads": [
+          "harbor.tide"
+        ],
+        "source_span": {
+          "col": 14,
+          "end_col": 33,
+          "end_line": 8,
+          "line": 8
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [
+    "harbor.tide"
+  ],
+  "scenes": [
+    {
+      "id": "dock.watch",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "dw_parent",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 15,
+                  "text": "Ask "
+                },
+                {
+                  "col": 17,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 18,
+                      "end_col": 31,
+                      "end_line": 15,
+                      "line": 15
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 15,
+                  "text": "variants"
+                },
+                {
+                  "col": 41,
+                  "kind": "text",
+                  "line": 15,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 15
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 56,
+              "end_line": 16,
+              "line": 15
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 56,
+            "end_line": 16,
+            "line": 15
+          },
+          "target": ""
+        },
+        {
+          "choice": {
+            "condition": null,
+            "condition_text": "",
+            "disabled_reason": "",
+            "disabled_when": "",
+            "effects": [],
+            "id": "dw_choice",
+            "label": {
+              "col": 6,
+              "kids": [
+                {
+                  "col": 6,
+                  "kind": "text",
+                  "line": 17,
+                  "text": "Ask the tide"
+                }
+              ],
+              "kind": "prose",
+              "line": 17
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 26,
+              "end_line": 17,
+              "line": 17
+            },
+            "tags": [
+              "ai"
+            ],
+            "target": "end"
+          },
+          "divert_kind": "",
+          "kind": "choice",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 26,
+            "end_line": 17,
+            "line": 17
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 18,
+            "line": 18
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 18,
+        "line": 14
+      }
+    }
+  ]
+}

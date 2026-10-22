@@ -1,0 +1,174 @@
+{
+  "diagnostics": [
+    {
+      "code": "W_AI_CONTEXT_RESOLVED_PER_QUERY",
+      "col": 3,
+      "line": 13,
+      "message": "ai_context key \"harbor.tide\" is resolved per query; the packet reads it once when built",
+      "path": "res://tests/golden/statements/m10_ai_context_per_query.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "W_AI_CONTEXT_RESOLVED_PER_QUERY",
+      "col": 3,
+      "line": 20,
+      "message": "ai_context key \"harbor.tide\" is resolved per query; the packet reads it once when built",
+      "path": "res://tests/golden/statements/m10_ai_context_per_query.wyrd",
+      "severity": "warning"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 16,
+      "message": "storylet \"dock_watch.line\" specificity 1 priority 0 generic=false",
+      "path": "res://tests/golden/statements/m10_ai_context_per_query.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [
+    {
+      "id": "dock_watch",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 10,
+        "line": 7
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "watch",
+          "journals": [],
+          "reads": [],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 10,
+              "id": "dock.watch",
+              "line": 10,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 10,
+            "line": 9
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "true",
+      "start_when": {
+        "reads": [],
+        "source_span": {
+          "col": 14,
+          "end_col": 18,
+          "end_line": 8,
+          "line": 8
+        },
+        "specificity": 1,
+        "uses_chance": false
+      },
+      "title": "The Dock Watch"
+    }
+  ],
+  "reads": [
+    "harbor.tide"
+  ],
+  "scenes": [
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "id": "dock.watch",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "p_line",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 14,
+                  "text": "The tide is high."
+                }
+              ],
+              "kind": "prose",
+              "line": 14
+            },
+            "reads": [],
+            "scene_id": "dock.watch",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 14,
+              "line": 14
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 14,
+            "line": 14
+          },
+          "target": ""
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 31,
+        "end_line": 14,
+        "line": 12
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "ai_context": [
+        "harbor.tide"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "dock_watch.line",
+      "line_ids": [
+        "p_fog"
+      ],
+      "reads": [
+        "harbor.tide"
+      ],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 36,
+        "end_line": 21,
+        "line": 16
+      },
+      "speaker": "any"
+    }
+  ]
+}

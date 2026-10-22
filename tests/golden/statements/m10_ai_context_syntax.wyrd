@@ -1,0 +1,84 @@
+// [EXAMPLE CONTENT] Gullhaven ai_context syntax. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.tide : symbol stored
+
+quest dock_watch "The Dock Watch"
+  start when harbor.tide == high
+  stage watch
+    ~ set harbor.tide = high
+    scene dock.twice
+    scene dock.block
+    scene dock.tagged
+
+storylet dock_watch.nocolon
+  scope: bark
+  speaker: any
+  priority: 1
+  ai_context [harbor.tide]
+  - The fog sits on the water. #line:s_colon
+
+storylet dock_watch.nobrack
+  scope: bark
+  speaker: any
+  priority: 2
+  ai_context: harbor.tide
+  - The fog sits on the water. #line:s_bracket
+
+storylet dock_watch.trail
+  scope: bark
+  speaker: any
+  priority: 3
+  ai_context: [harbor.tide] extra
+  - The fog sits on the water. #line:s_trail
+
+storylet dock_watch.empty
+  scope: bark
+  speaker: any
+  priority: 4
+  ai_context: []
+  - The fog sits on the water. #line:s_empty
+
+storylet dock_watch.dupkey
+  scope: bark
+  speaker: any
+  priority: 5
+  ai_context: [harbor.tide, harbor.tide]
+  - The fog sits on the water. #line:s_dup
+
+storylet dock_watch.pattern
+  scope: bark
+  speaker: any
+  priority: 6
+  ai_context: [npc.{id}.alive]
+  - The fog sits on the water. #line:s_pattern
+
+storylet dock_watch.tagged
+  scope: bark
+  speaker: any
+  priority: 7
+  ai_context: [harbor.tide] #line:not_a_line
+  - The fog sits on the water. #line:s_tag
+
+storylet dock_watch.twice
+  scope: bark
+  speaker: any
+  priority: 8
+  ai_context: [harbor.tide]
+  ai_context: [harbor.fog]
+  - The fog sits on the water. #line:s_twice
+
+scene dock.twice
+  ai_context: [harbor.tide]
+  ai_context: [harbor.fog]
+  narrator: The tide is high. #line:c_twice
+
+scene dock.block
+  ai_context: [harbor.tide]
+    note: nested
+  narrator: The tide is high. #line:c_block
+
+scene dock.tagged
+  ai_context: [harbor.tide] #line:nope
+  narrator: The tide is high. #line:c_tag
