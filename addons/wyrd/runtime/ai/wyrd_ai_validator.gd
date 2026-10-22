@@ -122,7 +122,7 @@ func _phrase_hit(text: String, terms: PackedStringArray, ignore_case: bool) -> b
 	for term in terms:
 		if term.is_empty():
 			continue
-		if _bounded(text, term, ignore_case):
+		if word_hit(text, term, ignore_case):
 			return true
 	return false
 
@@ -143,7 +143,8 @@ func _starts_upper(text: String) -> bool:
 	return ch.to_lower() != ch.to_upper() and ch == ch.to_upper()
 
 
-func _bounded(text: String, needle: String, ignore_case: bool) -> bool:
+## Whole-word match. [param ignore_case] folds both sides. Empty [param needle] misses.
+static func word_hit(text: String, needle: String, ignore_case: bool) -> bool:
 	if needle.is_empty():
 		return false
 	var hay := text
@@ -165,7 +166,11 @@ func _bounded(text: String, needle: String, ignore_case: bool) -> bool:
 	return false
 
 
-func _word_char(code: int) -> bool:
+func _bounded(text: String, needle: String, ignore_case: bool) -> bool:
+	return word_hit(text, needle, ignore_case)
+
+
+static func _word_char(code: int) -> bool:
 	var ch := String.chr(code)
 	if ch == "_" or (ch >= "0" and ch <= "9"):
 		return true

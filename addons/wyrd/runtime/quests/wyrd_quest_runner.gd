@@ -18,7 +18,9 @@ extends RefCounted
 ## [method advance] leaves through the same path as a transition, including a
 ## stage that is still waiting. [code]on_empty: wait[/code] holds a stage when a
 ## slot is empty and no variant matched. Journal text and its date are frozen
-## at the write. The default date is [code]day N, HH:MM[/code]. An
+## at the write. The default date is [code]day N, HH:MM[/code].
+## [method summary] returns the frozen journal entries joined in order, or
+## validated cached summary text, and does not write the journal. An
 ## [code]await_host[/code] step calls [method request_host_step] and pauses
 ## the remaining entry steps until [method complete_host_step]. A stage may
 ## name parallel [code]region[/code] blocks. Their active leaves are saved on
@@ -339,6 +341,40 @@ func journal(quest_id: String) -> Array:
 	if state == null:
 		return []
 	return state.journal.duplicate()
+
+
+## Frozen journal entries joined in order, or validated cached summary text.
+## Records [code]quest_summary[/code]. Does not write the journal.
+func summary(quest_id: String) -> String:
+	if runtime != null:
+		runtime.trace_add("quest_summary", {"quest": quest_id})
+	var entries := journal(quest_id)
+	if runtime == null or runtime.ai == null:
+		return _joined_entries(entries)
+	return runtime.ai.summary_for(quest_id, entries)
+
+
+## [code]ai[/code] when [method summary] would return cached text now.
+## Records nothing, sends nothing, and logs nothing.
+func summary_source(quest_id: String) -> StringName:
+	var entries := journal(quest_id)
+	if entries.is_empty() or runtime == null or runtime.ai == null:
+		return &"authored"
+	if not runtime.ai.is_active() or not runtime.ai.locale_ok():
+		return &"authored"
+	var packet := runtime.ai.summary_packet(quest_id, entries)
+	var key := runtime.ai.cache_key(&"journal_summary", packet)
+	if runtime.ai.cached_text(key).is_empty():
+		return &"authored"
+	return &"ai"
+
+
+func _joined_entries(entries: Array) -> String:
+	var lines := PackedStringArray()
+	for item in entries:
+		if item is Dictionary:
+			lines.append(str((item as Dictionary).get("text", "")))
+	return "\n".join(lines)
 
 
 func host_returns(quest_id: String) -> Dictionary:

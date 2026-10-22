@@ -26,10 +26,11 @@ var path: StringName = &""
 var key: String = ""
 ## Empty for a host request. [code]scene:<root scene id>[/code] for a scene
 ## prefetch. [code]topic:<npc>[/code] for a topic prefetch.
-## [code]bark:<storylet id>[/code] for a bark prefetch. Not part of the cache key.
+## [code]bark:<storylet id>[/code] for a bark prefetch.
+## [code]summary:<quest id>[/code] for a journal summary. Not part of the cache key.
 var owner: String = ""
 ## Game minutes when the request was sent. [code]-1[/code] until then.
-## Not part of the cache key. Only bark expiry reads it.
+## Not part of the cache key. Bark and summary expiry read it.
 var sent_minute: int = -1
 var _deliver: Callable = Callable()
 
