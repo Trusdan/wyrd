@@ -94,6 +94,14 @@ func eligible_for_entity(scope_kind: StringName, scope_id: String, entity: Strin
 	return _eligible_entity(scope_kind, scope_id, entity)
 
 
+## True when the storylet [code]when[/code] holds. Does not check cooldowns,
+## draw a body, record a selection, or write state.
+func when_holds(story: WyrdStoryletDef) -> bool:
+	if story == null or _runtime == null:
+		return false
+	return _when_passes(story)
+
+
 func _commit(kind: StringName, scope_text: String, speaker: String, matched: Array, present: bool) -> Dictionary:
 	var winner: WyrdStoryletDef = _pick(matched, scope_text, speaker)
 	var drawn := {}

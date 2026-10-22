@@ -106,6 +106,9 @@ func _init() -> void:
 	_queue.generate_has_work = Callable(self, &"_generate_has_work")
 	_queue.generate_unit = Callable(self, &"_generate_unit")
 	_queue.generate_pending = Callable(self, &"_generate_pending")
+	_queue.ai_prefetch_has_work = Callable(self, &"_ai_prefetch_has_work")
+	_queue.ai_prefetch_unit = Callable(self, &"_ai_prefetch_unit")
+	_queue.ai_prefetch_carry = Callable(self, &"_ai_prefetch_carry")
 	_ctx = WyrdConditionCtx.new()
 	_rpn = WyrdRpnEval.new()
 	_signatures = WyrdSignatures.new()
@@ -597,12 +600,15 @@ func _run_scheduler() -> void:
 			_config.scheduler_share_publish,
 			_config.scheduler_share_cache,
 			_config.scheduler_share_generate,
+			_config.scheduler_share_ai_prefetch,
 		])
 		threshold = _config.scheduler_frame_warn_usec
 	if rumors != null:
 		rumors.enqueue_due()
 	if publish != null:
 		publish.enqueue_due()
+	if ai != null:
+		ai.tick_prefetch(now_minutes(), _queue)
 	var debug := OS.is_debug_build()
 	var started := 0
 	if debug:
@@ -619,6 +625,7 @@ func _run_scheduler() -> void:
 		for count in left as PackedInt32Array:
 			carry += int(count)
 	carry += int(report.get("generate_carry", 0))
+	carry += int(report.get("ai_prefetch_carry", 0))
 	_trace_scheduler({
 		"carry": carry,
 		"key": "frame",
@@ -1611,6 +1618,16 @@ func trace_ai_late(request_id: int, path: String, reason: String, key: String) -
 	print("wyrd ai_late op=forget id=%d path=%s reason=%s key=%s" % [request_id, shown, reason, key])
 
 
+func trace_ai_sweep(op: String, count: int, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {"count": count, "op": op, "reason": reason}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_sweep", fields)
+	print("wyrd ai_sweep op=%s count=%d reason=%s" % [op, count, reason])
+
+
 func trace_ai_classifier(state: String) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -1658,6 +1675,21 @@ func _generate_unit() -> void:
 	if entry.is_empty():
 		return
 	generator.generate_handler.call(entry)
+
+
+func _ai_prefetch_has_work() -> bool:
+	return ai != null and ai.prefetch_has_work()
+
+
+func _ai_prefetch_unit() -> void:
+	if ai != null:
+		ai.prefetch_unit()
+
+
+func _ai_prefetch_carry() -> int:
+	if ai == null:
+		return 0
+	return ai.prefetch_carry()
 
 
 func _index_deed_hooks() -> void:
@@ -2705,10 +2737,14 @@ func _on_perceived(agent: StringName, mode: StringName, verb: StringName) -> voi
 
 func _on_role(_role: StringName, _old_holder: StringName, _new_holder: StringName) -> void:
 	_mark_calls(_ROLE_CALLS)
+	if _queue != null:
+		_queue.marked = true
 
 
 func _on_role_vacant(_role: StringName) -> void:
 	_mark_calls(_ROLE_CALLS)
+	if _queue != null:
+		_queue.marked = true
 
 
 func _on_social() -> void:
@@ -2810,15 +2846,23 @@ func _on_rumor_reach(present: bool) -> void:
 		_ctx.set_belief_reach(present)
 
 
-func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
+## Speaker a bark will show: the holder of [code]story.speaker[/code] when one
+## is assigned, otherwise [code]story.speaker[/code].
+func bark_entity(story: WyrdStoryletDef) -> String:
 	if story == null:
-		return
+		return ""
 	var entity := story.speaker
 	if roles != null:
 		var held := roles.holder(StringName(story.speaker))
 		if held != &"":
 			entity = String(held)
-	bark_ready.emit(_story_line_view(story, drawn, entity))
+	return entity
+
+
+func present_bark(story: WyrdStoryletDef, drawn: Dictionary) -> void:
+	if story == null:
+		return
+	bark_ready.emit(_story_line_view(story, drawn, bark_entity(story)))
 
 
 ## A topic answer spoken by [param npc]. Does not emit [signal bark_ready].
