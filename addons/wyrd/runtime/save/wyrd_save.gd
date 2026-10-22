@@ -2,7 +2,10 @@ class_name WyrdSave
 extends RefCounted
 
 ## JSON-safe snapshot of one runtime. Schema 4 adds [code]generator[/code]
-## when a generated quest instance exists. Schema 3 stores in-flight rumors,
+## when a generated quest instance exists. An optional [code]ai[/code] key holds
+## validated cache rows when [member WyrdConfig.ai_save_cache] is true and the
+## cache is not empty; an older loader ignores it, a malformed key warns
+## [code]W_SAVE_AI[/code] and is ignored, and open requests are not saved. Schema 3 stores in-flight rumors,
 ## publish counters, and scheduler carry in [code]flight[/code] when any of
 ## that exists. Schema 2 fills belief bags. A schema 2 document has no
 ## [code]flight[/code] key and loads with empty in-flight state.
@@ -159,6 +162,8 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 	var generator := runtime.quests.export_generator()
 	if not generator.is_empty():
 		data["generator"] = generator
+	if runtime.ai != null and runtime.config() != null and runtime.config().ai_save_cache and runtime.ai.cache_size() > 0:
+		data["ai"] = runtime.ai.export_cache()
 	return data
 
 
@@ -254,6 +259,8 @@ static func apply(runtime: WyrdRuntime, data: Dictionary) -> WyrdLoadReport:
 			runtime.documents.import_state(working.get("documents"))
 		else:
 			runtime.documents.clear()
+	if runtime.ai != null:
+		runtime.ai.import_cache(working.get("ai"), working.has("ai"), report)
 	_import_flight(runtime, working, report)
 	report.ok = true
 	report.manifest_hash = content.manifest_hash

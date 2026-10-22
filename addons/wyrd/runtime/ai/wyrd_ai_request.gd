@@ -21,6 +21,9 @@ var constraints: Dictionary = {}
 var locale: StringName = &""
 ## Line id. Empty when the request is not tied to a line.
 var path: StringName = &""
+## Cache key for this request. A provider may use it, for example as a seed.
+## Empty until [method WyrdAI.request] sends the request.
+var key: String = ""
 var _deliver: Callable = Callable()
 
 

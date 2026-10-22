@@ -20,7 +20,9 @@ extends Resource
 ## [member secrecy_tiers], [member secrecy_fact], [member pressure_tiers],
 ## [member generator_retries],
 ## [member trace_director],
-## and [member ai_banned_terms].
+## [member ai_banned_terms],
+## [member ai_cache_max],
+## and [member ai_save_cache].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -81,6 +83,13 @@ extends Resource
 @export var trace_director: bool = false
 ## Case-insensitive whole words or phrases, checked by AI validation. Not saved.
 @export var ai_banned_terms: PackedStringArray = PackedStringArray()
+## How many validated results the AI cache keeps. The oldest inserted is evicted
+## first. [code]0[/code] or less disables caching. Read on each insert and on load.
+## Lowering it takes effect at the next insert or load, not immediately. Not saved.
+@export var ai_cache_max: int = 256
+## When true, [method WyrdRuntime.save_state] writes the optional [code]ai[/code]
+## key if the cache is not empty. Not saved. Loading does not read this flag.
+@export var ai_save_cache: bool = true
 
 
 func half_life_for(verb: StringName) -> float:

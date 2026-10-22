@@ -1,13 +1,15 @@
 class_name WyrdAI
 extends RefCounted
 
-## AI hook for one runtime. Not saved.
+## AI hook for one runtime. Open requests are not saved.
 ##
 ## @experimental
 ## The null provider is the default. A request keeps no pending state while that
 ## provider is active, or while the hook is disabled. [method deliver] closes a
-## pending request, validates the text, and discards it. Nothing in this release
-## shows or caches a result. [method packet_for_line] builds a packet without sending.
+## pending request, validates the text, and caches it when it passes. Nothing
+## in this release shows a result. The cache is saved only when
+## [member WyrdConfig.ai_save_cache] is true and it is not empty.
+## [method packet_for_line] builds a packet without sending.
 
 var _runtime: WyrdRuntime
 var _provider: WyrdAIProvider
@@ -16,6 +18,7 @@ var _next_id: int = 1
 var _pending: Dictionary = {}
 var _classifier: Callable = Callable()
 var _classifier_set: bool = false
+var _cache := WyrdAICache.new()
 
 
 func bind(runtime: WyrdRuntime) -> void:
@@ -59,13 +62,13 @@ func kinds() -> Array[StringName]:
 func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {}, path: StringName = &"") -> int:
 	if not _known(kind):
 		push_warning("WyrdAI.request: unknown kind %s" % String(kind))
-		_trace_request(0, kind, path, &"refused", &"kind")
+		_trace_request(0, kind, path, &"refused", &"kind", "-")
 		return 0
 	if not _enabled:
-		_trace_request(0, kind, path, &"refused", &"off")
+		_trace_request(0, kind, path, &"refused", &"off", "-")
 		return 0
 	if _provider == null or _provider is WyrdNullAIProvider:
-		_trace_request(0, kind, path, &"refused", &"null")
+		_trace_request(0, kind, path, &"refused", &"null", "-")
 		return 0
 	var request_id := _next_id
 	_next_id += 1
@@ -76,9 +79,10 @@ func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {},
 	req.constraints = constraints.duplicate(true)
 	req.locale = StringName(TranslationServer.get_locale())
 	req.path = path
+	req.key = cache_key(kind, req.packet, req.locale)
 	req.set_deliver(Callable(self, &"deliver"))
 	_pending[request_id] = req
-	_trace_request(request_id, kind, path, &"sent", &"-")
+	_trace_request(request_id, kind, path, &"sent", &"-", req.key)
 	_provider.request(req)
 	return request_id
 
@@ -94,19 +98,21 @@ func deliver(request_id: int, result: WyrdAIResult) -> bool:
 	var ok := result != null and result.ok
 	if off_thread:
 		push_error("WyrdAI.deliver: not on the main thread")
-		_trace_result(request_id, kind, path, ok, "thread")
+		_trace_result(request_id, kind, path, ok, "thread", "-")
 		return false
 	if req == null:
-		_trace_result(request_id, "-", "", ok, "unknown_request")
+		_trace_result(request_id, "-", "", ok, "unknown_request", "-")
 		return false
 	_pending.erase(request_id)
-	_trace_result(request_id, kind, path, ok, "-")
+	_trace_result(request_id, kind, path, ok, "-", req.key)
 	var rule := "provider"
 	if result != null and result.ok:
 		rule = String(validate(result.text, req.kind, req.packet, req.constraints))
 		if rule.is_empty():
 			rule = "-"
-	_trace_validate(request_id, kind, path, rule == "-", rule)
+	_trace_validate(request_id, kind, path, rule == "-", rule, req.key)
+	if rule == "-":
+		_remember(req.key, result.text)
 	return true
 
 
@@ -123,6 +129,24 @@ func cancel(request_id: int) -> bool:
 
 func pending_count() -> int:
 	return _pending.size()
+
+
+## 16 lowercase hex digits. Constraints are not part of the key. A host that
+## sends the same packet under different constraints should vary the packet.
+## An empty [param locale] means the current locale.
+func cache_key(kind: StringName, packet: Dictionary, locale: StringName = &"") -> String:
+	var loc := String(locale)
+	if loc.is_empty():
+		loc = TranslationServer.get_locale()
+	var version := 0
+	if _provider != null:
+		version = _provider.prompt_version()
+	var mixed := WyrdHash.of_text(String(kind))
+	mixed = WyrdHash.combine(mixed, WyrdHash.of_text(WyrdAIPacket.canonical(packet)))
+	mixed = WyrdHash.combine(mixed, WyrdHash.of_text(String(provider_id())))
+	mixed = WyrdHash.combine(mixed, WyrdHash.of_int(version))
+	mixed = WyrdHash.combine(mixed, WyrdHash.of_text(loc))
+	return WyrdRng.format_u64(mixed)
 
 
 ## Packet for an opted-in line. Does not send a request, and ignores the provider and the on/off state.
@@ -194,28 +218,132 @@ func _trace_provider() -> void:
 	_runtime.trace_ai_provider(String(provider_id()), state)
 
 
-func _trace_request(request_id: int, kind: StringName, path: StringName, state: StringName, reason: StringName) -> void:
-	if _runtime == null:
-		return
-	_runtime.trace_ai_request(request_id, String(kind), String(path), String(state), String(reason))
+func cached_text(key: String) -> String:
+	return _cache.text_for(key)
 
 
-func _trace_result(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+func cache_size() -> int:
+	return _cache.size()
+
+
+## Oldest first.
+func cache_keys() -> PackedStringArray:
+	return _cache.keys()
+
+
+## Empties the cache. Traces [code]op=clear[/code] only when it held entries.
+func clear_cache() -> void:
+	if _cache.size() == 0:
+		return
+	_cache.clear()
+	_trace_cache("clear", "-", 0)
+
+
+## [code]v[/code] 1 and the rows, oldest first.
+func export_cache() -> Dictionary:
+	return {"cache": _cache.export_rows(), "v": 1}
+
+
+## Applies an [code]ai[/code] save key. A missing key clears the cache.
+## A malformed key warns [code]W_SAVE_AI[/code] and clears it. The load still succeeds.
+func import_cache(raw: Variant, present: bool, report: WyrdLoadReport) -> void:
+	if not present:
+		clear_cache()
+		return
+	if not _bag_ok(raw):
+		_cache.clear()
+		_warn_ai(report, "AI cache is not valid and was ignored")
+		_trace_cache("load", "-", 0)
+		return
+	var bag: Dictionary = raw
+	var skipped := _cache.import_rows(bag.get("cache", []), _cache_cap())
+	_trace_cache("load", "-", _cache.size())
+	if skipped > 0:
+		_warn_ai(report, "AI cache: %d entries were not valid and were skipped" % skipped)
+
+
+func _remember(key: String, text: String) -> void:
+	var cap := _cache_cap()
+	var evicted := _cache.insert(key, text, cap)
+	if cap <= 0:
+		return
+	var count := _cache.size() + evicted.size()
+	_trace_cache("insert", key, count)
+	for old in evicted:
+		count -= 1
+		_trace_cache("evict", String(old), count)
+
+
+func _cache_cap() -> int:
+	if _runtime == null or _runtime.config() == null:
+		return 256
+	return _runtime.config().ai_cache_max
+
+
+func _bag_ok(raw: Variant) -> bool:
+	if not (raw is Dictionary):
+		return false
+	var bag: Dictionary = raw
+	if not _version_one(bag.get("v", null)):
+		return false
+	return bag.get("cache", null) is Array
+
+
+func _version_one(value: Variant) -> bool:
+	if typeof(value) == TYPE_INT:
+		return int(value) == 1
+	if typeof(value) == TYPE_FLOAT:
+		return float(value) == 1.0
+	return false
+
+
+func _warn_ai(report: WyrdLoadReport, message: String) -> void:
+	if report == null:
+		return
+	report.diagnostics.add(
+		WyrdDiagnostic.W_SAVE_AI,
+		message,
+		"",
+		1,
+		1,
+		WyrdDiagnostic.SEVERITY_WARNING
+	)
+
+
+func _trace_request(request_id: int, kind: StringName, path: StringName, state: StringName, reason: StringName, key: String) -> void:
 	if _runtime == null:
 		return
-	_runtime.trace_ai_result(request_id, kind, path, ok, rule)
+	_runtime.trace_ai_request(request_id, String(kind), String(path), String(state), String(reason), key)
+
+
+func _trace_result(request_id: int, kind: String, path: String, ok: bool, rule: String, key: String) -> void:
+	if _runtime == null:
+		return
+	_runtime.trace_ai_result(request_id, kind, path, ok, rule, key)
 
 
 func _trace_cancel(req: WyrdAIRequest, reason: StringName) -> void:
 	if _runtime == null or req == null:
 		return
-	_runtime.trace_ai_cancel(req.id, String(req.kind), String(req.path), String(reason))
+	var key := req.key
+	if key.is_empty():
+		key = "-"
+	_runtime.trace_ai_cancel(req.id, String(req.kind), String(req.path), String(reason), key)
 
 
-func _trace_validate(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+func _trace_validate(request_id: int, kind: String, path: String, ok: bool, rule: String, key: String) -> void:
 	if _runtime == null:
 		return
-	_runtime.trace_ai_validate(request_id, kind, path, ok, rule)
+	var shown := key
+	if shown.is_empty():
+		shown = "-"
+	_runtime.trace_ai_validate(request_id, kind, path, ok, rule, shown)
+
+
+func _trace_cache(op: String, key: String, count: int) -> void:
+	if _runtime == null:
+		return
+	_runtime.trace_ai_cache(op, key, count)
 
 
 func _trace_classifier(state: String) -> void:

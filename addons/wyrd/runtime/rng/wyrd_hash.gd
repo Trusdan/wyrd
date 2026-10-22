@@ -13,9 +13,10 @@ extends RefCounted
 ## [int] is signed, and arithmetic wraps modulo 2^64, which is the FNV step).
 ##
 ## Domain bytes keep the kinds of input apart:
-## [code]0x01[/code] then the UTF-8 bytes of a [StringName], [code]0x02[/code] then an int as
-## eight little-endian two's-complement bytes, or [code]0x03[/code] then those same eight
-## bytes folded onto an existing hash by [method combine].
+## [code]0x01[/code] then the UTF-8 bytes of a [StringName] or of [method of_text],
+## [code]0x02[/code] then an int as eight little-endian two's-complement bytes, or
+## [code]0x03[/code] then those same eight bytes folded onto an existing hash by [method combine].
+## [method of_text] does not intern the string and does not use the short-name memo.
 
 const FNV_OFFSET: int = -3750763034362895579
 const FNV_PRIME: int = 1099511628211
@@ -47,6 +48,26 @@ static func of_string_name(value: StringName) -> int:
 			hash = (hash ^ (int(body[index]) & 0xFF)) * FNV_PRIME
 	if count <= 16:
 		_short_hash[value] = hash
+	return hash
+
+
+## Same bytes and domain as [method of_string_name]. Does not create a [StringName]
+## and does not use the short-name memo.
+static func of_text(value: String) -> int:
+	var count := value.length()
+	var hash := (FNV_OFFSET ^ _DOMAIN_STRING) * FNV_PRIME
+	var ascii := true
+	for index in count:
+		var code := value.unicode_at(index)
+		if code > 127:
+			ascii = false
+			break
+		hash = (hash ^ code) * FNV_PRIME
+	if not ascii:
+		hash = (FNV_OFFSET ^ _DOMAIN_STRING) * FNV_PRIME
+		var body := value.to_utf8_buffer()
+		for index in body.size():
+			hash = (hash ^ (int(body[index]) & 0xFF)) * FNV_PRIME
 	return hash
 
 

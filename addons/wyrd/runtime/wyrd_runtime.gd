@@ -377,6 +377,7 @@ func start_new_game(seed_value: int) -> void:
 		storylets.set_seed(_seed)
 	if ai != null:
 		ai.drop_pending(&"new_game")
+		ai.clear_cache()
 
 
 func game_seed() -> int:
@@ -1461,11 +1462,12 @@ func trace_ai_provider(provider_id: String, state: String) -> void:
 	print("wyrd ai_provider id=%s state=%s" % [provider_id, state])
 
 
-func trace_ai_request(request_id: int, kind: String, path: String, state: String, reason: String) -> void:
+func trace_ai_request(request_id: int, kind: String, path: String, state: String, reason: String, key: String) -> void:
 	if trace == null or not trace.enabled:
 		return
 	var fields := {
 		"id": request_id,
+		"key": key,
 		"kind": kind,
 		"path": path,
 		"reason": reason,
@@ -1476,17 +1478,18 @@ func trace_ai_request(request_id: int, kind: String, path: String, state: String
 	trace_add("ai_request", fields)
 	var shown_path := path if not path.is_empty() else "-"
 	print(
-		"wyrd ai_request id=%d kind=%s path=%s state=%s reason=%s"
-		% [request_id, kind, shown_path, state, reason]
+		"wyrd ai_request id=%d kind=%s path=%s state=%s reason=%s key=%s"
+		% [request_id, kind, shown_path, state, reason, key]
 	)
 
 
-func trace_ai_result(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+func trace_ai_result(request_id: int, kind: String, path: String, ok: bool, rule: String, key: String) -> void:
 	if trace == null or not trace.enabled:
 		return
 	var flag := "true" if ok else "false"
 	var fields := {
 		"id": request_id,
+		"key": key,
 		"kind": kind,
 		"ok": flag,
 		"path": path,
@@ -1495,14 +1498,15 @@ func trace_ai_result(request_id: int, kind: String, path: String, ok: bool, rule
 	if not _trace_allows(fields):
 		return
 	trace_add("ai_result", fields)
-	print("wyrd ai_result id=%d kind=%s ok=%s rule=%s" % [request_id, kind, flag, rule])
+	print("wyrd ai_result id=%d kind=%s ok=%s rule=%s key=%s" % [request_id, kind, flag, rule, key])
 
 
-func trace_ai_cancel(request_id: int, kind: String, path: String, reason: String) -> void:
+func trace_ai_cancel(request_id: int, kind: String, path: String, reason: String, key: String) -> void:
 	if trace == null or not trace.enabled:
 		return
 	var fields := {
 		"id": request_id,
+		"key": key,
 		"kind": kind,
 		"path": path,
 		"reason": reason,
@@ -1510,7 +1514,7 @@ func trace_ai_cancel(request_id: int, kind: String, path: String, reason: String
 	if not _trace_allows(fields):
 		return
 	trace_add("ai_cancel", fields)
-	print("wyrd ai_cancel id=%d kind=%s reason=%s" % [request_id, kind, reason])
+	print("wyrd ai_cancel id=%d kind=%s reason=%s key=%s" % [request_id, kind, reason, key])
 
 
 func trace_ai_packet_drop(path: String, fact: String, reason: String) -> void:
@@ -1523,12 +1527,13 @@ func trace_ai_packet_drop(path: String, fact: String, reason: String) -> void:
 	print("wyrd ai_packet_drop path=%s fact=%s reason=%s" % [path, fact, reason])
 
 
-func trace_ai_validate(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+func trace_ai_validate(request_id: int, kind: String, path: String, ok: bool, rule: String, key: String) -> void:
 	if trace == null or not trace.enabled:
 		return
 	var flag := "true" if ok else "false"
 	var fields := {
 		"id": request_id,
+		"key": key,
 		"kind": kind,
 		"ok": flag,
 		"path": path,
@@ -1538,7 +1543,17 @@ func trace_ai_validate(request_id: int, kind: String, path: String, ok: bool, ru
 		return
 	trace_add("ai_validate", fields)
 	var shown := path if not path.is_empty() else "-"
-	print("wyrd ai_validate id=%d kind=%s path=%s ok=%s rule=%s" % [request_id, kind, shown, flag, rule])
+	print("wyrd ai_validate id=%d kind=%s path=%s ok=%s rule=%s key=%s" % [request_id, kind, shown, flag, rule, key])
+
+
+func trace_ai_cache(op: String, key: String, count: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {"count": count, "key": key, "op": op}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_cache", fields)
+	print("wyrd ai_cache op=%s key=%s count=%d" % [op, key, count])
 
 
 func trace_ai_classifier(state: String) -> void:
