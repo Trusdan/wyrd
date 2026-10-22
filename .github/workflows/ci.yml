@@ -20,6 +20,9 @@ jobs:
       - name: Vendor script smoke
         run: tools/vendor_wyrd_smoke.sh
 
+      - name: Core isolation
+        run: tools/core_isolation.sh --self-test && tools/core_isolation.sh
+
       - name: Install pinned Godot
         run: |
           set -euo pipefail

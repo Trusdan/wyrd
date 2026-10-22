@@ -9,7 +9,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## When it does, the autoload name is Wyrd, so this script has no class_name.
 ## [member facts], [member events], [member deeds], [member social], [member rumors], [member publish],
 ## [member roles], [member quests], [member dialogue], [member storylets],
-## [member sequences], [member director], [member generator], [member debug], and [member coverage] are the runtime's sub-objects. [member dialogue] is
+## [member sequences], [member director], [member generator], [member ai], [member debug], and [member coverage] are the runtime's sub-objects. [member ai] is the AI hook and stays idle with the null provider. [member dialogue] is
 ## the scene runner. [member storylets] draws a line set. [member director]
 ## ranks one. [member topics] is the unlocked topic set. [member documents] opens a readable document.
 ## [signal bark_ready] repeats the runtime signal for a bark win.
@@ -36,6 +36,7 @@ var storylets: WyrdStoryletDeck
 var sequences: WyrdSequences
 var director: WyrdDirector
 var generator: WyrdGenerator
+var ai: WyrdAI
 var trace: WyrdTrace
 var debug: WyrdDebug
 var coverage: WyrdCoverage
@@ -60,6 +61,7 @@ func _init() -> void:
 	sequences = _runtime.sequences
 	director = _runtime.director
 	generator = _runtime.generator
+	ai = _runtime.ai
 	trace = _runtime.trace
 	debug = _runtime.debug
 	coverage = _runtime.coverage

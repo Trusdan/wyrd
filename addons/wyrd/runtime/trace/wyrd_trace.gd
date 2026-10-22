@@ -57,6 +57,16 @@ var enabled: bool = false
 ## The prefix matches key or template. A host-origin row is a replay input and
 ## calls [method WyrdGenerator.offer]. A deed-origin row is skipped, because the
 ## replayed deed queues it again. Load does not log one.
+## An ai_provider line is one provider registration or one enabled change.
+## id is the provider id. state is on when the hook is enabled and the provider
+## is not the null provider. An ai_request line is one request call.
+## id is the request id, or 0 when it was refused. path is the line id.
+## state is sent or refused. reason is -, kind, off, or null.
+## An ai_result line is one deliver call. ok is true or false.
+## rule is -, unknown_request, or thread. An ai_cancel line is one pending
+## request removed without a delivery. reason is host, provider, off, new_game,
+## or load. The printed kind is stored as slot_kind. Replay skips these lines.
+## Load does not log them. The prefix matches path.
 ## A gen_tier line is one eligibility pass. eligible is the template count.
 ## A gen_pick line is one weighted pick. score is [code]<priority>/<specificity>[/code].
 ## band is the top-band size. seed_key is the decision key. template is empty and
@@ -205,7 +215,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 			"gen_accept":
 				if runtime.generator != null:
 					runtime.generator.accept(runtime.generator.proposal(str(row.get("proposal", ""))))
-			"console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
+			"ai_provider", "ai_request", "ai_result", "ai_cancel", "console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:
 				pass
