@@ -15,5 +15,8 @@ var display_name: String = ""
 ## The host formats a name-plus-role label from these ids.
 var roles: PackedStringArray = PackedStringArray()
 var text: String = ""
+## [code]authored[/code] or [code]ai[/code]. When it is [code]ai[/code], only
+## [member text] differs from the authored line.
+var text_source: StringName = &"authored"
 var tags: PackedStringArray = PackedStringArray()
 var audio: Variant = null

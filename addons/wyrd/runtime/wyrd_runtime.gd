@@ -1556,6 +1556,61 @@ func trace_ai_cache(op: String, key: String, count: int) -> void:
 	print("wyrd ai_cache op=%s key=%s count=%d" % [op, key, count])
 
 
+func trace_ai_prefetch(source: String, path: String, lines: int, sent: int, cached: int, already: int, capped: int, skipped: int) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"cached": cached,
+		"capped": capped,
+		"lines": lines,
+		"locale": skipped,
+		"open": already,
+		"path": path,
+		"sent": sent,
+		"source": source,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_prefetch", fields)
+	print(
+		"wyrd ai_prefetch source=%s path=%s lines=%d sent=%d cached=%d open=%d capped=%d locale=%d"
+		% [source, path, lines, sent, cached, already, capped, skipped]
+	)
+
+
+func trace_ai_use(path: String, source: String, reason: String, key: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"key": key,
+		"kind": "bark_paraphrase",
+		"path": path,
+		"reason": reason,
+		"source": source,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_use", fields)
+	print("wyrd ai_use path=%s kind=%s source=%s reason=%s key=%s" % [path, "bark_paraphrase", source, reason, key])
+
+
+func trace_ai_late(request_id: int, path: String, reason: String, key: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var shown := path if not path.is_empty() else "-"
+	var fields := {
+		"id": request_id,
+		"key": key,
+		"op": "forget",
+		"path": path,
+		"reason": reason,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_late", fields)
+	print("wyrd ai_late op=forget id=%d path=%s reason=%s key=%s" % [request_id, shown, reason, key])
+
+
 func trace_ai_classifier(state: String) -> void:
 	if trace == null or not trace.enabled:
 		return
@@ -2795,6 +2850,8 @@ func _story_line_view(story: WyrdStoryletDef, drawn: Dictionary, entity: String)
 			view.audio = dialogue.audio_for(view.id)
 	if coverage != null and not view.id.is_empty() and view.id != line_id:
 		coverage.hit("line", view.id)
+	if ai != null:
+		ai.present(view, view.id)
 	return view
 
 

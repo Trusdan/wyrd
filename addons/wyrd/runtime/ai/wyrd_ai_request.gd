@@ -24,6 +24,9 @@ var path: StringName = &""
 ## Cache key for this request. A provider may use it, for example as a seed.
 ## Empty until [method WyrdAI.request] sends the request.
 var key: String = ""
+## Empty for a host request. [code]scene:<root scene id>[/code] for a scene
+## prefetch. [code]topic:<npc>[/code] for a topic prefetch. Not part of the cache key.
+var owner: String = ""
 var _deliver: Callable = Callable()
 
 

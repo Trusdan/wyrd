@@ -6,8 +6,10 @@ extends RefCounted
 ## @experimental
 ## The null provider is the default. A request keeps no pending state while that
 ## provider is active, or while the hook is disabled. [method deliver] closes a
-## pending request, validates the text, and caches it when it passes. Nothing
-## in this release shows a result. The cache is saved only when
+## pending request, validates the text, and caches it when it passes.
+## [method present] shows that cached text for an opted-in line when the
+## provider lists the current locale. Otherwise the authored line shows.
+## Dialogue does not wait. The cache is saved only when
 ## [member WyrdConfig.ai_save_cache] is true and it is not empty.
 ## [method packet_for_line] builds a packet without sending.
 
@@ -19,6 +21,11 @@ var _pending: Dictionary = {}
 var _classifier: Callable = Callable()
 var _classifier_set: bool = false
 var _cache := WyrdAICache.new()
+## Keys whose last validation failed, oldest first. Not saved.
+var _rejected: Dictionary = {}
+## Requests cancelled because their scene ended or a topic menu replaced them.
+## A later delivery is still validated. Not saved.
+var _late: Array[WyrdAIRequest] = []
 
 
 func bind(runtime: WyrdRuntime) -> void:
@@ -70,26 +77,18 @@ func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {},
 	if _provider == null or _provider is WyrdNullAIProvider:
 		_trace_request(0, kind, path, &"refused", &"null", "-")
 		return 0
-	var request_id := _next_id
-	_next_id += 1
-	var req := WyrdAIRequest.new()
-	req.id = request_id
-	req.kind = kind
-	req.packet = packet.duplicate(true)
-	req.constraints = constraints.duplicate(true)
-	req.locale = StringName(TranslationServer.get_locale())
-	req.path = path
-	req.key = cache_key(kind, req.packet, req.locale)
-	req.set_deliver(Callable(self, &"deliver"))
-	_pending[request_id] = req
-	_trace_request(request_id, kind, path, &"sent", &"-", req.key)
-	_provider.request(req)
-	return request_id
+	return _send(kind, packet, path, "", constraints)
 
 
 func deliver(request_id: int, result: WyrdAIResult) -> bool:
 	var off_thread := OS.get_thread_caller_id() != OS.get_main_thread_id()
+	if not off_thread:
+		_record_deliver(request_id, result)
 	var req := _pending.get(request_id) as WyrdAIRequest
+	var late := false
+	if req == null and not off_thread:
+		req = _take_late(request_id)
+		late = req != null
 	var kind := "-"
 	var path := ""
 	if req != null:
@@ -103,8 +102,10 @@ func deliver(request_id: int, result: WyrdAIResult) -> bool:
 	if req == null:
 		_trace_result(request_id, "-", "", ok, "unknown_request", "-")
 		return false
-	_pending.erase(request_id)
-	_trace_result(request_id, kind, path, ok, "-", req.key)
+	if not late:
+		_pending.erase(request_id)
+	var shown := "late" if late else "-"
+	_trace_result(request_id, kind, path, ok, shown, req.key)
 	var rule := "provider"
 	if result != null and result.ok:
 		rule = String(validate(result.text, req.kind, req.packet, req.constraints))
@@ -112,7 +113,10 @@ func deliver(request_id: int, result: WyrdAIResult) -> bool:
 			rule = "-"
 	_trace_validate(request_id, kind, path, rule == "-", rule, req.key)
 	if rule == "-":
+		_rejected.erase(req.key)
 		_remember(req.key, result.text)
+	else:
+		_mark_rejected(req.key)
 	return true
 
 
@@ -129,6 +133,121 @@ func cancel(request_id: int) -> bool:
 
 func pending_count() -> int:
 	return _pending.size()
+
+
+## Sends one request. [param owner] is empty for a host call.
+func _send(kind: StringName, packet: Dictionary, path: StringName, owner: String, constraints: Dictionary = {}) -> int:
+	var request_id := _next_id
+	_next_id += 1
+	var req := WyrdAIRequest.new()
+	req.id = request_id
+	req.kind = kind
+	req.packet = packet.duplicate(true)
+	req.constraints = constraints.duplicate(true)
+	req.locale = StringName(TranslationServer.get_locale())
+	req.path = path
+	req.owner = owner
+	req.key = cache_key(kind, req.packet, req.locale)
+	req.set_deliver(Callable(self, &"deliver"))
+	_pending[request_id] = req
+	_trace_request(request_id, kind, path, &"sent", &"-", req.key)
+	_provider.request(req)
+	return request_id
+
+
+## True when [param locale] is listed by the provider, or its language part is.
+## An empty argument means the current locale. The null provider is never OK.
+func locale_ok(locale: String = "") -> bool:
+	if not is_active():
+		return false
+	var loc := locale
+	if loc.is_empty():
+		loc = TranslationServer.get_locale()
+	var language := loc
+	var split := loc.find("_")
+	if split > 0:
+		language = loc.substr(0, split)
+	for item in _provider.locales():
+		var name := String(item)
+		if name == loc or name == language:
+			return true
+	return false
+
+
+## One prefetch pass. Each row is [code]{line_id, speaker}[/code].
+## Returns without a trace when AI is off, the provider is null, or the cap is off.
+func prefetch_lines(source: StringName, id: String, rows: Array) -> void:
+	if not is_active():
+		return
+	var cap := _inflight_cap()
+	if cap <= 0:
+		return
+	var sent := 0
+	var cached := 0
+	var already := 0
+	var capped := 0
+	var skipped := 0
+	for row in rows:
+		if not locale_ok():
+			skipped += 1
+			continue
+		var line_id := ""
+		var speaker := &""
+		if row is Dictionary:
+			line_id = str((row as Dictionary).get("line_id", ""))
+			speaker = StringName(str((row as Dictionary).get("speaker", "")))
+		var packet := packet_for_line(line_id, &"bark_paraphrase", speaker)
+		var key := cache_key(&"bark_paraphrase", packet)
+		if _cache.has(key):
+			cached += 1
+		elif _pending_has_key(key):
+			already += 1
+		elif pending_count() >= cap:
+			capped += 1
+		else:
+			_send(&"bark_paraphrase", packet, StringName(line_id), "%s:%s" % [String(source), id])
+			sent += 1
+	_trace_prefetch(String(source), id, rows.size(), sent, cached, already, capped, skipped)
+
+
+## Sets [member WyrdLineView.text_source] for an opted-in line. Does not send.
+func present(view: WyrdLineView, line_id: String) -> void:
+	if view == null or _runtime == null or _runtime.content() == null:
+		return
+	if not _runtime.content().ai_lines.has(line_id):
+		return
+	if not is_active():
+		view.text_source = &"authored"
+		_trace_use(line_id, "authored", "off", "-")
+		return
+	if not locale_ok():
+		view.text_source = &"authored"
+		_trace_use(line_id, "authored", "locale", "-")
+		return
+	var packet := packet_for_line(line_id, &"bark_paraphrase", _view_speaker(view))
+	var key := cache_key(&"bark_paraphrase", packet)
+	if _cache.has(key):
+		view.text = _cache.text_for(key)
+		view.text_source = &"ai"
+		_trace_use(line_id, "ai", "hit", key)
+		return
+	view.text_source = &"authored"
+	if _pending_has_key(key):
+		_trace_use(line_id, "authored", "waiting", key)
+	elif _rejected.has(key):
+		_trace_use(line_id, "authored", "rejected", key)
+	else:
+		_trace_use(line_id, "authored", "miss", key)
+
+
+## Moves open requests with this owner to the late list, in id order.
+func close_owner(owner: String, reason: StringName) -> void:
+	_move_owned(owner, false, reason)
+
+
+## Moves open requests whose owner starts with [param prefix] to the late list.
+func close_prefixed(prefix: String, reason: StringName) -> void:
+	_move_owned(prefix, true, reason)
 
 
 ## 16 lowercase hex digits. Constraints are not part of the key. A host that
@@ -190,6 +309,7 @@ func set_provider(next: WyrdAIProvider) -> void:
 
 ## Drops every pending request. [code]new_game[/code] and [code]load[/code] also reset the id counter.
 func drop_pending(reason: StringName) -> void:
+	_forget_late(String(reason))
 	var ids: Array = _pending.keys()
 	ids.sort()
 	var current := _provider
@@ -200,6 +320,8 @@ func drop_pending(reason: StringName) -> void:
 		if current != null:
 			current.cancel(request_id)
 		_trace_cancel(req, reason)
+	if reason == &"load":
+		_rejected.clear()
 	if reason == &"new_game" or reason == &"load":
 		_next_id = 1
 
@@ -233,6 +355,7 @@ func cache_keys() -> PackedStringArray:
 
 ## Empties the cache. Traces [code]op=clear[/code] only when it held entries.
 func clear_cache() -> void:
+	_rejected.clear()
 	if _cache.size() == 0:
 		return
 	_cache.clear()
@@ -350,6 +473,120 @@ func _trace_classifier(state: String) -> void:
 	if _runtime == null:
 		return
 	_runtime.trace_ai_classifier(state)
+
+
+func _trace_prefetch(source: String, path: String, lines: int, sent: int, cached: int, already: int, capped: int, skipped: int) -> void:
+	if _runtime == null:
+		return
+	_runtime.trace_ai_prefetch(source, path, lines, sent, cached, already, capped, skipped)
+
+
+func _trace_use(line_id: String, source: String, reason: String, key: String) -> void:
+	if _runtime == null:
+		return
+	_runtime.trace_ai_use(line_id, source, reason, key)
+
+
+func _trace_late(req: WyrdAIRequest, reason: String) -> void:
+	if _runtime == null or req == null:
+		return
+	var key := req.key
+	if key.is_empty():
+		key = "-"
+	_runtime.trace_ai_late(req.id, String(req.path), reason, key)
+
+
+func _record_deliver(request_id: int, result: WyrdAIResult) -> void:
+	if _runtime == null:
+		return
+	var text := ""
+	var error := ""
+	if result != null:
+		text = result.text
+		error = result.error
+	_runtime.trace_add("ai_deliver", {
+		"error": error,
+		"id": request_id,
+		"ok": result != null and result.ok,
+		"text": text,
+	})
+
+
+func _inflight_cap() -> int:
+	if _runtime == null or _runtime.config() == null:
+		return 4
+	return _runtime.config().ai_max_inflight
+
+
+func _pending_has_key(key: String) -> bool:
+	for raw in _pending.values():
+		var req := raw as WyrdAIRequest
+		if req != null and req.key == key:
+			return true
+	return false
+
+
+func _view_speaker(view: WyrdLineView) -> StringName:
+	if view.speaker == &"" or view.speaker == &"narrator":
+		return &""
+	return view.speaker
+
+
+func _move_owned(owner: String, prefixed: bool, reason: StringName) -> void:
+	var ids: Array = _pending.keys()
+	ids.sort()
+	for raw in ids:
+		var request_id := int(raw)
+		var req := _pending[request_id] as WyrdAIRequest
+		if req == null:
+			continue
+		var matches := req.owner.begins_with(owner) if prefixed else req.owner == owner
+		if not matches:
+			continue
+		_pending.erase(request_id)
+		_late_add(req)
+		_trace_cancel(req, reason)
+		if _provider != null:
+			_provider.cancel(request_id)
+
+
+func _late_add(req: WyrdAIRequest) -> void:
+	_late.append(req)
+	var cap := maxi(_inflight_cap(), 1)
+	while _late.size() > cap:
+		var old := _late[0]
+		_late.remove_at(0)
+		_trace_late(old, "cap")
+
+
+func _take_late(request_id: int) -> WyrdAIRequest:
+	for index in _late.size():
+		var req := _late[index]
+		if req != null and req.id == request_id:
+			_late.remove_at(index)
+			return req
+	return null
+
+
+func _forget_late(reason: String) -> void:
+	for req in _late:
+		_trace_late(req, reason)
+	_late.clear()
+
+
+func _mark_rejected(key: String) -> void:
+	if key.is_empty():
+		return
+	if _rejected.has(key):
+		_rejected.erase(key)
+	_rejected[key] = true
+	var cap := _cache_cap()
+	if cap <= 0:
+		_rejected.clear()
+		return
+	while _rejected.size() > cap:
+		var oldest: Array = _rejected.keys()
+		_rejected.erase(oldest[0])
 
 
 func _entity_names() -> Dictionary:
