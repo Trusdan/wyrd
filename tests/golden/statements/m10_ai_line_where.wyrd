@@ -1,0 +1,19 @@
+// [EXAMPLE CONTENT]
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    journal: The tide book is closed. #tag:ai #line:j1
+    scene toll.gate
+
+scene toll.gate
+  narrator: The crossing stays open. {holder(ferry_master)|variants} #line:parent
+    variant ferry_master: The ferry master keeps it open. #tag:ai #line:var1
+  * [Pay the toll] -> paid #tag:ai #line:c1
+  - (paid)
+  -> end
+
+document dock_note "Dock Note" #tag:ai #line:doc1
+  text: frozen
+  page
+    The tide book is closed. #tag:ai #line:para1

@@ -32,6 +32,13 @@ Examples use only the invented village Gullhaven.
 tavern: The stew is free tonight. #line:a91f // spoken by whoever holds the tavern slot
 ```
 
+`#tag:ai` is an ordinary line tag. It marks a line that AI may reword. It is allowed on a spoken line and on a storylet line (a single `-` body or one entry of a `lines:` set). A choice label, a journal entry, a variant line, a document paragraph, or any other tagged node is `E_AI_LINE` ("only spoken and storylet lines can opt in to AI"). On an allowed line, the same code rejects a `voiced` tag ("a voiced line cannot opt in to AI"), a line in a secrecy tier ("a line in a secrecy tier cannot opt in to AI"; a storylet line also inherits the storylet's `secrecy:`), and any interpolation span ("an interpolating line cannot opt in to AI"). A `{{` escape is plain text. A storylet or a scene may add `ai_context: [<fact keys>]` to name concrete fact keys for that packet. An unknown key is `E_AI_CONTEXT_UNKNOWN`. A key whose fact is resolved per query warns `W_AI_CONTEXT_RESOLVED_PER_QUERY`. Non-breaking clarification, approved 2026-10-21 (design v27).
+
+```wyrd
+narrator: The gate is shut tonight. #tag:ai #line:gate
+ai_context: [player.coins, world.season]
+```
+
 ## 4. Escapes
 
 In prose (spoken lines and other unquoted text):

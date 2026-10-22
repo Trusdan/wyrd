@@ -1,0 +1,15 @@
+// [EXAMPLE CONTENT]
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    scene toll.gate
+
+scene toll.gate
+  narrator: The gate is shut. #tag:ai #tag:voiced #line:gate
+  -> end
+
+storylet harbor.news
+  scope: bark
+  speaker: any
+  - The harbor has news. #tag:voiced #tag:ai #line:news

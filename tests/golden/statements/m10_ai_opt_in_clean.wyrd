@@ -1,0 +1,44 @@
+// [EXAMPLE CONTENT]
+language 1
+
+facts
+  player.coins : int stored
+  world.season : symbol stored
+
+quest ferry_toll "The Ferry Toll"
+  slot ai_keeper = harbor_clerk mode: live
+  on_empty: wait
+  stage offer
+    waits_until player.coins >= 0
+    scene toll.gate with ai_keeper
+    -> done
+  stage done
+    ~ outcome crossing = done
+
+scene toll.gate
+  ai_context: [world.season, player.coins]
+  ~ set player.coins = 1
+  narrator: The gate is shut. #tag:ai #line:gate
+  when player.coins > 0: ai_keeper: The book is in the shed. #line:keeper
+  -> end
+
+storylet harbor.news
+  scope: topic harbor_toll
+  speaker: any
+  when: player.coins > 0 and world.season == spring
+  ai_context: [player.coins, world.season]
+  ~ set world.season = spring
+  - The harbor has news. #tag:ai #line:news
+
+storylet harbor.rumors
+  scope: bark
+  speaker: ferry
+  lines:
+    - The ropes are wet. #line:r1
+    - The tide turned early. #tag:ai #line:r2
+
+storylet harbor.quiet
+  scope: bark
+  speaker: net_mender
+  ai_context: [player.coins]
+  - The harbor is quiet. #line:quiet

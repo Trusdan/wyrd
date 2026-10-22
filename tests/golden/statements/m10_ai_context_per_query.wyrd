@@ -1,0 +1,23 @@
+// [EXAMPLE CONTENT]
+language 1
+
+facts
+  world.weather : symbol source: world.weather invalidate: per_query
+  player.coins : int stored
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    scene toll.gate
+    ~ set player.coins = 1
+
+scene toll.gate
+  ai_context: [world.weather]
+  narrator: The gate is shut. #line:gate
+  -> end
+
+storylet harbor.weather
+  scope: bark
+  speaker: any
+  when: player.coins > 0
+  ai_context: [world.weather, player.coins]
+  - The sky is grey. #tag:ai #line:sky

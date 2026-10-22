@@ -1,0 +1,502 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 15,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 16,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_AI_LINE",
+      "col": 3,
+      "line": 17,
+      "message": "an interpolating line cannot opt in to AI",
+      "path": "res://tests/golden/statements/m10_ai_line_interp.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 20,
+        "end_line": 10,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "offer",
+          "journals": [],
+          "reads": [],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 20,
+              "end_line": 10,
+              "id": "toll.gate",
+              "line": 10,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 20,
+            "end_line": 10,
+            "line": 9
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [
+    "player.coins",
+    "season"
+  ],
+  "scenes": [
+    {
+      "id": "toll.gate",
+      "items": [
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "player.coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [
+              "player.coins"
+            ],
+            "span": {
+              "col": 3,
+              "end_col": 25,
+              "end_line": 13,
+              "line": 13
+            },
+            "target": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 9,
+                "end_col": 21,
+                "end_line": 13,
+                "line": 13
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "target_text": "player.coins",
+            "topic": "",
+            "value": {
+              "reads": [],
+              "source_span": {
+                "col": 24,
+                "end_col": 25,
+                "end_line": 13,
+                "line": 13
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "value_text": "1",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 25,
+            "end_line": 13,
+            "line": 13
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "season",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [
+              "season"
+            ],
+            "span": {
+              "col": 3,
+              "end_col": 24,
+              "end_line": 14,
+              "line": 14
+            },
+            "target": {
+              "reads": [
+                "season"
+              ],
+              "source_span": {
+                "col": 9,
+                "end_col": 15,
+                "end_line": 14,
+                "line": 14
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "target_text": "season",
+            "topic": "",
+            "value": {
+              "reads": [],
+              "source_span": {
+                "col": 18,
+                "end_col": 24,
+                "end_line": 14,
+                "line": 14
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "value_text": "spring",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [
+            "season"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 24,
+            "end_line": 14,
+            "line": 14
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "value",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 15,
+                  "text": "You have "
+                },
+                {
+                  "col": 22,
+                  "compiled": {
+                    "reads": [
+                      "player.coins"
+                    ],
+                    "source_span": {
+                      "col": 23,
+                      "end_col": 35,
+                      "end_line": 15,
+                      "line": 15
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "value",
+                  "line": 15
+                },
+                {
+                  "col": 36,
+                  "kind": "text",
+                  "line": 15,
+                  "text": " coins."
+                }
+              ],
+              "kind": "prose",
+              "line": 15
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 44,
+              "end_line": 15,
+              "line": 15
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 44,
+            "end_line": 15,
+            "line": 15
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "cond",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "compiled": {
+                    "reads": [
+                      "season"
+                    ],
+                    "source_span": {
+                      "col": 17,
+                      "end_col": 33,
+                      "end_line": 16,
+                      "line": 16
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "else": {
+                    "col": 55,
+                    "kids": [
+                      {
+                        "col": 55,
+                        "kind": "text",
+                        "line": 16,
+                        "text": "The tide is down."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 16
+                  },
+                  "kind": "if",
+                  "line": 16,
+                  "then": {
+                    "col": 34,
+                    "kids": [
+                      {
+                        "col": 34,
+                        "kind": "text",
+                        "line": 16,
+                        "text": "The tide is up."
+                      }
+                    ],
+                    "kind": "prose",
+                    "line": 16
+                  }
+                }
+              ],
+              "kind": "prose",
+              "line": 16
+            },
+            "reads": [
+              "season"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 77,
+              "end_line": 16,
+              "line": 16
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [
+            "season"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 77,
+            "end_line": 16,
+            "line": 16
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "hold",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 17,
+                  "text": "Ask "
+                },
+                {
+                  "col": 17,
+                  "compiled": {
+                    "reads": [],
+                    "source_span": {
+                      "col": 18,
+                      "end_col": 31,
+                      "end_line": 17,
+                      "line": 17
+                    },
+                    "specificity": 1,
+                    "uses_chance": false
+                  },
+                  "kind": "variants",
+                  "line": 17,
+                  "text": "variants"
+                },
+                {
+                  "col": 41,
+                  "kind": "text",
+                  "line": 17,
+                  "text": "."
+                }
+              ],
+              "kind": "prose",
+              "line": 17
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 40,
+              "end_line": 18,
+              "line": 17
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 40,
+            "end_line": 18,
+            "line": 17
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "esc",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 19,
+                  "text": "The board says {two coins}}."
+                }
+              ],
+              "kind": "prose",
+              "line": 19
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 43,
+              "end_line": 19,
+              "line": 19
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 43,
+            "end_line": 19,
+            "line": 19
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 20,
+            "line": 20
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins",
+        "season"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 20,
+        "line": 12
+      }
+    }
+  ]
+}

@@ -30,6 +30,8 @@ var cooldown_minutes: int = 0
 var speaker_cooldown_minutes: int = 0
 ## Host secrecy name. Empty is visible at every unlock.
 var secrecy: String = ""
+## Fact keys from [code]ai_context:[/code], in source order. Empty when omitted.
+var ai_context: PackedStringArray = PackedStringArray()
 var body_kind: StringName = &""
 var lines: Array[WyrdLineDef] = []
 var scene_id: String = ""
