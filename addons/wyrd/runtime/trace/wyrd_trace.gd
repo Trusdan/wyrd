@@ -9,7 +9,8 @@ extends RefCounted
 ## [code]abort[/code], [code]tick[/code], [code]emit[/code],
 ## [code]complete_host[/code], [code]draw[/code], [code]batch_begin[/code],
 ## [code]batch_end[/code], [code]emit_rejected[/code], [code]open_document[/code],
-## [code]create_copy[/code], [code]ai_deliver[/code]) on another runtime. Host
+## [code]create_copy[/code], [code]ai_deliver[/code], [code]quest_summary[/code],
+## [code]ai_host_request[/code]) on another runtime. Host
 ## answers and decisions are compared with [method diff]. A different host
 ## answer shows up there.
 
@@ -71,6 +72,11 @@ var enabled: bool = false
 ## records that row during the input that sent it, so replay delivers it only
 ## after that input returns. Lines shown during that input can then differ.
 ## A provider that answers on a later frame replays the same text.
+## A [code]quest_summary[/code] row calls [method WyrdQuestRunner.summary].
+## An [code]ai_host_request[/code] row calls [method WyrdAI.request]. The request
+## kind is stored as [code]slot_kind[/code], because [code]kind[/code] is the event name.
+## With those rows a replay sends the same requests with the same ids, so each
+## recorded [code]ai_deliver[/code] answers the right request.
 ## ai_prefetch, ai_use, ai_late, and ai_sweep are skipped, like the other ai rows.
 ## An ai_sweep line is one bark sweep armed or dropped. op is arm or drop.
 ## reason is start, change, floor, off, provider, new_game, or load.
@@ -230,6 +236,12 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 					delivered.text = str(row.get("text", ""))
 					delivered.error = str(row.get("error", ""))
 					runtime.ai.deliver(int(row.get("id", 0)), delivered)
+			"quest_summary":
+				if runtime.quests != null:
+					runtime.quests.summary(str(row.get("quest", "")))
+			"ai_host_request":
+				if runtime.ai != null:
+					runtime.ai.request(StringName(str(row.get("slot_kind", ""))), _dict(row.get("packet", {})), _dict(row.get("constraints", {})), StringName(str(row.get("path", ""))))
 			"ai_provider", "ai_request", "ai_result", "ai_cancel", "ai_prefetch", "ai_use", "ai_late", "ai_sweep", "console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:

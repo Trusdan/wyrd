@@ -1585,12 +1585,12 @@ func trace_ai_prefetch(source: String, path: String, lines: int, sent: int, cach
 	)
 
 
-func trace_ai_use(path: String, source: String, reason: String, key: String) -> void:
+func trace_ai_use(path: String, source: String, reason: String, key: String, kind: String = "bark_paraphrase") -> void:
 	if trace == null or not trace.enabled:
 		return
 	var fields := {
 		"key": key,
-		"kind": "bark_paraphrase",
+		"kind": kind,
 		"path": path,
 		"reason": reason,
 		"source": source,
@@ -1598,7 +1598,7 @@ func trace_ai_use(path: String, source: String, reason: String, key: String) -> 
 	if not _trace_allows(fields):
 		return
 	trace_add("ai_use", fields)
-	print("wyrd ai_use path=%s kind=%s source=%s reason=%s key=%s" % [path, "bark_paraphrase", source, reason, key])
+	print("wyrd ai_use path=%s kind=%s source=%s reason=%s key=%s" % [path, kind, source, reason, key])
 
 
 func trace_ai_late(request_id: int, path: String, reason: String, key: String) -> void:

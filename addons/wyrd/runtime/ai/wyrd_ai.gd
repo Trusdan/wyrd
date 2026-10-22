@@ -12,6 +12,9 @@ extends RefCounted
 ## Dialogue does not wait. The cache is saved only when
 ## [member WyrdConfig.ai_save_cache] is true and it is not empty.
 ## [method packet_for_line] builds a packet without sending.
+## [method kind_for_line] is [code]gossip[/code] when the line is opted in and tagged
+## [code]gossip[/code]. [method summary_for] returns a journal summary.
+## [method host_text] reads cached text for a host-called kind and does not send.
 
 var _runtime: WyrdRuntime
 var _provider: WyrdAIProvider
@@ -73,6 +76,13 @@ func kinds() -> Array[StringName]:
 
 
 func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {}, path: StringName = &"") -> int:
+	if _runtime != null:
+		_runtime.trace_add("ai_host_request", {
+			"constraints": constraints.duplicate(true),
+			"kind": String(kind),
+			"packet": packet.duplicate(true),
+			"path": String(path),
+		})
 	if not _known(kind):
 		push_warning("WyrdAI.request: unknown kind %s" % String(kind))
 		_trace_request(0, kind, path, &"refused", &"kind", "-")
@@ -207,8 +217,9 @@ func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int 
 		if row is Dictionary:
 			line_id = str((row as Dictionary).get("line_id", ""))
 			speaker = StringName(str((row as Dictionary).get("speaker", "")))
-		var packet := packet_for_line(line_id, &"bark_paraphrase", speaker)
-		var key := cache_key(&"bark_paraphrase", packet)
+		var kind := kind_for_line(line_id)
+		var packet := packet_for_line(line_id, kind, speaker)
+		var key := cache_key(kind, packet)
 		if _cache.has(key):
 			cached += 1
 		elif _pending_has_key(key):
@@ -216,7 +227,7 @@ func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int 
 		elif pending_count() >= cap or (owner_cap >= 0 and owned >= owner_cap):
 			capped += 1
 		else:
-			_send(&"bark_paraphrase", packet, StringName(line_id), "%s%s" % [prefix, id])
+			_send(kind, packet, StringName(line_id), "%s%s" % [prefix, id])
 			sent += 1
 			owned += 1
 	_trace_prefetch(String(source), id, rows.size(), sent, cached, already, capped, skipped)
@@ -225,7 +236,7 @@ func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int 
 ## Expires old bark requests, then arms a bark sweep when one is due.
 ## Called once per game tick, before the scheduler runs.
 func tick_prefetch(now: int, scheduler: WyrdScheduler) -> void:
-	_expire_barks(now)
+	_expire_owned(now)
 	if not is_active() or _inflight_cap() <= 1 or not _sweep.is_empty():
 		return
 	var candidates := _bark_candidates()
@@ -273,28 +284,30 @@ func present(view: WyrdLineView, line_id: String) -> void:
 		return
 	if not _runtime.content().ai_lines.has(line_id):
 		return
+	var kind := kind_for_line(line_id)
+	var kind_name := String(kind)
 	if not is_active():
 		view.text_source = &"authored"
-		_trace_use(line_id, "authored", "off", "-")
+		_trace_use(line_id, "authored", "off", "-", kind_name)
 		return
 	if not locale_ok():
 		view.text_source = &"authored"
-		_trace_use(line_id, "authored", "locale", "-")
+		_trace_use(line_id, "authored", "locale", "-", kind_name)
 		return
-	var packet := packet_for_line(line_id, &"bark_paraphrase", _view_speaker(view))
-	var key := cache_key(&"bark_paraphrase", packet)
+	var packet := packet_for_line(line_id, kind, _view_speaker(view))
+	var key := cache_key(kind, packet)
 	if _cache.has(key):
 		view.text = _cache.text_for(key)
 		view.text_source = &"ai"
-		_trace_use(line_id, "ai", "hit", key)
+		_trace_use(line_id, "ai", "hit", key, kind_name)
 		return
 	view.text_source = &"authored"
 	if _pending_has_key(key):
-		_trace_use(line_id, "authored", "waiting", key)
+		_trace_use(line_id, "authored", "waiting", key, kind_name)
 	elif _rejected.has(key):
-		_trace_use(line_id, "authored", "rejected", key)
+		_trace_use(line_id, "authored", "rejected", key, kind_name)
 	else:
-		_trace_use(line_id, "authored", "miss", key)
+		_trace_use(line_id, "authored", "miss", key, kind_name)
 
 
 ## Moves open requests with this owner to the late list, in id order.
@@ -325,9 +338,84 @@ func cache_key(kind: StringName, packet: Dictionary, locale: StringName = &"") -
 	return WyrdRng.format_u64(mixed)
 
 
+## [code]gossip[/code] when [param line_id] is opted in and tagged [code]gossip[/code].
+## Otherwise [code]bark_paraphrase[/code]. A gossip tag without [code]#tag:ai[/code] does nothing.
+func kind_for_line(line_id: String) -> StringName:
+	if _runtime == null or _runtime.content() == null or not _runtime.content().ai_lines.has(line_id):
+		return &"bark_paraphrase"
+	var line_def := _runtime.content().lines.get(line_id) as WyrdLineDef
+	if line_def != null and line_def.tags.has("gossip"):
+		return &"gossip"
+	return &"bark_paraphrase"
+
+
 ## Packet for an opted-in line. Does not send a request, and ignores the provider and the on/off state.
 func packet_for_line(line_id: String, kind: StringName = &"bark_paraphrase", speaker: StringName = &"") -> Dictionary:
 	return WyrdAIPacket.for_line(_runtime, line_id, kind, speaker)
+
+
+## Journal summary packet. [param entries] are frozen journal rows. Does not send.
+func summary_packet(quest_id: String, entries: Array) -> Dictionary:
+	var ids: Array = []
+	var texts: Array = []
+	for item in entries:
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		ids.append(str(row.get("id", "")))
+		texts.append(str(row.get("text", "")))
+	var lines := PackedStringArray()
+	for text in texts:
+		lines.append(String(text))
+	return {
+		"entities": _summary_entities("\n".join(lines)),
+		"entries": texts,
+		"kind": "journal_summary",
+		"line_ids": ids,
+		"quest": quest_id,
+		"text": "\n".join(lines),
+		"v": 1,
+	}
+
+
+## Joined journal text, or validated cached summary text. Sends one request on a miss.
+## An empty journal returns [code]""[/code] and logs nothing.
+func summary_for(quest_id: String, entries: Array) -> String:
+	if entries.is_empty():
+		return ""
+	var packet := summary_packet(quest_id, entries)
+	var fallback := WyrdAIPacket.fallback_text(&"journal_summary", packet)
+	var path := "summary:%s" % quest_id
+	if not is_active():
+		_trace_use(path, "authored", "off", "-", "journal_summary")
+		return fallback
+	if not locale_ok():
+		_trace_use(path, "authored", "locale", "-", "journal_summary")
+		return fallback
+	var key := cache_key(&"journal_summary", packet)
+	if _cache.has(key):
+		_trace_use(path, "ai", "hit", key, "journal_summary")
+		return _cache.text_for(key)
+	var reason := "miss"
+	if _pending_has_key(key):
+		reason = "waiting"
+	elif _rejected.has(key):
+		reason = "rejected"
+	_trace_use(path, "authored", reason, key, "journal_summary")
+	if reason == "miss":
+		_send_summary(quest_id, packet)
+	return fallback
+
+
+## Cached text for a host-called kind. Sends nothing and logs nothing.
+## The read side of [method request] for [code]epilogue_stitch[/code] and [code]tts_prep[/code].
+func host_text(kind: StringName, packet: Dictionary, fallback: String) -> String:
+	if not _known(kind) or not is_active() or not locale_ok():
+		return fallback
+	var key := cache_key(kind, packet)
+	if not _cache.has(key):
+		return fallback
+	return _cache.text_for(key)
 
 
 ## First failing rule, or an empty name when [param text] passes.
@@ -540,10 +628,10 @@ func _trace_prefetch(source: String, path: String, lines: int, sent: int, cached
 	_runtime.trace_ai_prefetch(source, path, lines, sent, cached, already, capped, skipped)
 
 
-func _trace_use(line_id: String, source: String, reason: String, key: String) -> void:
+func _trace_use(line_id: String, source: String, reason: String, key: String, kind: String = "bark_paraphrase") -> void:
 	if _runtime == null:
 		return
-	_runtime.trace_ai_use(line_id, source, reason, key)
+	_runtime.trace_ai_use(line_id, source, reason, key, kind)
 
 
 func _trace_sweep(op: String, count: int, reason: String) -> void:
@@ -597,13 +685,13 @@ func _owned_count(prefix: String) -> int:
 	return count
 
 
-func _expire_barks(now: int) -> void:
+func _expire_owned(now: int) -> void:
 	var ids: Array = _pending.keys()
 	ids.sort()
 	for raw in ids:
 		var request_id := int(raw)
 		var req := _pending.get(request_id) as WyrdAIRequest
-		if req == null or not req.owner.begins_with("bark:"):
+		if req == null or not (req.owner.begins_with("bark:") or req.owner.begins_with("summary:")):
 			continue
 		if req.sent_minute < 0 or now - req.sent_minute < 60:
 			continue
@@ -743,6 +831,40 @@ func _mark_rejected(key: String) -> void:
 	while _rejected.size() > cap:
 		var oldest: Array = _rejected.keys()
 		_rejected.erase(oldest[0])
+
+
+func _send_summary(quest_id: String, packet: Dictionary) -> void:
+	var cap := _inflight_cap()
+	var sent := 0
+	var capped := 0
+	if cap > 0 and pending_count() < cap:
+		var owner := "summary:%s" % quest_id
+		close_owner(owner, &"superseded")
+		_send(&"journal_summary", packet, StringName(owner), owner)
+		sent = 1
+	else:
+		capped = 1
+	_trace_prefetch("summary", quest_id, 1, sent, 0, 0, capped, 0)
+
+
+func _summary_entities(text: String) -> Array:
+	var rows: Array = []
+	var names := _entity_names()
+	var labels: Array = names.keys()
+	labels.sort()
+	for label in labels:
+		var name := String(label)
+		if not WyrdAIValidator.word_hit(text, name, false):
+			continue
+		var ids: Variant = names[label]
+		if not (ids is Array):
+			continue
+		for id in ids:
+			rows.append({"id": String(id), "name": name})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return str(a["id"]) < str(b["id"])
+	)
+	return rows
 
 
 func _entity_names() -> Dictionary:

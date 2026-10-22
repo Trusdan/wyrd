@@ -46,7 +46,11 @@ static func for_line(runtime: WyrdRuntime, line_id: String, kind: StringName, sp
 			"name": speaker_name,
 			"roles": _speaker_roles(runtime, line_id, speaker_id),
 		}
-	packet["entities"] = _entities(world, speaker_id, speaker_name, facts)
+	var deeds: Array = []
+	if kind == &"gossip":
+		deeds = _gossip_deeds(runtime)
+		packet["deeds"] = deeds
+	packet["entities"] = _entities(world, speaker_id, speaker_name, facts, deeds)
 	return packet
 
 
@@ -149,7 +153,7 @@ static func _speaker_roles(runtime: WyrdRuntime, line_id: String, speaker_id: St
 	return kept
 
 
-static func _entities(world: WyrdWorldAdapter, speaker_id: String, speaker_name: String, facts: Dictionary) -> Array:
+static func _entities(world: WyrdWorldAdapter, speaker_id: String, speaker_name: String, facts: Dictionary, deeds: Array) -> Array:
 	var names := {}
 	if not speaker_id.is_empty():
 		names[speaker_id] = speaker_name
@@ -160,12 +164,76 @@ static func _entities(world: WyrdWorldAdapter, speaker_id: String, speaker_name:
 		if not world.exists(id):
 			continue
 		names[String(id)] = _entity_name(world, String(id))
+	for deed in deeds:
+		if not (deed is Dictionary) or world == null:
+			continue
+		var row: Dictionary = deed
+		for field in ["actor", "target", "place"]:
+			var deed_id := str(row.get(field, ""))
+			if deed_id.is_empty() or not world.exists(StringName(deed_id)):
+				continue
+			names[deed_id] = _entity_name(world, deed_id)
 	var ids: Array = names.keys()
 	ids.sort()
 	var rows: Array = []
 	for id in ids:
 		rows.append({"id": String(id), "name": String(names[id])})
 	return rows
+
+
+## At most five deeds the player knows, newest minute first, then higher id.
+static func _gossip_deeds(runtime: WyrdRuntime) -> Array:
+	var rows: Array = []
+	if runtime.deeds == null:
+		return rows
+	var seen := {}
+	for index in runtime.deeds.witness_indexes(&"player"):
+		_take_deed(runtime, int(index), rows, seen)
+	for item in runtime.deeds.believer_deeds(&"player"):
+		if not (item is Dictionary):
+			continue
+		var deed_id := int((item as Dictionary).get("id", 0))
+		var index := runtime.deeds.index_of(deed_id)
+		if index < 0:
+			continue
+		_take_deed(runtime, index, rows, seen)
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["minute"]) != int(b["minute"]):
+			return int(a["minute"]) > int(b["minute"])
+		return int(a["id"]) > int(b["id"])
+	)
+	if rows.size() > 5:
+		rows.resize(5)
+	return rows
+
+
+static func _take_deed(runtime: WyrdRuntime, index: int, rows: Array, seen: Dictionary) -> void:
+	var row := runtime.deeds.row_at(index)
+	var deed_id := int(row.get("id", 0))
+	if deed_id <= 0 or seen.has(deed_id):
+		return
+	seen[deed_id] = true
+	rows.append({
+		"actor": String(row.get("actor", "")),
+		"how": _player_how(row),
+		"id": deed_id,
+		"minute": int(row.get("t", 0)),
+		"place": String(row.get("place", "")),
+		"target": String(row.get("target", "")),
+		"verb": String(row.get("verb", "")),
+	})
+
+
+static func _player_how(row: Dictionary) -> String:
+	var witnesses: PackedStringArray = row.get("witnesses", PackedStringArray())
+	var modes: PackedStringArray = row.get("perception", PackedStringArray())
+	for i in witnesses.size():
+		if witnesses[i] != "player":
+			continue
+		if i < modes.size():
+			return modes[i]
+		return "saw"
+	return "believed"
 
 
 static func _entity_name(world: WyrdWorldAdapter, id: String) -> String:
