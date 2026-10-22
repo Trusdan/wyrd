@@ -65,13 +65,15 @@ var enabled: bool = false
 ## An ai_result line is one deliver call. ok is true or false.
 ## rule is -, late, unknown_request, or thread. An ai_cancel line is one pending
 ## request removed without a delivery. reason is host, provider, off, new_game,
-## load, scene_end, or superseded. The printed kind is stored as slot_kind.
+## load, scene_end, superseded, or expired. The printed kind is stored as slot_kind.
 ## An ai_deliver row is a replay input: it calls [method WyrdAI.deliver].
 ## It is recorded and not printed. A provider that answers inside [code]request[/code]
 ## records that row during the input that sent it, so replay delivers it only
 ## after that input returns. Lines shown during that input can then differ.
 ## A provider that answers on a later frame replays the same text.
-## ai_prefetch, ai_use, and ai_late are skipped, like the other ai rows.
+## ai_prefetch, ai_use, ai_late, and ai_sweep are skipped, like the other ai rows.
+## An ai_sweep line is one bark sweep armed or dropped. op is arm or drop.
+## reason is start, change, floor, off, provider, new_game, or load.
 ## Load does not log them. The prefix matches path.
 ## A gen_tier line is one eligibility pass. eligible is the template count.
 ## A gen_pick line is one weighted pick. score is [code]<priority>/<specificity>[/code].
@@ -228,7 +230,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 					delivered.text = str(row.get("text", ""))
 					delivered.error = str(row.get("error", ""))
 					runtime.ai.deliver(int(row.get("id", 0)), delivered)
-			"ai_provider", "ai_request", "ai_result", "ai_cancel", "ai_prefetch", "ai_use", "ai_late", "console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
+			"ai_provider", "ai_request", "ai_result", "ai_cancel", "ai_prefetch", "ai_use", "ai_late", "ai_sweep", "console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:
 				pass

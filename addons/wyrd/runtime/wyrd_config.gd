@@ -12,6 +12,7 @@ extends Resource
 ## [member scheduler_tick_minutes], [member scheduler_share_waits],
 ## [member scheduler_share_rumor], [member scheduler_share_publish],
 ## [member scheduler_share_cache], [member scheduler_share_generate],
+## [member scheduler_share_ai_prefetch],
 ## [member scheduler_frame_warn_usec],
 ## [member rumor_coarse_minutes], [member publish_catchup_max],
 ## [member publish_slice_rows],
@@ -42,8 +43,8 @@ extends Resource
 ## Game minutes in one scheduler tick. Slices of [code]Wyrd.tick[/code] add up
 ## until this many minutes have accumulated. Not saved.
 @export var scheduler_tick_minutes: int = 1
-## Weights for waits, rumor, publish, cache refresh, and generate. They split
-## [member scheduler_work_per_tick]. Not saved.
+## Weights for waits, rumor, publish, cache refresh, generate, and AI pre-fetch.
+## They split [member scheduler_work_per_tick]. Not saved.
 @export var scheduler_share_waits: int = 40
 @export var scheduler_share_rumor: int = 12
 @export var scheduler_share_publish: int = 8
@@ -51,6 +52,9 @@ extends Resource
 ## Weight of the generate queue. The default is 0, so a generate unit runs
 ## only when earlier queues are idle and a handler is set. Not saved.
 @export var scheduler_share_generate: int = 0
+## Weight of the AI pre-fetch queue. The default is 0, so a unit runs only when
+## the earlier queues are idle and AI is active. Not saved.
+@export var scheduler_share_ai_prefetch: int = 0
 ## Debug builds log [code]wyrd scheduler queue=frame[/code] when one game tick's
 ## units take longer than this many microseconds. The default is 2000 (2 ms).
 ## [code]0[/code] disables it. The line does not change the work. Not saved.

@@ -26,6 +26,12 @@ var _rejected: Dictionary = {}
 ## Requests cancelled because their scene ended or a topic menu replaced them.
 ## A later delivery is still validated. Not saved.
 var _late: Array[WyrdAIRequest] = []
+## Bark storylet ids still to visit, oldest first. Not saved.
+var _sweep: Array[String] = []
+## True after a sweep has been armed since AI became active, a new game, or a load.
+var _sweep_once: bool = false
+## Game minute of the last arm. [code]-1[/code] until then.
+var _sweep_at: int = -1
 
 
 func bind(runtime: WyrdRuntime) -> void:
@@ -147,6 +153,7 @@ func _send(kind: StringName, packet: Dictionary, path: StringName, owner: String
 	req.locale = StringName(TranslationServer.get_locale())
 	req.path = path
 	req.owner = owner
+	req.sent_minute = _runtime.now_minutes() if _runtime != null else -1
 	req.key = cache_key(kind, req.packet, req.locale)
 	req.set_deliver(Callable(self, &"deliver"))
 	_pending[request_id] = req
@@ -176,7 +183,9 @@ func locale_ok(locale: String = "") -> bool:
 
 ## One prefetch pass. Each row is [code]{line_id, speaker}[/code].
 ## Returns without a trace when AI is off, the provider is null, or the cap is off.
-func prefetch_lines(source: StringName, id: String, rows: Array) -> void:
+## [param owner_cap] of 0 or more also caps rows when that many requests with this
+## source's owner prefix are already open. [code]-1[/code] does not.
+func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int = -1) -> void:
 	if not is_active():
 		return
 	var cap := _inflight_cap()
@@ -187,6 +196,8 @@ func prefetch_lines(source: StringName, id: String, rows: Array) -> void:
 	var already := 0
 	var capped := 0
 	var skipped := 0
+	var prefix := "%s:" % String(source)
+	var owned := _owned_count(prefix) if owner_cap >= 0 else 0
 	for row in rows:
 		if not locale_ok():
 			skipped += 1
@@ -202,12 +213,58 @@ func prefetch_lines(source: StringName, id: String, rows: Array) -> void:
 			cached += 1
 		elif _pending_has_key(key):
 			already += 1
-		elif pending_count() >= cap:
+		elif pending_count() >= cap or (owner_cap >= 0 and owned >= owner_cap):
 			capped += 1
 		else:
-			_send(&"bark_paraphrase", packet, StringName(line_id), "%s:%s" % [String(source), id])
+			_send(&"bark_paraphrase", packet, StringName(line_id), "%s%s" % [prefix, id])
 			sent += 1
+			owned += 1
 	_trace_prefetch(String(source), id, rows.size(), sent, cached, already, capped, skipped)
+
+
+## Expires old bark requests, then arms a bark sweep when one is due.
+## Called once per game tick, before the scheduler runs.
+func tick_prefetch(now: int, scheduler: WyrdScheduler) -> void:
+	_expire_barks(now)
+	if not is_active() or _inflight_cap() <= 1 or not _sweep.is_empty():
+		return
+	var candidates := _bark_candidates()
+	if candidates.is_empty():
+		return
+	var reason := ""
+	if not _sweep_once:
+		reason = "start"
+	elif scheduler != null and scheduler.marked:
+		reason = "change"
+	elif _sweep_at >= 0 and now - _sweep_at >= 60:
+		reason = "floor"
+	else:
+		return
+	_sweep = candidates
+	_sweep_once = true
+	_sweep_at = now
+	if scheduler != null:
+		scheduler.marked = false
+	_trace_sweep("arm", _sweep.size(), reason)
+
+
+## True when a bark sweep can send another request.
+func prefetch_has_work() -> bool:
+	return is_active() and not _sweep.is_empty() and _owned_count("bark:") < _bark_cap()
+
+
+## Storylets still waiting in the current sweep.
+func prefetch_carry() -> int:
+	return _sweep.size()
+
+
+## Visits the next bark storylet. Does not write gameplay state.
+func prefetch_unit() -> void:
+	if _sweep.is_empty():
+		return
+	var story_id := _sweep[0]
+	_sweep.remove_at(0)
+	_visit_bark(story_id)
 
 
 ## Sets [member WyrdLineView.text_source] for an opted-in line. Does not send.
@@ -322,6 +379,8 @@ func drop_pending(reason: StringName) -> void:
 		_trace_cancel(req, reason)
 	if reason == &"load":
 		_rejected.clear()
+	if reason == &"off" or reason == &"provider" or reason == &"new_game" or reason == &"load":
+		_drop_sweep(String(reason))
 	if reason == &"new_game" or reason == &"load":
 		_next_id = 1
 
@@ -487,6 +546,12 @@ func _trace_use(line_id: String, source: String, reason: String, key: String) ->
 	_runtime.trace_ai_use(line_id, source, reason, key)
 
 
+func _trace_sweep(op: String, count: int, reason: String) -> void:
+	if _runtime == null:
+		return
+	_runtime.trace_ai_sweep(op, count, reason)
+
+
 func _trace_late(req: WyrdAIRequest, reason: String) -> void:
 	if _runtime == null or req == null:
 		return
@@ -516,6 +581,97 @@ func _inflight_cap() -> int:
 	if _runtime == null or _runtime.config() == null:
 		return 4
 	return _runtime.config().ai_max_inflight
+
+
+## Barks leave one open slot for a scene or a topic menu.
+func _bark_cap() -> int:
+	return maxi(_inflight_cap() - 1, 0)
+
+
+func _owned_count(prefix: String) -> int:
+	var count := 0
+	for raw in _pending.values():
+		var req := raw as WyrdAIRequest
+		if req != null and req.owner.begins_with(prefix):
+			count += 1
+	return count
+
+
+func _expire_barks(now: int) -> void:
+	var ids: Array = _pending.keys()
+	ids.sort()
+	for raw in ids:
+		var request_id := int(raw)
+		var req := _pending.get(request_id) as WyrdAIRequest
+		if req == null or not req.owner.begins_with("bark:"):
+			continue
+		if req.sent_minute < 0 or now - req.sent_minute < 60:
+			continue
+		_pending.erase(request_id)
+		_late_add(req)
+		_trace_cancel(req, &"expired")
+		if _provider != null:
+			_provider.cancel(request_id)
+
+
+func _bark_candidates() -> Array[String]:
+	var ids: Array[String] = []
+	if _runtime == null or _runtime.content() == null:
+		return ids
+	var content := _runtime.content()
+	var found := {}
+	for line_id in content.ai_lines.keys():
+		var entry: Dictionary = content.ai_lines[line_id]
+		if str(entry.get("owner", "")) != "storylet":
+			continue
+		var story_id := str(entry.get("id", ""))
+		var story := content.storylets.get(story_id) as WyrdStoryletDef
+		if story == null or story.scope_kind != &"bark":
+			continue
+		found[story_id] = true
+	var names: Array = found.keys()
+	names.sort()
+	for name in names:
+		ids.append(String(name))
+	return ids
+
+
+func _visit_bark(story_id: String) -> void:
+	if _runtime == null or _runtime.content() == null or _runtime.director == null:
+		return
+	var story := _runtime.content().storylets.get(story_id) as WyrdStoryletDef
+	if story == null:
+		return
+	if story.speaker.is_empty() or story.speaker == "any":
+		return
+	if not _runtime.director.when_holds(story):
+		return
+	var line_ids: Array = []
+	for line_def in story.lines:
+		if line_def == null or line_def.line_id.is_empty():
+			continue
+		if not _runtime.content().ai_lines.has(line_def.line_id):
+			continue
+		var entry: Dictionary = _runtime.content().ai_lines[line_def.line_id]
+		if str(entry.get("owner", "")) != "storylet" or str(entry.get("id", "")) != story.id:
+			continue
+		line_ids.append(line_def.line_id)
+	line_ids.sort()
+	var shown := _runtime.bark_entity(story)
+	if shown.is_empty() or shown == "narrator":
+		shown = ""
+	var rows: Array = []
+	for line_id in line_ids:
+		rows.append({"line_id": String(line_id), "speaker": shown})
+	prefetch_lines(&"bark", story.id, rows, _bark_cap())
+
+
+func _drop_sweep(reason: String) -> void:
+	if not _sweep.is_empty():
+		_trace_sweep("drop", _sweep.size(), reason)
+	_sweep.clear()
+	_sweep_once = false
+	_sweep_at = -1
 
 
 func _pending_has_key(key: String) -> bool:

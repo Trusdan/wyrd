@@ -4,13 +4,15 @@ extends RefCounted
 ## Fixed-work queues for one game tick.
 ##
 ## @experimental
-## Queues, in round-robin order: waits, rumor, publish, cache_refresh, generate.
-## A unit is one waiting-condition recheck, one rumor hop, one slice of a
-## frozen issue, one cache-entry rebuild, or one generate offer. [code]run[/code]
-## spends at most the tick budget. Token queues keep a read cursor so a unit
-## does not shift the array. The saved tokens are the ones still waiting.
-## Generate has no tokens. Its share defaults to 0, so it runs only by spill
-## when a handler has work and the earlier queues are idle.
+## Queues, in round-robin order: waits, rumor, publish, cache_refresh, generate,
+## ai_prefetch. A unit is one waiting-condition recheck, one rumor hop, one
+## slice of a frozen issue, one cache-entry rebuild, one generate offer, or one
+## AI pre-fetch visit. [code]run[/code] spends at most the tick budget. Token
+## queues keep a read cursor so a unit does not shift the array. The saved
+## tokens are the ones still waiting. Generate and AI pre-fetch have no tokens.
+## Their shares default to 0, so each runs only by spill when it has work and
+## the earlier queues are idle. AI pre-fetch has work only when AI is active
+## and a bark sweep has storylets left.
 ## Each queue's config weight is its share of that budget. Share a queue cannot
 ## use moves to the earliest queue that still has work, so a waits-only tick
 ## still spends the whole budget. A pass that would only run rumor is handled
@@ -20,13 +22,14 @@ extends RefCounted
 ## round-robin starts at waits every tick. Token queues and the dirty waits
 ## are saved in [code]flight.scheduler[/code]. The leftover slice is saved there too.
 
-const QUEUE_COUNT := 5
-## waits, rumor, publish, and cache_refresh. Generate is not in [code]spent[/code] or [code]carry[/code].
+const QUEUE_COUNT := 6
+## waits, rumor, publish, and cache_refresh. Generate and AI pre-fetch are not
+## in [code]spent[/code] or [code]carry[/code].
 const _SAVED_QUEUES := 4
 
 
 static func queues() -> PackedStringArray:
-	return PackedStringArray(["waits", "rumor", "publish", "cache_refresh", "generate"])
+	return PackedStringArray(["waits", "rumor", "publish", "cache_refresh", "generate", "ai_prefetch"])
 ## One game minute, in units. 720 divides a 30 fps slice and a 144 fps slice
 ## when one real second advances one game minute.
 const SLICE_UNITS_PER_MINUTE := 720
@@ -45,6 +48,15 @@ var generate_has_work: Callable = Callable()
 var generate_unit: Callable = Callable()
 ## [code]() -> int[/code]. Pending offers when a handler is set, otherwise 0.
 var generate_pending: Callable = Callable()
+## [code]() -> bool[/code]. True when AI is active and a bark sweep has storylets left.
+var ai_prefetch_has_work: Callable = Callable()
+## [code]() -> void[/code]. Visits the next bark storylet in the sweep.
+var ai_prefetch_unit: Callable = Callable()
+## [code]() -> int[/code]. Storylets left in the sweep, otherwise 0.
+var ai_prefetch_carry: Callable = Callable()
+## Set when [method mark] is given indexes. Not saved and not traced.
+## The runtime clears it when a bark sweep is armed.
+var marked: bool = false
 
 var _waits := WyrdTickQueue.new()
 var _rumor: Array[String] = []
@@ -91,6 +103,8 @@ func unwatch(index: int) -> void:
 
 func mark(indexes: PackedInt32Array) -> void:
 	_waits.mark(indexes)
+	if not indexes.is_empty():
+		marked = true
 
 
 func dirty_count() -> int:
@@ -121,7 +135,7 @@ func push(queue: String, token: String) -> void:
 		"cache_refresh":
 			_cache.append(token)
 			_emit(queue, 0, _live(_cache, _cache_at))
-		"generate":
+		"generate", "ai_prefetch":
 			return
 		_:
 			push_error("WyrdScheduler.push: unknown queue \"%s\"" % queue)
@@ -140,6 +154,10 @@ func carry(queue: String) -> int:
 		"generate":
 			if generate_pending.is_valid():
 				return int(generate_pending.call())
+			return 0
+		"ai_prefetch":
+			if ai_prefetch_carry.is_valid():
+				return int(ai_prefetch_carry.call())
 			return 0
 		_:
 			return 0
@@ -251,6 +269,10 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 	var generate_carry := carry("generate")
 	if generate_spent > 0 or generate_carry > 0:
 		_emit("generate", generate_spent, generate_carry)
+	var ai_prefetch_spent := int(spent[5])
+	var ai_prefetch_left := carry("ai_prefetch")
+	if ai_prefetch_spent > 0 or ai_prefetch_left > 0:
+		_emit("ai_prefetch", ai_prefetch_spent, ai_prefetch_left)
 	var spent_saved := PackedInt32Array([
 		int(spent[0]),
 		int(spent[1]),
@@ -258,6 +280,8 @@ func run(budget: int, weights: PackedInt32Array, waits_eval: Callable) -> Dictio
 		int(spent[3]),
 	])
 	return {
+		"ai_prefetch_carry": ai_prefetch_left,
+		"ai_prefetch_spent": ai_prefetch_spent,
 		"carry": left,
 		"generate_carry": generate_carry,
 		"generate_spent": generate_spent,
@@ -394,6 +418,8 @@ func _has_work(index: int) -> bool:
 			return _cache_at < _cache.size()
 		4:
 			return generate_has_work.is_valid() and bool(generate_has_work.call())
+		5:
+			return ai_prefetch_has_work.is_valid() and bool(ai_prefetch_has_work.call())
 		_:
 			return false
 
@@ -412,6 +438,11 @@ func _run_one(index: int, waits_eval: Callable) -> bool:
 			if not generate_unit.is_valid():
 				return false
 			generate_unit.call()
+			return true
+		5:
+			if not ai_prefetch_unit.is_valid():
+				return false
+			ai_prefetch_unit.call()
 			return true
 		_:
 			return false
