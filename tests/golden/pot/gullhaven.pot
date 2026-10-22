@@ -356,7 +356,7 @@ msgid "The sealed page names the late cargo."
 msgstr ""
 
 #. any
-#: example/content/gullhaven/harbor_storylets.wyrd:67
+#: example/content/gullhaven/harbor_storylets.wyrd:68
 msgctxt "sg_storm"
 msgid "The storm took a skiff off the bar."
 msgstr ""

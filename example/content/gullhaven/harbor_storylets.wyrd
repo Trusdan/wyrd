@@ -13,22 +13,22 @@ storylet harbor_gossip.tavern
   weight: 2
   cooldown: 60m
   lines:
-    - The toll money never reached the council, if you ask me. #line:sg02
-    - Lost at sea, they say. Lost in someone's pocket. #line:sg03
+    - The toll money never reached the council, if you ask me. #tag:ai #tag:gossip #line:sg02
+    - Lost at sea, they say. Lost in someone's pocket. #tag:ai #tag:gossip #line:sg03
 
 storylet dock_bark_lantern
   scope: bark
   speaker: ferry
   when: nearby(player, 4m, tag: lantern) > 0
   cooldown: 30m
-  - Mind that flame near the ropes. #line:sg04
+  - Mind that flame near the ropes. #tag:ai #line:sg04
 
 storylet dock_bark_lantern_carried
   scope: bark
   speaker: ferry
   when: has(player, lantern) and nearby(player, 4m, tag: lantern) > 0
   speaker_cooldown: 10m
-  - That lantern in your hand is close to the ropes. #line:sg05
+  - That lantern in your hand is close to the ropes. #tag:ai #line:sg05
 
 storylet dock_voice_crossing
   scope: topic rumor.crossing
@@ -63,5 +63,6 @@ storylet harbor_ledger.sealed
 storylet harbor_gossip.storm
   scope: topic storm_rumour
   speaker: any
+  ai_context: [world.storm_heard]
   ~ start quest dock_rumour
-  - The storm took a skiff off the bar. #line:sg_storm
+  - The storm took a skiff off the bar. #tag:ai #tag:gossip #line:sg_storm
