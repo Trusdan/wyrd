@@ -173,5 +173,10 @@ static func metrics() -> Array:
 		# save.generated_bytes and load.generated share the flight envelopes.
 		{"budget": 9437184.0, "name": "save.generated_bytes", "samples": 5, "stat": "median", "unit": "B", "warmups": 1},
 		{"budget": 1.2, "name": "load.generated", "samples": 5, "stat": "median", "unit": "s", "warmups": 1},
+		# Trend rows, judged only by the report-only regression ratio. The budget is the 2 ms frame figure and is not a ceiling.
+		{"absolute": false, "budget": 0.002, "name": "ai.packet", "stat": "median", "unit": "s"},
+		{"absolute": false, "budget": 0.002, "name": "ai.validate", "stat": "median", "unit": "s"},
+		{"absolute": false, "budget": 0.002, "name": "ai.present_overhead", "stat": "median", "unit": "s"},
+		{"absolute": false, "budget": 0.002, "name": "ai.cache_lookup", "stat": "median", "unit": "s"},
 		{"budget": MEMORY_PEAK_BUDGET, "name": "memory.resident", "stat": "median", "unit": "B"},
 	]

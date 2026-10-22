@@ -4,6 +4,7 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 const _Hash := preload("res://addons/wyrd/runtime/rng/wyrd_hash.gd")
 const _Rng := preload("res://addons/wyrd/runtime/rng/wyrd_rng.gd")
 const _Conditions := preload("res://tests/bench/wyrd_condition_bench.gd")
+const _Ai := preload("res://tests/bench/wyrd_ai_bench.gd")
 
 ## Times a placeholder hash-and-rng workload and a fixed 10k-fact / 5k-condition case.
 ## Not a CI gate. Condition numbers are recorded only.
@@ -52,12 +53,18 @@ func _init() -> void:
 		push_error("dirty-set bench disagreed with a full scan")
 		quit(1)
 		return
+	var ai: Dictionary = _Ai.new().measure()
+	if not bool(ai["ok"]):
+		push_error("ai bench self-check failed")
+		quit(1)
+		return
 	var payload := {
 		"workload": "placeholder_hash_and_rng",
 		"iterations": iterations,
 		"elapsed_usec": elapsed,
 		"checksum": checksum,
 		"conditions": conditions,
+		"ai": ai,
 		"wyrd": _Runtime.read_version(),
 		"godot": version_info["string"],
 	}
