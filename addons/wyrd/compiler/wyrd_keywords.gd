@@ -20,6 +20,7 @@ const FIELDS: PackedStringArray = [
 	"succession",
 	"vacancy",
 	"visibility",
+	"ai_context",
 	"cooldown",
 	"priority",
 	"secrecy",

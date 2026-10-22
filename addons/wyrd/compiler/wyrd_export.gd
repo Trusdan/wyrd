@@ -354,12 +354,15 @@ static func _scenes(pack: WyrdLinkedPack) -> Array:
 			var items: Array = []
 			for item in scene.items:
 				items.append(_item(item))
-			rows.append({
+			var row := {
 				"file": str(unit["path"]),
 				"id": scene.id,
 				"items": items,
 				"on_abort": _effects(scene.on_abort),
-			})
+			}
+			if not scene.ai_context.is_empty():
+				row["ai_context"] = _strings(scene.ai_context)
+			rows.append(row)
 	return rows
 
 
@@ -425,6 +428,8 @@ static func _storylets(pack: WyrdLinkedPack) -> Array:
 			}
 			if not story.secrecy.is_empty():
 				row["secrecy"] = story.secrecy
+			if not story.ai_context.is_empty():
+				row["ai_context"] = _strings(story.ai_context)
 			if not story.effects.is_empty():
 				row["effects"] = _effects(story.effects)
 			rows.append(row)

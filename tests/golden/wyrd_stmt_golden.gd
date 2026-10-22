@@ -216,13 +216,16 @@ static func _scene(scene: WyrdSceneDef) -> Dictionary:
 	var items: Array = []
 	for item in scene.items:
 		items.append(_item(item))
-	return {
+	var data := {
 		"id": scene.id,
 		"items": items,
 		"on_abort": _effects(scene.on_abort),
 		"reads": _reads(scene.reads),
 		"span": scene.span_data(),
 	}
+	if not scene.ai_context.is_empty():
+		data["ai_context"] = _strings(scene.ai_context)
+	return data
 
 
 static func _item(item: WyrdSceneItem) -> Dictionary:
@@ -258,6 +261,8 @@ static func _storylet(story: WyrdStoryletDef) -> Dictionary:
 		"span": story.span_data(),
 		"speaker": story.speaker,
 	}
+	if not story.ai_context.is_empty():
+		data["ai_context"] = _strings(story.ai_context)
 	return data
 
 

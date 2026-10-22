@@ -4,6 +4,7 @@
 
 - Bench: the hosted performance workflow reports a regression or a budget overage and does not fail the job for it. A checksum that changes between samples still fails the job. The tag run still records `bench/results/<tag>.json` and `bench/TREND.md` when the bench script exits 0. Pull requests still don't run the suite.
 - AI: the provider interface (`WyrdAIProvider`, `WyrdAIRequest`, `WyrdAIResult`) and `Wyrd.ai` (`request`, `deliver`, `cancel`, `set_enabled`). The `null` provider (`WyrdNullAIProvider`) is registered by default and answers nothing. Delivered results are not shown or cached yet. A CI step checks that `addons/wyrd/` has no `await`, thread, network or process code. No behavior change; save schema stays 4.
+- AI: content opts in with `#tag:ai` on spoken and storylet lines and `ai_context: [<fact keys>]` on storylets and scenes. `E_AI_LINE` rejects voiced, secrecy-tier and interpolating opt-ins; `E_AI_CONTEXT_UNKNOWN` and `W_AI_CONTEXT_RESOLVED_PER_QUERY` check the listed keys. `export-json` carries `ai_context`. Nothing reads them at runtime yet; no behavior change.
 
 ## 0.7.0-m9 - 2026-10-21
 

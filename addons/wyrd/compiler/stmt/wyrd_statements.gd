@@ -49,6 +49,8 @@ var _binding_prefix := "event"
 ## Set while a template's stages compile, so a spatial wait can see its own slots.
 var _open_template: WyrdTemplateDef = null
 var _open_names: Dictionary = {}
+## Set for the scene currently compiling, so [code]ai_context[/code] is once per scene.
+var _scene_ai_seen: bool = false
 
 
 func compile(
@@ -73,6 +75,7 @@ func compile(
 	_binding_prefix = "event"
 	_open_template = null
 	_open_names = {}
+	_scene_ai_seen = false
 	var file := WyrdFileDef.new()
 	file.take_span(tree)
 	var seen_roles := {}
@@ -249,6 +252,7 @@ func _compile_readable_document(node: WyrdNode, document: WyrdDocumentDef, items
 	_note_line_site(node, false)
 	document.tags = node.tags.duplicate()
 	document.secrecy = node.secrecy
+	_lint_ai_disallowed(document.tags, node.start_line, node.start_col)
 	if document.title.is_empty():
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs a title", node.start_line, node.start_col)
 	if cursor != items.size():
@@ -415,6 +419,7 @@ func _document_paragraph(node: WyrdNode, document: WyrdDocumentDef) -> Dictionar
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "a paragraph cannot contain a block", node.start_line, node.start_col)
 	if node.tags.has("voiced"):
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "voiced is not valid in a paragraph", node.start_line, node.start_col)
+	_lint_ai_disallowed(node.tags, node.start_line, node.start_col)
 	var tokens: Array[WyrdToken] = []
 	if node.keyword == "when":
 		var colon := _depth_colon(node.head)
@@ -2281,6 +2286,7 @@ func _journal(node: WyrdNode, stage: WyrdStageDef) -> void:
 	line_def.secrecy = node.secrecy
 	line_def.prose = _interp(tokens, line_def.reads)
 	_take_variants(node, line_def)
+	_lint_ai_line(line_def, "")
 	stage.journals.append(line_def)
 	WyrdStmtSpan.add_reads(stage.reads, line_def.reads)
 
@@ -2432,6 +2438,7 @@ func _scene(node: WyrdNode) -> WyrdSceneDef:
 		_unknown_msg(node, "scene needs an id")
 	var saved_owner := _line_owner
 	_line_owner = scene.id
+	_scene_ai_seen = false
 	_labels = {}
 	_label_uses = []
 	_track_labels = true
@@ -2474,6 +2481,8 @@ func _scene_stmt(node: WyrdNode, scene: WyrdSceneDef) -> void:
 			_scene_effect(node, scene)
 		"on_fail":
 			_unknown_msg(node, "on_fail belongs on the do line")
+		"ai_context":
+			_scene_ai_context(node, scene)
 		_:
 			var spoken := _speaker(node)
 			if int(spoken["colon"]) >= 0:
@@ -2503,6 +2512,7 @@ func _spoken(node: WyrdNode, scene: WyrdSceneDef, speaker: String, colon: int, c
 	line_def.secrecy = node.secrecy
 	line_def.prose = _interp(_tail(node.head, colon + 1), line_def.reads)
 	_take_variants(node, line_def)
+	_lint_ai_line(line_def, "")
 	var item := WyrdSceneItem.new()
 	item.kind = &"line"
 	item.line_def = line_def
@@ -2604,6 +2614,7 @@ func _choice(node: WyrdNode, scene: WyrdSceneDef) -> void:
 	choice.tags = node.tags.duplicate()
 	choice.secrecy = node.secrecy
 	_lint_voiced(choice.label, choice.tags, choice.line, choice.col)
+	_lint_ai_disallowed(choice.tags, choice.line, choice.col)
 	_note_label(choice.target, items[i + 1].line, items[i + 1].col)
 	var saw_check := false
 	for index in node.children.size():
@@ -3442,6 +3453,7 @@ func _take_variants(node: WyrdNode, line_def: WyrdLineDef, story: bool = false) 
 		if variant == null:
 			continue
 		_lint_voiced(variant.prose, variant.tags, variant.line, variant.col)
+		_lint_ai_line(variant, "")
 
 
 func _variant_line(node: WyrdNode, parent: WyrdLineDef) -> WyrdLineDef:
@@ -3500,6 +3512,107 @@ func _bind_slot(line_def: WyrdLineDef) -> void:
 			line_def.line,
 			line_def.col
 		)
+
+
+## [code]#tag:ai[/code] on a line that is not spoken or a storylet line.
+func _lint_ai_disallowed(tags: PackedStringArray, line: int, col: int) -> void:
+	if not tags.has("ai"):
+		return
+	_error(WyrdDiagnostic.E_AI_LINE, "only spoken and storylet lines can opt in to AI", line, col)
+
+
+## One [code]E_AI_LINE[/code] per reason. [param inherited_secrecy] is the storylet field.
+## Scene lines pass an empty string and use only their own [code]#secrecy:[/code].
+func _lint_ai_line(line_def: WyrdLineDef, inherited_secrecy: String) -> void:
+	if line_def == null or not line_def.tags.has("ai"):
+		return
+	if line_def.kind != &"spoken" and line_def.kind != &"storylet":
+		_lint_ai_disallowed(line_def.tags, line_def.line, line_def.col)
+		return
+	if line_def.tags.has("voiced"):
+		_error(WyrdDiagnostic.E_AI_LINE, "a voiced line cannot opt in to AI", line_def.line, line_def.col)
+	if not line_def.secrecy.is_empty() or not inherited_secrecy.is_empty():
+		_error(WyrdDiagnostic.E_AI_LINE, "a line in a secrecy tier cannot opt in to AI", line_def.line, line_def.col)
+	if WyrdLineDef.has_spans(line_def.prose):
+		_error(WyrdDiagnostic.E_AI_LINE, "an interpolating line cannot opt in to AI", line_def.line, line_def.col)
+
+
+func _scene_ai_context(node: WyrdNode, scene: WyrdSceneDef) -> void:
+	var duplicate := _scene_ai_seen
+	_scene_ai_seen = true
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "a line tag is not allowed on ai_context", node.start_line, node.start_col)
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "ai_context cannot contain a block", node.start_line, node.start_col)
+	if duplicate:
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "duplicate statement \"ai_context\"", node.start_line, node.start_col)
+		return
+	var keys := _parse_ai_context(node, false)
+	scene.ai_context = keys
+	_check_ai_context(node, keys)
+
+
+func _storylet_ai_context(node: WyrdNode, story: WyrdStoryletDef) -> void:
+	var keys := _parse_ai_context(node, true)
+	story.ai_context = keys
+	_check_ai_context(node, keys)
+
+
+## [WyrdPack] puts the merged schema on the tree before statements compile, so this
+## is the same cross-file lookup [code]E_UNKNOWN_FACT[/code] uses. Keys are not reads.
+func _check_ai_context(node: WyrdNode, keys: PackedStringArray) -> void:
+	for key in keys:
+		var fact := _schema.lookup(key.split(".")) if _schema != null else null
+		if fact == null:
+			_error(WyrdDiagnostic.E_AI_CONTEXT_UNKNOWN, "unknown fact \"%s\" in ai_context" % key, node.start_line, node.start_col)
+			continue
+		if fact.invalidate == &"per_query":
+			_diagnostics.add(
+				WyrdDiagnostic.W_AI_CONTEXT_RESOLVED_PER_QUERY,
+				"ai_context key \"%s\" is resolved per query; the packet reads it once when built" % key,
+				_path,
+				node.start_line,
+				node.start_col,
+				WyrdDiagnostic.SEVERITY_WARNING
+			)
+
+
+## Bracket contents are one prose span: the lexer reads [code][[/code] as a label.
+func _parse_ai_context(node: WyrdNode, story: bool) -> PackedStringArray:
+	var code := WyrdDiagnostic.E_STORYLET_SYNTAX if story else WyrdDiagnostic.E_STMT_UNKNOWN
+	var items := node.head
+	var open := 1
+	var close := _closing(items, open, &"lbracket", &"rbracket") if items.size() > open else -1
+	if items.is_empty() or items[0].kind != &"colon" or close < 0 or close + 1 != items.size():
+		_error(code, "ai_context needs [<fact keys>]", node.start_line, node.start_col)
+		return PackedStringArray()
+	var body := String(_span_text(items, open + 1, close)["text"])
+	if body.is_empty():
+		_error(code, "ai_context needs at least one fact key", node.start_line, node.start_col)
+		return PackedStringArray()
+	if body.contains("{"):
+		_error(code, "ai_context keys are concrete fact keys", node.start_line, node.start_col)
+		return PackedStringArray()
+	var keys := PackedStringArray()
+	for piece in body.split(","):
+		var key := piece.strip_edges()
+		if not _concrete_fact_key(key):
+			_error(code, "ai_context needs [<fact keys>]", node.start_line, node.start_col)
+			return PackedStringArray()
+		if keys.has(key):
+			_error(code, "duplicate ai_context key \"%s\"" % key, node.start_line, node.start_col)
+		else:
+			keys.append(key)
+	return keys
+
+
+func _concrete_fact_key(key: String) -> bool:
+	if key.is_empty() or key.contains("{"):
+		return false
+	for part in key.split("."):
+		if not _ident_ok(part):
+			return false
+	return true
 
 
 func _lint_voiced(prose: WyrdExprNode, tags: PackedStringArray, line: int, col: int) -> void:
@@ -3693,6 +3806,7 @@ func _ident_ok(part: String) -> bool:
 
 
 const _STORYLET_FIELDS := {
+	"ai_context": true,
 	"cooldown": true,
 	"priority": true,
 	"scope": true,
@@ -3767,6 +3881,7 @@ func _storylet(node: WyrdNode) -> WyrdStoryletDef:
 		_story_error(node, "a storylet needs a line, a lines set, or -> scene <id>")
 	for line_def in story.lines:
 		line_def.speaker = story.speaker
+		_lint_ai_line(line_def, story.secrecy)
 		for item in line_def.variants:
 			var variant := item as WyrdLineDef
 			if variant != null:
@@ -3826,6 +3941,8 @@ func _storylet_field(node: WyrdNode, story: WyrdStoryletDef, field: String) -> v
 			_storylet_speaker_cooldown(node, story)
 		"secrecy":
 			_storylet_secrecy(node, story)
+		"ai_context":
+			_storylet_ai_context(node, story)
 
 
 func _storylet_scope(node: WyrdNode, story: WyrdStoryletDef) -> void:

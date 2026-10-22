@@ -99,11 +99,14 @@ scene <id>
   -> <label>
   -> end
   -> scene <id>
+  ai_context: [<fact key>, <fact key>]
 ```
 
 A speaker is a slot name, an entity id (`name` or `name.name`), or `narrator`. The linker checks slot speakers against every quest stage that runs the scene. A slot speaker that stage does not pass is `E_SPEAKER_UNBOUND`. A scene no quest runs is `W_SCENE_UNUSED`, and its speakers are not checked.
 
-`#tag:<name>` may sit before `#line:`. `voiced` is the recording tag. A voiced line may not interpolate a value or a conditional fragment (`E_VOICED_VARIABLE`). `{holder(name)|variants}` is allowed. Untagged lines may still interpolate. `voice-check` reports that rule for every line, per speaker, and exits 1 when any line would fail it.
+`ai_context: [<fact key>, …]` may appear once among the scene's top-level statements. The keys are concrete dotted fact keys, stored in source order. They are not reads. A missing list, an empty list, a repeated key, a pattern key, a second `ai_context`, a line tag, or a block is `E_STMT_UNKNOWN`. An unknown key is `E_AI_CONTEXT_UNKNOWN`. A key resolved `per_query` warns `W_AI_CONTEXT_RESOLVED_PER_QUERY`. Nothing reads the list at runtime yet.
+
+`#tag:<name>` may sit before `#line:`. `voiced` is the recording tag. `ai` opts a spoken line into AI rewording (`E_AI_LINE` rejects a voiced line, a secrecy tier, or an interpolation; `{holder|variants}` counts). A voiced line may not interpolate a value or a conditional fragment (`E_VOICED_VARIABLE`). `{holder(name)|variants}` is allowed. Untagged lines may still interpolate. `voice-check` reports that rule for every line, per speaker, and exits 1 when any line would fail it.
 
 A holder switch is one span on the line. Nested lines name the holder and supply the pre-written text:
 
@@ -145,6 +148,7 @@ storylet <id>
   cooldown: <duration>
   speaker_cooldown: <duration>
   secrecy: <name>
+  ai_context: [<fact key>, <fact key>]
   - <prose> #line:<id>
   lines:
     - <prose> #line:<id>
@@ -152,6 +156,8 @@ storylet <id>
 ```
 
 A storylet has one body: one prose line, a `lines:` set, or `-> scene <id>`. `~` effects may sit among the fields, in any position, and are not a body. Inline or sibling `on_fail` is `E_STORYLET_SYNTAX` with `on_fail is not valid in a storylet`, and that effect is not stored. Effects do not change specificity, priority, the score line, or the tie lint. Field order is free. `when` uses `storylet_or_choice`, so `chance` is allowed. An omitted `when` scores 0 and is generic. `when: true` scores 1 and is not generic. `wyrd check` prints `info[I_STORYLET_SCORE]` with the specificity, the priority, and `generic=true` or `generic=false`.
+
+`ai_context: [<fact key>, …]` stores concrete dotted fact keys in source order. The keys are not reads. A bad list is `E_STORYLET_SYNTAX` (the same messages as a scene `ai_context`, plus the usual duplicate-field and line-tag errors). An unknown key is `E_AI_CONTEXT_UNKNOWN`. A key resolved `per_query` warns `W_AI_CONTEXT_RESOLVED_PER_QUERY`. A storylet line tagged `#tag:ai` is an opt-in; a line in the storylet's `secrecy:` tier cannot opt in. Nothing reads the list at runtime yet.
 
 `priority` defaults to 0 and may be negative. `weight` defaults to 1. `0` is allowed. A negative weight is `E_STORYLET_SYNTAX`. `cooldown` defaults to 0 minutes. It is a duration (`m`, `h`, or `d`, with a day of 1440 minutes). The director treats a positive cooldown as a filter. `speaker_cooldown` uses the same duration and defaults to 0. The director consults it only for `scope: bark`. A duplicate id is `E_STORYLET_DUPLICATE`. A `-> scene` target the pack does not declare is `E_SCENE_UNKNOWN`. An `event` scope the pack does not declare is `E_EVENT_UNKNOWN`. A `topic` scope and a `beat` scope are stored and not checked against topics or quests.
 

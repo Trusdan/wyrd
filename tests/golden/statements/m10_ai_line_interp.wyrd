@@ -1,0 +1,20 @@
+// [EXAMPLE CONTENT]
+language 1
+
+facts
+  player.coins : int stored
+  season : symbol stored
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    scene toll.gate
+
+scene toll.gate
+  ~ set player.coins = 1
+  ~ set season = spring
+  narrator: You have {player.coins} coins. #tag:ai #line:value
+  narrator: {if season == spring}The tide is up.{else}The tide is down.{end} #tag:ai #line:cond
+  narrator: Ask {holder(ferry)|variants}. #tag:ai #line:hold
+    variant ferry: The master is here. #line:hold_ferry
+  narrator: The board says {{two coins}}. #tag:ai #line:esc
+  -> end

@@ -1,0 +1,118 @@
+// [EXAMPLE CONTENT]
+language 1
+
+facts
+  player.coins : int stored
+  world.season : symbol stored
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    waits_until player.coins >= 0 and world.season == spring
+    ~ set player.coins = 1
+    ~ set world.season = spring
+    scene toll.nocolon
+    scene toll.empty
+    scene toll.repeat
+    scene toll.pattern
+    scene toll.trailing
+    scene toll.twice
+    scene toll.tagged
+    scene toll.block
+
+storylet harbor.nocolon
+  scope: bark
+  speaker: ferry
+  ai_context [player.coins]
+  - The harbor is quiet. #line:nocolon
+
+storylet harbor.nobrackets
+  scope: bark
+  speaker: tavern
+  ai_context: player.coins
+  - The harbor is quiet. #line:nobrackets
+
+storylet harbor.trailing
+  scope: bark
+  speaker: net_mender
+  ai_context: [player.coins] extra
+  - The harbor is quiet. #line:trailing
+
+storylet harbor.empty
+  scope: bark
+  speaker: keeper
+  ai_context: []
+  - The harbor is quiet. #line:empty
+
+storylet harbor.repeat
+  scope: bark
+  speaker: reeve
+  ai_context: [player.coins, player.coins]
+  - The harbor is quiet. #line:repeat
+
+storylet harbor.pattern
+  scope: bark
+  speaker: clerk
+  ai_context: [npc.{id}.alive]
+  - The harbor is quiet. #line:pattern
+
+storylet harbor.twice
+  scope: bark
+  speaker: fisher
+  ai_context: [player.coins]
+  ai_context: [world.season]
+  - The harbor is quiet. #line:twice
+
+storylet harbor.tagged
+  scope: bark
+  speaker: cooper
+  ai_context: [player.coins] #line:not_a_line
+  - The harbor is quiet. #line:tagged
+
+storylet harbor.block
+  scope: bark
+  speaker: rigger
+  ai_context: [player.coins]
+    - Nested. #line:nested
+  - The harbor is quiet. #line:block
+
+scene toll.nocolon
+  ai_context [player.coins]
+  narrator: The gate is shut. #line:snocolon
+  -> end
+
+scene toll.empty
+  ai_context: []
+  narrator: The gate is shut. #line:sempty
+  -> end
+
+scene toll.repeat
+  ai_context: [player.coins, world.season, player.coins]
+  narrator: The gate is shut. #line:srepeat
+  -> end
+
+scene toll.pattern
+  ai_context: [npc.{id}.alive]
+  narrator: The gate is shut. #line:spattern
+  -> end
+
+scene toll.trailing
+  ai_context: [player.coins] extra
+  narrator: The gate is shut. #line:strailing
+  -> end
+
+scene toll.twice
+  ai_context: [player.coins]
+  ai_context: [world.season]
+  narrator: The gate is shut. #line:stwice
+  -> end
+
+scene toll.tagged
+  ai_context: [player.coins] #line:scene_tag
+  narrator: The gate is shut. #line:stagged
+  -> end
+
+scene toll.block
+  ai_context: [player.coins]
+    narrator: Nested. #line:snested
+  narrator: The gate is shut. #line:sblock
+  -> end

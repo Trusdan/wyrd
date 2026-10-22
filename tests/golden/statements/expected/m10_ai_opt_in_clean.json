@@ -1,0 +1,478 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 25,
+      "message": "storylet \"harbor.news\" specificity 2 priority 0 generic=false",
+      "path": "res://tests/golden/statements/m10_ai_opt_in_clean.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 33,
+      "message": "storylet \"harbor.rumors\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_opt_in_clean.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 40,
+      "message": "storylet \"harbor.quiet\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_opt_in_clean.wyrd",
+      "severity": "info"
+    }
+  ],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "wait",
+      "reads": [
+        "player.coins"
+      ],
+      "requires": [],
+      "slots": [
+        {
+          "cast": null,
+          "cast_text": "",
+          "locked_stage": "",
+          "mode": "live",
+          "name": "ai_keeper",
+          "reads": [],
+          "role": "harbor_clerk",
+          "span": {
+            "col": 3,
+            "end_col": 43,
+            "end_line": 9,
+            "line": 9
+          }
+        }
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 30,
+        "end_line": 16,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "offer",
+          "journals": [],
+          "reads": [
+            "player.coins"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 35,
+              "end_line": 13,
+              "id": "toll.gate",
+              "line": 13,
+              "with": [
+                {
+                  "col": 26,
+                  "line": 13,
+                  "name": "ai_keeper"
+                }
+              ]
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 12,
+            "end_line": 14,
+            "line": 11
+          },
+          "transitions": [
+            {
+              "col": 8,
+              "expr": "",
+              "line": 14,
+              "target": "done",
+              "when": null
+            }
+          ],
+          "variants": [],
+          "waits_text": "player.coins >= 0",
+          "waits_until": {
+            "reads": [
+              "player.coins"
+            ],
+            "source_span": {
+              "col": 17,
+              "end_col": 34,
+              "end_line": 12,
+              "line": 12
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        },
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "crossing",
+              "command": "",
+              "fact_key": "",
+              "kind": "outcome",
+              "on_fail": "",
+              "outcome": "done",
+              "reads": [],
+              "span": {
+                "col": 5,
+                "end_col": 30,
+                "end_line": 16,
+                "line": 16
+              },
+              "target": null,
+              "target_text": "",
+              "topic": "",
+              "value": null,
+              "value_text": "",
+              "verb": ""
+            }
+          ],
+          "id": "done",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 30,
+            "end_line": 16,
+            "line": 15
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [
+    "player.coins",
+    "world.season"
+  ],
+  "scenes": [
+    {
+      "ai_context": [
+        "world.season",
+        "player.coins"
+      ],
+      "id": "toll.gate",
+      "items": [
+        {
+          "divert_kind": "",
+          "effect": {
+            "agent": "",
+            "args": [],
+            "branch": "",
+            "command": "",
+            "fact_key": "player.coins",
+            "kind": "set",
+            "on_fail": "",
+            "outcome": "",
+            "reads": [
+              "player.coins"
+            ],
+            "span": {
+              "col": 3,
+              "end_col": 25,
+              "end_line": 20,
+              "line": 20
+            },
+            "target": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 9,
+                "end_col": 21,
+                "end_line": 20,
+                "line": 20
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "target_text": "player.coins",
+            "topic": "",
+            "value": {
+              "reads": [],
+              "source_span": {
+                "col": 24,
+                "end_col": 25,
+                "end_line": 20,
+                "line": 20
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "value_text": "1",
+            "verb": ""
+          },
+          "kind": "effect",
+          "label": "",
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 25,
+            "end_line": 20,
+            "line": 20
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "gate",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 21,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 21
+            },
+            "reads": [],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 21,
+              "line": 21
+            },
+            "speaker": "narrator",
+            "tags": [
+              "ai"
+            ]
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 21,
+            "line": 21
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": {
+              "reads": [
+                "player.coins"
+              ],
+              "source_span": {
+                "col": 8,
+                "end_col": 24,
+                "end_line": 22,
+                "line": 22
+              },
+              "specificity": 1,
+              "uses_chance": false
+            },
+            "condition_text": "player.coins > 0",
+            "id": "keeper",
+            "kind": "spoken",
+            "prose": {
+              "col": 37,
+              "kids": [
+                {
+                  "col": 37,
+                  "kind": "text",
+                  "line": 22,
+                  "text": "The book is in the shed."
+                }
+              ],
+              "kind": "prose",
+              "line": 22
+            },
+            "reads": [
+              "player.coins"
+            ],
+            "scene_id": "toll.gate",
+            "span": {
+              "col": 3,
+              "end_col": 62,
+              "end_line": 22,
+              "line": 22
+            },
+            "speaker": "ai_keeper",
+            "tags": []
+          },
+          "reads": [
+            "player.coins"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 62,
+            "end_line": 22,
+            "line": 22
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 23,
+            "line": 23
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [
+        "player.coins"
+      ],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 23,
+        "line": 18
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "ai_context": [
+        "player.coins",
+        "world.season"
+      ],
+      "body": "line",
+      "effects": [
+        {
+          "agent": "",
+          "args": [],
+          "branch": "",
+          "command": "",
+          "fact_key": "world.season",
+          "kind": "set",
+          "on_fail": "",
+          "outcome": "",
+          "reads": [
+            "world.season"
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 30,
+            "end_line": 30,
+            "line": 30
+          },
+          "target": {
+            "reads": [
+              "world.season"
+            ],
+            "source_span": {
+              "col": 9,
+              "end_col": 21,
+              "end_line": 30,
+              "line": 30
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "target_text": "world.season",
+          "topic": "",
+          "value": {
+            "reads": [],
+            "source_span": {
+              "col": 24,
+              "end_col": 30,
+              "end_line": 30,
+              "line": 30
+            },
+            "specificity": 1,
+            "uses_chance": false
+          },
+          "value_text": "spring",
+          "verb": ""
+        }
+      ],
+      "id": "harbor.news",
+      "line_ids": [
+        "news"
+      ],
+      "reads": [
+        "player.coins",
+        "world.season"
+      ],
+      "scene": "",
+      "scope": "topic harbor_toll",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 31,
+        "line": 25
+      },
+      "speaker": "any"
+    },
+    {
+      "body": "set",
+      "effects": [],
+      "id": "harbor.rumors",
+      "line_ids": [
+        "r1",
+        "r2"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 30,
+        "end_line": 38,
+        "line": 33
+      },
+      "speaker": "ferry"
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "harbor.quiet",
+      "line_ids": [
+        "quiet"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 44,
+        "line": 40
+      },
+      "speaker": "net_mender"
+    }
+  ]
+}

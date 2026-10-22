@@ -1,0 +1,22 @@
+// [EXAMPLE CONTENT]
+language 1
+
+facts
+  player.coins : int stored
+
+quest ferry_toll "The Ferry Toll"
+  stage offer
+    scene toll.gate
+    ~ set player.coins = 1
+
+scene toll.gate
+  ai_context: [ferry.gone]
+  narrator: The gate is shut. #line:gate
+  -> end
+
+storylet harbor.lost
+  scope: bark
+  speaker: any
+  when: player.coins > 0
+  ai_context: [player.coins, harbor.missing]
+  - The harbor has news. #tag:ai #line:lost

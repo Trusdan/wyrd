@@ -28,6 +28,11 @@ var holder: String = ""
 var variants: Array = []
 
 
+## True when [member tags] contains [code]ai[/code].
+func is_ai() -> bool:
+	return tags.has("ai")
+
+
 ## True when the prose inserts a value or a conditional fragment.
 ## A [code]{holder(name)|variants}[/code] span is not variable text.
 static func has_variable_text(node: WyrdExprNode) -> bool:

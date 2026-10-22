@@ -1,0 +1,1167 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 25,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 22,
+      "message": "storylet \"harbor.nocolon\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 31,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 28,
+      "message": "storylet \"harbor.nobrackets\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 37,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 34,
+      "message": "storylet \"harbor.trailing\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 43,
+      "message": "ai_context needs at least one fact key",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 40,
+      "message": "storylet \"harbor.empty\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 49,
+      "message": "duplicate ai_context key \"player.coins\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 46,
+      "message": "storylet \"harbor.repeat\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 55,
+      "message": "ai_context keys are concrete fact keys",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 52,
+      "message": "storylet \"harbor.pattern\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 62,
+      "message": "duplicate storylet field \"ai_context\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 58,
+      "message": "storylet \"harbor.twice\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 68,
+      "message": "a line tag is not allowed on ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 65,
+      "message": "storylet \"harbor.tagged\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STORYLET_SYNTAX",
+      "col": 3,
+      "line": 74,
+      "message": "a storylet field cannot contain a block",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "I_STORYLET_SCORE",
+      "col": 1,
+      "line": 71,
+      "message": "storylet \"harbor.block\" specificity 0 priority 0 generic=true",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 79,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 84,
+      "message": "ai_context needs at least one fact key",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 89,
+      "message": "duplicate ai_context key \"player.coins\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 94,
+      "message": "ai_context keys are concrete fact keys",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 99,
+      "message": "ai_context needs [<fact keys>]",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 105,
+      "message": "duplicate statement \"ai_context\"",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 110,
+      "message": "a line tag is not allowed on ai_context",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 115,
+      "message": "ai_context cannot contain a block",
+      "path": "res://tests/golden/statements/m10_ai_context_syntax.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "",
+      "reads": [
+        "player.coins",
+        "world.season"
+      ],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 21,
+        "end_line": 20,
+        "line": 8
+      },
+      "stages": [
+        {
+          "effects": [
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "player.coins",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "player.coins"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 27,
+                "end_line": 11,
+                "line": 11
+              },
+              "target": {
+                "reads": [
+                  "player.coins"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 23,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "player.coins",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 27,
+                  "end_line": 11,
+                  "line": 11
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "1",
+              "verb": ""
+            },
+            {
+              "agent": "",
+              "args": [],
+              "branch": "",
+              "command": "",
+              "fact_key": "world.season",
+              "kind": "set",
+              "on_fail": "",
+              "outcome": "",
+              "reads": [
+                "world.season"
+              ],
+              "span": {
+                "col": 5,
+                "end_col": 32,
+                "end_line": 12,
+                "line": 12
+              },
+              "target": {
+                "reads": [
+                  "world.season"
+                ],
+                "source_span": {
+                  "col": 11,
+                  "end_col": 23,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "target_text": "world.season",
+              "topic": "",
+              "value": {
+                "reads": [],
+                "source_span": {
+                  "col": 26,
+                  "end_col": 32,
+                  "end_line": 12,
+                  "line": 12
+                },
+                "specificity": 1,
+                "uses_chance": false
+              },
+              "value_text": "spring",
+              "verb": ""
+            }
+          ],
+          "id": "offer",
+          "journals": [],
+          "reads": [
+            "player.coins",
+            "world.season"
+          ],
+          "scenes": [
+            {
+              "col": 5,
+              "end_col": 23,
+              "end_line": 13,
+              "id": "toll.nocolon",
+              "line": 13,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 14,
+              "id": "toll.empty",
+              "line": 14,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 22,
+              "end_line": 15,
+              "id": "toll.repeat",
+              "line": 15,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 23,
+              "end_line": 16,
+              "id": "toll.pattern",
+              "line": 16,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 24,
+              "end_line": 17,
+              "id": "toll.trailing",
+              "line": 17,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 18,
+              "id": "toll.twice",
+              "line": 18,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 22,
+              "end_line": 19,
+              "id": "toll.tagged",
+              "line": 19,
+              "with": []
+            },
+            {
+              "col": 5,
+              "end_col": 21,
+              "end_line": 20,
+              "id": "toll.block",
+              "line": 20,
+              "with": []
+            }
+          ],
+          "span": {
+            "col": 3,
+            "end_col": 21,
+            "end_line": 20,
+            "line": 9
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "player.coins >= 0 and world.season == spring",
+          "waits_until": {
+            "reads": [
+              "player.coins",
+              "world.season"
+            ],
+            "source_span": {
+              "col": 17,
+              "end_col": 61,
+              "end_line": 10,
+              "line": 10
+            },
+            "specificity": 2,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "The Ferry Toll"
+    }
+  ],
+  "reads": [
+    "player.coins",
+    "world.season"
+  ],
+  "scenes": [
+    {
+      "id": "toll.nocolon",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "snocolon",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 80,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 80
+            },
+            "reads": [],
+            "scene_id": "toll.nocolon",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 80,
+              "line": 80
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 80,
+            "line": 80
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 81,
+            "line": 81
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 81,
+        "line": 78
+      }
+    },
+    {
+      "id": "toll.empty",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "sempty",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 85,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 85
+            },
+            "reads": [],
+            "scene_id": "toll.empty",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 85,
+              "line": 85
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 85,
+            "line": 85
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 86,
+            "line": 86
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 86,
+        "line": 83
+      }
+    },
+    {
+      "ai_context": [
+        "player.coins",
+        "world.season"
+      ],
+      "id": "toll.repeat",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "srepeat",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 90,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 90
+            },
+            "reads": [],
+            "scene_id": "toll.repeat",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 90,
+              "line": 90
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 90,
+            "line": 90
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 91,
+            "line": 91
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 91,
+        "line": 88
+      }
+    },
+    {
+      "id": "toll.pattern",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "spattern",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 95,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 95
+            },
+            "reads": [],
+            "scene_id": "toll.pattern",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 95,
+              "line": 95
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 95,
+            "line": 95
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 96,
+            "line": 96
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 96,
+        "line": 93
+      }
+    },
+    {
+      "id": "toll.trailing",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "strailing",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 100,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 100
+            },
+            "reads": [],
+            "scene_id": "toll.trailing",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 100,
+              "line": 100
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 100,
+            "line": 100
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 101,
+            "line": 101
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 101,
+        "line": 98
+      }
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "id": "toll.twice",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "stwice",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 106,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 106
+            },
+            "reads": [],
+            "scene_id": "toll.twice",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 106,
+              "line": 106
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 106,
+            "line": 106
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 107,
+            "line": 107
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 107,
+        "line": 103
+      }
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "id": "toll.tagged",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "stagged",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 111,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 111
+            },
+            "reads": [],
+            "scene_id": "toll.tagged",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 111,
+              "line": 111
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 111,
+            "line": 111
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 112,
+            "line": 112
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 112,
+        "line": 109
+      }
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "id": "toll.block",
+      "items": [
+        {
+          "divert_kind": "",
+          "kind": "line",
+          "label": "",
+          "line": {
+            "condition": null,
+            "condition_text": "",
+            "id": "sblock",
+            "kind": "spoken",
+            "prose": {
+              "col": 13,
+              "kids": [
+                {
+                  "col": 13,
+                  "kind": "text",
+                  "line": 117,
+                  "text": "The gate is shut."
+                }
+              ],
+              "kind": "prose",
+              "line": 117
+            },
+            "reads": [],
+            "scene_id": "toll.block",
+            "span": {
+              "col": 3,
+              "end_col": 31,
+              "end_line": 117,
+              "line": 117
+            },
+            "speaker": "narrator",
+            "tags": []
+          },
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 31,
+            "end_line": 117,
+            "line": 117
+          },
+          "target": ""
+        },
+        {
+          "divert_kind": "end",
+          "kind": "divert",
+          "label": "",
+          "reads": [],
+          "span": {
+            "col": 3,
+            "end_col": 9,
+            "end_line": 118,
+            "line": 118
+          },
+          "target": "end"
+        }
+      ],
+      "on_abort": [],
+      "reads": [],
+      "span": {
+        "col": 1,
+        "end_col": 9,
+        "end_line": 118,
+        "line": 114
+      }
+    }
+  ],
+  "storylets": [
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.nocolon",
+      "line_ids": [
+        "nocolon"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 26,
+        "line": 22
+      },
+      "speaker": "ferry"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.nobrackets",
+      "line_ids": [
+        "nobrackets"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 32,
+        "line": 28
+      },
+      "speaker": "tavern"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.trailing",
+      "line_ids": [
+        "trailing"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 38,
+        "line": 34
+      },
+      "speaker": "net_mender"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.empty",
+      "line_ids": [
+        "empty"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 44,
+        "line": 40
+      },
+      "speaker": "keeper"
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "harbor.repeat",
+      "line_ids": [
+        "repeat"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 50,
+        "line": 46
+      },
+      "speaker": "reeve"
+    },
+    {
+      "body": "line",
+      "effects": [],
+      "id": "harbor.pattern",
+      "line_ids": [
+        "pattern"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 56,
+        "line": 52
+      },
+      "speaker": "clerk"
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "harbor.twice",
+      "line_ids": [
+        "twice"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 63,
+        "line": 58
+      },
+      "speaker": "fisher"
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "harbor.tagged",
+      "line_ids": [
+        "tagged"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 69,
+        "line": 65
+      },
+      "speaker": "cooper"
+    },
+    {
+      "ai_context": [
+        "player.coins"
+      ],
+      "body": "line",
+      "effects": [],
+      "id": "harbor.block",
+      "line_ids": [
+        "block"
+      ],
+      "reads": [],
+      "scene": "",
+      "scope": "bark",
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 76,
+        "line": 71
+      },
+      "speaker": "rigger"
+    }
+  ]
+}

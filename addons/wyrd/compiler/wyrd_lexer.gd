@@ -32,7 +32,8 @@ const _RESERVED: PackedStringArray = [
 	"learn",
 	"retract",
 ]
-const _CODE_COLON: PackedStringArray = ["on_abort", "on_empty", "requires"]
+## [code]ai_context:[/code] is a scene statement. Without this, the colon would make it a speaker line.
+const _CODE_COLON: PackedStringArray = ["ai_context", "on_abort", "on_empty", "requires"]
 
 var _source: WyrdSource
 var _diagnostics: WyrdDiagnostics
