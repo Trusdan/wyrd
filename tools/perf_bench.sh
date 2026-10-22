@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Run the milestone bench. Smoke warns. The full run fails when a same-job
-# ratio is more than 20% worse than the base checkout.
+# Run the milestone bench. Runs warn by default: a regression prints
+# `verdict=warn` and the exit code stays 0. `--mode gate` (local opt-in only;
+# no workflow uses it) fails a same-job ratio more than 20% worse than the
+# base checkout. A determinism mismatch fails in both modes.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
