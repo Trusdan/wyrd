@@ -422,6 +422,17 @@ func subscribe(prefix: StringName) -> void:
 		_subs.append(text)
 
 
+## Sorted keys that currently hold a world value. Resolved facts are not included.
+## The returned array is a copy.
+func world_keys() -> PackedStringArray:
+	var names: Array = _world.keys()
+	names.sort()
+	var out := PackedStringArray()
+	for name in names:
+		out.append(str(name))
+	return out
+
+
 func get_in(key: StringName, perspective: StringName = &"world") -> Variant:
 	var text := String(key)
 	var kind := _kind(perspective)

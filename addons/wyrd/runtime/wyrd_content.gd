@@ -32,6 +32,10 @@ var sequences: Dictionary = {}
 ## Document id to [WyrdDocumentDef]. Compiled with the pack. Not a save document.
 var documents: Dictionary = {}
 var lines: Dictionary = {}
+## Opted-in line id to [code]owner[/code] ([code]scene[/code] or [code]storylet[/code]),
+## owner [code]id[/code], and that owner's [code]ai_context[/code] keys.
+## Empty when no line opts in. Not saved.
+var ai_lines: Dictionary = {}
 ## Catalog rows for coverage: [code]kind[/code], [code]id[/code], [code]path[/code], [code]line[/code].
 var coverage_sites: Array = []
 var files: Array = []
@@ -84,6 +88,8 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			content.scenes[scene.id] = scene
 			for item in scene.items:
 				content._item(scene.id, item)
+				if item.line_def != null:
+					content._note_ai(item.line_def, "scene", scene.id, scene.ai_context)
 		for role in file.roles:
 			content.roles[role.id] = role
 		for storylet in file.storylets:
@@ -92,6 +98,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 			content.storylets[storylet.id] = storylet
 			for line_def in storylet.lines:
 				content._remember(line_def)
+				content._note_ai(line_def, "storylet", storylet.id, storylet.ai_context)
 		content._index_coverage(file, str(unit["path"]))
 		for sequence in file.sequences:
 			if sequence.id.is_empty():
@@ -216,6 +223,18 @@ func _item(scene_id: String, item: WyrdSceneItem) -> void:
 			lines[choice.line_id] = choice
 		var record := choice.line_id if not choice.line_id.is_empty() else scene_id
 		_add(choice.condition, record, "choice")
+
+
+func _note_ai(line: WyrdLineDef, owner: String, owner_id: String, keys: PackedStringArray) -> void:
+	if line == null or line.line_id.is_empty() or not line.is_ai():
+		return
+	if line.kind != &"spoken" and line.kind != &"storylet":
+		return
+	ai_lines[line.line_id] = {
+		"id": owner_id,
+		"keys": keys.duplicate(),
+		"owner": owner,
+	}
 
 
 func _remember(line: WyrdLineDef) -> void:

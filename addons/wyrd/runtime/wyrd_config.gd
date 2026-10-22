@@ -19,7 +19,8 @@ extends Resource
 ## [member compact_after],
 ## [member secrecy_tiers], [member secrecy_fact], [member pressure_tiers],
 ## [member generator_retries],
-## and [member trace_director].
+## [member trace_director],
+## and [member ai_banned_terms].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -78,6 +79,8 @@ extends Resource
 ## When true, a director query logs one line per scope-and-speaker match. Not saved.
 ## Tracing must also be on. Load does not log those lines.
 @export var trace_director: bool = false
+## Case-insensitive whole words or phrases, checked by AI validation. Not saved.
+@export var ai_banned_terms: PackedStringArray = PackedStringArray()
 
 
 func half_life_for(verb: StringName) -> float:

@@ -1513,6 +1513,44 @@ func trace_ai_cancel(request_id: int, kind: String, path: String, reason: String
 	print("wyrd ai_cancel id=%d kind=%s reason=%s" % [request_id, kind, reason])
 
 
+func trace_ai_packet_drop(path: String, fact: String, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {"fact": fact, "path": path, "reason": reason}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_packet_drop", fields)
+	print("wyrd ai_packet_drop path=%s fact=%s reason=%s" % [path, fact, reason])
+
+
+func trace_ai_validate(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var flag := "true" if ok else "false"
+	var fields := {
+		"id": request_id,
+		"kind": kind,
+		"ok": flag,
+		"path": path,
+		"rule": rule,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_validate", fields)
+	var shown := path if not path.is_empty() else "-"
+	print("wyrd ai_validate id=%d kind=%s path=%s ok=%s rule=%s" % [request_id, kind, shown, flag, rule])
+
+
+func trace_ai_classifier(state: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {"state": state}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_classifier", fields)
+	print("wyrd ai_classifier state=%s" % state)
+
+
 func _trace_gen_offer(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return
