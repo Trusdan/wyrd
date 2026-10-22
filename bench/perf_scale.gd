@@ -111,7 +111,7 @@ static func samples_for(name: String) -> int:
 
 
 ## [code]stat[/code] is the value the budget and the regression ratio use.
-## [code]absolute[/code] false means the 20% regression gate is the only judge.
+## [code]absolute[/code] false means the 20% regression check (report-only in hosted runs) is the only judge.
 ## [code]compile.strict[/code] and [code]compile.tie_lint[/code] are developer-only.
 static func metrics() -> Array:
 	return [

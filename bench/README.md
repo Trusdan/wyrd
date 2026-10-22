@@ -4,9 +4,11 @@
 
 ```bash
 tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-smoke.json
-tools/perf_bench.sh --profile full --head . --base /path/to/base --mode gate --out /tmp/wyrd-perf-full.json
+tools/perf_bench.sh --profile full --head . --base /path/to/base --mode warn --out /tmp/wyrd-perf-full.json
 tools/perf_bench.sh --profile smoke --head . --mode warn --bench-filter tick --out /tmp/wyrd-perf-tick.json
 ```
+
+`--mode gate` fails a regression over 20% for a local check; hosted runs never use it.
 
 `--bench-filter` keeps metrics whose names start with that prefix. `--samples` overrides the sample count for a local run. CI does not pass it. The runner imports a checkout before the generator when `.godot/global_script_class_cache.cfg` is missing, so `class_name` scripts parse on a fresh tree.
 
