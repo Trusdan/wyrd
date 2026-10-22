@@ -22,7 +22,8 @@ extends Resource
 ## [member trace_director],
 ## [member ai_banned_terms],
 ## [member ai_cache_max],
-## and [member ai_save_cache].
+## [member ai_save_cache],
+## and [member ai_max_inflight].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
 @export var hour_bucket_minutes: int = 60
@@ -90,6 +91,11 @@ extends Resource
 ## When true, [method WyrdRuntime.save_state] writes the optional [code]ai[/code]
 ## key if the cache is not empty. Not saved. Loading does not read this flag.
 @export var ai_save_cache: bool = true
+## The most requests Wyrd itself keeps open at once for prefetch.
+## [code]0[/code] or less turns Wyrd's prefetch off. Requests the host sends
+## through [method WyrdAI.request] count toward it but are never refused by it.
+## Read at each prefetch. Not saved.
+@export var ai_max_inflight: int = 4
 
 
 func half_life_for(verb: StringName) -> float:

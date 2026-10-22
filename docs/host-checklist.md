@@ -31,7 +31,7 @@ Subclass each base directly and pass the instance to `register_adapter(base, ada
 - `WyrdTimeAdapter`
 - `WyrdActionAdapter`
 - `WyrdAIProvider` is optional. The null provider is registered by default, and a host that does not use AI does nothing.
-- `Wyrd.ai.register_classifier`, `WyrdConfig.ai_banned_terms`, `WyrdConfig.ai_cache_max`, and `WyrdConfig.ai_save_cache` are optional. With the null provider nothing is cached.
+- `Wyrd.ai.register_classifier`, `WyrdConfig.ai_banned_terms`, `WyrdConfig.ai_cache_max`, `WyrdConfig.ai_save_cache`, and `WyrdConfig.ai_max_inflight` are optional. With the null provider nothing is cached or requested.
 
 `candidates(filter)` must honor `kind` and `tag`. An item cast asks for kind `item`.
 

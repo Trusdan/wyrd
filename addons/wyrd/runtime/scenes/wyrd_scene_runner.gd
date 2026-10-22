@@ -81,9 +81,11 @@ func open(npc: String) -> PackedStringArray:
 	if not _npc_known(npc):
 		push_error("WyrdSceneRunner.open: unknown npc \"%s\"" % npc)
 		return PackedStringArray()
-	var listed := _topics_for(npc)
+	var bundles: Array = []
+	var listed := _topics_for(npc, bundles)
 	if runtime != null:
 		runtime.trace_topic_open(npc, listed.size())
+	_prefetch_topics(npc, bundles)
 	return listed
 
 
@@ -128,15 +130,87 @@ func _npc_known(npc: String) -> bool:
 	return world.exists(StringName(npc))
 
 
-func _topics_for(npc: String) -> PackedStringArray:
+func _topics_for(npc: String, bundles: Array) -> PackedStringArray:
 	var listed := PackedStringArray()
 	if runtime == null or runtime.topics == null or runtime.director == null:
 		return listed
 	for topic in runtime.topics.unlocked():
-		if runtime.director.eligible_for_entity(&"topic", topic, npc).is_empty():
+		var matched: Array = runtime.director.eligible_for_entity(&"topic", topic, npc)
+		if matched.is_empty():
 			continue
 		listed.append(topic)
+		bundles.append({"storylets": matched, "topic": String(topic)})
 	return listed
+
+
+func _prefetch_scene(frame: Frame) -> void:
+	if runtime == null or runtime.ai == null or not runtime.ai.is_active():
+		return
+	if runtime.content() == null:
+		return
+	var scene := _scene(frame.scene_id)
+	if scene == null:
+		return
+	var rows: Array = []
+	for item in scene.items:
+		if item.kind != &"line" or item.line_def == null:
+			continue
+		var line_id := item.line_def.line_id
+		if not runtime.content().ai_lines.has(line_id):
+			continue
+		rows.append({
+			"line_id": line_id,
+			"speaker": _prefetch_speaker(item.line_def.speaker, frame.quest_id),
+		})
+	runtime.ai.prefetch_lines(&"scene", _root_id, rows)
+
+
+func _prefetch_topics(npc: String, bundles: Array) -> void:
+	if runtime == null or runtime.ai == null or not runtime.ai.is_active():
+		return
+	if runtime.content() == null:
+		return
+	runtime.ai.close_prefixed("topic:", &"superseded")
+	var rows: Array = []
+	for bundle in bundles:
+		if not (bundle is Dictionary):
+			continue
+		var matched: Variant = (bundle as Dictionary).get("storylets", [])
+		if not (matched is Array):
+			continue
+		var stories: Array = (matched as Array).duplicate()
+		stories.sort_custom(func(a: WyrdStoryletDef, b: WyrdStoryletDef) -> bool: return a.id < b.id)
+		for item in stories:
+			var story := item as WyrdStoryletDef
+			if story == null or story.body_kind == &"scene":
+				continue
+			var line_ids: Array = []
+			for line_def in story.lines:
+				if line_def == null or line_def.line_id.is_empty():
+					continue
+				if not runtime.content().ai_lines.has(line_def.line_id):
+					continue
+				var entry: Dictionary = runtime.content().ai_lines[line_def.line_id]
+				if str(entry.get("owner", "")) != "storylet" or str(entry.get("id", "")) != story.id:
+					continue
+				line_ids.append(line_def.line_id)
+			line_ids.sort()
+			for line_id in line_ids:
+				rows.append({"line_id": String(line_id), "speaker": npc})
+	runtime.ai.prefetch_lines(&"topic", npc, rows)
+
+
+func _prefetch_speaker(token: String, quest_id: String) -> String:
+	var shown := String(_who(token, quest_id)["id"])
+	if shown.is_empty() or shown == "narrator":
+		return ""
+	return shown
+
+
+func _close_scene_requests() -> void:
+	if runtime == null or runtime.ai == null or _root_id.is_empty():
+		return
+	runtime.ai.close_owner("scene:%s" % _root_id, &"scene_end")
 
 
 func _trace_ask(npc: String, topic: String, storylet_id: String, ok: bool, reason: String) -> void:
@@ -328,6 +402,7 @@ func note_role(role_id: StringName, _old_holder: StringName, _new_holder: String
 
 
 func force_close() -> void:
+	_close_scene_requests()
 	_stack.clear()
 	_root_id = ""
 	_wait = &""
@@ -452,6 +527,8 @@ func _show_line_body(frame: Frame, line_def: WyrdLineDef) -> void:
 	view.text = shown_text
 	view.tags = shown_tags.duplicate()
 	view.audio = _audio(shown_id)
+	if runtime != null and runtime.ai != null:
+		runtime.ai.present(view, view.id)
 	if runtime != null:
 		runtime.trace_add("line_audio", {"id": view.id, "present": view.audio != null})
 		runtime.trace_add("line", {"id": view.id, "text": view.text})
@@ -538,6 +615,7 @@ func _push(scene_id: String, quest_id: String, slots: PackedStringArray) -> void
 		else:
 			frame.holders[slot_name] = runtime.roles.slot_holder(quest_id, StringName(slot_name))
 	_stack.append(frame)
+	_prefetch_scene(frame)
 
 
 func _bound(scene_id: String, quest_id: String, slots: PackedStringArray) -> PackedStringArray:
@@ -568,6 +646,7 @@ func _pop() -> void:
 
 func _finish(status: StringName, reason: StringName) -> void:
 	var root := _root_id
+	_close_scene_requests()
 	_stack.clear()
 	_wait = &""
 	_line = null
