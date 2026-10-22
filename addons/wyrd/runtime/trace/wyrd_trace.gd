@@ -119,7 +119,10 @@ var enabled: bool = false
 ## units is the work done. carry is the unfinished count. A frame line is the
 ## debug soft warning: us is the measured time and threshold is the config.
 ## The default threshold is 2000 microseconds (2 ms). 0 disables the line.
-## The warning does not change the work. Replay skips the line. It is not saved.
+## The warning does not change the work. It sets timing true, because us and
+## the row's presence depend on wall-clock time. [method diff] leaves out every
+## row with timing true and compares every other row exactly. The row stays in
+## the trace. Replay skips the line. It is not saved.
 ## A rumor_hop line is one precise hop: deed, speaker, listener, and hop.
 ## path is the policy id. who is the listener. key is the fact.
 ## taken is true when the seeded roll offers the hop. reason is pass, chance, or coarse.
@@ -250,19 +253,45 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 
 static func diff(expected: Array, actual: Array) -> PackedStringArray:
 	var rows := PackedStringArray()
-	var count := mini(expected.size(), actual.size())
-	for i in count:
-		if JSON.stringify(expected[i]) == JSON.stringify(actual[i]):
-			continue
-		var kind := ""
-		if expected[i] is Dictionary:
-			kind = String((expected[i] as Dictionary).get("kind", ""))
-		rows.append("%d %s" % [i, kind])
-		if rows.size() >= 8:
-			return rows
-	if expected.size() != actual.size():
-		rows.append("length %d/%d" % [expected.size(), actual.size()])
+	var left := 0
+	var right := 0
+	var left_kept := 0
+	var right_kept := 0
+	while left < expected.size() and right < actual.size():
+		while left < expected.size() and _timing_only(expected[left]):
+			left += 1
+		while right < actual.size() and _timing_only(actual[right]):
+			right += 1
+		if left >= expected.size() or right >= actual.size():
+			break
+		left_kept += 1
+		right_kept += 1
+		if JSON.stringify(expected[left]) != JSON.stringify(actual[right]):
+			var kind := ""
+			if expected[left] is Dictionary:
+				kind = String((expected[left] as Dictionary).get("kind", ""))
+			rows.append("%d %s" % [left, kind])
+			if rows.size() >= 8:
+				return rows
+		left += 1
+		right += 1
+	while left < expected.size():
+		if not _timing_only(expected[left]):
+			left_kept += 1
+		left += 1
+	while right < actual.size():
+		if not _timing_only(actual[right]):
+			right_kept += 1
+		right += 1
+	if left_kept != right_kept:
+		rows.append("length %d/%d" % [left_kept, right_kept])
 	return rows
+
+
+## A timing row is a wall-clock diagnostic. Its presence and measured fields
+## are not part of replay equivalence. Decisions and every other row are.
+static func _timing_only(row: Variant) -> bool:
+	return row is Dictionary and bool((row as Dictionary).get("timing", false))
 
 
 static func _dict(value: Variant) -> Dictionary:

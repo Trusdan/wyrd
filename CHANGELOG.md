@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Replay: a trace row whose presence or content depends on measured time sets `timing` true. The scheduler frame warning (`queue=frame`, `us`) is that row. `WyrdTrace.diff` leaves timing rows out and still compares every other row exactly. The rows stay in the trace.
+
 ## 0.8.0-m10 - 2026-10-22
 
 M10 AI hooks (M10 PRs 1–9, PR 5 in two parts, plus the report-only performance workflow change). `addons/wyrd/VERSION` is `0.8.0-m10`. `plugin.cfg` version is `0.8.0-m10`. Save schema stays 4. With the null provider, the default, no AI text is shown. The tag `v0.8.0-m10` is cut only on request.
