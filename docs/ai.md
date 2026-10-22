@@ -1,6 +1,6 @@
 # Local AI flavor
 
-The reference provider in `example/ai/` is an example. It is not part of `addons/wyrd`, and it is not vendored into a host. Wyrd's default provider is still the null provider, which answers nothing. Gullhaven has no AI opt-in lines in this step, so leaving the toggle off changes nothing on screen.
+The reference provider in `example/ai/` is an example. It is not part of `addons/wyrd`, and it is not vendored into a host. Wyrd's default provider is still the null provider, which answers nothing. Gullhaven opts six lines in (see `example/README.md`). With the toggle off, nothing on screen changes. With it on, the `toll.depart` narrator line is the one on the playtest's routes, so it is the line that can show ` (AI)`.
 
 The provider talks to an OpenAI-compatible server on this machine. It allows `http://127.0.0.1` and `http://localhost` only. Any other host, including a public address or a name that only looks like loopback, is refused before a socket opens. It has no API-key setting and sends no auth header, so it cannot be pointed at a paid service. A model name containing `cloud` is refused as well, because some local servers forward those names to a hosted service.
 
@@ -24,6 +24,8 @@ Two environment variables override the defaults when they are set:
 A URL that is not loopback, or a model name that contains `cloud`, is refused and the provider is not registered.
 
 ## Free setup with llama.cpp
+
+A real-model run is a manual check. It is informational only and never part of CI.
 
 [llama.cpp](https://github.com/ggml-org/llama.cpp) is MIT. Its `llama-server` speaks the chat-completions API. Install it with one of:
 

@@ -64,20 +64,32 @@
 #^^ source.wyrd
 #  ^^^^^ source.wyrd keyword.other.wyrd
 #       ^^ source.wyrd
->    - The toll money never reached the council, if you ask me. #line:sg02
+>    - The toll money never reached the council, if you ask me. #tag:ai #tag:gossip #line:sg02
 #^^^^ source.wyrd
 #    ^ source.wyrd keyword.operator.wyrd
 #     ^ source.wyrd
 #      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
-#                                                               ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
-#                                                                     ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
->    - Lost at sea, they say. Lost in someone's pocket. #line:sg03
+#                                                               ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                    ^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                      ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                       ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                            ^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                                  ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                                   ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                         ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+>    - Lost at sea, they say. Lost in someone's pocket. #tag:ai #tag:gossip #line:sg03
 #^^^^ source.wyrd
 #    ^ source.wyrd keyword.operator.wyrd
 #     ^ source.wyrd
 #      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
-#                                                       ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
-#                                                             ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                       ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                            ^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                              ^ source.wyrd string.unquoted.prose.wyrd
+#                                                               ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                    ^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                                          ^ source.wyrd string.unquoted.prose.wyrd
+#                                                                           ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                                 ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
 >
 >storylet dock_bark_lantern
 #^^^^^^^^ source.wyrd keyword.other.block.wyrd
@@ -105,13 +117,16 @@
 #  ^^^^^^^^ source.wyrd keyword.other.wyrd
 #          ^^ source.wyrd
 #            ^^^ source.wyrd constant.numeric.wyrd
->  - Mind that flame near the ropes. #line:sg04
+>  - Mind that flame near the ropes. #tag:ai #line:sg04
 #^^ source.wyrd
 #  ^ source.wyrd keyword.operator.wyrd
 #   ^ source.wyrd
 #    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
-#                                    ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
-#                                          ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                    ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                         ^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                           ^ source.wyrd string.unquoted.prose.wyrd
+#                                            ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                  ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
 >
 >storylet dock_bark_lantern_carried
 #^^^^^^^^ source.wyrd keyword.other.block.wyrd
@@ -141,13 +156,16 @@
 #  ^^^^^^^^^^^^^^^^ source.wyrd keyword.other.wyrd
 #                  ^^ source.wyrd
 #                    ^^^ source.wyrd constant.numeric.wyrd
->  - That lantern in your hand is close to the ropes. #line:sg05
+>  - That lantern in your hand is close to the ropes. #tag:ai #line:sg05
 #^^ source.wyrd
 #  ^ source.wyrd keyword.operator.wyrd
 #   ^ source.wyrd
 #    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
-#                                                     ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
-#                                                           ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                     ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                          ^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                            ^ source.wyrd string.unquoted.prose.wyrd
+#                                                             ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                   ^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
 >
 >storylet dock_voice_crossing
 #^^^^^^^^ source.wyrd keyword.other.block.wyrd
@@ -333,6 +351,10 @@
 #  ^^^^^^^ source.wyrd keyword.other.wyrd
 #         ^^ source.wyrd
 #           ^^^ source.wyrd keyword.other.wyrd
+>  ai_context: [world.storm_heard]
+#^^ source.wyrd
+#  ^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#            ^^^^^^^^^^^^^^^^^^^^^^ source.wyrd
 >  ~ start quest dock_rumour
 #^^ source.wyrd
 #  ^ source.wyrd keyword.operator.effect.wyrd
@@ -341,11 +363,17 @@
 #         ^ source.wyrd
 #          ^^^^^ source.wyrd keyword.other.wyrd
 #               ^^^^^^^^^^^^ source.wyrd
->  - The storm took a skiff off the bar. #line:sg_storm
+>  - The storm took a skiff off the bar. #tag:ai #tag:gossip #line:sg_storm
 #^^ source.wyrd
 #  ^ source.wyrd keyword.operator.wyrd
 #   ^ source.wyrd
 #    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.wyrd string.unquoted.prose.wyrd
-#                                        ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
-#                                              ^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                        ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                             ^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                               ^ source.wyrd string.unquoted.prose.wyrd
+#                                                ^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                     ^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
+#                                                           ^ source.wyrd string.unquoted.prose.wyrd
+#                                                            ^^^^^^ source.wyrd string.unquoted.prose.wyrd entity.name.tag.wyrd
+#                                                                  ^^^^^^^^ source.wyrd string.unquoted.prose.wyrd constant.other.wyrd
 >
