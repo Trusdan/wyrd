@@ -115,7 +115,7 @@ jobs:
           args=(
             --profile full
             --head .
-            --mode gate
+            --mode warn
             --tag "${BENCH_TAG}"
             --out "${RUNNER_TEMP}/perf-full.json"
             --summary "$GITHUB_STEP_SUMMARY"

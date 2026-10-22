@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bench: the hosted performance workflow reports a regression or a budget overage and does not fail the job for it. A checksum that changes between samples still fails the job. The tag run still records `bench/results/<tag>.json` and `bench/TREND.md` when the bench script exits 0. Pull requests still don't run the suite.
+
 ## 0.7.0-m9 - 2026-10-21
 
 M9 procedural generator (M9 PRs 1–10 plus a lint fix). `addons/wyrd/VERSION` is `0.7.0-m9`. `plugin.cfg` version is `0.7.0-m9`. Save schema is 4. The tag `v0.7.0-m9` is cut only on request, after the M9 bench.

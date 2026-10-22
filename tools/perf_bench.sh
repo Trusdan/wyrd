@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Run the milestone bench. Smoke warns. The full run fails when a same-job
-# ratio is more than 20% worse than the base checkout.
+# Run the milestone bench. The default mode warns. `--mode gate` fails the
+# full run when a same-job ratio is more than 20% worse than the base checkout.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
