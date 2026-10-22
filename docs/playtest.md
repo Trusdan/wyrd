@@ -54,7 +54,7 @@ The status line says "Press New game." You will see:
 
 - A seed box (it starts at `1`) and buttons: New game, Advance time, Save, Load, Reset, Abort scene.
 - A second button row: Emit alive, Batch world, Strike bell.
-- Toggles: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice, Watch alive.
+- Toggles: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice, Watch alive, Local AI flavor. Local AI flavor starts off. See [AI flavor](ai.md).
 - An events line under the toggles. It lists recent world events and ends with `flush 1` after an emit or a batch. `flush 0` means nothing has been emitted since New game or Load.
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
