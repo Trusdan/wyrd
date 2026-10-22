@@ -33,6 +33,7 @@ var storylets: WyrdStoryletDeck
 var sequences: WyrdSequences
 var director: WyrdDirector
 var generator: WyrdGenerator
+var ai: WyrdAI
 var trace: WyrdTrace
 var debug: WyrdDebug
 var coverage: WyrdCoverage
@@ -197,6 +198,9 @@ func _init() -> void:
 	coverage = WyrdCoverage.new()
 	coverage.on_hit = Callable(self, &"trace_coverage")
 	coverage.on_report = Callable(self, &"trace_coverage_report")
+	ai = WyrdAI.new()
+	ai.bind(self)
+	register_adapter(WyrdAIProvider, WyrdNullAIProvider.new())
 
 
 func get_version() -> String:
@@ -231,6 +235,8 @@ func register_adapter(base: Script, adapter: RefCounted) -> void:
 		push_error("WyrdRuntime.register_adapter: adapter is not a %s" % base.resource_path)
 		return
 	_adapters[base.resource_path] = adapter
+	if base == WyrdAIProvider and ai != null:
+		ai.set_provider(adapter as WyrdAIProvider)
 	if base == WyrdWorldAdapter:
 		invalidate_groups()
 		if roles != null:
@@ -369,6 +375,8 @@ func start_new_game(seed_value: int) -> void:
 	_clear_generation_scope()
 	if storylets != null:
 		storylets.set_seed(_seed)
+	if ai != null:
+		ai.drop_pending(&"new_game")
 
 
 func game_seed() -> int:
@@ -1335,6 +1343,8 @@ func load_state(data: Dictionary) -> WyrdLoadReport:
 	if generator != null:
 		generator.clear()
 	_clear_generation_scope()
+	if ai != null:
+		ai.drop_pending(&"load")
 	if not can_save():
 		push_error("Wyrd.load_state: a scene is open")
 		var refused := WyrdLoadReport.new()
@@ -1441,6 +1451,68 @@ func trace_quest_advance(quest_id: String, from_stage: String, to_stage: String,
 ## One line when [method WyrdQuestRunner.create_instance] creates or refuses an instance.
 ## [param ok] is stored as [code]true[/code] or [code]false[/code]. [param n] is the
 ## new counter, or 0 when nothing was created. Load does not call it.
+func trace_ai_provider(provider_id: String, state: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {"id": provider_id, "state": state}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_provider", fields)
+	print("wyrd ai_provider id=%s state=%s" % [provider_id, state])
+
+
+func trace_ai_request(request_id: int, kind: String, path: String, state: String, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"id": request_id,
+		"kind": kind,
+		"path": path,
+		"reason": reason,
+		"state": state,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_request", fields)
+	var shown_path := path if not path.is_empty() else "-"
+	print(
+		"wyrd ai_request id=%d kind=%s path=%s state=%s reason=%s"
+		% [request_id, kind, shown_path, state, reason]
+	)
+
+
+func trace_ai_result(request_id: int, kind: String, path: String, ok: bool, rule: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var flag := "true" if ok else "false"
+	var fields := {
+		"id": request_id,
+		"kind": kind,
+		"ok": flag,
+		"path": path,
+		"rule": rule,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_result", fields)
+	print("wyrd ai_result id=%d kind=%s ok=%s rule=%s" % [request_id, kind, flag, rule])
+
+
+func trace_ai_cancel(request_id: int, kind: String, path: String, reason: String) -> void:
+	if trace == null or not trace.enabled:
+		return
+	var fields := {
+		"id": request_id,
+		"kind": kind,
+		"path": path,
+		"reason": reason,
+	}
+	if not _trace_allows(fields):
+		return
+	trace_add("ai_cancel", fields)
+	print("wyrd ai_cancel id=%d kind=%s reason=%s" % [request_id, kind, reason])
+
+
 func _trace_gen_offer(fields: Dictionary) -> void:
 	if trace == null or not trace.enabled:
 		return

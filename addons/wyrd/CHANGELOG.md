@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Bench: the hosted performance workflow reports a regression or a budget overage and does not fail the job for it. A checksum that changes between samples still fails the job. The tag run still records `bench/results/<tag>.json` and `bench/TREND.md` when the bench script exits 0. Pull requests still don't run the suite.
+- AI: the provider interface (`WyrdAIProvider`, `WyrdAIRequest`, `WyrdAIResult`) and `Wyrd.ai` (`request`, `deliver`, `cancel`, `set_enabled`). The `null` provider (`WyrdNullAIProvider`) is registered by default and answers nothing. Delivered results are not shown or cached yet. A CI step checks that `addons/wyrd/` has no `await`, thread, network or process code. No behavior change; save schema stays 4.
 
 ## 0.7.0-m9 - 2026-10-21
 
