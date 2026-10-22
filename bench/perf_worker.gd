@@ -1,5 +1,7 @@
 extends SceneTree
 
+const _AiBench := preload("res://tests/bench/wyrd_ai_bench.gd")
+
 ## Long-lived bench worker. The shell writes one command to the mailbox and
 ## waits for one JSON line. Samples of one metric share a scripted workload,
 ## so their checksums match. Timers stay outside that workload.
@@ -27,6 +29,7 @@ var _objects_ready := false
 var _graph: Dictionary = {}
 var _cached_beliefs: Array = []
 var _belief_ready := false
+var _ai_bench = null
 
 
 func _init() -> void:
@@ -143,6 +146,13 @@ func _prepare() -> Dictionary:
 	}
 
 
+func _ai_sample(name: String) -> Dictionary:
+	if _ai_bench == null:
+		_ai_bench = _AiBench.new()
+	var result: Dictionary = _ai_bench.sample(name)
+	return result
+
+
 func _sample(name: String) -> Dictionary:
 	if not _ready:
 		return {"error": "prepare first", "metric": name, "ok": false}
@@ -231,6 +241,14 @@ func _sample(name: String) -> Dictionary:
 			row = _sample_generated_save()
 		"load.generated":
 			row = _sample_generated_load()
+		"ai.packet":
+			row = _ai_sample("ai.packet")
+		"ai.validate":
+			row = _ai_sample("ai.validate")
+		"ai.present_overhead":
+			row = _ai_sample("ai.present_overhead")
+		"ai.cache_lookup":
+			row = _ai_sample("ai.cache_lookup")
 		"memory.resident":
 			row = _sample_resident()
 		_:

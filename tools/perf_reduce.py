@@ -303,6 +303,10 @@ def write_trend(results_dir, out_path):
             ("memory.generated", "B"),
             ("save.generated_bytes", "B"),
             ("load.generated", "s"),
+            ("ai.packet", "s"),
+            ("ai.validate", "s"),
+            ("ai.present_overhead", "s"),
+            ("ai.cache_lookup", "s"),
             ("memory.resident", "B"),
         ]
         names = [item[0] for item in catalog]

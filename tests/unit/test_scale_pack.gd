@@ -47,6 +47,7 @@ func test_m7_bench_metrics_are_registered() -> void:
 	assert_eq(WyrdPerfScale.SNAPSHOT_OFFSET, 0)
 	assert_eq(WyrdPerfScale.SNAPSHOT_LIMIT, 50)
 	var developer: PackedStringArray = ["compile.strict", "compile.tie_lint"]
+	developer.append_array(["ai.packet", "ai.validate", "ai.present_overhead", "ai.cache_lookup"])
 	var added: PackedStringArray = [
 		"memory.quests",
 		"rumor.tick",
