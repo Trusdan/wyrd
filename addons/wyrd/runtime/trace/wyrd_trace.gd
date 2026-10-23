@@ -10,7 +10,7 @@ extends RefCounted
 ## [code]complete_host[/code], [code]draw[/code], [code]batch_begin[/code],
 ## [code]batch_end[/code], [code]emit_rejected[/code], [code]open_document[/code],
 ## [code]create_copy[/code], [code]ai_deliver[/code], [code]quest_summary[/code],
-## [code]ai_host_request[/code]) on another runtime. Host
+## [code]ai_host_request[/code], [code]host_call[/code]) on another runtime. Host
 ## answers and decisions are compared with [method diff]. A different host
 ## answer shows up there.
 
@@ -245,6 +245,8 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 			"ai_host_request":
 				if runtime.ai != null:
 					runtime.ai.request(StringName(str(row.get("slot_kind", ""))), _dict(row.get("packet", {})), _dict(row.get("constraints", {})), StringName(str(row.get("path", ""))))
+			"host_call":
+				_replay_host(runtime, row)
 			"ai_provider", "ai_request", "ai_result", "ai_cancel", "ai_prefetch", "ai_use", "ai_late", "ai_sweep", "console", "storylet_index", "deed_index", "scheduler", "social_cache", "rumor_hop", "rumor_adopt", "rumor_reach", "rumor_materialize", "rumor_mutate", "publish", "quest_start", "quest_advance", "quest_status", "role_assign", "role_vacate", "baseline_adjust", "topic_unlock", "topic_lock", "topic_ask", "topic_open", "effect_run", "skill_check", "document_open", "document_copy", "document_stale", "text_translate":
 				pass
 			_:
@@ -298,6 +300,85 @@ static func _dict(value: Variant) -> Dictionary:
 	if value is Dictionary:
 		return value
 	return {}
+
+
+static func _replay_host(runtime: WyrdRuntime, row: Dictionary) -> void:
+	var call := str(row.get("call", ""))
+	var dot := call.find(".")
+	if dot <= 0:
+		return
+	var target: Object = null
+	match call.substr(0, dot):
+		"facts":
+			target = runtime.facts
+		"deeds":
+			target = runtime.deeds
+		"social":
+			target = runtime.social
+		"roles":
+			target = runtime.roles
+		"topics":
+			target = runtime.topics
+		"quests":
+			target = runtime.quests
+		"director":
+			target = runtime.director
+		"ai":
+			target = runtime.ai
+		_:
+			return
+	var method := call.substr(dot + 1)
+	if target == null or method.is_empty() or not target.has_method(method):
+		return
+	var raw: Variant = row.get("args", [])
+	var args: Array = raw if raw is Array else []
+	target.callv(method, _coerce_args(target, method, args))
+
+
+static func _coerce_args(target: Object, method: String, args: Array) -> Array:
+	var spec: Array = []
+	for entry in target.get_method_list():
+		if String(entry.get("name", "")) != method:
+			continue
+		var found: Variant = entry.get("args", [])
+		if found is Array:
+			spec = found
+		break
+	var out: Array = []
+	for i in args.size():
+		var typ := TYPE_NIL
+		if i < spec.size() and spec[i] is Dictionary:
+			typ = int((spec[i] as Dictionary).get("type", TYPE_NIL))
+		out.append(_coerce_arg(args[i], typ))
+	if method == "set_in" and target is WyrdFactStore and out.size() >= 2:
+		out[1] = (target as WyrdFactStore)._saved_value(String(out[0]), out[1])
+	return out
+
+
+static func _coerce_arg(value: Variant, typ: int) -> Variant:
+	match typ:
+		TYPE_STRING_NAME:
+			return StringName(str(value)) if value != null else StringName()
+		TYPE_PACKED_STRING_ARRAY:
+			var packed := PackedStringArray()
+			if value is Array or value is PackedStringArray:
+				for item in value:
+					packed.append(str(item))
+			return packed
+		TYPE_INT:
+			if typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT:
+				return int(value)
+			return value
+		TYPE_FLOAT:
+			if typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT:
+				return float(value)
+			return value
+		TYPE_STRING:
+			return "" if value == null else str(value)
+		TYPE_DICTIONARY:
+			return value if value is Dictionary else {}
+		_:
+			return value
 
 
 static func _plain(value: Variant) -> Variant:

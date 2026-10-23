@@ -56,7 +56,7 @@ Each public call is one entry in `replay_inventory.gd`, written as `<class>.<met
 - `boundary` is `start_new_game`, `load_content`, `save_state`, `load_state`, or an export or import.
 - `debug` is the inspector, coverage, and trace control.
 - `internal` is public only so Wyrd's own classes can call it.
-- `unrecorded` changes state and records no replay input.
+- `unrecorded` is host-repeated. The host repeats the call on replay.
 
 The test fails when a scanned method has no entry, an entry names a method that no longer exists, an `input:<kind>` names a kind `WyrdTrace.replay` does not handle, or a kind that `replay` handles has no `input` entry. A kind that no run exercises is listed, not failed.
 

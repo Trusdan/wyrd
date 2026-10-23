@@ -59,6 +59,9 @@ func bind(runtime: WyrdRuntime) -> void:
 
 
 func query(scope_kind: String, scope_id: String = "", speaker: String = "") -> Dictionary:
+	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
+	if _runtime != null:
+		_runtime._host_mark("director.query", [scope_kind, scope_id, speaker])
 	var kind := StringName(scope_kind)
 	var scope_text := _scope_text(kind, scope_id)
 	if _runtime == null or _runtime.content() == null or _runtime.storylets == null:

@@ -56,6 +56,7 @@ const _STATE_ORDER: PackedStringArray = [
 var social: WyrdSocial
 var deeds: WyrdDeedLog
 var facts: WyrdFactStore
+var runtime: WyrdRuntime
 var clock: Callable = Callable()
 var config_of: Callable = Callable()
 var content_of: Callable = Callable()
@@ -367,6 +368,7 @@ func define(
 	vacancy: String = "",
 	visibility: String = ""
 ) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if role == &"":
 		push_error("WyrdRoles.define: missing role")
 		return
@@ -407,6 +409,8 @@ func define(
 		if diags.has_errors():
 			push_error("WyrdRoles.define: %s" % diags.items[0].message)
 			return
+	if runtime != null:
+		runtime._host_mark("roles.define", [role, succession, secret, hostile_threshold, scope, eligibility, default_holder, vacancy, visibility])
 	var spec := _blank_spec()
 	spec["default_holder"] = StringName(holder_text)
 	spec["eligibility"] = elig
@@ -549,6 +553,7 @@ func departed(role: StringName) -> StringName:
 
 
 func assign(role: StringName, entity: StringName) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if role == &"" or entity == &"":
 		push_error("WyrdRoles.assign: missing role or entity")
 		return
@@ -563,6 +568,8 @@ func assign(role: StringName, entity: StringName) -> void:
 	var old: StringName = prior["holder"]
 	if old == entity and prior["status"] != EMPTY:
 		return
+	if runtime != null:
+		runtime._host_mark("roles.assign", [role, entity])
 	if old != &"":
 		_push_history(prior, &"assign")
 	prior["holder"] = entity
@@ -666,12 +673,15 @@ func _living(entity: StringName) -> bool:
 
 
 func vacate(role: StringName, reason: StringName) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _abolished.has(role) or _pending.has(role):
 		return
 	var prior := _binding(role)
 	var old: StringName = prior["holder"]
 	if old == &"":
 		return
+	if runtime != null:
+		runtime._host_mark("roles.vacate", [role, reason])
 	_push_history(prior, reason)
 	var strategy := String(_spec(role)["strategy"])
 	if strategy == "host_decides" or strategy == "election":
@@ -694,9 +704,12 @@ func vacate(role: StringName, reason: StringName) -> void:
 
 
 func tell(role: StringName, agent: StringName) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if role == &"" or agent == &"":
 		push_error("WyrdRoles.tell: missing role or agent")
 		return
+	if runtime != null:
+		runtime._host_mark("roles.tell", [role, agent])
 	if not _told.has(role):
 		_told[role] = {}
 	(_told[role] as Dictionary)[agent] = true

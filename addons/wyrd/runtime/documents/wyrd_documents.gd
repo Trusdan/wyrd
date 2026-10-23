@@ -35,6 +35,7 @@ func has_copy(doc_id: StringName, copy_id: String) -> bool:
 
 
 func open(doc_id: StringName, copy_id: String, reader: StringName) -> WyrdDocumentView:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var document := _document(doc_id)
 	if document == null:
 		push_error("Wyrd.documents: unknown document \"%s\"" % String(doc_id))
@@ -73,6 +74,7 @@ func open(doc_id: StringName, copy_id: String, reader: StringName) -> WyrdDocume
 
 
 func create_copy(doc_id: StringName, copy_id: String, params: Dictionary = {}, from_host: bool = true) -> bool:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var source := "host" if from_host else "content"
 	if copy_id.is_empty():
 		push_error("Wyrd.documents: copy id is empty")

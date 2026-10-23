@@ -184,7 +184,7 @@ func test_trace_lines_filter_by_quest() -> void:
 	runtime.trace.prefix = "other"
 	runtime.trace.enabled = true
 	runtime.quests.start("gate")
-	assert_eq(runtime.trace.events.size(), 0)
+	assert_eq(runtime.trace.events.size(), 1)
 	runtime.trace.prefix = "gate"
 	runtime.trace.clear()
 	runtime.quests.start("gate")

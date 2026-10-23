@@ -35,6 +35,7 @@ var resolver_of: Callable = Callable()
 var provenance_of: Callable = Callable()
 ## [code](fields, line)[/code]. Records one choice-summary read when tracing is on.
 var on_choice_summary: Callable = Callable()
+var runtime: WyrdRuntime
 
 var _schema: WyrdFactSchema
 var _world: Dictionary = {}
@@ -484,15 +485,20 @@ func get_in(key: StringName, perspective: StringName = &"world") -> Variant:
 
 
 func set_in(key: StringName, new_value: Variant, perspective: StringName = &"world") -> bool:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var text := String(key)
 	var kind := _kind(perspective)
 	if kind != "world" and kind != "known" and kind != "believed" and kind != "held":
+		_host_mark("facts.set_in", [key, new_value, perspective])
 		_refuse("perspective", text, "unknown perspective %s" % String(perspective))
 		return false
-	if not _stored_key(text):
+	if _key_refused(text):
+		_host_mark("facts.set_in", [key, new_value, perspective])
+		_stored_key(text)
 		return false
 	var fact := _find(text)
 	if not _type_ok(fact.type_name, new_value):
+		_host_mark("facts.set_in", [key, new_value, perspective])
 		_refuse("type", text, "expected %s" % String(fact.type_name))
 		return false
 	var stored := _coerce(fact.type_name, new_value)
@@ -501,6 +507,7 @@ func set_in(key: StringName, new_value: Variant, perspective: StringName = &"wor
 	var old_value: Variant = bag[text] if had else null
 	if had and old_value == stored:
 		return true
+	_host_mark("facts.set_in", [key, new_value, perspective])
 	bag[text] = stored
 	_notify(PackedStringArray([text]))
 	_emit(text, old_value, stored, had)
@@ -513,12 +520,16 @@ func set_in(key: StringName, new_value: Variant, perspective: StringName = &"wor
 
 ## Removes one [code]known/[/code], [code]believed/[/code], or [code]held/[/code] key. A missing key is a no-op.
 func clear_in(key: StringName, perspective: StringName) -> bool:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var text := String(key)
 	var kind := _kind(perspective)
 	if kind != "known" and kind != "believed" and kind != "held":
+		_host_mark("facts.clear_in", [key, perspective])
 		_refuse("perspective", text, "clear only removes known/, believed/, or held/")
 		return false
-	if not _stored_key(text):
+	if _key_refused(text):
+		_host_mark("facts.clear_in", [key, perspective])
+		_stored_key(text)
 		return false
 	var who := _who(perspective)
 	var layers := _layers(kind)
@@ -527,6 +538,7 @@ func clear_in(key: StringName, perspective: StringName) -> bool:
 	var bag: Dictionary = layers[who]
 	if not bag.has(text):
 		return true
+	_host_mark("facts.clear_in", [key, perspective])
 	var old_value: Variant = bag[text]
 	bag.erase(text)
 	if bag.is_empty():
@@ -538,6 +550,18 @@ func clear_in(key: StringName, perspective: StringName) -> bool:
 	else:
 		_log_belief("unbelieve" if kind == "believed" else "retract", who, text, null)
 	return true
+
+
+func _host_mark(call_name: String, args: Array) -> void:
+	if runtime != null:
+		runtime._host_mark(call_name, args)
+
+
+func _key_refused(text: String) -> bool:
+	if text.is_empty() or text.contains("{"):
+		return true
+	var fact := _find(text)
+	return fact == null or fact.origin != &"stored"
 
 
 func _stored_key(text: String) -> bool:

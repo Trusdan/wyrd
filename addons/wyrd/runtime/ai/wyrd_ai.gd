@@ -76,6 +76,7 @@ func kinds() -> Array[StringName]:
 
 
 func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {}, path: StringName = &"") -> int:
+	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if _runtime != null:
 		_runtime.trace_add("ai_host_request", {
 			"constraints": constraints.duplicate(true),
@@ -97,6 +98,7 @@ func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {},
 
 
 func deliver(request_id: int, result: WyrdAIResult) -> bool:
+	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	var off_thread := OS.get_thread_caller_id() != OS.get_main_thread_id()
 	if not off_thread:
 		_record_deliver(request_id, result)
@@ -137,8 +139,11 @@ func deliver(request_id: int, result: WyrdAIResult) -> bool:
 
 
 func cancel(request_id: int) -> bool:
+	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if not _pending.has(request_id):
 		return false
+	if _runtime != null:
+		_runtime._host_mark("ai.cancel", [request_id])
 	var req := _pending[request_id] as WyrdAIRequest
 	_pending.erase(request_id)
 	if _provider != null:
@@ -502,6 +507,9 @@ func cache_keys() -> PackedStringArray:
 
 ## Empties the cache. Traces [code]op=clear[/code] only when it held entries.
 func clear_cache() -> void:
+	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
+	if _runtime != null and (_cache.size() > 0 or not _rejected.is_empty()):
+		_runtime._host_mark("ai.clear_cache", [])
 	_rejected.clear()
 	if _cache.size() == 0:
 		return
