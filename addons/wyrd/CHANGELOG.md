@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.9.0-m11 - 2026-10-23
+
+M11 Migration and hardening (M11 PRs 1–8, including 6a (#117) and 6b (#118), plus #110). `addons/wyrd/VERSION` is `0.9.0-m11`. `plugin.cfg` version is `0.9.0-m11`. Save schema stays 4. Saves without aliases or removed content load as before. The tag `v0.9.0-m11` is cut only on request.
+
+- M11 exit suite (`tests/migration/test_m11_exit.gd`) and `docs/migration.md`, a guide to renaming and removing content.
 - Performance: a save is deep-copied on load only when an alias or a missing stage rewrites it, deed rows are shape-checked without sorting each row, quest expiry walks only instances that can expire, and host-call tracing allocates nothing while tracing is off. Saves, traces and replays are unchanged.
 - Host calls that change Wyrd state (fact, deed, relationship, role, topic and quest writes, `director.query`, and AI `cancel` and `clear_cache`) are recorded as `host_call` trace rows and replayed by `WyrdTrace.replay`. Calls Wyrd makes inside its own work are not recorded. Calls that change nothing are skipped. Traces without these rows replay as before.
 - Determinism replay suite: every Gullhaven route and every runtime matrix and exit scenario from M4 to M10 is recorded and replayed twice in the same build with byte-identical traces, including after a save and a load into a fresh runtime; a call inventory test lists every public call as a replay input or as not one, with a reason.

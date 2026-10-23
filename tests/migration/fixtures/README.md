@@ -151,3 +151,19 @@ func _init() -> void:
 	print("JOURNAL %s" % JSON.stringify(ferry.get("journal", [])))
 	quit(0)
 ```
+
+## tests/fixtures
+
+Schema 2, 3, and 4 live in `tests/fixtures/`. Their sha256 values are pinned here. Nothing else about those files changes.
+
+### schema2_harbor.json
+
+- sha256: `8741bdc5271e36f7ff3de18e83a2f301230cf8657a931df25b23faa46182a79e`
+
+### schema3_harbor.json
+
+- sha256: `e960c957fec978eb529cf45c4bf8776185f118bdd711a9600865178ec81004a1`
+
+### schema4_ai_harbor.json
+
+- sha256: `2a44e414481e98ec04d7582c238e0330afa1aa40bc301584b5e5847470903972`
