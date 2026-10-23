@@ -4,7 +4,8 @@
     "res://tests/fake_host",
     "res://tests/golden",
     "res://tests/scenario",
-    "res://tests/determinism"
+    "res://tests/determinism",
+    "res://tests/migration"
   ],
   "include_subdirs": true,
   "prefix": "test_",

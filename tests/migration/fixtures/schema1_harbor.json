@@ -1,0 +1,195 @@
+{
+	"content": {
+		"packs": [
+			{
+				"hash": "886d9ba3e5447ff4",
+				"id": "harbor"
+			}
+		]
+	},
+	"deeds": {
+		"next": 1,
+		"rows": []
+	},
+	"facts": {
+		"believed": {},
+		"held": {},
+		"known": {},
+		"world": {}
+	},
+	"language_version": 1,
+	"minutes": 1,
+	"provenance": {},
+	"quests": {
+		"ferry_toll": {
+			"entered": false,
+			"held_empty": false,
+			"host_fields": [],
+			"host_returns": {},
+			"host_screen": "",
+			"journal": [],
+			"offered": "",
+			"outcomes": {},
+			"scene_done": false,
+			"slots": [],
+			"stage": "",
+			"status": "dormant",
+			"step_at": 0,
+			"variant": "",
+			"waiting": ""
+		},
+		"harbor_bell": {
+			"entered": false,
+			"held_empty": false,
+			"host_fields": [],
+			"host_returns": {},
+			"host_screen": "",
+			"journal": [],
+			"offered": "",
+			"outcomes": {},
+			"scene_done": false,
+			"slots": [],
+			"stage": "",
+			"status": "dormant",
+			"step_at": 0,
+			"variant": "",
+			"waiting": ""
+		},
+		"harbor_guild": {
+			"entered": false,
+			"held_empty": false,
+			"host_fields": [],
+			"host_returns": {},
+			"host_screen": "",
+			"journal": [],
+			"offered": "",
+			"outcomes": {},
+			"scene_done": false,
+			"slots": [],
+			"stage": "",
+			"status": "dormant",
+			"step_at": 0,
+			"variant": "",
+			"waiting": ""
+		}
+	},
+	"rng": {},
+	"roles": {
+		"abolished": [],
+		"bindings": {
+			"ferry_master": {
+				"history": [],
+				"holder": "ferry_master",
+				"since": 0,
+				"status": "default"
+			},
+			"harbor_factor": {
+				"history": [],
+				"holder": "net_mender",
+				"since": 0,
+				"status": "default"
+			},
+			"harbor_reeve": {
+				"history": [],
+				"holder": "tide_clerk",
+				"since": 0,
+				"status": "default"
+			},
+			"storm_watcher": {
+				"history": [],
+				"holder": "storm_watcher",
+				"since": 0,
+				"status": "default"
+			},
+			"tavern_owner": {
+				"history": [],
+				"holder": "tavern_owner",
+				"since": 0,
+				"status": "default"
+			}
+		},
+		"defs": {
+			"ferry_master": {
+				"default_holder": "ferry_master",
+				"eligibility": "",
+				"kinds": [
+					"apprentice"
+				],
+				"scope": "place",
+				"scope_id": "gullhaven",
+				"secret": false,
+				"strategy": "relation",
+				"succession": "relation(apprentice)",
+				"succession_arg": "",
+				"threshold": -1,
+				"vacancy": "hold",
+				"visibility": "public"
+			},
+			"harbor_factor": {
+				"default_holder": "net_mender",
+				"eligibility": "alive(candidate)",
+				"kinds": [],
+				"scope": "faction",
+				"scope_id": "faction.harbor",
+				"secret": false,
+				"strategy": "faction_assigns",
+				"succession": "faction_assigns(faction.harbor)",
+				"succession_arg": "faction.harbor",
+				"threshold": -1,
+				"vacancy": "abolish",
+				"visibility": "public"
+			},
+			"harbor_reeve": {
+				"default_holder": "tide_clerk",
+				"eligibility": "",
+				"kinds": [],
+				"scope": "place",
+				"scope_id": "gullhaven",
+				"secret": false,
+				"strategy": "election",
+				"succession": "election",
+				"succession_arg": "",
+				"threshold": -1,
+				"vacancy": "hold",
+				"visibility": "public"
+			},
+			"storm_watcher": {
+				"default_holder": "storm_watcher",
+				"eligibility": "",
+				"kinds": [],
+				"scope": "world",
+				"scope_id": "",
+				"secret": false,
+				"strategy": "none",
+				"succession": "none",
+				"succession_arg": "",
+				"threshold": -1,
+				"vacancy": "hold",
+				"visibility": "public"
+			},
+			"tavern_owner": {
+				"default_holder": "tavern_owner",
+				"eligibility": "",
+				"kinds": [],
+				"scope": "world",
+				"scope_id": "",
+				"secret": false,
+				"strategy": "none",
+				"succession": "none",
+				"succession_arg": "",
+				"threshold": -1,
+				"vacancy": "hold",
+				"visibility": "public"
+			}
+		},
+		"frozen": {},
+		"pending": {},
+		"told": {}
+	},
+	"schema_version": 1,
+	"seed": "0000000000000000",
+	"social": {
+		"baselines": [],
+		"kinds": []
+	}
+}
