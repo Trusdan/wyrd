@@ -36,10 +36,8 @@ func test_no_provider_route_splits() -> void:
 	for index in names.size():
 		var name := String(names[index])
 		var recorded: Dictionary = driver.record_route(name, "")
-		var splits: Array = driver.choose_plain(driver.split_indexes(recorded["segments"]))
-		for point in splits:
-			var problems: PackedStringArray = driver.plain_route_split(name, recorded, int(point))
-			assert_eq(problems.size(), 0, "%s @%s\n%s" % [name, str(point), "\n".join(problems)])
+		var splits: Array = driver.split_indexes(recorded["segments"])
+		_play_route_splits("none", name, recorded, splits, driver.choose_plain(splits))
 
 
 func test_echo_route_splits() -> void:
@@ -48,19 +46,7 @@ func test_echo_route_splits() -> void:
 		var name := String(names[index])
 		var recorded: Dictionary = driver.record_route(name, "echo")
 		var splits: Array = driver.split_indexes(recorded["segments"])
-		if splits.is_empty():
-			_Driver.echo_notes.append("%s (no split)" % name)
-			continue
-		var mid := int(splits[int(splits.size() / 2)])
-		for point in splits:
-			var result: Dictionary = driver.echo_route_split(name, recorded, int(point))
-			var problems: PackedStringArray = result["problems"]
-			assert_eq(problems.size(), 0, "%s echo @%s\n%s" % [name, str(point), "\n".join(problems)])
-			if int(point) == mid:
-				var shown := str(result["diff"])
-				if shown == "":
-					shown = "(empty)"
-				_Driver.echo_notes.append("%s k=%d\n%s" % [name, mid, shown])
+		_play_route_splits("echo", name, recorded, splits, splits)
 
 
 func test_m4_matrix_replays() -> void:
@@ -214,8 +200,8 @@ func test_replay_report() -> void:
 	for op in ops:
 		var seen := "seen" if _Driver.op_modes.has(op) else "unused"
 		lines.append("%s %s %s" % [str(op), str(_Driver.MODE[op]), seen])
-	lines.append("ECHO MIDDLE DIFFS")
-	for note in _Driver.echo_notes:
+	lines.append("SPLIT VS UNINTERRUPTED")
+	for note in _Driver.split_notes:
 		lines.append(str(note))
 	lines.append("CATEGORY COUNTS")
 	var buckets: Array = _Driver.category_counts.keys()
@@ -235,6 +221,26 @@ func test_replay_report() -> void:
 	file.close()
 	assert_gt(elapsed, 0)
 	assert_eq(driver.route_names().size(), 32)
+
+
+func _play_route_splits(provider: String, name: String, recorded: Dictionary, splits: Array, chosen: Array) -> void:
+	if splits.is_empty():
+		_Driver.split_notes.append("%s %s (no split)" % [provider, name])
+		return
+	var mid := int(splits[int(splits.size() / 2)])
+	for point in chosen:
+		var result: Dictionary = {}
+		if provider == "echo":
+			result = driver.echo_route_split(name, recorded, int(point))
+		else:
+			result = driver.plain_route_split(name, recorded, int(point))
+		var problems: PackedStringArray = result["problems"]
+		assert_eq(problems.size(), 0, "%s %s @%s\n%s" % [provider, name, str(point), "\n".join(problems)])
+		if int(point) == mid:
+			var shown := str(result["diff"])
+			if shown == "":
+				shown = "(empty)"
+			_Driver.split_notes.append("%s %s k=%d\n%s" % [provider, name, mid, shown])
 
 
 func _replay_runs(runs: Array) -> void:

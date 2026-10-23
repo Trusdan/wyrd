@@ -89,7 +89,7 @@ const _M10_OPS := {
 
 static var op_modes := {}
 static var seen_kinds := {}
-static var echo_notes: Array = []
+static var split_notes: Array = []
 static var split_points := 0
 static var started_ms := 0
 static var limit_plain_splits := true
@@ -104,7 +104,7 @@ static var _suite: RefCounted
 static func reset() -> void:
 	op_modes = {}
 	seen_kinds = {}
-	echo_notes = []
+	split_notes = []
 	split_points = 0
 	category_counts = {}
 	unrecorded_lines = []
@@ -200,47 +200,26 @@ func choose_plain(indexes: Array) -> Array:
 	return picked
 
 
-func plain_route_split(name: String, recorded: Dictionary, k: int) -> PackedStringArray:
+func plain_route_split(name: String, recorded: Dictionary, k: int) -> Dictionary:
 	split_points += 1
 	var spec: Dictionary = recorded["spec"]
-	var steps: Array = recorded["steps"]
 	var doc := _prefix_save_route(spec, "", recorded, k)
-	return _finish_plain_split(_boot_route(spec, ""), steps, recorded, k, doc, "route %s @%d" % [name, k], true)
+	return _check_split(recorded, k, doc, "route %s @%d" % [name, k])
 
 
 func plain_case_split(run: Dictionary, recorded: Dictionary, k: int) -> PackedStringArray:
 	split_points += 1
-	var steps: Array = recorded["steps"]
 	var doc := _prefix_save_case(run, recorded, k)
-	var trace_on := bool(run.get("trace", true))
-	return _finish_plain_split(_Cases.boot(run), steps, recorded, k, doc, "%s @%d" % [str(run["id"]), k], trace_on)
+	var checked: Dictionary = _check_split(recorded, k, doc, "%s @%d" % [str(run["id"]), k])
+	var problems: PackedStringArray = checked["problems"]
+	return problems
 
 
 func echo_route_split(name: String, recorded: Dictionary, k: int) -> Dictionary:
 	split_points += 1
 	var spec: Dictionary = recorded["spec"]
-	var steps: Array = recorded["steps"]
 	var doc := _prefix_save_route(spec, "echo", recorded, k)
-	var problems := PackedStringArray()
-	var loaded := _load_into(_boot_route(spec, "echo"), steps, k, doc)
-	problems.append_array(loaded["problems"])
-	var runtime: WyrdRuntime = loaded["runtime"]
-	runtime.trace.clear()
-	var tail := _tail_steps(steps, k)
-	var suffix := _record_steps(runtime, tail)
-	var again := _load_into(_boot_route(spec, "echo"), steps, k, doc)
-	problems.append_array(again["problems"])
-	var fresh: WyrdRuntime = again["runtime"]
-	fresh.trace.clear()
-	_replay_steps(fresh, tail, suffix["events"], suffix["segments"], 0, tail.size())
-	var got: Array = fresh.trace.snapshot()
-	var mismatch := explain(suffix["events"], got)
-	if mismatch != "":
-		problems.append("echo split replay %s @%d\n%s" % [name, k, mismatch])
-	if suite().gameplay_hash(fresh) != suite().gameplay_hash(runtime):
-		problems.append("echo split hash %s @%d" % [name, k])
-	var uninterrupted: Array = _slice(recorded["events"], int(recorded["segments"][k]["end"]), recorded["events"].size())
-	return {"problems": problems, "diff": explain(uninterrupted, suffix["events"])}
+	return _check_split(recorded, k, doc, "echo %s @%d" % [name, k])
 
 
 func play_canon(spec: Dictionary, provider: String) -> String:
@@ -387,23 +366,50 @@ func _prefix_save_case(run: Dictionary, recorded: Dictionary, k: int) -> Diction
 	return _round_trip(runtime)
 
 
-func _finish_plain_split(runtime: WyrdRuntime, steps: Array, recorded: Dictionary, k: int, doc: Dictionary, label: String, trace_on: bool) -> PackedStringArray:
-	var loaded := _load_into(runtime, steps, k, doc)
-	var problems: PackedStringArray = loaded["problems"]
+func _check_split(recorded: Dictionary, k: int, doc: Dictionary, label: String) -> Dictionary:
+	var steps: Array = recorded["steps"]
+	var trace_on := _trace_on(recorded)
+	var problems := PackedStringArray()
+	var loaded := _load_into(_fresh_split_runtime(recorded), steps, k, doc)
+	problems.append_array(loaded["problems"])
 	var host: WyrdRuntime = loaded["runtime"]
 	host.trace.enabled = trace_on
 	host.trace.clear()
-	_replay_steps(host, steps, recorded["events"], recorded["segments"], k + 1, steps.size())
-	var got: Array = host.trace.snapshot()
-	var expected: Array = _slice(recorded["events"], int(recorded["segments"][k]["end"]), recorded["events"].size())
-	var mismatch := explain(expected, got)
-	if mismatch != "":
-		problems.append("%s tail\n%s" % [label, mismatch])
-	if canon(got) != canon(expected):
-		problems.append("%s tail bytes" % label)
+	var tail := _tail_steps(steps, k)
+	var suffix := _record_steps(host, tail)
 	if suite().gameplay_hash(host) != str(recorded["hash"]):
 		problems.append("%s hash" % label)
-	return problems
+	for replay_i in 2:
+		var again := _load_into(_fresh_split_runtime(recorded), steps, k, doc)
+		problems.append_array(again["problems"])
+		var fresh: WyrdRuntime = again["runtime"]
+		fresh.trace.enabled = trace_on
+		fresh.trace.clear()
+		_replay_steps(fresh, tail, suffix["events"], suffix["segments"], 0, tail.size())
+		var got: Array = fresh.trace.snapshot()
+		var mismatch := explain(suffix["events"], got)
+		if mismatch != "":
+			problems.append("%s replay %d\n%s" % [label, replay_i + 1, mismatch])
+		if canon(got) != canon(suffix["events"]):
+			problems.append("%s replay bytes %d" % [label, replay_i + 1])
+	var uninterrupted: Array = _slice(recorded["events"], int(recorded["segments"][k]["end"]), recorded["events"].size())
+	return {"diff": explain(uninterrupted, suffix["events"]), "problems": problems}
+
+
+func _fresh_split_runtime(recorded: Dictionary) -> WyrdRuntime:
+	if recorded.has("spec"):
+		var spec: Dictionary = recorded["spec"]
+		return _boot_route(spec, str(recorded.get("provider", "")))
+	var run: Dictionary = recorded["run"]
+	var runtime := _Cases.boot(run)
+	_begin(runtime, run)
+	return runtime
+
+
+func _trace_on(recorded: Dictionary) -> bool:
+	if recorded.get("run") is Dictionary:
+		return bool((recorded["run"] as Dictionary).get("trace", true))
+	return true
 
 
 func _load_into(runtime: WyrdRuntime, steps: Array, k: int, doc: Dictionary) -> Dictionary:

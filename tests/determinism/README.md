@@ -32,11 +32,17 @@ The pump segment is always replayed from its rows. A replay never pumps. `replay
 
 A boundary after step k is a split point when `can_save()` is true, the AI module has no open request, the generator's queued-offer count (`generator.pending_count()`) is 0, and no proposal made at or before step k is accepted after it. Load drops the offer queue, so a boundary with a queued offer is not a split point. A step that already saves and loads in place (`save_load`, `save_hold`, `load_held`) is repeated.
 
-With no provider, the tested split points are replayed as a prefix, saved, and loaded into a fresh runtime after that runtime has had the host and setup parts of the prefix applied. The save is round-tripped through `JSON.stringify` and `JSON.parse_string` before the load. Godot's parser turns integers into floats, so equality is the canonical text of the save that was written (`JSON.stringify` with sorted keys) against `save_state()` immediately after the load. The load is `ok`. Its report rows are exactly the `kept` rows from `WyrdSave._note_kept` on that prefix runtime: ids the content does not declare and, for roles, ids the host has not passed to `roles.define()`. Every row logged during `load_state` is an `ai_*` row. The tail is then replayed and compared with the uninterrupted run after that boundary.
+Every tested split point, for no provider and for `echo`, and for each matrix case, checks three things.
+
+The prefix is replayed on runtime A and saved. The save is round-tripped through `JSON.stringify` and `JSON.parse_string`. Runtime B is a fresh boot with the host and setup parts of the prefix applied, then `load_state`. Godot's parser turns integers into floats, so the load baseline is the canonical text of the save that was written (`JSON.stringify` with sorted keys) against `save_state()` immediately after the load. The load is `ok`. Its report rows are exactly the `kept` rows from `WyrdSave._note_kept` on that prefix runtime: ids the content does not declare and, for roles, ids the host has not passed to `roles.define()`. Every row logged during `load_state` is an `ai_*` row.
+
+The tail is then played live on B and that trace is the split recording. The same load and tail are replayed twice more, each into a fresh runtime: host and setup, load, then `WyrdTrace.replay` of the recording. Each of those replays has an empty `WyrdTrace.diff` and byte-identical rows with `timing` rows removed.
+
+`gameplay_hash` after the live tail equals the uninterrupted run. That comparison stays strict.
+
+The live tail is not required to match the uninterrupted tail row for row. A load may restart AI request ids, proposal ids, and emit ids. The report prints the first mismatching rows of the middle split of each route, for each provider. That section is `SPLIT VS UNINTERRUPTED`.
 
 An unrestricted local run of this script took 226 seconds, so `ReplayDriver.limit_plain_splits` is on: no-provider route splits use only the first, middle, and last split point of each route. Case splits stay complete. Echo route splits stay complete.
-
-With `echo`, load restarts request ids at 1, so the tail cannot match the uninterrupted run. The split run is recorded on its own (prefix replay, load, then the tail played live with pumping) and replayed the same way. The uninterrupted-against-split diff for one middle split of each route is printed and not asserted.
 
 ## Call inventory
 
