@@ -14,8 +14,8 @@ extends RefCounted
 ## a single [code]{[/code] opens an interpolation raw span, and a stray [code]}[/code]
 ## is literal. [code]}}[/code] is not an escape.
 ## Draft statement syntax, not a grammar v1 change: [code]on_empty[/code],
-## [code]on_abort[/code], and [code]requires[/code] stay code when they open with a
-## colon. A [code]when <cond>: <speaker>:[/code] line keeps the condition in code
+## [code]on_missing_stage[/code], [code]on_abort[/code], and [code]requires[/code]
+## stay code when they open with a colon. A [code]when <cond>: <speaker>:[/code] line keeps the condition in code
 ## and the spoken text in prose. The first depth-zero [code]: <speaker> :[/code]
 ## ends that condition, so a ternary colon in it needs parentheses.
 ## [code]variant <holder>:[/code] is prose after the colon.
@@ -33,7 +33,7 @@ const _RESERVED: PackedStringArray = [
 	"retract",
 ]
 ## [code]ai_context:[/code] is a scene statement. Without this, the colon would make it a speaker line.
-const _CODE_COLON: PackedStringArray = ["ai_context", "on_abort", "on_empty", "requires"]
+const _CODE_COLON: PackedStringArray = ["ai_context", "on_abort", "on_empty", "on_missing_stage", "requires"]
 
 var _source: WyrdSource
 var _diagnostics: WyrdDiagnostics

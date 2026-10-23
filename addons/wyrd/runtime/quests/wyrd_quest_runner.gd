@@ -71,7 +71,7 @@ var _counters: Dictionary = {}
 var _params: Dictionary = {}
 ## Instance id to the minute [method create_instance] ran. Not a quest-row field.
 var _created: Dictionary = {}
-## Instance id to a quest row whose template is no longer in the content.
+## Quest rows written back unchanged: a missing template, or a quest the content no longer declares.
 var _raw_rows: Dictionary = {}
 ## Instance id to a generator entry whose template is no longer in the content.
 var _raw_instances: Dictionary = {}
@@ -101,6 +101,7 @@ class QuestState extends RefCounted:
 	## Set on a generated instance. Empty for a hand-written quest.
 	var template: String = ""
 	var n: int = 0
+	var trail: PackedStringArray = PackedStringArray()
 
 
 func bind(host: WyrdRuntime) -> void:
@@ -343,8 +344,7 @@ func journal(quest_id: String) -> Array:
 	return state.journal.duplicate()
 
 
-## Frozen journal entries joined in order, or validated cached summary text.
-## Records [code]quest_summary[/code]. Does not write the journal.
+## Frozen journal entries joined in order, or validated cached summary text. Records [code]quest_summary[/code].
 func summary(quest_id: String) -> String:
 	if runtime != null:
 		runtime.trace_add("quest_summary", {"quest": quest_id})
@@ -554,6 +554,11 @@ func export_state() -> Dictionary:
 		if state.template != "":
 			row["n"] = state.n
 			row["template"] = state.template
+		if not state.trail.is_empty():
+			var trail: Array = []
+			for entry in state.trail:
+				trail.append(String(entry))
+			row["trail"] = trail
 		out[key] = row
 	return out
 
@@ -573,6 +578,7 @@ func import_state(data: Dictionary) -> void:
 			continue
 		var state := _states.get(key) as QuestState
 		if state == null:
+			_raw_rows[key] = item.duplicate(true)
 			continue
 		_load_row(key, state, item)
 	_retrack()
@@ -952,6 +958,7 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	if stage == null:
 		push_error("WyrdQuestRunner: unknown stage \"%s\"" % state.stage_id)
 		return
+	_remember_stage(state)
 	runtime.roles.enter_stage(quest_id, state.stage_id)
 	var pick := _pick(quest_id, quest, stage)
 	state.variant = String(pick["key"])
@@ -971,6 +978,19 @@ func _enter(quest_id: String, quest: WyrdQuestDef, state: QuestState, hops: int)
 	var body := pick["body"] as WyrdStageDef
 	state.regions = _fresh_regions(quest_id, body, "")
 	_after_steps(quest_id, quest, state, body, hops, _run_steps(quest_id, state, body, hops))
+
+
+func _remember_stage(state: QuestState) -> void:
+	if state.stage_id.is_empty():
+		return
+	var prior: Array = []
+	for entry in state.trail:
+		prior.append(String(entry))
+	var next: Array = remember_trail(prior, state.stage_id)
+	var packed := PackedStringArray()
+	for entry in next:
+		packed.append(String(entry))
+	state.trail = packed
 
 
 func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body: WyrdStageDef, hops: int, divert: String) -> void:
@@ -997,6 +1017,11 @@ func _after_steps(quest_id: String, quest: WyrdQuestDef, state: QuestState, body
 
 
 func _entry_steps(body: WyrdStageDef) -> Array:
+	return entry_steps(body)
+
+
+## Journal lines, effects, scenes, and host steps of one stage body, source order.
+static func entry_steps(body: WyrdStageDef) -> Array:
 	var steps: Array = []
 	if body == null:
 		return steps
@@ -1015,6 +1040,35 @@ func _entry_steps(body: WyrdStageDef) -> Array:
 		})
 	steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
 	return steps
+
+
+## How many entry steps [method entry_steps] lists. Shared with the load pass.
+static func entry_step_count(body: WyrdStageDef) -> int:
+	return entry_steps(body).size()
+
+
+## The variant body whose [code]<slot>.<state>[/code] equals [param variant_key], else the stage.
+static func stage_body(stage: WyrdStageDef, variant_key: String) -> WyrdStageDef:
+	if stage == null or variant_key.is_empty():
+		return stage
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null and "%s.%s" % [variant.slot, String(variant.state)] == variant_key:
+			return variant.body
+	return stage
+
+
+## Drops [param stage_id] if present, appends it, and keeps the newest 32.
+static func remember_trail(entries: Array, stage_id: String) -> Array:
+	var kept: Array = []
+	for prior in entries:
+		var id := str(prior)
+		if id != stage_id:
+			kept.append(id)
+	kept.append(stage_id)
+	while kept.size() > 32:
+		kept.remove_at(0)
+	return kept
 
 
 func _run_steps(quest_id: String, state: QuestState, body: WyrdStageDef, hops: int) -> String:
@@ -1237,14 +1291,7 @@ func _any_empty(quest_id: String, quest: WyrdQuestDef) -> bool:
 
 
 func _body_now(quest: WyrdQuestDef, state: QuestState) -> WyrdStageDef:
-	var stage := _stage_by_id(quest, state.stage_id)
-	if stage == null or state.variant.is_empty():
-		return stage
-	for entry in stage.variants:
-		var variant := entry as WyrdVariantDef
-		if variant != null and "%s.%s" % [variant.slot, String(variant.state)] == state.variant:
-			return variant.body
-	return stage
+	return stage_body(_stage_by_id(quest, state.stage_id), state.variant)
 
 
 func _cond_ready(cond: WyrdCompiledCondition) -> bool:
@@ -1769,6 +1816,13 @@ func _load_row(quest_id: String, state: QuestState, item: Dictionary) -> void:
 		for field in field_raw:
 			fields.append(WyrdSave.text_of(field, ""))
 	state.host_fields = fields
+	var trail := PackedStringArray()
+	var trail_raw: Variant = item.get("trail", [])
+	if trail_raw is Array:
+		for entry in trail_raw:
+			if entry is String or entry is StringName:
+				trail.append(String(entry))
+	state.trail = trail
 	state.regions = {}
 	var quest := _quest(quest_id)
 	var packed: Variant = item.get("regions", null)
@@ -1795,6 +1849,21 @@ func _import_instance(quest_id: String, item: Dictionary) -> void:
 	_load_row(quest_id, state, item)
 	state.template = template_id
 	state.n = WyrdSave._whole(item.get("n", 0), 0)
+
+
+## Hand-written quest ids kept raw because the content no longer declares them.
+func kept_quest_ids() -> PackedStringArray:
+	var names := PackedStringArray()
+	for quest_id in _raw_rows.keys():
+		var key := String(quest_id)
+		var row: Variant = _raw_rows[key]
+		if not (row is Dictionary):
+			continue
+		if _instance_row(key, row):
+			continue
+		names.append(key)
+	names.sort()
+	return names
 
 
 func _instance_row(quest_id: String, item: Dictionary) -> bool:

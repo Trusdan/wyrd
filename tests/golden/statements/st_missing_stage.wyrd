@@ -1,0 +1,38 @@
+language 1
+
+quest ferry_toll "Ferry Toll"
+  on_missing_stage: depart
+  stage arrive
+    waits_until false
+  stage depart
+    waits_until false
+
+template ferry_job "Ferry Job"
+  on_missing_stage: sign
+  stage wait
+    waits_until false
+  stage sign
+    waits_until false
+
+quest bad_unknown "Bad Unknown"
+  on_missing_stage: missing
+  stage arrive
+    waits_until false
+
+quest bad_region "Bad Region"
+  on_missing_stage: trim
+  stage watch
+    region wick
+      stage trim
+        waits_until false
+
+quest bad_was "Bad Was"
+  on_missing_stage: offer
+  stage depart was: offer
+    waits_until false
+
+quest bad_dup "Bad Dup"
+  on_missing_stage: arrive
+  on_missing_stage: arrive
+  stage arrive
+    waits_until false

@@ -35,8 +35,9 @@ var documents: Dictionary = {}
 ## Topic ids recorded by the linker, including unlock effects. Not a save field.
 var topic_ids: PackedStringArray = PackedStringArray()
 ## Resolved [code]was:[/code] tables copied from the linked pack. Not a save field.
-## Load rewrites saved quest stages, role ids, deed verbs, and document ids
-## through these tables. Empty when the pack declared no alias.
+## Load rewrites saved quest stages (and their trail), role ids, deed verbs,
+## document ids, periodic publish state, and in-flight rumor verbs through
+## these tables. Empty when the pack declared no alias.
 var aliases: Dictionary = {}
 var lines: Dictionary = {}
 ## Opted-in line id to [code]owner[/code] ([code]scene[/code] or [code]storylet[/code]),

@@ -1,0 +1,57 @@
+// [EXAMPLE CONTENT] Stage ids before a removal. An invented fishing village, not a host game.
+language 1
+
+facts
+  world.note : symbol stored
+
+quest ferry_toll "Ferry Toll"
+  start when false
+  stage arrive
+    journal: The ferry is in. #line:j_arrive
+    ~ outcome route = done
+    waits_until false
+  stage offer
+    waits_until false
+
+quest dock_errand "Dock Errand"
+  start when false
+  stage wait
+    waits_until false
+  stage hire
+    waits_until false
+  stage gone
+    waits_until false
+
+template ferry_job "Ferry Job"
+  stage wait
+    waits_until false
+  stage hire
+    waits_until false
+
+quest lantern_watch "Lantern Watch"
+  start when false
+  stage watch
+    waits_until false
+    region wick
+      stage trim
+        -> dark
+      stage dark
+        waits_until false
+
+quest tide_bell "Tide Bell"
+  start when false
+  stage ring
+    waits_until false
+
+quest harbor_watch "Harbor Watch"
+  start when false
+  stage arrive
+    waits_until false
+  stage offer
+    waits_until false
+
+quest old_errand "Old Errand"
+  start when false
+  stage wait
+    journal: An old errand. #line:j_old
+    waits_until false

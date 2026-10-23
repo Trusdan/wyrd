@@ -1,0 +1,384 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 10,
+      "message": "template \"ferry_job\" specificity 0 priority 0",
+      "path": "res://tests/golden/statements/st_missing_stage.wyrd",
+      "severity": "info"
+    },
+    {
+      "code": "E_MISSING_STAGE_TARGET",
+      "col": 3,
+      "line": 18,
+      "message": "on_missing_stage stage \"missing\" is unknown",
+      "path": "res://tests/golden/statements/st_missing_stage.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_MISSING_STAGE_TARGET",
+      "col": 3,
+      "line": 23,
+      "message": "on_missing_stage stage \"trim\" is unknown",
+      "path": "res://tests/golden/statements/st_missing_stage.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_MISSING_STAGE_TARGET",
+      "col": 3,
+      "line": 30,
+      "message": "on_missing_stage stage \"offer\" is unknown",
+      "path": "res://tests/golden/statements/st_missing_stage.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_STMT_UNKNOWN",
+      "col": 3,
+      "line": 36,
+      "message": "duplicate statement \"on_missing_stage\"",
+      "path": "res://tests/golden/statements/st_missing_stage.wyrd",
+      "severity": "error"
+    }
+  ],
+  "quests": [
+    {
+      "id": "ferry_toll",
+      "on_empty": "",
+      "on_missing_stage": "depart",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 8,
+        "line": 3
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "arrive",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 6,
+            "line": 5
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 6,
+              "line": 6
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        },
+        {
+          "effects": [],
+          "id": "depart",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 8,
+            "line": 7
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 8,
+              "line": 8
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Ferry Toll"
+    },
+    {
+      "id": "bad_unknown",
+      "on_empty": "",
+      "on_missing_stage": "missing",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 20,
+        "line": 17
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "arrive",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 20,
+            "line": 19
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 20,
+              "line": 20
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Unknown"
+    },
+    {
+      "id": "bad_region",
+      "on_empty": "",
+      "on_missing_stage": "trim",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 26,
+        "end_line": 27,
+        "line": 22
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "watch",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 26,
+            "end_line": 27,
+            "line": 24
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "",
+          "waits_until": null
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Region"
+    },
+    {
+      "id": "bad_was",
+      "on_empty": "",
+      "on_missing_stage": "offer",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 32,
+        "line": 29
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "depart",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 32,
+            "line": 31
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 32,
+              "line": 32
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Was"
+    },
+    {
+      "id": "bad_dup",
+      "on_empty": "",
+      "on_missing_stage": "arrive",
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 38,
+        "line": 34
+      },
+      "stages": [
+        {
+          "effects": [],
+          "id": "arrive",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 38,
+            "line": 37
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 38,
+              "line": 38
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "title": "Bad Dup"
+    }
+  ],
+  "reads": [],
+  "scenes": [],
+  "templates": [
+    {
+      "allow_protected": false,
+      "assumes": null,
+      "assumes_text": "",
+      "assumption_texts": [],
+      "id": "ferry_job",
+      "max_active": 1,
+      "on_empty": "",
+      "on_missing_stage": "sign",
+      "params": [],
+      "priority": 0,
+      "reads": [],
+      "requires": [],
+      "slots": [],
+      "span": {
+        "col": 1,
+        "end_col": 22,
+        "end_line": 15,
+        "line": 10
+      },
+      "specificity": 0,
+      "stages": [
+        {
+          "effects": [],
+          "id": "wait",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 13,
+            "line": 12
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 13,
+              "line": 13
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        },
+        {
+          "effects": [],
+          "id": "sign",
+          "journals": [],
+          "reads": [],
+          "scenes": [],
+          "span": {
+            "col": 3,
+            "end_col": 22,
+            "end_line": 15,
+            "line": 14
+          },
+          "transitions": [],
+          "variants": [],
+          "waits_text": "false",
+          "waits_until": {
+            "reads": [],
+            "source_span": {
+              "col": 17,
+              "end_col": 22,
+              "end_line": 15,
+              "line": 15
+            },
+            "specificity": 1,
+            "uses_chance": false
+          }
+        }
+      ],
+      "start_text": "",
+      "start_when": null,
+      "tier_high": "",
+      "tier_low": "",
+      "tier_range": false,
+      "title": "Ferry Job",
+      "weight": 1,
+      "when": null,
+      "when_text": ""
+    }
+  ]
+}

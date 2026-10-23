@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Missing-stage handling on load: a quest on a removed stage moves by `on_missing_stage:`, then its saved `trail`, then its first stage, arriving entered with no effects; a removed sub-state leaf restarts its region; each move adds a `missing_stage` row with `W_SAVE_STAGE`. Quest rows save an optional `trail`, rewritten through stage aliases. A removed hand-written quest is kept and reported as a `kept` row. New compile error `E_MISSING_STAGE_TARGET`. Document aliases also rewrite periodic publish state and verb aliases the verbs in in-flight rumors; a saved role that neither the content nor the host defines adds a `kept` row.
 - Load rewrites saves through the content's `was:` alias tables (`WyrdSaveMigrate`): quest stages, role ids, deed verbs and document ids. Each rewrite adds an `alias` load-report row; an old id whose new id is also saved is dropped with `W_SAVE_ALIAS`.
 - Content aliases: `was:` on stage, role and document headers and an alias-only `verb` statement, resolved at compile time into alias tables (in `export-json`, and in the manifest hash only when non-empty), with `E_ALIAS_CONFLICT`, `E_ALIAS_DUPLICATE` and `E_ALIAS_CYCLE`. Nothing reads the tables at runtime yet.
 - Replay: a trace row whose presence or content depends on measured time sets `timing` true. The scheduler frame warning (`queue=frame`, `us`) is that row. `WyrdTrace.diff` leaves timing rows out and still compares every other row exactly. The rows stay in the trace.

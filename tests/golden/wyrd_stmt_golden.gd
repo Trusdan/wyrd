@@ -154,7 +154,7 @@ static func _quest(quest: WyrdQuestDef) -> Dictionary:
 	var stages: Array = []
 	for stage in quest.stages:
 		stages.append(_stage(stage))
-	return {
+	var data := {
 		"id": quest.id,
 		"on_empty": quest.on_empty,
 		"reads": _reads(quest.reads),
@@ -166,6 +166,9 @@ static func _quest(quest: WyrdQuestDef) -> Dictionary:
 		"start_when": _cond(quest.start_when),
 		"title": quest.title,
 	}
+	if not quest.on_missing_stage.is_empty():
+		data["on_missing_stage"] = quest.on_missing_stage
+	return data
 
 
 static func _stage(stage: WyrdStageDef) -> Dictionary:

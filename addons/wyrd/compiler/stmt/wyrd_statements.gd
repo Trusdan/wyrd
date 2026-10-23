@@ -827,6 +827,8 @@ func _quest(node: WyrdNode) -> WyrdQuestDef:
 				_slot(child, quest)
 			"on_empty":
 				_on_empty(child, quest)
+			"on_missing_stage":
+				_on_missing_stage(child, quest)
 			"start":
 				_start(child, quest)
 			"requires":
@@ -895,6 +897,9 @@ func _template(node: WyrdNode) -> WyrdTemplateDef:
 			continue
 		if field == "on_empty":
 			_on_empty(child, template)
+			continue
+		if field == "on_missing_stage":
+			_on_missing_stage(child, template)
 			continue
 		if field == "requires":
 			_requires(child, template)
@@ -1413,6 +1418,13 @@ func _finish_quest(quest: WyrdQuestDef) -> void:
 				slot.line,
 				slot.col
 			)
+	if not quest.on_missing_stage.is_empty() and not stage_names.has(quest.on_missing_stage):
+		_error(
+			WyrdDiagnostic.E_MISSING_STAGE_TARGET,
+			"on_missing_stage stage \"%s\" is unknown" % quest.on_missing_stage,
+			quest.on_missing_stage_line,
+			quest.on_missing_stage_col
+		)
 	if quest is WyrdTemplateDef:
 		for param in (quest as WyrdTemplateDef).params:
 			if not param.name.is_empty():
@@ -1956,6 +1968,21 @@ func _on_empty(node: WyrdNode, quest: WyrdQuestDef) -> void:
 		_unknown_msg(node, "duplicate statement \"on_empty\"")
 		return
 	quest.on_empty = items[1].text
+	_no_block(node)
+
+
+func _on_missing_stage(node: WyrdNode, quest: WyrdQuestDef) -> void:
+	_line_id(node, false)
+	var items := node.head
+	if items.size() != 2 or items[0].kind != &"colon" or items[1].kind != &"ident":
+		_unknown_msg(node, "on_missing_stage needs a value")
+		return
+	if not quest.on_missing_stage.is_empty():
+		_unknown_msg(node, "duplicate statement \"on_missing_stage\"")
+		return
+	quest.on_missing_stage = items[1].text
+	quest.on_missing_stage_line = node.start_line
+	quest.on_missing_stage_col = node.start_col
 	_no_block(node)
 
 
@@ -2612,7 +2639,7 @@ func _scene_stmt(node: WyrdNode, scene: WyrdSceneDef) -> void:
 			_label(node, scene)
 		"when":
 			_when_line(node, scene)
-		"on_empty", "requires":
+		"on_empty", "on_missing_stage", "requires":
 			_unknown(node)
 		"on":
 			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "on <event> is only valid in a stage", node.start_line, node.start_col)
