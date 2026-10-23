@@ -44,7 +44,7 @@ func test_result_type_and_calls_stay_in_the_ai_boundary() -> void:
 			assert_false(rel.begins_with(prefix + "/") or rel == prefix, rel)
 	assert_eq(_sites("ai.present("), [
 		"runtime/scenes/wyrd_scene_runner.gd:531",
-		"runtime/wyrd_runtime.gd:2898",
+		"runtime/wyrd_runtime.gd:2912",
 	])
 	assert_eq(_sites("ai.summary_for("), ["runtime/quests/wyrd_quest_runner.gd:354"])
 	assert_eq(_sites("ai.cached_text("), ["runtime/quests/wyrd_quest_runner.gd:367"])

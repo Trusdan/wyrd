@@ -76,6 +76,7 @@ func can_save() -> bool:
 ## Sorted unlocked topics that have an eligible storylet for [param npc] now.
 ## Does not record a selection, run effects, or open a scene.
 func open(npc: String) -> PackedStringArray:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null:
 		runtime.trace_add("open_topic", {"npc": npc})
 	if not _npc_known(npc):
@@ -92,6 +93,7 @@ func open(npc: String) -> PackedStringArray:
 ## Asks [param topic] of [param npc]. Refusals, in order, are an unknown npc,
 ## an open scene, a locked topic, then no eligible storylet.
 func ask_topic(npc: String, topic: String) -> Dictionary:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null:
 		runtime.trace_add("ask_topic", {"npc": npc, "topic": topic})
 	if not _npc_known(npc):
@@ -255,6 +257,7 @@ func choices() -> Array[WyrdChoiceView]:
 
 
 func open_scene(scene_id: String) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if is_open():
 		push_error("WyrdSceneRunner.open_scene: a scene is already open")
 		return
@@ -275,6 +278,7 @@ func open_scene(scene_id: String) -> void:
 
 
 func advance() -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _wait != &"line":
 		push_error("WyrdSceneRunner.advance: no line is waiting")
 		return
@@ -289,6 +293,7 @@ func advance() -> void:
 
 
 func choose(index: int) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _wait != &"choice":
 		push_error("WyrdSceneRunner.choose: no choices are waiting")
 		return
@@ -334,6 +339,7 @@ func choose(index: int) -> void:
 
 
 func abort(reason: StringName) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if not is_open():
 		push_error("WyrdSceneRunner.abort: no scene is open")
 		return
@@ -374,7 +380,6 @@ func on_tick() -> void:
 				abort(&"holder_died")
 				return
 
-
 func note_role(role_id: StringName, _old_holder: StringName, _new_holder: StringName) -> void:
 	if not is_open() or _aborting or runtime == null:
 		return
@@ -400,7 +405,6 @@ func note_role(role_id: StringName, _old_holder: StringName, _new_holder: String
 				abort(&"holder_left")
 				return
 
-
 func force_close() -> void:
 	_close_scene_requests()
 	_stack.clear()
@@ -411,7 +415,6 @@ func force_close() -> void:
 	_pending.clear()
 	_aborting = false
 	_in_step = false
-
 
 func _pump() -> void:
 	var guard := 0
@@ -473,7 +476,6 @@ func _pump() -> void:
 			continue
 		frame.index += 1
 
-
 func _run_scene_effect(frame: Frame, item: WyrdSceneItem) -> String:
 	if item.effect == null or runtime == null or runtime.effects == null:
 		return ""
@@ -496,14 +498,12 @@ func _run_scene_effect(frame: Frame, item: WyrdSceneItem) -> String:
 		return ""
 	return divert
 
-
 func _show_line(frame: Frame, line_def: WyrdLineDef) -> void:
 	if runtime != null:
 		runtime.push_scope(frame.quest_id)
 	_show_line_body(frame, line_def)
 	if runtime != null:
 		runtime.pop_scope()
-
 
 func _show_line_body(frame: Frame, line_def: WyrdLineDef) -> void:
 	var view := WyrdLineView.new()

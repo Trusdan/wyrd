@@ -77,6 +77,8 @@ var _group_cache: Dictionary = {}
 var _group_order: Callable = Callable()
 ## Replaces the statement score. Not saved. The game seed is not an input.
 var _credibility: Callable = Callable()
+## Calls already on the stack. A direct game call records host_call only at 0.
+var _host_depth: int = 0
 
 
 func _init() -> void:
@@ -137,6 +139,11 @@ func _init() -> void:
 	social.tracing_of = Callable(self, &"_tracing_on")
 	_queue.cache_handler = Callable(social, &"rebuild_cached")
 	social.members_of = Callable(self, &"_members")
+	facts.runtime = self
+	deeds.runtime = self
+	social.runtime = self
+	roles.runtime = self
+	topics.runtime = self
 	social.on_reputation = Callable(self, &"_trace_reputation")
 	rumors = WyrdRumor.new()
 	rumors.social = social
@@ -346,6 +353,7 @@ func function_table() -> Dictionary:
 
 
 func start_new_game(seed_value: int) -> void:
+	var _host_gate := _host_enter()
 	_seed = seed_value
 	_minutes = 0
 	_slice_carry = 0
@@ -408,6 +416,7 @@ func rng_stream(name: StringName) -> WyrdRng:
 
 
 func draw_u32(name: StringName) -> int:
+	var _host_gate := _host_enter()
 	var value := rng_stream(name).next_u32()
 	trace_add("draw", {"op": "u32", "stream": String(name), "value": value})
 	return value
@@ -444,6 +453,7 @@ func now_minutes() -> int:
 
 
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
+	var _host_gate := _host_enter()
 	var report := WyrdLoadReport.new()
 	if roles != null:
 		roles.drop_cast_index()
@@ -526,6 +536,7 @@ func content() -> WyrdContent:
 
 
 func tick(game_minutes: float) -> void:
+	var _host_gate := _host_enter()
 	if is_nan(game_minutes) or is_inf(game_minutes) or game_minutes < 0.0:
 		push_error("Wyrd.tick: game minutes must be >= 0")
 		return
@@ -1346,6 +1357,7 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> WyrdLoadReport:
+	var _host_gate := _host_enter()
 	var report: WyrdLoadReport
 	if not can_save():
 		push_error("Wyrd.load_state: a scene is open")
@@ -2291,6 +2303,7 @@ func _mark_keys(keys: PackedStringArray) -> void:
 
 
 func _on_batch(opening: bool) -> void:
+	var _host_gate := _host_enter()
 	if opening:
 		_collecting = true
 		_collected.clear()
@@ -2305,6 +2318,7 @@ func _on_batch(opening: bool) -> void:
 
 
 func _on_emit(event_name: StringName, payload: Dictionary) -> void:
+	var _host_gate := _host_enter()
 	var problem := _payload_problem(event_name, payload)
 	var shown := _payload_strings(payload)
 	if problem != "":
@@ -2991,6 +3005,29 @@ func _drop_load_caches() -> void:
 	if ai != null:
 		ai.drop_pending(&"load")
 	_clear_belief_cache()
+
+
+class _HostDepth extends RefCounted:
+	var runtime: WyrdRuntime
+
+	func _notification(what: int) -> void:
+		if what == NOTIFICATION_PREDELETE and runtime != null:
+			runtime._host_depth -= 1
+			runtime = null
+
+
+func _host_enter() -> RefCounted:
+	var gate := _HostDepth.new()
+	gate.runtime = self
+	_host_depth += 1
+	return gate
+
+
+## Records one direct game call. Nested work is already above depth 0.
+func _host_mark(call_name: String, args: Array) -> void:
+	if _host_depth != 1:
+		return
+	trace_add("host_call", {"args": args, "call": call_name})
 
 
 func _resolve(path: String) -> String:

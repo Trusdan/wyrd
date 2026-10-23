@@ -14,6 +14,7 @@ signal topic_unlocked(topic: StringName)
 signal topic_locked(topic: StringName)
 
 var trace_of: Callable = Callable()
+var runtime: WyrdRuntime
 
 var _ids: Dictionary = {}
 
@@ -31,6 +32,9 @@ func unlocked() -> PackedStringArray:
 
 
 func unlock(id: StringName) -> String:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
+	if runtime != null:
+		runtime._host_mark("topics.unlock", [id])
 	if _ids.has(id):
 		_trace("topic_unlock", id, false, "already")
 		return "already"
@@ -41,6 +45,9 @@ func unlock(id: StringName) -> String:
 
 
 func lock(id: StringName) -> String:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
+	if runtime != null:
+		runtime._host_mark("topics.lock", [id])
 	if not _ids.has(id):
 		_trace("topic_lock", id, false, "not_unlocked")
 		return "not_unlocked"

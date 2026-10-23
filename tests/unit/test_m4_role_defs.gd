@@ -112,10 +112,10 @@ func test_eligibility_trace_is_one_line() -> void:
 	assert_false(JSON.stringify(row).contains("gullhaven.n"))
 	runtime.facts.set(&"gullhaven.n000", 0)
 	assert_false(runtime.roles.eligible(&"dock_keeper", &"ada"))
-	assert_eq(runtime.trace.events.size(), 2)
+	assert_eq(runtime.trace.events.size(), 3)
 	runtime.roles.define(&"watcher", "none")
 	assert_true(runtime.roles.eligible(&"watcher", &"ada"))
-	assert_eq(runtime.trace.events.size(), 2)
+	assert_eq(runtime.trace.events.size(), 4)
 
 
 func test_content_load_assigns_secret_default_holder() -> void:

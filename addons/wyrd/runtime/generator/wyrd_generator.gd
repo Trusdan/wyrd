@@ -25,6 +25,7 @@ var candidate_traces: int = 0
 
 
 func offer(source: StringName, key: String, tier: StringName = &"", payload: Dictionary = {}) -> bool:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if source == &"" or key.is_empty():
 		push_error("Wyrd.generator.offer: source and key are required")
 		return false
@@ -235,6 +236,7 @@ func _accept_origin(proposal: WyrdProposal) -> String:
 
 ## Host pick. Not queued. Null when the input is rejected or nothing can be proposed.
 func propose(context: Dictionary) -> WyrdProposal:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if context == null:
 		push_error("Wyrd.generator.propose: source and key are required")
 		return null
@@ -271,6 +273,7 @@ func fulfill(entry: Dictionary) -> void:
 
 ## [code]unknown[/code], [code]accepted[/code], [code]stale[/code], or the new instance id.
 func accept(proposal: WyrdProposal) -> String:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var proposal_id := ""
 	var instance := ""
 	var reason := "unknown"

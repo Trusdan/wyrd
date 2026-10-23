@@ -343,9 +343,9 @@ func journal(quest_id: String) -> Array:
 		return []
 	return state.journal.duplicate()
 
-
 ## Frozen journal entries joined in order, or validated cached summary text. Records [code]quest_summary[/code].
 func summary(quest_id: String) -> String:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null:
 		runtime.trace_add("quest_summary", {"quest": quest_id})
 	var entries := journal(quest_id)
@@ -728,6 +728,7 @@ func _install_params(instance_id: String, entry: Dictionary) -> void:
 ##
 ## @experimental
 func start(quest_id: String) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null:
 		runtime.push_scope(quest_id)
 	_start_quest(quest_id)
@@ -743,6 +744,8 @@ func _start_quest(quest_id: String) -> void:
 		return
 	var reason := _start_reason(state.status)
 	if reason != "started":
+		if runtime != null:
+			runtime._host_mark("quests.start", [quest_id])
 		_trace_start(quest_id, false, reason)
 		if state.status != UNAVAILABLE:
 			push_warning("WyrdQuestRunner.start: \"%s\" is %s" % [quest_id, reason])
@@ -751,6 +754,8 @@ func _start_quest(quest_id: String) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
+	if runtime != null:
+		runtime._host_mark("quests.start", [quest_id])
 	_trace_start(quest_id, true, "started")
 	if state.status == DORMANT:
 		_set_status(quest_id, state, AVAILABLE)
@@ -768,18 +773,23 @@ func _start_quest(quest_id: String) -> void:
 ##
 ## @experimental
 func advance(quest_id: String, stage_id: String) -> String:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var state := _states.get(quest_id) as QuestState
 	var quest := _quest(quest_id)
 	if state == null or quest == null:
 		push_error("WyrdQuestRunner.advance: unknown quest \"%s\"" % quest_id)
 		return ""
 	if state.status != ACTIVE:
+		if runtime != null:
+			runtime._host_mark("quests.advance", [quest_id, stage_id])
 		_trace_advance(quest_id, state.stage_id, stage_id, false, "not_active")
 		push_warning("WyrdQuestRunner.advance: \"%s\" is %s" % [quest_id, String(state.status)])
 		return ""
 	if _stage_by_id(quest, stage_id) == null:
 		push_error("WyrdQuestRunner.advance: unknown stage \"%s\"" % stage_id)
 		return ""
+	if runtime != null:
+		runtime._host_mark("quests.advance", [quest_id, stage_id])
 	if stage_id == state.stage_id:
 		_trace_advance(quest_id, state.stage_id, stage_id, false, "same_stage")
 		return ""
@@ -832,6 +842,7 @@ func expire_due(now: int) -> void:
 
 
 func abandon(quest_id: String) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
 		push_error("WyrdQuestRunner.abandon: unknown quest \"%s\"" % quest_id)
@@ -839,6 +850,8 @@ func abandon(quest_id: String) -> void:
 	if state.status != ACTIVE and state.status != AVAILABLE:
 		push_error("WyrdQuestRunner.abandon: \"%s\" is %s" % [quest_id, String(state.status)])
 		return
+	if runtime != null:
+		runtime._host_mark("quests.abandon", [quest_id])
 	if runtime != null and runtime.dialogue != null and runtime.dialogue.is_open():
 		runtime.dialogue.abort(&"abandoned")
 	state.waiting = ""
@@ -867,6 +880,7 @@ func request_host_step(quest_id: String, screen_id: StringName, fields: PackedSt
 
 
 func complete_host_step(quest_id: String, values: Dictionary) -> void:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var state := _states.get(quest_id) as QuestState
 	if state == null or state.host_screen.is_empty():
 		push_error("WyrdQuestRunner.complete_host_step: \"%s\" is not waiting on the host" % quest_id)

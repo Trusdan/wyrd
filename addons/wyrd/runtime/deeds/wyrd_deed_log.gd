@@ -25,6 +25,8 @@ extends RefCounted
 
 signal deed_recorded(deed: Dictionary)
 
+var runtime: WyrdRuntime
+
 const ROUND_SCALE: float = 1000000.0
 
 var clock: Callable = Callable()
@@ -216,6 +218,9 @@ func import_state(data: Dictionary) -> void:
 ## same listener keeps the earlier minute. A dropped row loses its believers.
 ## [code]_next[/code] does not go backwards. Perception callbacks do not run.
 func compact() -> int:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
+	if runtime != null:
+		runtime._host_mark("deeds.compact", [])
 	var before := size()
 	var plan := _compact_plan()
 	var merged := int(plan["merged"])
@@ -513,9 +518,12 @@ func record(
 	visibility: StringName = &"public",
 	memorable: bool = false
 ) -> int:
+	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if verb == &"" or actor == &"":
 		push_error("WyrdDeedLog.record: verb and actor are required")
 		return -1
+	if runtime != null:
+		runtime._host_mark("deeds.record", [verb, actor, target, place, tags, magnitude, witnesses, visibility, memorable])
 	var row := _id.size()
 	var stamp := _now()
 	var shown := visibility if visibility != &"" else &"public"
