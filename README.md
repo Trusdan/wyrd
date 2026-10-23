@@ -26,4 +26,4 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-sm
 
 `addons/wyrd` is the folder a host copies. `example/` is the Gullhaven placeholder. `tests/fake_host` is the scripted host. The grammar draft is `docs/grammar-v1.md`. Examples use only that invented village. See `docs/CONTRIBUTING.md`.
 
-License: [MIT](LICENSE). Copyright (c) 2026 Corey Jones.
+License: [MIT](LICENSE). Copyright (c) 2026 Corey Patrick Jones (github.com/Trusdan).
