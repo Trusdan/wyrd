@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Replay: a trace row whose presence or content depends on measured time sets `timing` true. The scheduler frame warning (`queue=frame`, `us`) is that row. `WyrdTrace.diff` leaves timing rows out and still compares every other row exactly. The rows stay in the trace.
+- Migration fixture tests: a schema 1 save and two earlier Gullhaven saves load and round-trip.
 
 ## 0.8.0-m10 - 2026-10-22
 
