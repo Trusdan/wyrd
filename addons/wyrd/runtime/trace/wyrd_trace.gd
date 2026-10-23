@@ -230,7 +230,7 @@ static func replay(runtime: WyrdRuntime, recorded: Array) -> void:
 						"tier": str(row.get("tier", "")),
 					})
 			"gen_accept":
-				if runtime.generator != null:
+				if str(row.get("origin", "")) != "queue" and runtime.generator != null:
 					runtime.generator.accept(runtime.generator.proposal(str(row.get("proposal", ""))))
 			"ai_deliver":
 				if runtime.ai != null:

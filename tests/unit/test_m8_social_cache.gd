@@ -125,13 +125,13 @@ func test_cache_refresh_rebuilds_and_a_fresh_read_skips() -> void:
 	assert_gt(filled, 0)
 	runtime.trace.enabled = true
 	runtime.social.set_baseline(&"ada", &"bea", &"affinity", 9.0)
-	assert_eq(runtime.scheduler().carry("cache_refresh"), filled)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
 	assert_eq(runtime.social.cache_entries(), 0)
 	runtime.trace.clear()
 	runtime.tick(0)
 	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
-	assert_gt(runtime.social.cache_entries(), 0)
-	assert_gt(_scheduler_units(runtime, "cache_refresh"), 0)
+	assert_eq(_scheduler_units(runtime, "cache_refresh"), 0)
+	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 9.0)
 	assert_gt(_events(runtime, "miss").size(), 0)
 	runtime.trace.clear()
 	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 9.0)
@@ -148,7 +148,7 @@ func test_cache_refresh_rebuilds_and_a_fresh_read_skips() -> void:
 	again.trace.clear()
 	again.tick(0)
 	assert_eq(again.scheduler().carry("cache_refresh"), 0)
-	assert_gt(_scheduler_units(again, "cache_refresh"), 0)
+	assert_eq(_scheduler_units(again, "cache_refresh"), 0)
 	assert_eq(_events(again, "miss").size(), 0)
 	assert_eq(_events(again, "invalidate").size(), 0)
 	assert_eq(again.social.axis(&"ada", &"bea", &"affinity"), 9.0)
@@ -172,10 +172,10 @@ func test_adjust_baseline_drops_entries_and_zero_does_not() -> void:
 	runtime.trace.clear()
 	assert_true(runtime.social.adjust_baseline(&"ada", &"bea", &"affinity", 5.0))
 	assert_eq(runtime.social.cache_entries(), 0)
-	assert_eq(runtime.scheduler().carry("cache_refresh"), filled)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
 	runtime.tick(0)
 	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
-	assert_gt(runtime.social.cache_entries(), 0)
+	assert_eq(runtime.social.cache_entries(), 0)
 	assert_eq(runtime.social.axis(&"ada", &"bea", &"affinity"), 9.0)
 	assert_eq(runtime.social.reputation(&"bea", &"ada"), reputation)
 
@@ -202,6 +202,7 @@ func test_social_cache_trace_filters_and_load_is_quiet() -> void:
 	assert_eq(str(hits[0]["key"]), "player")
 	assert_eq(str(hits[0]["path"]), "affinity")
 	assert_eq(str(hits[0]["cache"]), "axis")
+	runtime.scheduler().push("cache_refresh", "row-0")
 	var saved := runtime.save_state()
 	assert_eq(int(saved["schema_version"]), 4)
 	var packed := JSON.stringify(saved)
@@ -302,8 +303,27 @@ func _reputation_tokens(direct: bool, cache_on: bool) -> Dictionary:
 		for who in host.world.members(&"harbor_guild"):
 			runtime.social.disposition(StringName(who), &"player")
 	var score := runtime.social.reputation(&"player", &"harbor_guild")
+	var keys := _cache_keys(runtime.social)
 	runtime.social.set_baseline(&"ada", &"player", &"affinity", 1.0)
-	return {"keys": runtime.scheduler().carry_tokens("cache_refresh"), "score": score}
+	return {"keys": keys, "score": score}
+
+
+func _cache_keys(social: WyrdSocial) -> PackedStringArray:
+	var keys: Array[String] = []
+	_append_cache_keys(social._axis_cache, keys)
+	_append_cache_keys(social._disp_cache, keys)
+	_append_cache_keys(social._rep_cache, keys)
+	_append_cache_keys(social._path_cache, keys)
+	keys.sort()
+	var packed := PackedStringArray()
+	for key in keys:
+		packed.append(key)
+	return packed
+
+
+func _append_cache_keys(table: Dictionary, into: Array[String]) -> void:
+	for key in table.keys():
+		into.append(String(key))
 
 
 func _scripted() -> WyrdRuntime:
