@@ -128,6 +128,15 @@ func export_state() -> Dictionary:
 	return out
 
 
+func stored_ids() -> PackedStringArray:
+	var names: Array = _rows.keys()
+	names.sort()
+	var out := PackedStringArray()
+	for id in names:
+		out.append(String(id))
+	return out
+
+
 func import_state(data: Dictionary) -> void:
 	_rows.clear()
 	for id in data.keys():
@@ -139,13 +148,13 @@ func import_state(data: Dictionary) -> void:
 		var listed: Variant = item.get("matched", [])
 		if listed is Array:
 			for entry in listed:
-				matched.append(int(entry))
+				matched.append(WyrdSave._whole(entry, 0))
 		var started := -1
 		if item.has("started"):
-			started = int(item.get("started", -1))
+			started = WyrdSave._whole(item.get("started", -1), -1)
 		_rows[String(id)] = {
-			"count": int(item.get("count", 0)),
-			"done": bool(item.get("done", false)),
+			"count": WyrdSave._whole(item.get("count", 0), 0),
+			"done": WyrdSave.flag_of(item.get("done", false), false),
 			"matched": matched,
 			"started": started,
 		}

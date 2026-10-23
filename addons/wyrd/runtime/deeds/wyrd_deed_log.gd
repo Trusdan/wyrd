@@ -206,7 +206,7 @@ func import_state(data: Dictionary) -> void:
 	for item in data.get("rows", []):
 		if item is Dictionary:
 			_append_stored(item)
-	var next := int(data.get("next", 1))
+	var next := WyrdSave._whole(data.get("next", 1), 1)
 	_next = next if next > 0 else 1
 
 
@@ -284,15 +284,15 @@ func _append_stored(row: Dictionary) -> void:
 	var witnesses := _packed(row.get("witnesses", []))
 	var perception := _align_modes(witnesses, _packed(row.get("perception", [])))
 	var index := _id.size()
-	_id.append(int(row.get("id", 0)))
-	_t.append(int(row.get("t", 0)))
-	_verb.append(String(row.get("verb", "")))
-	_actor.append(String(row.get("actor", "")))
-	_target.append(String(row.get("target", "")))
-	_place.append(String(row.get("place", "")))
-	_magnitude.append(float(row.get("magnitude", 1.0)))
-	_visibility.append(String(row.get("visibility", "public")))
-	_memorable.append(1 if bool(row.get("memorable", false)) else 0)
+	_id.append(WyrdSave._whole(row.get("id", 0), 0))
+	_t.append(WyrdSave._whole(row.get("t", 0), 0))
+	_verb.append(WyrdSave.text_of(row.get("verb", ""), ""))
+	_actor.append(WyrdSave.text_of(row.get("actor", ""), ""))
+	_target.append(WyrdSave.text_of(row.get("target", ""), ""))
+	_place.append(WyrdSave.text_of(row.get("place", ""), ""))
+	_magnitude.append(WyrdSave.number_of(row.get("magnitude", 1.0), 1.0))
+	_visibility.append(WyrdSave.text_of(row.get("visibility", "public"), "public"))
+	_memorable.append(1 if WyrdSave.flag_of(row.get("memorable", false), false) else 0)
 	_tag_at.append(_tags.size())
 	_tag_n.append(tags.size())
 	for tag in tags:
@@ -311,7 +311,7 @@ func _append_stored(row: Dictionary) -> void:
 	_note_time(index)
 	for item in row.get("believers", []):
 		if item is Dictionary:
-			note_believer(int(_id[index]), StringName(str(item.get("who", ""))), int(item.get("t", 0)))
+			note_believer(int(_id[index]), StringName(str(item.get("who", ""))), WyrdSave._whole(item.get("t", 0), 0))
 
 
 func _compact_plan() -> Dictionary:
@@ -454,7 +454,7 @@ func _packed(value: Variant) -> PackedStringArray:
 	var rows := PackedStringArray()
 	if value is Array:
 		for item in value:
-			rows.append(String(item))
+			rows.append(WyrdSave.text_of(item, ""))
 	return rows
 
 

@@ -222,15 +222,45 @@ func export_state() -> Dictionary:
 	return out
 
 
+## Empty when [param value] is acceptable for a saved [param key], or the type word when it is not.
+## An unknown key is acceptable here. Import still reports a missing schema entry.
+func saved_type_issue(key: String, value: Variant) -> String:
+	var fact := _find(key)
+	if fact == null:
+		return ""
+	var type_name := String(fact.type_name)
+	if type_name == "int":
+		if typeof(value) == TYPE_INT:
+			return ""
+		if typeof(value) == TYPE_FLOAT and not is_nan(value) and not is_inf(value) and value == floor(value):
+			return ""
+		return "int"
+	if type_name == "bool":
+		if typeof(value) == TYPE_BOOL:
+			return ""
+		return "bool"
+	if type_name == "float":
+		if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
+			return ""
+		return "float"
+	if type_name == "symbol":
+		if value is String or value is StringName:
+			return ""
+		return "string"
+	return ""
+
+
 func import_state(data: Dictionary) -> void:
 	clear_values()
 	_quiet = true
-	var world: Dictionary = data.get("world", {})
+	var world_value: Variant = data.get("world", {})
+	var world: Dictionary = world_value if world_value is Dictionary else {}
 	var world_keys: Array = world.keys()
 	world_keys.sort()
 	for key in world_keys:
 		set_in(StringName(str(key)), _saved_value(String(key), world[key]))
-	var known: Dictionary = data.get("known", {})
+	var known_value: Variant = data.get("known", {})
+	var known: Dictionary = known_value if known_value is Dictionary else {}
 	var agents: Array = known.keys()
 	agents.sort()
 	for agent in agents:
@@ -300,11 +330,11 @@ func _import_evidence(raw: Variant) -> void:
 		note_evidence(
 			key,
 			_saved_value(key, row.get("value")),
-			String(row.get("place", "")),
-			int(row.get("until", -1)),
-			String(row.get("event", "")),
-			String(row.get("actor", "")),
-			String(row.get("target", ""))
+			WyrdSave.text_of(row.get("place", ""), ""),
+			WyrdSave._whole(row.get("until", -1), -1),
+			WyrdSave.text_of(row.get("event", ""), ""),
+			WyrdSave.text_of(row.get("actor", ""), ""),
+			WyrdSave.text_of(row.get("target", ""), "")
 		)
 
 

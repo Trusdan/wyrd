@@ -521,7 +521,7 @@ func _as_tokens(raw: Variant) -> Array[String]:
 	var out: Array[String] = []
 	if raw is Array:
 		for item in raw:
-			out.append(String(item))
+			out.append(WyrdSave.text_of(item, ""))
 	return out
 
 

@@ -137,10 +137,10 @@ func import_state(data: Dictionary) -> Array:
 			continue
 		var policy_id := str(item.get("policy", ""))
 		_jobs[deed_id] = {
-			"chance": float(item.get("chance", 0.0)),
+			"chance": WyrdSave.number_of(item.get("chance", 0.0), 0.0),
 			"key": str(item.get("key", "")),
 			"kinds": _kind_list(item.get("kinds", [])),
-			"max_hops": int(item.get("max_hops", 0)),
+			"max_hops": WyrdSave._whole(item.get("max_hops", 0), 0),
 			"mutations": _mutations_for(policy_id),
 			"policy": policy_id,
 			"value": WyrdSave.unpack_claim(item.get("value")),
@@ -155,11 +155,11 @@ func import_state(data: Dictionary) -> Array:
 			continue
 		var policy_id := str(item.get("policy", ""))
 		_reach["%s\t%s" % [deed_id, place]] = {
-			"born": int(item.get("born", 0)),
+			"born": WyrdSave._whole(item.get("born", 0), 0),
 			"deed": deed_id,
 			"key": str(item.get("key", "")),
-			"level": int(item.get("level", 0)),
-			"pending": int(item.get("pending", 0)),
+			"level": WyrdSave._whole(item.get("level", 0), 0),
+			"pending": WyrdSave._whole(item.get("pending", 0), 0),
 			"mutations": _mutations_for(policy_id),
 			"place": place,
 			"policy": policy_id,
@@ -167,7 +167,7 @@ func import_state(data: Dictionary) -> Array:
 			"verb": str(item.get("verb", "")),
 		}
 	for item in _list(data.get("drawn", [])):
-		var token := String(item)
+		var token := WyrdSave.text_of(item, "")
 		if token.is_empty() or dropped.has(_deed_of_pair(token)):
 			continue
 		_drawn[token] = true
@@ -497,7 +497,7 @@ func _import_people(into: Dictionary, raw: Variant, dropped: Dictionary) -> void
 			continue
 		var bag := {}
 		for person in _list(item.get("who", [])):
-			var name := String(person)
+			var name := WyrdSave.text_of(person, "")
 			if not name.is_empty():
 				bag[name] = true
 		into[deed_id] = bag
@@ -556,7 +556,7 @@ func _deed_of_pair(token: String) -> String:
 func _kind_list(raw: Variant) -> PackedStringArray:
 	var kinds := PackedStringArray()
 	for item in _list(raw):
-		kinds.append(String(item))
+		kinds.append(WyrdSave.text_of(item, ""))
 	return kinds
 
 

@@ -15,11 +15,13 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [signal bark_ready] repeats the runtime signal for a bark win.
 ## [signal topic_unlocked] and [signal topic_locked] repeat the topic store.
 ## [signal document_read] repeats a document open.
+## [signal load_report_ready] repeats the runtime signal once per [method load_state].
 
 signal bark_ready(line: WyrdLineView)
 signal topic_unlocked(topic: StringName)
 signal topic_locked(topic: StringName)
 signal document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool)
+signal load_report_ready(report: WyrdLoadReport)
 
 var facts: WyrdFactStore
 var events: WyrdEvents
@@ -66,6 +68,7 @@ func _init() -> void:
 	debug = _runtime.debug
 	coverage = _runtime.coverage
 	_runtime.bark_ready.connect(_relay_bark)
+	_runtime.load_report_ready.connect(_relay_load_report)
 	if topics != null:
 		topics.topic_unlocked.connect(_relay_topic_unlocked)
 		topics.topic_locked.connect(_relay_topic_locked)
@@ -75,6 +78,10 @@ func _init() -> void:
 
 func _relay_bark(line: WyrdLineView) -> void:
 	bark_ready.emit(line)
+
+
+func _relay_load_report(report: WyrdLoadReport) -> void:
+	load_report_ready.emit(report)
 
 
 func _relay_topic_unlocked(topic: StringName) -> void:

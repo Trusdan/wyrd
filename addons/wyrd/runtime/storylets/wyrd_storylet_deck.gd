@@ -162,6 +162,15 @@ func export_state() -> Dictionary:
 	return out
 
 
+func ignored_ids() -> PackedStringArray:
+	var names: Array = _kept.keys()
+	names.sort()
+	var out := PackedStringArray()
+	for id in names:
+		out.append(String(id))
+	return out
+
+
 func export_speakers() -> Dictionary:
 	if _speakers.is_empty():
 		return {}
@@ -229,7 +238,7 @@ func import_state(data: Dictionary) -> void:
 		var saved: Variant = raw.get("order", [])
 		if saved is Array:
 			for item in saved:
-				var line_id := String(item)
+				var line_id := WyrdSave.text_of(item, "")
 				if not source.has(line_id) or taken.has(line_id):
 					continue
 				order.append(line_id)
