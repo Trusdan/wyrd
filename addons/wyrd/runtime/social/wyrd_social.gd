@@ -122,7 +122,7 @@ func import_state(data: Dictionary) -> void:
 				StringName(str(row.get("source", ""))),
 				StringName(str(row.get("target", ""))),
 				StringName(str(row.get("axis", ""))),
-				float(row.get("value", 0.0))
+				WyrdSave.number_of(row.get("value", 0.0), 0.0)
 			)
 
 

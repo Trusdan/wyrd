@@ -70,7 +70,7 @@ func restore_dirty(indexes: Array) -> void:
 	_dirty.clear()
 	_dirty_gen += 1
 	for index in indexes:
-		var at := int(index)
+		var at := WyrdSave._whole(index, -1)
 		if _waiting.has(at):
 			_dirty[at] = true
 

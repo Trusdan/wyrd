@@ -31,6 +31,8 @@ var storylet_index: WyrdStoryletIndex
 var sequences: Dictionary = {}
 ## Document id to [WyrdDocumentDef]. Compiled with the pack. Not a save document.
 var documents: Dictionary = {}
+## Topic ids recorded by the linker, including unlock effects. Not a save field.
+var topic_ids: PackedStringArray = PackedStringArray()
 var lines: Dictionary = {}
 ## Opted-in line id to [code]owner[/code] ([code]scene[/code] or [code]storylet[/code]),
 ## owner [code]id[/code], and that owner's [code]ai_context[/code] keys.
@@ -112,6 +114,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 	content.deps = WyrdDepIndex.new()
 	content.deps.build(content.conditions)
 	content._mark_pure()
+	content.topic_ids = pack.topics.duplicate()
 	content.storylet_index = pack.storylet_index
 	if content.storylet_index == null:
 		content.storylet_index = WyrdStoryletIndex.new()

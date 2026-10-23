@@ -232,6 +232,12 @@ func export_state() -> Dictionary:
 	}
 
 
+func _import_dict(value: Variant) -> Dictionary:
+	if value is Dictionary:
+		return value
+	return {}
+
+
 func import_state(data: Dictionary) -> void:
 	_bindings.clear()
 	_defs.clear()
@@ -239,8 +245,10 @@ func import_state(data: Dictionary) -> void:
 	_told.clear()
 	_pending.clear()
 	_abolished.clear()
-	var bindings: Dictionary = data.get("bindings", {})
+	var bindings := _import_dict(data.get("bindings", {}))
 	for role in bindings.keys():
+		if not (bindings[role] is Dictionary):
+			continue
 		var row: Dictionary = bindings[role]
 		var history: Array = []
 		for item in row.get("history", []):
@@ -253,9 +261,9 @@ func import_state(data: Dictionary) -> void:
 			history.append({
 				"holder": StringName(str(prior.get("holder", ""))),
 				"reason": StringName(str(prior.get("reason", ""))),
-				"since": int(prior.get("since", 0)),
+				"since": WyrdSave._whole(prior.get("since", 0), 0),
 				"status": prior_status,
-				"until": int(prior.get("until", 0)),
+				"until": WyrdSave._whole(prior.get("until", 0), 0),
 			})
 		var status := StringName(str(row.get("status", "empty")))
 		if status == &"pending":
@@ -263,18 +271,22 @@ func import_state(data: Dictionary) -> void:
 		_bindings[StringName(str(role))] = {
 			"history": history,
 			"holder": StringName(str(row.get("holder", ""))),
-			"since": int(row.get("since", 0)),
+			"since": WyrdSave._whole(row.get("since", 0), 0),
 			"status": status,
 		}
-	var defs: Dictionary = data.get("defs", {})
+	var defs := _import_dict(data.get("defs", {}))
 	for role in defs.keys():
+		if not (defs[role] is Dictionary):
+			continue
 		var spec: Dictionary = defs[role]
 		var kinds := PackedStringArray()
-		for kind in spec.get("kinds", []):
-			kinds.append(String(kind))
+		var kind_list: Variant = spec.get("kinds", [])
+		if kind_list is Array:
+			for kind in kind_list:
+				kinds.append(WyrdSave.text_of(kind, ""))
 		var visibility := str(spec.get("visibility", ""))
 		if visibility != "public" and visibility != "secret":
-			visibility = "secret" if bool(spec.get("secret", false)) else "public"
+			visibility = "secret" if WyrdSave.flag_of(spec.get("secret", false), false) else "public"
 		var strategy := str(spec.get("strategy", "none"))
 		var succession := str(spec.get("succession", ""))
 		if succession.is_empty():
@@ -296,34 +308,41 @@ func import_state(data: Dictionary) -> void:
 			"strategy": StringName(strategy),
 			"succession": succession,
 			"succession_arg": StringName(str(spec.get("succession_arg", ""))),
-			"threshold": int(spec.get("threshold", -1)),
+			"threshold": WyrdSave._whole(spec.get("threshold", -1), -1),
 			"vacancy": StringName(vacancy),
 			"visibility": StringName(visibility),
 		}
-	var frozen: Dictionary = data.get("frozen", {})
+	var frozen := _import_dict(data.get("frozen", {}))
 	for quest_id in frozen.keys():
+		if not (frozen[quest_id] is Dictionary):
+			continue
 		var slots: Dictionary = frozen[quest_id]
 		for slot_name in slots.keys():
+			if not (slots[slot_name] is Dictionary):
+				continue
 			var snap: Dictionary = slots[slot_name]
 			var loaded_row := {
 				"holder": StringName(str(snap.get("holder", ""))),
 				"status": StringName(str(snap.get("status", ""))),
 			}
 			if snap.has("owner"):
-				loaded_row["owner"] = String(snap.get("owner", ""))
+				loaded_row["owner"] = WyrdSave.text_of(snap.get("owner", ""), "")
 			_frozen[_freeze_key(String(quest_id), String(slot_name))] = loaded_row
-	var told: Dictionary = data.get("told", {})
+	var told := _import_dict(data.get("told", {}))
 	for role in told.keys():
+		var agents: Variant = told[role]
+		if not (agents is Array):
+			continue
 		var bag := {}
-		for agent in told[role]:
+		for agent in agents:
 			bag[StringName(str(agent))] = true
 		_told[StringName(str(role))] = bag
-	var pending: Dictionary = data.get("pending", {})
+	var pending := _import_dict(data.get("pending", {}))
 	for role in pending.keys():
 		var request: Dictionary = pending[role] if pending[role] is Dictionary else {}
 		_pending[StringName(str(role))] = {
 			"departed": StringName(str(request.get("departed", ""))),
-			"since": int(request.get("since", 0)),
+			"since": WyrdSave._whole(request.get("since", 0), 0),
 		}
 	var abolished: Variant = data.get("abolished", [])
 	if abolished is Array:
@@ -870,7 +889,7 @@ func install_casts(quest_id: String, casts: Dictionary) -> void:
 			"status": StringName(str(item.get("status", ""))),
 		}
 		if item.has("owner"):
-			row["owner"] = String(item.get("owner", ""))
+			row["owner"] = WyrdSave.text_of(item.get("owner", ""), "")
 		_frozen[_freeze_key(quest_id, String(slot_name))] = row
 
 

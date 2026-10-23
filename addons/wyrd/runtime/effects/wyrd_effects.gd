@@ -55,9 +55,9 @@ func import_state(data: Dictionary) -> void:
 			continue
 		var item: Dictionary = row
 		provenance[String(key)] = {
-			"choice": String(item.get("choice", "")),
-			"scene": String(item.get("scene", "")),
-			"time": int(item.get("time", 0)),
+			"choice": WyrdSave.text_of(item.get("choice", ""), ""),
+			"scene": WyrdSave.text_of(item.get("scene", ""), ""),
+			"time": WyrdSave._whole(item.get("time", 0), 0),
 		}
 
 

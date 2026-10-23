@@ -132,6 +132,24 @@ func export_state() -> Dictionary:
 	return {"copies": copies, "read": reads}
 
 
+func stored_doc_ids() -> PackedStringArray:
+	var found := {}
+	for key in _read.keys():
+		var read_parts := String(key).split("\t", false, 1)
+		if read_parts.size() > 1 and read_parts[1] != "":
+			found[read_parts[1]] = true
+	for key in _copies.keys():
+		var copy_parts := String(key).split("\t", false, 1)
+		if not copy_parts.is_empty() and copy_parts[0] != "":
+			found[copy_parts[0]] = true
+	var names: Array = found.keys()
+	names.sort()
+	var out := PackedStringArray()
+	for id in names:
+		out.append(String(id))
+	return out
+
+
 func import_state(data: Dictionary) -> void:
 	clear()
 	var reads: Variant = data.get("read", [])

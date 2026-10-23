@@ -431,7 +431,7 @@ func import_rng(data: Dictionary) -> bool:
 		if restored == null:
 			return false
 		built[String(stream_name)] = restored
-	_streams = built
+	install_rng(built)
 	return true
 
 
@@ -1346,23 +1346,23 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> WyrdLoadReport:
-	if roles != null:
-		roles.drop_cast_index()
-	if generator != null:
-		generator.clear()
-	_clear_generation_scope()
-	if ai != null:
-		ai.drop_pending(&"load")
+	var report: WyrdLoadReport
 	if not can_save():
 		push_error("Wyrd.load_state: a scene is open")
-		var refused := WyrdLoadReport.new()
-		refused.diagnostics.add(WyrdDiagnostic.E_SAVE_OPEN, "a scene is open", "", 1, 1)
-		return refused
-	_clear_belief_cache()
-	var report := WyrdSave.apply(self, data)
-	if report.ok:
-		_reset_event_memory()
-		_clear_belief_cache()
+		report = WyrdLoadReport.new()
+		report.diagnostics.add(WyrdDiagnostic.E_SAVE_OPEN, "a scene is open", "", 1, 1)
+		report.add_row("refused", "scene", "", "", 0, "E_SAVE_OPEN")
+	else:
+		var prepared := WyrdSave.check(self, data)
+		report = prepared["report"]
+		if prepared.has("doc"):
+			# A refusal returns before these drops, so the runtime is unchanged.
+			_drop_load_caches()
+			WyrdSave.import_checked(self, prepared["doc"], prepared["streams"], report)
+			_reset_event_memory()
+			_clear_belief_cache()
+	report.sort_rows()
+	load_report_ready.emit(report)
 	return report
 
 
@@ -2967,6 +2967,30 @@ func _signature_ok(sig: Dictionary, arg_types: Array, return_type: StringName) -
 		if StringName(str(arg_types[i])) != param["type"]:
 			return false
 	return true
+
+
+## Fires once at the end of [method load_state], whether the load applied or was refused.
+## [method load_content] does not emit it.
+signal load_report_ready(report: WyrdLoadReport)
+
+
+## Swaps in streams already built by the load check. Does not parse or refuse.
+func install_rng(streams: Dictionary) -> void:
+	var next := {}
+	for stream_name in streams.keys():
+		next[String(stream_name)] = streams[stream_name]
+	_streams = next
+
+
+func _drop_load_caches() -> void:
+	if roles != null:
+		roles.drop_cast_index()
+	if generator != null:
+		generator.clear()
+	_clear_generation_scope()
+	if ai != null:
+		ai.drop_pending(&"load")
+	_clear_belief_cache()
 
 
 func _resolve(path: String) -> String:

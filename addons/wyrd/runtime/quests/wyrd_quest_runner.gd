@@ -488,7 +488,7 @@ func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 	var names: Array = counters.keys()
 	names.sort()
 	for name in names:
-		_counters[String(name)] = int(counters[name])
+		_counters[String(name)] = WyrdSave._whole(counters[name], 0)
 	var listed: Dictionary = data.get("instances", {}) if data.get("instances") is Dictionary else {}
 	var ids: Array = listed.keys()
 	ids.sort()
@@ -661,19 +661,19 @@ func _normalize_param(value: Variant) -> Dictionary:
 	var copy := (value as Dictionary).duplicate(true)
 	if not copy.has("entity"):
 		return {}
-	copy["entity"] = String(copy["entity"])
+	copy["entity"] = WyrdSave.text_of(copy["entity"], "")
 	if copy.has("kind"):
-		copy["kind"] = String(copy["kind"])
+		copy["kind"] = WyrdSave.text_of(copy["kind"], "")
 	if copy.has("owner"):
-		copy["owner"] = String(copy["owner"])
+		copy["owner"] = WyrdSave.text_of(copy["owner"], "")
 	if copy.has("place"):
-		copy["place"] = String(copy["place"])
+		copy["place"] = WyrdSave.text_of(copy["place"], "")
 	return copy
 
 
 func _install_created(instance_id: String, entry: Dictionary) -> void:
 	if entry.has("created"):
-		_created[instance_id] = int(entry["created"])
+		_created[instance_id] = WyrdSave._whole(entry["created"], 0)
 		return
 	var minute := 0
 	if runtime != null:
@@ -1526,10 +1526,10 @@ func _import_regions(defs: Array, data: Dictionary) -> Dictionary:
 			continue
 		var region: WyrdRegionDef = by_id[id]
 		var item: Dictionary = data[key]
-		var stage_id := String(item.get("stage", ""))
+		var stage_id := WyrdSave.text_of(item.get("stage", ""), "")
 		var known := _region_stage(region, stage_id)
-		var entered := bool(item.get("entered", false))
-		var step_at := int(item.get("step_at", 0))
+		var entered := WyrdSave.flag_of(item.get("entered", false), false)
+		var step_at := WyrdSave._whole(item.get("step_at", 0), 0)
 		if known == null:
 			stage_id = ""
 			if not region.stages.is_empty():
@@ -1735,31 +1735,39 @@ func _catch_up() -> void:
 
 func _load_row(quest_id: String, state: QuestState, item: Dictionary) -> void:
 	state.status = StringName(str(item.get("status", "dormant")))
-	state.stage_id = String(item.get("stage", ""))
-	state.variant = String(item.get("variant", ""))
-	state.outcomes = (item.get("outcomes", {}) as Dictionary).duplicate(true)
-	state.offered = String(item.get("offered", ""))
-	state.scene_done = bool(item.get("scene_done", false))
-	state.host_screen = String(item.get("host_screen", ""))
-	state.host_returns = (item.get("host_returns", {}) as Dictionary).duplicate(true)
+	state.stage_id = WyrdSave.text_of(item.get("stage", ""), "")
+	state.variant = WyrdSave.text_of(item.get("variant", ""), "")
+	var outcomes: Variant = item.get("outcomes", {})
+	state.outcomes = (outcomes as Dictionary).duplicate(true) if outcomes is Dictionary else {}
+	state.offered = WyrdSave.text_of(item.get("offered", ""), "")
+	state.scene_done = WyrdSave.flag_of(item.get("scene_done", false), false)
+	state.host_screen = WyrdSave.text_of(item.get("host_screen", ""), "")
+	var returns: Variant = item.get("host_returns", {})
+	state.host_returns = (returns as Dictionary).duplicate(true) if returns is Dictionary else {}
 	var journal: Array = []
-	for entry in item.get("journal", []):
-		if entry is Dictionary:
-			var copy: Dictionary = (entry as Dictionary).duplicate(true)
-			copy["minutes"] = int(copy.get("minutes", 0))
-			journal.append(copy)
+	var journal_raw: Variant = item.get("journal", [])
+	if journal_raw is Array:
+		for entry in journal_raw:
+			if entry is Dictionary:
+				var copy: Dictionary = (entry as Dictionary).duplicate(true)
+				copy["minutes"] = WyrdSave._whole(copy.get("minutes", 0), 0)
+				journal.append(copy)
 	state.journal = journal
-	state.entered = bool(item.get("entered", false))
-	state.held_empty = bool(item.get("held_empty", false))
-	state.waiting = String(item.get("waiting", ""))
-	state.step_at = int(item.get("step_at", 0))
+	state.entered = WyrdSave.flag_of(item.get("entered", false), false)
+	state.held_empty = WyrdSave.flag_of(item.get("held_empty", false), false)
+	state.waiting = WyrdSave.text_of(item.get("waiting", ""), "")
+	state.step_at = WyrdSave._whole(item.get("step_at", 0), 0)
 	var slots := PackedStringArray()
-	for slot_name in item.get("slots", []):
-		slots.append(String(slot_name))
+	var slot_raw: Variant = item.get("slots", [])
+	if slot_raw is Array:
+		for slot_name in slot_raw:
+			slots.append(WyrdSave.text_of(slot_name, ""))
 	state.slots = slots
 	var fields := PackedStringArray()
-	for field in item.get("host_fields", []):
-		fields.append(String(field))
+	var field_raw: Variant = item.get("host_fields", [])
+	if field_raw is Array:
+		for field in field_raw:
+			fields.append(WyrdSave.text_of(field, ""))
 	state.host_fields = fields
 	state.regions = {}
 	var quest := _quest(quest_id)
@@ -1781,12 +1789,12 @@ func _import_instance(quest_id: String, item: Dictionary) -> void:
 	var quest: WyrdQuestDef = content.templates[template_id]
 	var state := QuestState.new()
 	state.template = template_id
-	state.n = int(item.get("n", 0))
+	state.n = WyrdSave._whole(item.get("n", 0), 0)
 	_states[quest_id] = state
 	_declared[quest_id] = _collect(quest)
 	_load_row(quest_id, state, item)
 	state.template = template_id
-	state.n = int(item.get("n", 0))
+	state.n = WyrdSave._whole(item.get("n", 0), 0)
 
 
 func _instance_row(quest_id: String, item: Dictionary) -> bool:
@@ -1862,6 +1870,7 @@ func _warn_missing() -> void:
 			1,
 			WyrdDiagnostic.SEVERITY_WARNING
 		)
+		_load_report.add_row("template", String(template_id), "", "", count, "W_SAVE_TEMPLATE")
 	_missing.clear()
 	_load_report = null
 
@@ -1880,11 +1889,11 @@ func _coerce_row(item: Dictionary) -> Dictionary:
 
 func _coerce_numbers(row: Dictionary) -> void:
 	if row.has("step_at"):
-		row["step_at"] = int(row["step_at"])
+		row["step_at"] = WyrdSave._whole(row["step_at"], 0)
 	if row.has("n"):
-		row["n"] = int(row["n"])
+		row["n"] = WyrdSave._whole(row["n"], 0)
 	if row.has("minutes"):
-		row["minutes"] = int(row["minutes"])
+		row["minutes"] = WyrdSave._whole(row["minutes"], 0)
 	var journal: Variant = row.get("journal", null)
 	if journal is Array:
 		for entry in journal:

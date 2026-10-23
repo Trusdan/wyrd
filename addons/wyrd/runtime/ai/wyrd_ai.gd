@@ -522,14 +522,14 @@ func import_cache(raw: Variant, present: bool, report: WyrdLoadReport) -> void:
 		return
 	if not _bag_ok(raw):
 		_cache.clear()
-		_warn_ai(report, "AI cache is not valid and was ignored")
+		_warn_ai(report, "AI cache is not valid and was ignored", 0)
 		_trace_cache("load", "-", 0)
 		return
 	var bag: Dictionary = raw
 	var skipped := _cache.import_rows(bag.get("cache", []), _cache_cap())
 	_trace_cache("load", "-", _cache.size())
 	if skipped > 0:
-		_warn_ai(report, "AI cache: %d entries were not valid and were skipped" % skipped)
+		_warn_ai(report, "AI cache: %d entries were not valid and were skipped" % skipped, skipped)
 
 
 func _remember(key: String, text: String) -> void:
@@ -567,7 +567,7 @@ func _version_one(value: Variant) -> bool:
 	return false
 
 
-func _warn_ai(report: WyrdLoadReport, message: String) -> void:
+func _warn_ai(report: WyrdLoadReport, message: String, count: int = 0) -> void:
 	if report == null:
 		return
 	report.diagnostics.add(
@@ -578,6 +578,7 @@ func _warn_ai(report: WyrdLoadReport, message: String) -> void:
 		1,
 		WyrdDiagnostic.SEVERITY_WARNING
 	)
+	report.add_row("ai", "", "", "", count, "W_SAVE_AI")
 
 
 func _trace_request(request_id: int, kind: StringName, path: StringName, state: StringName, reason: StringName, key: String) -> void:

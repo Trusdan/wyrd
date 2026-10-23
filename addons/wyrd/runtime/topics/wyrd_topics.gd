@@ -61,7 +61,7 @@ func export_state() -> PackedStringArray:
 func import_state(ids: Array) -> void:
 	_ids.clear()
 	for item in ids:
-		var name := String(item).strip_edges()
+		var name := WyrdSave.text_of(item, "").strip_edges()
 		if name.is_empty():
 			continue
 		_ids[StringName(name)] = true

@@ -114,7 +114,7 @@ func import_state(data: Dictionary) -> void:
 	var queued: Variant = data.get("queued", [])
 	if queued is Array:
 		for item in queued:
-			var key := String(item)
+			var key := WyrdSave.text_of(item, "")
 			if not key.is_empty():
 				_queued[key] = true
 	_restart = String(data.get("cursor", ""))
@@ -158,12 +158,12 @@ func _import_beliefs(raw: Variant) -> Dictionary:
 		if not (item is Dictionary):
 			continue
 		var row: Dictionary = item
-		var deed_id := int(row.get("deed", 0))
+		var deed_id := WyrdSave._whole(row.get("deed", 0), 0)
 		var who := str(row.get("who", ""))
 		if deed_id <= 0 or who.is_empty():
 			continue
 		var bag: Dictionary = out[deed_id] if out.has(deed_id) else {}
-		bag[who] = int(row.get("t", 0))
+		bag[who] = WyrdSave._whole(row.get("t", 0), 0)
 		out[deed_id] = bag
 	return out
 
@@ -181,7 +181,7 @@ func _import_ints(into: Dictionary, raw: Variant) -> void:
 	if not (raw is Dictionary):
 		return
 	for id in (raw as Dictionary).keys():
-		into[String(id)] = int((raw as Dictionary)[id])
+		into[String(id)] = WyrdSave._whole((raw as Dictionary)[id], 0)
 
 
 ## Deed rows any current member witnessed, or believes through a rumor, at or
