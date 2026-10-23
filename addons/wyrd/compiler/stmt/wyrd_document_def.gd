@@ -15,6 +15,10 @@ extends WyrdStmtSpan
 ## Read flags are not stored on this def and are not facts.
 
 var id: String = ""
+## Old document ids from a [code]was:[/code] list, with the token position of each.
+var was_ids: PackedStringArray = PackedStringArray()
+var was_lines: PackedInt32Array = PackedInt32Array()
+var was_cols: PackedInt32Array = PackedInt32Array()
 var title: String = ""
 var group: String = ""
 var period_minutes: int = 0

@@ -48,6 +48,8 @@ static func to_data(pack: WyrdLinkedPack) -> Dictionary:
 	var templates := _templates(pack)
 	if not templates.is_empty():
 		data["templates"] = templates
+	if pack.aliases != null and not pack.aliases.is_empty():
+		data["aliases"] = pack.aliases
 	return data
 
 

@@ -17,3 +17,8 @@ var xref: WyrdFactXref
 var events: Dictionary = {}
 ## Sorted storylet ids by scope and speaker. Built at link. Not a save field.
 var storylet_index: WyrdStoryletIndex
+## Resolved [code]was:[/code] tables. A kind key is present only when that kind has entries.
+## [code]stage[/code] maps a quest or template id to old stage id to final id.
+## [code]role[/code], [code]document[/code], and [code]verb[/code] map an old id to its final id.
+## Nothing reads this at runtime yet.
+var aliases: Dictionary = {}

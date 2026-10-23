@@ -1,0 +1,163 @@
+{
+  "diagnostics": [
+    {
+      "code": "I_TEMPLATE_SCORE",
+      "col": 1,
+      "line": 8,
+      "message": "template \"ferry_job\" specificity 0 priority 0",
+      "path": "res://tests/golden/link/alias_clean/a.wyrd",
+      "severity": "info"
+    }
+  ],
+  "export": {
+    "aliases": {
+      "document": {
+        "gazette": "harbor_gazette",
+        "notice": "tide_notice"
+      },
+      "role": {
+        "boatman": "ferry_master"
+      },
+      "stage": {
+        "ferry_job": {
+          "hire_old": "hire"
+        },
+        "ferry_toll": {
+          "offer_old": "offer"
+        }
+      },
+      "verb": {
+        "paid": "settle",
+        "pay": "settle",
+        "tendered": "settle"
+      }
+    },
+    "documents": [
+      {
+        "id": "harbor_gazette",
+        "meta": {},
+        "mode": "live",
+        "on_first_read": [],
+        "on_read": [],
+        "pages": [
+          {
+            "paragraphs": [
+              {
+                "id": "",
+                "when": ""
+              }
+            ],
+            "when": ""
+          }
+        ],
+        "tags": [],
+        "title_id": ""
+      }
+    ],
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "6010e3475512d154",
+        "path": "res://tests/golden/link/alias_clean/a.wyrd"
+      },
+      {
+        "hash": "91651b900aeb08bc",
+        "path": "res://tests/golden/link/alias_clean/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "alias_clean",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/alias_clean/a.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [],
+            "id": "offer",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Ferry Toll"
+      }
+    ],
+    "roles": [
+      {
+        "default_holder": "",
+        "eligibility": "",
+        "file": "res://tests/golden/link/alias_clean/a.wyrd",
+        "id": "ferry_master",
+        "kinds": [],
+        "scope": "world",
+        "scope_id": "",
+        "strategy": "none",
+        "succession": "none",
+        "succession_arg": "",
+        "vacancy": "hold",
+        "visibility": "public"
+      }
+    ],
+    "scenes": [],
+    "templates": [
+      {
+        "allow_protected": false,
+        "assumes": "",
+        "file": "res://tests/golden/link/alias_clean/a.wyrd",
+        "id": "ferry_job",
+        "max_active": 1,
+        "on_empty": "",
+        "params": [],
+        "priority": 0,
+        "requires": [],
+        "slots": [],
+        "specificity": 0,
+        "stages": [
+          {
+            "effects": [],
+            "id": "hire",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "tier_high": "",
+        "tier_low": "",
+        "tier_range": false,
+        "title": "Ferry Job",
+        "weight": 1,
+        "when": ""
+      }
+    ],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

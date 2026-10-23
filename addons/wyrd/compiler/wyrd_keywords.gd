@@ -103,6 +103,7 @@ const FIELDS: PackedStringArray = [
 	"allow_protected",
 	"on_deed",
 	"expires",
+	"was",
 ]
 const EFFECTS: PackedStringArray = [
 	"set",

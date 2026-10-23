@@ -1,0 +1,33 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_ALIAS_CYCLE",
+      "col": 1,
+      "line": 3,
+      "message": "alias cycle: pay -> paid -> pay",
+      "path": "res://tests/golden/link/alias_cycle/pack.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "410f42f08a79345f",
+        "path": "res://tests/golden/link/alias_cycle/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "alias_cycle",
+    "quests": [],
+    "roles": [],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

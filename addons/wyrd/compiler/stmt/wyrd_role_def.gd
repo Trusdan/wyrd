@@ -13,6 +13,10 @@ extends WyrdStmtSpan
 const CANDIDATE := "candidate"
 
 var id: String = ""
+## Old role ids from a [code]was:[/code] list, with the token position of each.
+var was_ids: PackedStringArray = PackedStringArray()
+var was_lines: PackedInt32Array = PackedInt32Array()
+var was_cols: PackedInt32Array = PackedInt32Array()
 var scope: String = "world"
 var scope_id: String = ""
 var eligibility_text: String = ""
