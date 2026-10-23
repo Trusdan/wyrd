@@ -51,4 +51,4 @@ S0 does not implement scenes or audio. The rule is recorded here so the slice ru
 
 ## License
 
-MIT. Copyright (c) 2026 Corey Jones. See the repository `LICENSE`.
+MIT. Copyright (c) 2026 Corey Patrick Jones (github.com/Trusdan). See the repository `LICENSE`.
