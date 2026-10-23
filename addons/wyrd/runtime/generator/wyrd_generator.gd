@@ -224,6 +224,15 @@ func finish_reservations() -> void:
 	_reserved.clear()
 
 
+func _accept_origin(proposal: WyrdProposal) -> String:
+	if proposal == null:
+		return "host"
+	for item in _pending:
+		if item == proposal:
+			return "queue"
+	return "host"
+
+
 ## Host pick. Not queued. Null when the input is rejected or nothing can be proposed.
 func propose(context: Dictionary) -> WyrdProposal:
 	if context == null:
@@ -288,6 +297,7 @@ func accept(proposal: WyrdProposal) -> String:
 	_trace_line("gen_accept", {
 		"instance": instance,
 		"ok": "true" if ok else "false",
+		"origin": _accept_origin(proposal),
 		"proposal": proposal_id,
 		"reason": reason,
 	}, "wyrd gen_accept proposal=%s ok=%s reason=%s instance=%s" % [proposal_id, "true" if ok else "false", reason, instance])

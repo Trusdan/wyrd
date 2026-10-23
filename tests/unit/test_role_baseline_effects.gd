@@ -266,7 +266,7 @@ func test_baseline_values_refusals_and_hostile_recheck() -> void:
 	assert_true(runtime.social.adjust_baseline(&"ada", &"player", &"affinity", -100.0))
 	assert_eq(runtime.deeds.size(), deeds)
 	assert_eq(runtime.social.cache_entries(), 0)
-	assert_gt(runtime.scheduler().carry("cache_refresh"), 0)
+	assert_eq(runtime.scheduler().carry("cache_refresh"), 0)
 	assert_lt(runtime.social.disposition(&"ada", &"player"), 20)
 	runtime.tick(0)
 	assert_eq(String(runtime.roles.slot_state(&"keeper", "gate")), "hostile")

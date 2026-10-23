@@ -17,7 +17,8 @@ extends RefCounted
 ## Axes, disposition, reputation, and [method path_exists] are cached for the
 ## current time bucket. [method set_cache] false recomputes and does not store.
 ## A deed, relationship, membership, config, or bucket change drops the entries.
-## Each dropped entry is one [code]cache_refresh[/code] unit. The cache is not saved.
+## An invalidation drops every entry and queues no [code]cache_refresh[/code] unit.
+## Entries refill on read. The cache is not saved.
 
 var deeds: WyrdDeedLog
 var config_of: Callable = Callable()
@@ -291,7 +292,7 @@ func fill_pair_matrix(count: int) -> void:
 			_disp_cache["disp\t%s\t%s" % [source, target]] = 50
 
 
-## Notices a deed, config, or time-bucket change and queues one unit per entry.
+## Notices a deed, config, or time-bucket change. An invalidation drops every entry and queues no unit. Entries refill on read.
 func sync_cache() -> void:
 	_ensure()
 
@@ -520,10 +521,6 @@ func _enqueue_current(reason: String) -> void:
 	if count == 0:
 		return
 	_emit_cache("invalidate", reason, reason, "", "", count)
-	if not enqueue_cache.is_valid():
-		return
-	for key in keys:
-		enqueue_cache.call(key)
 
 
 func _collect_keys(table: Dictionary, into: Array[String]) -> void:
