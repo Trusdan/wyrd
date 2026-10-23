@@ -219,7 +219,7 @@ func import_state(data: Dictionary) -> void:
 ## [code]_next[/code] does not go backwards. Perception callbacks do not run.
 func compact() -> int:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("deeds.compact", [])
 	var before := size()
 	var plan := _compact_plan()
@@ -522,7 +522,7 @@ func record(
 	if verb == &"" or actor == &"":
 		push_error("WyrdDeedLog.record: verb and actor are required")
 		return -1
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("deeds.record", [verb, actor, target, place, tags, magnitude, witnesses, visibility, memorable])
 	var row := _id.size()
 	var stamp := _now()

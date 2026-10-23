@@ -142,7 +142,7 @@ func cancel(request_id: int) -> bool:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if not _pending.has(request_id):
 		return false
-	if _runtime != null:
+	if _runtime != null and _runtime._host_logs():
 		_runtime._host_mark("ai.cancel", [request_id])
 	var req := _pending[request_id] as WyrdAIRequest
 	_pending.erase(request_id)
@@ -508,7 +508,7 @@ func cache_keys() -> PackedStringArray:
 ## Empties the cache. Traces [code]op=clear[/code] only when it held entries.
 func clear_cache() -> void:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
-	if _runtime != null and (_cache.size() > 0 or not _rejected.is_empty()):
+	if _runtime != null and _runtime._host_logs() and (_cache.size() > 0 or not _rejected.is_empty()):
 		_runtime._host_mark("ai.clear_cache", [])
 	_rejected.clear()
 	if _cache.size() == 0:

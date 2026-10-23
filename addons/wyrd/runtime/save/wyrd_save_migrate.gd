@@ -26,6 +26,8 @@ extends RefCounted
 static func apply_aliases(doc: Dictionary, aliases: Dictionary) -> Dictionary:
 	if not _has_table(aliases):
 		return _none(doc)
+	if not _aliases_touch(doc, aliases):
+		return _none(doc)
 	var copy: Dictionary = doc.duplicate(true)
 	var rewrites: Dictionary = {}
 	var drops: Dictionary = {}
@@ -56,6 +58,8 @@ static func resolve_stages(doc: Dictionary, content: WyrdContent) -> Dictionary:
 		return _none(doc)
 	var quests: Variant = doc.get("quests", {})
 	if not (quests is Dictionary) or (quests as Dictionary).is_empty():
+		return _none(doc)
+	if not _stages_move(quests as Dictionary, content):
 		return _none(doc)
 	var copy: Dictionary = doc.duplicate(true)
 	var block: Dictionary = copy["quests"]
@@ -109,6 +113,188 @@ static func resolve_stages(doc: Dictionary, content: WyrdContent) -> Dictionary:
 
 static func _none(doc: Dictionary) -> Dictionary:
 	return {"diagnostics": [], "doc": doc, "rows": []}
+
+
+## True when the rewrite below would return a row. A miss would drop a rewrite,
+## so an uncertain id counts as a touch and the copy still runs.
+static func _aliases_touch(doc: Dictionary, aliases: Dictionary) -> bool:
+	if _stages_touch(doc, _kind(aliases, "stage")):
+		return true
+	if _roles_touch(doc, _kind(aliases, "role")):
+		return true
+	if _verbs_touch(doc, _kind(aliases, "verb")):
+		return true
+	return _documents_touch(doc, _kind(aliases, "document"))
+
+
+static func _stages_touch(doc: Dictionary, tables: Dictionary) -> bool:
+	if tables.is_empty():
+		return false
+	var quests: Variant = doc.get("quests", {})
+	if not (quests is Dictionary):
+		return false
+	var block: Dictionary = quests
+	for quest_id in block.keys():
+		var item: Variant = block[quest_id]
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var found: Variant = tables.get(_stage_scope(String(quest_id), row), {})
+		if not (found is Dictionary):
+			continue
+		var table: Dictionary = found
+		if not _mapped(table, str(row.get("stage", ""))).is_empty():
+			return true
+		if _trail_touch(row, table):
+			return true
+	return false
+
+
+static func _trail_touch(row: Dictionary, table: Dictionary) -> bool:
+	var trail_raw: Variant = row.get("trail", null)
+	if not (trail_raw is Array):
+		return false
+	for entry in trail_raw:
+		if not _mapped(table, str(entry)).is_empty():
+			return true
+	return false
+
+
+static func _roles_touch(doc: Dictionary, table: Dictionary) -> bool:
+	if table.is_empty():
+		return false
+	var roles: Variant = doc.get("roles", {})
+	if not (roles is Dictionary):
+		return false
+	var block: Dictionary = roles
+	for name in ["bindings", "defs", "pending", "told"]:
+		var bag: Variant = block.get(name, {})
+		if not (bag is Dictionary):
+			continue
+		for key in (bag as Dictionary).keys():
+			if not _mapped(table, String(key)).is_empty():
+				return true
+	var abolished: Variant = block.get("abolished", [])
+	if abolished is Array:
+		for item in abolished:
+			if not _mapped(table, str(item)).is_empty():
+				return true
+	return false
+
+
+static func _verbs_touch(doc: Dictionary, table: Dictionary) -> bool:
+	if table.is_empty():
+		return false
+	var deeds: Variant = doc.get("deeds", {})
+	if deeds is Dictionary:
+		var rows: Variant = (deeds as Dictionary).get("rows", [])
+		if rows is Array and _verb_rows_touch(rows, table):
+			return true
+	var flight: Variant = doc.get("flight", {})
+	if not (flight is Dictionary):
+		return false
+	var rumor: Variant = (flight as Dictionary).get("rumor", {})
+	if not (rumor is Dictionary):
+		return false
+	var block: Dictionary = rumor
+	if block.get("jobs") is Array and _verb_rows_touch(block["jobs"], table):
+		return true
+	if block.get("reach") is Array and _verb_rows_touch(block["reach"], table):
+		return true
+	return false
+
+
+static func _verb_rows_touch(rows: Array, table: Dictionary) -> bool:
+	for item in rows:
+		if not (item is Dictionary):
+			continue
+		if not _mapped(table, str((item as Dictionary).get("verb", ""))).is_empty():
+			return true
+	return false
+
+
+static func _documents_touch(doc: Dictionary, table: Dictionary) -> bool:
+	if table.is_empty():
+		return false
+	var documents: Variant = doc.get("documents", {})
+	if not (documents is Dictionary):
+		return false
+	var block: Dictionary = documents
+	if block.get("read") is Array and _doc_rows_touch(block["read"], table):
+		return true
+	if block.get("copies") is Array and _doc_rows_touch(block["copies"], table):
+		return true
+	return _publish_touch(doc, table)
+
+
+static func _doc_rows_touch(items: Array, table: Dictionary) -> bool:
+	for item in items:
+		if not (item is Dictionary):
+			continue
+		if not _mapped(table, str((item as Dictionary).get("doc", ""))).is_empty():
+			return true
+	return false
+
+
+static func _publish_touch(doc: Dictionary, table: Dictionary) -> bool:
+	var flight: Variant = doc.get("flight", {})
+	if not (flight is Dictionary):
+		return false
+	var ids := _publish_ids(flight)
+	for name in ids.keys():
+		if not _mapped(table, String(name)).is_empty():
+			return true
+	return false
+
+
+## True when a quest row would move off a missing stage or a missing region leaf.
+static func _stages_move(quests: Dictionary, content: WyrdContent) -> bool:
+	for quest_id in quests.keys():
+		var item: Variant = quests[quest_id]
+		if not (item is Dictionary):
+			continue
+		var row: Dictionary = item
+		var stage_id := str(row.get("stage", ""))
+		if stage_id.is_empty():
+			continue
+		var quest := _quest_def(content, String(quest_id), row)
+		if quest == null:
+			continue
+		var names := _stage_names(quest)
+		if not names.has(stage_id):
+			if not _fallback_stage(quest, row, names).is_empty():
+				return true
+			continue
+		var body := WyrdQuestRunner.stage_body(_top_stage(quest, stage_id), str(row.get("variant", "")))
+		var packed: Variant = row.get("regions", null)
+		if body != null and packed is Dictionary and _regions_move(body, packed):
+			return true
+	return false
+
+
+static func _regions_move(body: WyrdStageDef, saved: Dictionary) -> bool:
+	if body == null:
+		return false
+	var declared := {}
+	for item in body.regions:
+		var region := item as WyrdRegionDef
+		if region != null and not region.id.is_empty():
+			declared[region.id] = region
+	for key in saved.keys():
+		var region_id := String(key)
+		if not declared.has(region_id) or not (saved[key] is Dictionary):
+			continue
+		var region: WyrdRegionDef = declared[region_id]
+		var row: Dictionary = saved[key]
+		var leaf := _region_leaf(region, str(row.get("stage", "")))
+		if leaf == null:
+			if not region.stages.is_empty():
+				return true
+			continue
+		var packed: Variant = row.get("regions", null)
+		if packed is Dictionary and _regions_move(leaf, packed):
+			return true
+	return false
 
 
 static func _has_table(aliases: Dictionary) -> bool:

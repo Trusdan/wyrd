@@ -67,3 +67,14 @@ Pull requests do not run this suite. The hosted workflow runs `--mode warn`. A m
 The nightly schedule is 07:00 UTC. That run skips when `github.sha` on the default branch equals the `headSha` of the last successful scheduled run of `.github/workflows/perf.yml`. A lookup failure still runs the bench. Tag and manual runs do not use that skip. The tag run writes `bench/results/<tag>.json` and regenerates `bench/TREND.md` when the bench script exits 0, including when it reported warnings. A checksum that changes between samples still fails the job, and that run does not commit. Nightly and manual runs upload an artifact and do not commit. Hosted jobs stay on `ubuntu-24.04` until `ubuntu-26.04` is deliberately validated, because benchmark baselines are recorded per image. The v0.6.2-m8 baseline was recorded on ubuntu-24.04.
 
 Each log line is `perf <name> median=… p95=… delta=… verdict=…`. `delta` compares the judged statistic with the base build in this job: the median, or the p95 for `tick.recheck`. `n/a` means the base checkout has no `bench/perf_worker.gd`.
+
+## M11 performance pass
+
+Full profile, 7 samples, `--mode warn`, one machine (Intel Xeon, 4 cores, Linux 6.12.94+, Godot 4.7.2). The base is `7725177`. Checksums matched the base on every metric below.
+
+- Load: `load.time` median 2.395 s → 1.459 s, `load.flight` 2.492 s → 1.531 s, `load.generated` 2.583 s → 1.654 s. A save is deep-copied only when an alias or a missing stage rewrites a row. Deed rows that already match the shape skip the per-field sort; a mismatch still uses that walk, so the first message is the same.
+- Tick: `tick.recheck` median 1.026 ms → 0.592 ms (p95 1.168 ms → 0.676 ms). Expiry walks only instances whose template can expire, in sorted id order. Host-call tracing allocates no depth object and builds no argument list while tracing is off. The depth counter is unchanged while tracing is on.
+
+Found, not fixed. On a 50,000-deed save, `check_shape` is still about 242 ms after the deed path (about 914 ms before), and `check` still deep-copies the save once (about 184 ms). That is the gap that remains against the `v0.8.0-m10` `load.time` median of 0.950 s from the reference job. With AI and the generator idle, `ai.tick_prefetch` is about 3 µs and `_apply_generations` about 1 µs. `reputation.cold` and `director.why_not` did not reproduce the hosted trend: cold was −3.6% against `v0.6.4-m3` and +1.6% against `v0.8.0-m10`; why-not was +3.3% and +5.1%.
+
+One smoke run of every metric, 3 samples, same base: `load.time` −46%, `tick.recheck` p95 −27%. Other medians stayed within about 12%. `deeds_known_to` median +12% with a faster p95, checksum unchanged. `perceive.credibility` warns on its budget and was slightly faster.

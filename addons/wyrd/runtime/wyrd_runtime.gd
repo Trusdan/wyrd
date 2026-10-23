@@ -3017,10 +3017,17 @@ class _HostDepth extends RefCounted:
 
 
 func _host_enter() -> RefCounted:
+	if trace == null or not trace.enabled:
+		return null
 	var gate := _HostDepth.new()
 	gate.runtime = self
 	_host_depth += 1
 	return gate
+
+
+## True only for the direct game call, and only while a row can be logged.
+func _host_logs() -> bool:
+	return _host_depth == 1
 
 
 ## Records one direct game call. Nested work is already above depth 0.
