@@ -1,0 +1,26 @@
+// [EXAMPLE CONTENT] Harbor ids before the renames. An invented fishing village, not a host game.
+language 1
+
+quest ferry_toll "Ferry Toll"
+  start when false
+  stage arrive
+    waits_until false
+  stage offer
+    waits_until false
+
+template ferry_job "Ferry Job"
+  stage wait
+    waits_until false
+  stage hire
+    waits_until false
+
+role ferry_master
+  scope: world
+  visibility: secret
+  succession: none
+  vacancy: hold
+
+document harbor_gazette "Harbor Gazette" #line:gazette_title
+  text: frozen
+  page
+    The tide is in. #line:gazette_body

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Load rewrites saves through the content's `was:` alias tables (`WyrdSaveMigrate`): quest stages, role ids, deed verbs and document ids. Each rewrite adds an `alias` load-report row; an old id whose new id is also saved is dropped with `W_SAVE_ALIAS`.
 - Content aliases: `was:` on stage, role and document headers and an alias-only `verb` statement, resolved at compile time into alias tables (in `export-json`, and in the manifest hash only when non-empty), with `E_ALIAS_CONFLICT`, `E_ALIAS_DUPLICATE` and `E_ALIAS_CYCLE`. Nothing reads the tables at runtime yet.
 - Replay: a trace row whose presence or content depends on measured time sets `timing` true. The scheduler frame warning (`queue=frame`, `us`) is that row. `WyrdTrace.diff` leaves timing rows out and still compares every other row exactly. The rows stay in the trace.
 - Migration fixture tests: a schema 1 save and two earlier Gullhaven saves load and round-trip.

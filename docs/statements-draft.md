@@ -424,7 +424,7 @@ Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPL
 
 ## Aliases
 
-`was:` renames an id that older content still uses. The compiler resolves chains and stores the tables on the linked pack. Nothing reads them at runtime yet.
+`was:` renames an id that older content still uses. The compiler resolves chains and stores the tables on the linked pack. Load rewrites saved quest stages, role ids, deed verbs, and document ids through those tables.
 
 ```wyrd
 verb pay was: paid, tendered
