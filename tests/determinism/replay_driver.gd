@@ -142,6 +142,7 @@ func record_route(name: String, provider: String) -> Dictionary:
 	recorded["provider"] = provider
 	recorded["steps"] = steps
 	recorded["id"] = key
+	_release(runtime)
 	_cache[key] = recorded
 	return recorded
 
@@ -152,7 +153,9 @@ func replay_route(name: String, provider: String, recorded: Dictionary) -> Dicti
 	var runtime: WyrdRuntime = opened["runtime"]
 	var steps: Array = recorded["steps"]
 	_replay_steps(runtime, steps, recorded["events"], recorded["segments"], 0, steps.size())
-	return {"events": runtime.trace.snapshot(), "hash": suite().gameplay_hash(runtime)}
+	var replayed := {"events": runtime.trace.snapshot(), "hash": suite().gameplay_hash(runtime)}
+	_release(runtime)
+	return replayed
 
 
 func record_case(run: Dictionary) -> Dictionary:
@@ -167,6 +170,7 @@ func record_case(run: Dictionary) -> Dictionary:
 	recorded["steps"] = steps
 	recorded["run"] = run
 	recorded["id"] = key
+	_release(runtime)
 	_cache[key] = recorded
 	return recorded
 
@@ -176,7 +180,9 @@ func replay_case(run: Dictionary, recorded: Dictionary) -> Dictionary:
 	_begin(runtime, run)
 	var steps: Array = recorded["steps"]
 	_replay_steps(runtime, steps, recorded["events"], recorded["segments"], 0, steps.size())
-	return {"events": runtime.trace.snapshot(), "hash": suite().gameplay_hash(runtime)}
+	var replayed := {"events": runtime.trace.snapshot(), "hash": suite().gameplay_hash(runtime)}
+	_release(runtime)
+	return replayed
 
 
 func split_indexes(segments: Array) -> Array:
@@ -227,7 +233,9 @@ func play_canon(spec: Dictionary, provider: String) -> String:
 	var opened: Dictionary = played.boot_spec(spec, provider)
 	var runtime: WyrdRuntime = opened["runtime"]
 	played.play(runtime, spec["steps"])
-	return canon(runtime.trace.events)
+	var text := canon(runtime.trace.events)
+	_release(runtime)
+	return text
 
 
 func canon(events: Array) -> String:
@@ -355,7 +363,9 @@ func _prefix_save_route(spec: Dictionary, provider: String, recorded: Dictionary
 	var runtime := _boot_route(spec, provider)
 	var steps: Array = recorded["steps"]
 	_replay_steps(runtime, steps, recorded["events"], recorded["segments"], 0, k + 1)
-	return _round_trip(runtime)
+	var doc := _round_trip(runtime)
+	_release(runtime)
+	return doc
 
 
 func _prefix_save_case(run: Dictionary, recorded: Dictionary, k: int) -> Dictionary:
@@ -363,7 +373,9 @@ func _prefix_save_case(run: Dictionary, recorded: Dictionary, k: int) -> Diction
 	_begin(runtime, run)
 	var steps: Array = recorded["steps"]
 	_replay_steps(runtime, steps, recorded["events"], recorded["segments"], 0, k + 1)
-	return _round_trip(runtime)
+	var doc := _round_trip(runtime)
+	_release(runtime)
+	return doc
 
 
 func _check_split(recorded: Dictionary, k: int, doc: Dictionary, label: String) -> Dictionary:
@@ -377,7 +389,9 @@ func _check_split(recorded: Dictionary, k: int, doc: Dictionary, label: String) 
 	host.trace.clear()
 	var tail := _tail_steps(steps, k)
 	var suffix := _record_steps(host, tail)
-	if suite().gameplay_hash(host) != str(recorded["hash"]):
+	var live_hash := str(suite().gameplay_hash(host))
+	_release(host)
+	if live_hash != str(recorded["hash"]):
 		problems.append("%s hash" % label)
 	for replay_i in 2:
 		var again := _load_into(_fresh_split_runtime(recorded), steps, k, doc)
@@ -387,6 +401,7 @@ func _check_split(recorded: Dictionary, k: int, doc: Dictionary, label: String) 
 		fresh.trace.clear()
 		_replay_steps(fresh, tail, suffix["events"], suffix["segments"], 0, tail.size())
 		var got: Array = fresh.trace.snapshot()
+		_release(fresh)
 		var mismatch := explain(suffix["events"], got)
 		if mismatch != "":
 			problems.append("%s replay %d\n%s" % [label, replay_i + 1, mismatch])
@@ -404,6 +419,52 @@ func _fresh_split_runtime(recorded: Dictionary) -> WyrdRuntime:
 	var runtime := _Cases.boot(run)
 	_begin(runtime, run)
 	return runtime
+
+
+func _release(runtime: WyrdRuntime) -> void:
+	# Runtimes point back at themselves through callables, so drop those links
+	# once the trace and the save have been copied out. The comparison is done.
+	if runtime == null:
+		return
+	if runtime.has_meta("m10_host"):
+		var host: Variant = runtime.get_meta("m10_host")
+		if host is WyrdFakeHost:
+			var fake: WyrdFakeHost = host as WyrdFakeHost
+			if fake.world != null:
+				fake.world.changed = Callable()
+		runtime.remove_meta("m10_host")
+	if runtime.has_meta("host"):
+		runtime.remove_meta("host")
+	runtime.remove_meta("m10_provider")
+	runtime.remove_meta("m10_harness")
+	runtime.remove_meta("m10_catch")
+	runtime.facts = null
+	runtime.events = null
+	runtime.roles = null
+	runtime.topics = null
+	runtime.documents = null
+	runtime.deeds = null
+	runtime.social = null
+	runtime.rumors = null
+	runtime.publish = null
+	runtime.effects = null
+	runtime.quests = null
+	runtime.dialogue = null
+	runtime.storylets = null
+	runtime.sequences = null
+	runtime.director = null
+	runtime.generator = null
+	runtime.ai = null
+	runtime.trace = null
+	runtime.debug = null
+	runtime.coverage = null
+	runtime.set("_queue", null)
+	runtime.set("_ctx", null)
+	runtime.set("_rpn", null)
+	runtime.set("_adapters", {})
+	runtime.set("_config", null)
+	runtime.set("_content", null)
+	runtime.set("_signatures", null)
 
 
 func _trace_on(recorded: Dictionary) -> bool:
