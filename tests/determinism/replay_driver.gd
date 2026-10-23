@@ -318,12 +318,16 @@ func _record_steps(runtime: WyrdRuntime, steps: Array) -> Dictionary:
 		var pending := 0
 		if runtime.ai != null:
 			pending = runtime.ai.pending_count()
+		var offers := 0
+		if runtime.generator != null:
+			offers = runtime.generator.pending_count()
 		segments.append({
 			"at": at,
 			"can_save": runtime.can_save(),
 			"end": end_at,
 			"mid": mid,
 			"mode": mode,
+			"offers": offers,
 			"op": op,
 			"pending": pending,
 		})
@@ -349,6 +353,9 @@ func _is_split(segments: Array, k: int) -> bool:
 	if not bool(seg["can_save"]):
 		return false
 	if int(seg["pending"]) != 0:
+		return false
+	# Load drops the offer queue, so a queued offer is not a split point.
+	if int(seg["offers"]) != 0:
 		return false
 	var open_proposal := false
 	for i in k + 1:
@@ -406,17 +413,22 @@ func _load_into(runtime: WyrdRuntime, steps: Array, k: int, doc: Dictionary) -> 
 	runtime.trace.clear()
 	var report: WyrdLoadReport = runtime.load_state(doc["doc"])
 	var load_events: Array = runtime.trace.snapshot()
-	var problems := _load_problems(runtime, report, str(doc["text"]), load_events)
+	var expected_kept: Array = []
+	if doc.get("kept") is Array:
+		expected_kept = doc["kept"]
+	var problems := _load_problems(runtime, report, str(doc["text"]), load_events, expected_kept)
 	runtime.trace.clear()
 	return {"problems": problems, "runtime": runtime}
 
 
-func _load_problems(runtime: WyrdRuntime, report: WyrdLoadReport, expected_text: String, load_events: Array) -> PackedStringArray:
+func _load_problems(runtime: WyrdRuntime, report: WyrdLoadReport, expected_text: String, load_events: Array, expected_kept: Array) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if not report.ok:
 		problems.append("load not ok %s" % report.diagnostics.format())
-	if report.rows.size() != 0:
-		problems.append("load rows %s" % JSON.stringify(report.rows))
+	var got_rows := JSON.stringify(report.rows, "", true)
+	var want_rows := JSON.stringify(expected_kept, "", true)
+	if got_rows != want_rows:
+		problems.append("load rows %s expected %s" % [got_rows, want_rows])
 	var right := JSON.stringify(runtime.save_state(), "\t", true)
 	if expected_text != right:
 		var parsed_left: Variant = JSON.parse_string(expected_text)
@@ -444,7 +456,14 @@ func _round_trip(runtime: WyrdRuntime) -> Dictionary:
 	# compare the canonical text of the save that was written.
 	var text := JSON.stringify(saved, "\t", true)
 	var parsed: Variant = JSON.parse_string(JSON.stringify(saved))
-	return {"doc": parsed, "text": text}
+	return {"doc": parsed, "kept": _kept_rows(runtime), "text": text}
+
+
+func _kept_rows(runtime: WyrdRuntime) -> Array:
+	var report: WyrdLoadReport = WyrdLoadReport.new()
+	WyrdSave._note_kept(runtime, report)
+	report.sort_rows()
+	return report.rows
 
 
 func _tail_steps(steps: Array, k: int) -> Array:
