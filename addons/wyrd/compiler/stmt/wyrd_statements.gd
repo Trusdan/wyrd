@@ -135,6 +135,8 @@ func compile(
 			var template := _template(child)
 			file.templates.append(template)
 			WyrdStmtSpan.add_reads(file.reads, template.reads)
+		elif child.keyword == "verb":
+			_compile_verb(child, file)
 	return file
 
 
@@ -150,6 +152,13 @@ func _compile_document(node: WyrdNode) -> WyrdDocumentDef:
 		_error(WyrdDiagnostic.E_DOCUMENT_SYNTAX, "document needs an id", node.start_line, node.start_col)
 		document.id = ""
 		return document
+	var was := _was_list(items, cursor, true, WyrdDiagnostic.E_DOCUMENT_SYNTAX)
+	if bool(was["present"]):
+		if not bool(was["ok"]):
+			document.id = ""
+			return document
+		cursor = int(was["next"])
+		_store_was(document, was)
 	if _header_periodic(items):
 		return _compile_periodic_document(node, document, items, cursor)
 	return _compile_readable_document(node, document, items, cursor)
@@ -599,6 +608,101 @@ func _is_word(items: Array[WyrdToken], index: int, word: String) -> bool:
 	return index >= 0 and index < items.size() and items[index].kind == &"ident" and items[index].text == word
 
 
+## Reads [code]was: <id>[, <id>…][/code] starting at [param index].
+## A token other than [code]was[/code] leaves the cursor where it is.
+## A malformed list reports [param code] and does not consume a following header.
+func _was_list(items: Array[WyrdToken], index: int, dotted: bool, code: StringName) -> Dictionary:
+	var ids := PackedStringArray()
+	var lines := PackedInt32Array()
+	var cols := PackedInt32Array()
+	if not _is_word(items, index, "was"):
+		return {"cols": cols, "ids": ids, "lines": lines, "next": index, "ok": true, "present": false}
+	var was_token := items[index]
+	if index + 1 >= items.size() or items[index + 1].kind != &"colon":
+		_error(code, "was: needs an old id", was_token.line, was_token.col)
+		return {"cols": cols, "ids": ids, "lines": lines, "next": items.size(), "ok": false, "present": true}
+	var cursor := index + 2
+	while true:
+		var id := ""
+		var line := was_token.line
+		var col := was_token.col
+		if dotted:
+			var parsed := _dotted_at(items, cursor)
+			id = String(parsed["name"])
+			if id.is_empty():
+				if cursor < items.size():
+					line = items[cursor].line
+					col = items[cursor].col
+				_error(code, "was: needs an old id", line, col)
+				return {"cols": cols, "ids": ids, "lines": lines, "next": items.size(), "ok": false, "present": true}
+			line = items[cursor].line
+			col = items[cursor].col
+			cursor = int(parsed["next"])
+		else:
+			if cursor >= items.size() or items[cursor].kind != &"ident":
+				if cursor < items.size():
+					line = items[cursor].line
+					col = items[cursor].col
+				_error(code, "was: needs an old id", line, col)
+				return {"cols": cols, "ids": ids, "lines": lines, "next": items.size(), "ok": false, "present": true}
+			id = items[cursor].text
+			line = items[cursor].line
+			col = items[cursor].col
+			cursor += 1
+		ids.append(id)
+		lines.append(line)
+		cols.append(col)
+		if cursor < items.size() and items[cursor].kind == &"comma":
+			cursor += 1
+			continue
+		break
+	return {"cols": cols, "ids": ids, "lines": lines, "next": cursor, "ok": true, "present": true}
+
+
+func _store_was(target: Object, was: Dictionary) -> void:
+	var ids: PackedStringArray = was["ids"]
+	var lines: PackedInt32Array = was["lines"]
+	var cols: PackedInt32Array = was["cols"]
+	target.set("was_ids", ids)
+	target.set("was_lines", lines)
+	target.set("was_cols", cols)
+
+
+func _compile_verb(node: WyrdNode, file: WyrdFileDef) -> void:
+	if not node.line_tag.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "a line tag is not allowed on a verb", node.start_line, node.start_col)
+		return
+	if not node.title.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "verb has no title", node.start_line, node.start_col)
+		return
+	if not node.children.is_empty():
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "a verb alias cannot contain a block", node.start_line, node.start_col)
+		for child in node.children:
+			_unknown(child)
+		return
+	if node.head.is_empty() or node.head[0].kind != &"ident":
+		_error(WyrdDiagnostic.E_STMT_UNKNOWN, "verb needs <new> was: <old>", node.start_line, node.start_col)
+		return
+	var new_id := node.head[0].text
+	var was := _was_list(node.head, 1, false, WyrdDiagnostic.E_STMT_UNKNOWN)
+	if not bool(was["present"]) or not bool(was["ok"]) or int(was["next"]) != node.head.size():
+		if bool(was["ok"]):
+			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "verb needs <new> was: <old>", node.start_line, node.start_col)
+		return
+	var ids: PackedStringArray = was["ids"]
+	var lines: PackedInt32Array = was["lines"]
+	var cols: PackedInt32Array = was["cols"]
+	var olds: Array = []
+	for i in ids.size():
+		olds.append({"col": int(cols[i]), "id": String(ids[i]), "line": int(lines[i])})
+	file.verb_aliases.append({
+		"col": node.start_col,
+		"id": new_id,
+		"line": node.start_line,
+		"olds": olds,
+	})
+
+
 func _compile_role(node: WyrdNode) -> WyrdRoleDef:
 	var role := WyrdRoleDef.new()
 	role.take_span(node)
@@ -609,9 +713,25 @@ func _compile_role(node: WyrdNode) -> WyrdRoleDef:
 		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "a role has no title", node.start_line, node.start_col)
 	var ident := _dotted_at(node.head, 0)
 	role.id = String(ident["name"])
-	if role.id.is_empty() or int(ident["next"]) != node.head.size():
+	var cursor := int(ident["next"])
+	if role.id.is_empty():
 		_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role needs an id", node.start_line, node.start_col)
 		role.id = ""
+	else:
+		var was := _was_list(node.head, cursor, true, WyrdDiagnostic.E_ROLE_SYNTAX)
+		if bool(was["present"]):
+			if not bool(was["ok"]):
+				role.id = ""
+			else:
+				cursor = int(was["next"])
+				if cursor != node.head.size():
+					_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role needs an id", node.start_line, node.start_col)
+					role.id = ""
+				else:
+					_store_was(role, was)
+		elif cursor != node.head.size():
+			_error(WyrdDiagnostic.E_ROLE_SYNTAX, "role needs an id", node.start_line, node.start_col)
+			role.id = ""
 	var seen := {}
 	for child in node.children:
 		var field := child.keyword
@@ -1887,7 +2007,7 @@ func _pack_ok(pack: String) -> bool:
 
 
 func _stage(node: WyrdNode, quest: WyrdQuestDef) -> void:
-	var stage := _stage_head(node)
+	var stage := _stage_head(node, true)
 	if stage.id.is_empty():
 		return
 	for prior in quest.stages:
@@ -1900,14 +2020,33 @@ func _stage(node: WyrdNode, quest: WyrdQuestDef) -> void:
 	WyrdStmtSpan.add_reads(quest.reads, stage.reads)
 
 
-func _stage_head(node: WyrdNode) -> WyrdStageDef:
+func _stage_head(node: WyrdNode, top_level: bool) -> WyrdStageDef:
 	var stage := WyrdStageDef.new()
 	stage.take_span(node)
 	_line_id(node, false)
-	if node.head.size() != 1 or node.head[0].kind != &"ident":
+	if node.head.is_empty() or node.head[0].kind != &"ident":
 		_unknown_msg(node, "stage needs an id")
 		return stage
 	stage.id = node.head[0].text
+	if node.head.size() == 1:
+		return stage
+	if _is_word(node.head, 1, "was"):
+		if not top_level:
+			_error(WyrdDiagnostic.E_STMT_UNKNOWN, "was: is only allowed on a top-level stage", node.start_line, node.start_col)
+			stage.id = ""
+			return stage
+		var was := _was_list(node.head, 1, false, WyrdDiagnostic.E_STMT_UNKNOWN)
+		if not bool(was["ok"]):
+			stage.id = ""
+			return stage
+		if int(was["next"]) != node.head.size():
+			_unknown_msg(node, "stage needs an id")
+			stage.id = ""
+			return stage
+		_store_was(stage, was)
+		return stage
+	_unknown_msg(node, "stage needs an id")
+	stage.id = ""
 	return stage
 
 
@@ -1933,7 +2072,7 @@ func _region(node: WyrdNode, stage: WyrdStageDef) -> void:
 		if child.keyword != "stage":
 			_unknown(child)
 			continue
-		var nested := _stage_head(child)
+		var nested := _stage_head(child, false)
 		if nested.id.is_empty():
 			continue
 		for prior_stage in region.stages:

@@ -128,6 +128,9 @@ const E_SAVE_VERSION: StringName = &"E_SAVE_VERSION"
 const W_SAVE_MANIFEST: StringName = &"W_SAVE_MANIFEST"
 const W_SAVE_TEMPLATE: StringName = &"W_SAVE_TEMPLATE"
 const W_SAVE_AI: StringName = &"W_SAVE_AI"
+const E_ALIAS_CONFLICT: StringName = &"E_ALIAS_CONFLICT"
+const E_ALIAS_DUPLICATE: StringName = &"E_ALIAS_DUPLICATE"
+const E_ALIAS_CYCLE: StringName = &"E_ALIAS_CYCLE"
 
 var severity: StringName = SEVERITY_ERROR
 var code: StringName = &""

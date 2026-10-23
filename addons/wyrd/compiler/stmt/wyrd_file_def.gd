@@ -12,6 +12,10 @@ var roles: Array[WyrdRoleDef] = []
 var storylets: Array[WyrdStoryletDef] = []
 var sequences: Array[WyrdSequenceDef] = []
 var documents: Array[WyrdDocumentDef] = []
+## Alias-only [code]verb[/code] statements. Each row is [code]id[/code] (the new verb),
+## [code]line[/code] and [code]col[/code] of that statement, and [code]olds[/code]
+## (rows of [code]id[/code], [code]line[/code], [code]col[/code]).
+var verb_aliases: Array = []
 
 
 ## Quests, then templates, in file order. Lint passes that walk quest bodies use this.

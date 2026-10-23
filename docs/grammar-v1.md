@@ -190,3 +190,18 @@ template ferry.errand "The Errand"
 `param <name>: item|place|object cast(<condition>)` compiles the cast the way a kind slot does, with `candidate` bound. Each of `when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` may appear once. `when:` is a storylet condition. `priority:` is a signed integer, default 0. `weight:` is an integer of at least 0, default 1. `max_active:` is an integer of at least 1, default 1. `tier:` is one name, or `<low>..<high>`. Names are not checked against pressure tiers here. `assumes:` is a wait condition, so `chance` is rejected. Each top-level `and` part is one assumption. In an entity argument inside `assumes:` only, an identifier that names one of this template's slots or params compiles as `holder(<name>)`. The same text anywhere else stays an entity literal. `allow_protected:` is `true` or `false`, default false.
 
 A template shares the quest id namespace. `start quest`, `advance`, `quest(...)`, `stage(...)`, `outcome(...)`, and a storylet `scope: beat <template>.<stage>` cannot name a template. `active_count(<id>)` of an id that names no template and no quest is an error. A quest id is allowed. Two templates that share priority and specificity, have overlapping tiers, and whose `when` conditions can both be true are a tie. A missing tier overlaps every tier. A range overlaps every tier. Two single names overlap only when they are equal. Weight does not break the tie. Pick, cast, and bind are later.
+
+## 12. `was:` aliases
+
+**Status: draft statement syntax. Sections 1–6 stay frozen.** `was` is not a reserved word. It stays a legal identifier in facts, ids, and prose.
+
+A `stage`, `role`, or `document` header may add `was: <old>[, <old>…]` directly after its id. Old ids use that kind's id rule: a plain identifier for a stage, a dotted identifier for a role or a document. The list ends at the first token that is not a comma continuation. A quoted title still sits where it does today. `was:` on a region stage is not allowed.
+
+```wyrd
+stage offer was: offer_old
+role ferry_master was: boatman
+document harbor_gazette "Harbor Gazette" was: gazette
+document tide_notice "Tide Notice" was: notice publishes_by harbor_guild every 1 day delay 1 hour
+```
+
+A top-level `verb <new> was: <old>[, <old>…]` statement renames a deed verb. It is one line, with no title and no block. Verbs are not otherwise declared. The shape, the three alias lints, and the resolved tables are in `docs/statements-draft.md`.

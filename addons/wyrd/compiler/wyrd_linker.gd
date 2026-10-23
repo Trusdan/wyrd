@@ -45,6 +45,7 @@ func link(
 	pack.schema = schema
 	pack.units = units
 	_index_symbols(units)
+	_aliases(units, pack)
 	_template_refs(units)
 	_document_refs(units)
 	_storylet_ties(units)
@@ -128,6 +129,367 @@ func _index_symbols(units: Array) -> void:
 				continue
 			_scenes[scene.id] = {"col": scene.col, "line": scene.line, "path": path, "scene": scene}
 	_roles = roles
+
+
+func _aliases(units: Array, pack: WyrdLinkedPack) -> void:
+	var verbs := _live_verbs(units)
+	var roles := {}
+	var documents := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for role in file.roles:
+			if not role.id.is_empty():
+				roles[role.id] = true
+		for document in file.documents:
+			if not document.id.is_empty():
+				documents[document.id] = true
+	var aliases := {}
+	var stages := _alias_stages(units)
+	if not stages.is_empty():
+		aliases["stage"] = stages
+	var role_table := _alias_resolve("role", roles, _role_claims(units))
+	if not role_table.is_empty():
+		aliases["role"] = role_table
+	var document_table := _alias_resolve("document", documents, _document_claims(units))
+	if not document_table.is_empty():
+		aliases["document"] = document_table
+	var verb_table := _alias_resolve("verb", verbs, _verb_claims(units))
+	if not verb_table.is_empty():
+		aliases["verb"] = verb_table
+	pack.aliases = aliases
+
+
+func _alias_stages(units: Array) -> Dictionary:
+	var tables := {}
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for quest in file.quests:
+			_alias_stage_scope(quest, path, tables)
+		for template in file.templates:
+			_alias_stage_scope(template, path, tables)
+	return tables
+
+
+func _alias_stage_scope(quest: WyrdQuestDef, path: String, tables: Dictionary) -> void:
+	if quest == null or quest.id.is_empty():
+		return
+	var live := {}
+	for stage in quest.stages:
+		_collect_stage_ids(stage, live)
+	var claims: Array = []
+	for stage in quest.stages:
+		_push_was(claims, stage.was_ids, stage.was_lines, stage.was_cols, stage.id, stage.line, stage.col, path)
+	var resolved := _alias_resolve("stage", live, claims)
+	if not resolved.is_empty():
+		tables[quest.id] = resolved
+
+
+func _collect_stage_ids(stage: WyrdStageDef, into: Dictionary) -> void:
+	if stage == null:
+		return
+	if not stage.id.is_empty():
+		into[stage.id] = true
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_collect_stage_ids(child, into)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null:
+			_collect_stage_ids(variant.body, into)
+
+
+func _role_claims(units: Array) -> Array:
+	var claims: Array = []
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for role in file.roles:
+			_push_was(claims, role.was_ids, role.was_lines, role.was_cols, role.id, role.line, role.col, path)
+	return claims
+
+
+func _document_claims(units: Array) -> Array:
+	var claims: Array = []
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for document in file.documents:
+			_push_was(claims, document.was_ids, document.was_lines, document.was_cols, document.id, document.line, document.col, path)
+	return claims
+
+
+func _verb_claims(units: Array) -> Array:
+	var claims: Array = []
+	for unit in units:
+		var path := str(unit["path"])
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for row in file.verb_aliases:
+			var body: Dictionary = row
+			var olds: Array = body.get("olds", [])
+			for old in olds:
+				var item: Dictionary = old
+				claims.append({
+					"col": int(item.get("col", 1)),
+					"line": int(item.get("line", 1)),
+					"new_id": String(body.get("id", "")),
+					"old": String(item.get("id", "")),
+					"path": path,
+					"stmt_col": int(body.get("col", 1)),
+					"stmt_line": int(body.get("line", 1)),
+					"stmt_path": path,
+				})
+	return claims
+
+
+func _push_was(
+	claims: Array,
+	ids: PackedStringArray,
+	lines: PackedInt32Array,
+	cols: PackedInt32Array,
+	new_id: String,
+	stmt_line: int,
+	stmt_col: int,
+	path: String
+) -> void:
+	for i in ids.size():
+		claims.append({
+			"col": int(cols[i]),
+			"line": int(lines[i]),
+			"new_id": new_id,
+			"old": String(ids[i]),
+			"path": path,
+			"stmt_col": stmt_col,
+			"stmt_line": stmt_line,
+			"stmt_path": path,
+		})
+
+
+func _alias_resolve(kind: String, live: Dictionary, claims: Array) -> Dictionary:
+	var grouped := {}
+	for claim in claims:
+		var old := String(claim["old"])
+		if not grouped.has(old):
+			grouped[old] = []
+		var bucket: Array = grouped[old]
+		bucket.append(claim)
+	var dropped := {}
+	var names: Array = grouped.keys()
+	names.sort()
+	for old in names:
+		var group: Array = grouped[old]
+		group.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return _alias_before(a, b)
+		)
+		if group.size() > 1:
+			dropped[String(old)] = true
+			var first: Dictionary = group[0]
+			for index in range(1, group.size()):
+				var later: Dictionary = group[index]
+				_diagnostics.add(
+					WyrdDiagnostic.E_ALIAS_DUPLICATE,
+					"alias \"%s\" is claimed by \"%s\" and \"%s\"" % [String(old), String(first["new_id"]), String(later["new_id"])],
+					String(later["path"]),
+					int(later["line"]),
+					int(later["col"])
+				)
+		for claim in group:
+			var body: Dictionary = claim
+			if live.has(String(body["old"])):
+				dropped[String(body["old"])] = true
+				_diagnostics.add(
+					WyrdDiagnostic.E_ALIAS_CONFLICT,
+					"alias \"%s\" is still a live %s" % [String(body["old"]), kind],
+					String(body["path"]),
+					int(body["line"]),
+					int(body["col"])
+				)
+	var edges := {}
+	var stmt := {}
+	for claim in claims:
+		var body: Dictionary = claim
+		var old := String(body["old"])
+		if dropped.has(old) or old.is_empty() or String(body["new_id"]).is_empty():
+			continue
+		edges[old] = String(body["new_id"])
+		var new_id := String(body["new_id"])
+		var site := {"col": int(body["stmt_col"]), "line": int(body["stmt_line"]), "path": String(body["stmt_path"])}
+		if not stmt.has(new_id) or _alias_site_before(site, stmt[new_id]):
+			stmt[new_id] = site
+	_alias_cycles(edges, stmt)
+	var resolved := {}
+	var olds: Array = edges.keys()
+	olds.sort()
+	for old in olds:
+		var final_id := _alias_final(String(old), edges)
+		if final_id.is_empty() or final_id == String(old):
+			continue
+		resolved[String(old)] = final_id
+	return resolved
+
+
+func _alias_before(a: Dictionary, b: Dictionary) -> bool:
+	var path_a := String(a["path"])
+	var path_b := String(b["path"])
+	if path_a != path_b:
+		return path_a < path_b
+	if int(a["line"]) != int(b["line"]):
+		return int(a["line"]) < int(b["line"])
+	if int(a["col"]) != int(b["col"]):
+		return int(a["col"]) < int(b["col"])
+	return String(a["new_id"]) < String(b["new_id"])
+
+
+func _alias_site_before(a: Dictionary, b: Dictionary) -> bool:
+	var path_a := String(a["path"])
+	var path_b := String(b["path"])
+	if path_a != path_b:
+		return path_a < path_b
+	if int(a["line"]) != int(b["line"]):
+		return int(a["line"]) < int(b["line"])
+	return int(a["col"]) < int(b["col"])
+
+
+func _alias_cycles(edges: Dictionary, stmt: Dictionary) -> void:
+	var seen := {}
+	var starts: Array = edges.keys()
+	starts.sort()
+	for start in starts:
+		if seen.has(start):
+			continue
+		var stack: Array = []
+		var index := {}
+		var node := String(start)
+		var cycle: Array = []
+		while edges.has(node) and not seen.has(node):
+			if index.has(node):
+				cycle = stack.slice(int(index[node]))
+				break
+			index[node] = stack.size()
+			stack.append(node)
+			node = String(edges[node])
+		for item in stack:
+			seen[String(item)] = true
+		if cycle.is_empty():
+			continue
+		for item in cycle:
+			seen[String(item)] = true
+		var best := 0
+		for i in cycle.size():
+			if _alias_cycle_before(String(cycle[i]), String(cycle[best]), stmt):
+				best = i
+		var ordered: Array = []
+		for i in cycle.size():
+			ordered.append(String(cycle[(best + i) % cycle.size()]))
+		var parts: PackedStringArray = PackedStringArray()
+		for id in ordered:
+			parts.append(String(id))
+		parts.append(String(ordered[0]))
+		var start_id := String(ordered[0])
+		for id in ordered:
+			edges.erase(String(id))
+		var site: Dictionary = stmt.get(start_id, {"col": 1, "line": 1, "path": ""})
+		_diagnostics.add(
+			WyrdDiagnostic.E_ALIAS_CYCLE,
+			"alias cycle: %s" % " -> ".join(parts),
+			String(site.get("path", "")),
+			int(site.get("line", 1)),
+			int(site.get("col", 1))
+		)
+
+
+func _alias_cycle_before(id: String, other: String, stmt: Dictionary) -> bool:
+	if not stmt.has(id):
+		return false
+	if not stmt.has(other):
+		return true
+	return _alias_site_before(stmt[id], stmt[other])
+
+
+func _alias_final(old: String, edges: Dictionary) -> String:
+	var seen := {}
+	var current := old
+	var guard := 0
+	while edges.has(current) and guard < 64:
+		if seen.has(current):
+			return ""
+		seen[current] = true
+		current = String(edges[current])
+		guard += 1
+	return current
+
+
+func _live_verbs(units: Array) -> Dictionary:
+	var verbs := {}
+	for unit in units:
+		var file: WyrdFileDef = unit["file"]
+		if file == null:
+			continue
+		for scene in file.scenes:
+			for effect in scene.on_abort:
+				_note_verb(verbs, effect)
+			for item in scene.items:
+				if item.effect != null:
+					_note_verb(verbs, item.effect)
+				if item.choice != null:
+					for effect in item.choice.effects:
+						_note_verb(verbs, effect)
+		for storylet in file.storylets:
+			for effect in storylet.effects:
+				_note_verb(verbs, effect)
+		for document in file.documents:
+			if not document.verb_filter.is_empty():
+				verbs[document.verb_filter] = true
+			for effect in document.on_first_read:
+				_note_verb(verbs, effect)
+			for effect in document.on_read:
+				_note_verb(verbs, effect)
+		for template in file.templates:
+			for hook in template.deed_hooks:
+				if not hook.verb.is_empty():
+					verbs[hook.verb] = true
+		for quest in file.quest_bodies():
+			for stage in quest.stages:
+				_live_stage_verbs(stage, verbs)
+	return verbs
+
+
+func _live_stage_verbs(stage: WyrdStageDef, verbs: Dictionary) -> void:
+	if stage == null:
+		return
+	for effect in stage.effects:
+		_note_verb(verbs, effect)
+	for handler in stage.handlers:
+		for effect in handler.effects:
+			_note_verb(verbs, effect)
+	for entry in stage.variants:
+		var variant := entry as WyrdVariantDef
+		if variant != null:
+			_live_stage_verbs(variant.body, verbs)
+	for item in stage.regions:
+		var region := item as WyrdRegionDef
+		if region == null:
+			continue
+		for child in region.stages:
+			_live_stage_verbs(child, verbs)
+
+
+func _note_verb(verbs: Dictionary, effect: WyrdEffectDef) -> void:
+	if effect != null and not effect.verb.is_empty():
+		verbs[effect.verb] = true
 
 
 func _document_refs(units: Array) -> void:

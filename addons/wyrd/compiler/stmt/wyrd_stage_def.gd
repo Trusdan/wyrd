@@ -11,6 +11,10 @@ extends WyrdStmtSpan
 ## stage and variant records can name each other.
 
 var id: String = ""
+## Old stage ids from a top-level [code]was:[/code] list, with the token position of each.
+var was_ids: PackedStringArray = PackedStringArray()
+var was_lines: PackedInt32Array = PackedInt32Array()
+var was_cols: PackedInt32Array = PackedInt32Array()
 var waits_until: WyrdCompiledCondition = null
 var waits_text: String = ""
 var journals: Array[WyrdLineDef] = []

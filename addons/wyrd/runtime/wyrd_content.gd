@@ -10,6 +10,7 @@ extends RefCounted
 ## parallel [member records] / [member sites] pair. [code]chance[/code] uses
 ## [code]<record>:<site>[/code]. [member manifest_hash] folds the pack id and
 ## each unit hash with [method WyrdHash.combine], paths sorted.
+## When [member aliases] is not empty, it also folds [method alias_text].
 
 var pack_id: String = ""
 var language_version: int = 1
@@ -33,6 +34,9 @@ var sequences: Dictionary = {}
 var documents: Dictionary = {}
 ## Topic ids recorded by the linker, including unlock effects. Not a save field.
 var topic_ids: PackedStringArray = PackedStringArray()
+## Resolved [code]was:[/code] tables copied from the linked pack. Not a save field.
+## Nothing reads this yet. Empty when the pack declared no alias.
+var aliases: Dictionary = {}
 var lines: Dictionary = {}
 ## Opted-in line id to [code]owner[/code] ([code]scene[/code] or [code]storylet[/code]),
 ## owner [code]id[/code], and that owner's [code]ai_context[/code] keys.
@@ -115,6 +119,7 @@ static func from_pack(pack: WyrdLinkedPack) -> WyrdContent:
 	content.deps.build(content.conditions)
 	content._mark_pure()
 	content.topic_ids = pack.topics.duplicate()
+	content.aliases = pack.aliases.duplicate(true)
 	content.storylet_index = pack.storylet_index
 	if content.storylet_index == null:
 		content.storylet_index = WyrdStoryletIndex.new()
@@ -140,7 +145,43 @@ static func hash_pack(pack: WyrdLinkedPack) -> int:
 	order.sort_custom(func(a: int, b: int) -> bool: return paths[a] < paths[b])
 	for i in order:
 		mixed = WyrdHash.combine(mixed, _hex_to_int(hashes[i]))
+	if pack.aliases != null and not pack.aliases.is_empty():
+		mixed = WyrdHash.combine(mixed, WyrdHash.of_text(alias_text(pack.aliases)))
 	return mixed
+
+
+## Canonical text of [param aliases] for [method hash_pack].
+## One [code]kind<TAB>scope<TAB>old<TAB>new[/code] line per entry, sorted, with a trailing newline.
+## [code]scope[/code] is empty except for a stage, where it is the quest or template id.
+static func alias_text(aliases: Dictionary) -> String:
+	var lines: PackedStringArray = PackedStringArray()
+	var kinds: Array = aliases.keys()
+	kinds.sort()
+	for kind in kinds:
+		var body: Variant = aliases[kind]
+		if not (body is Dictionary):
+			continue
+		var table: Dictionary = body
+		if String(kind) == "stage":
+			var scopes: Array = table.keys()
+			scopes.sort()
+			for scope in scopes:
+				var rows: Variant = table[scope]
+				if not (rows is Dictionary):
+					continue
+				var mapped: Dictionary = rows
+				var olds: Array = mapped.keys()
+				olds.sort()
+				for old in olds:
+					lines.append("%s\t%s\t%s\t%s" % [String(kind), String(scope), String(old), String(mapped[old])])
+		else:
+			var flat_olds: Array = table.keys()
+			flat_olds.sort()
+			for old in flat_olds:
+				lines.append("%s\t\t%s\t%s" % [String(kind), String(old), String(table[old])])
+	if lines.is_empty():
+		return ""
+	return "\n".join(lines) + "\n"
 
 
 func condition_at(index: int) -> Dictionary:

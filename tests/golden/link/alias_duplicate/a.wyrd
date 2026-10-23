@@ -1,0 +1,8 @@
+language 1
+
+role ferry_master was: boatman
+
+document harbor_gazette "Harbor Gazette" was: gazette, gazette
+  text: live
+  page
+    The tide is in.

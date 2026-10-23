@@ -1,0 +1,11 @@
+language 1
+
+quest ferry_toll "Ferry Toll"
+  stage offer was: offer
+    ~ record deed pay(actor: player)
+    -> done
+  stage done
+
+role ferry_master was: ferry_master
+
+verb pay was: pay

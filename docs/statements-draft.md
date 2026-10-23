@@ -27,6 +27,7 @@ quest <id> "<Title>"
   requires: [pack.<id>, ...]
   start when <condition>
   stage <id>
+  stage <id> was: <old>[, <old>…]
     waits_until <condition>
     journal: <prose> #line:<id>
     scene <scene_id> with <slot>, <slot>
@@ -39,6 +40,8 @@ quest <id> "<Title>"
 ```
 
 `cast(<condition>)` picks once at quest start. In that condition `candidate` is the entity being tested. A constant condition warns `W_SLOT_COND_ALWAYS` or `W_SLOT_COND_NEVER`. `requires` and `redirect beat` are parsed only.
+
+A top-level stage may add `was: <old>[, <old>…]` after its id. Old ids are plain identifiers, the same rule as the stage id. `was:` on a region stage is `E_STMT_UNKNOWN` with `was: is only allowed on a top-level stage`. A malformed list is `E_STMT_UNKNOWN` with `was: needs an old id`. `was` is not reserved and stays a legal identifier everywhere else.
 
 A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
 
@@ -319,6 +322,9 @@ Still draft. `check` links a pack after statements. A directory with no manifest
 | `W_STORYLET_TIE` | Two storylets share a scope and a speaker, priority and specificity are equal, and the conditions can both be true |
 | `E_FACT_LEAK` | Prose interpolates a stored fact's world value, and a `when` or `{if}` reads that fact from the world without `knows` or `known` |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
+| `E_ALIAS_CONFLICT` | An old id is still a live id in that scope. The message is `alias "<old>" is still a live <kind>`. A header id is live, so a self alias on a stage, role, or document is a conflict. A verb is live when the pack names it |
+| `E_ALIAS_DUPLICATE` | One old id is claimed by two new ids in the same scope, or listed twice in one list. The message is `alias "<old>" is claimed by "<a>" and "<b>"`, at the later claim |
+| `E_ALIAS_CYCLE` | The alias graph cycles. The message is `alias cycle: <a> -> <b> -> <a>`, once, at the earliest statement in the cycle |
 
 Resolved facts are never "never set". A `record deed` without `reveals` is not a fact write. A passed slot the scene does not speak is `W_SLOT_UNUSED`. A stage sets an outcome when one of its own effects, or an effect in one of its `on` handlers, is `outcome`. A variant body and a region stage are separate stages. A choice walks that choice's effects.
 
@@ -334,10 +340,10 @@ A stage may handle a declared world event. The form is `on <event> where <condit
 
 ## Role
 
-A top-level `role <id>` block is content. It sits beside `facts`, `events`, `quest`, and `scene`. The id is a dotted identifier. A role has no title. Fields are optional. A missing field uses the default below. The same fields can be passed to `WyrdRoles.define`.
+A top-level `role <id>` block is content. It sits beside `facts`, `events`, `quest`, and `scene`. The id is a dotted identifier. A role has no title. The header may add `was: <old>[, <old>…]` after the id; old ids are dotted the same way. A malformed list is `E_ROLE_SYNTAX` with `was: needs an old id`. Fields are optional. A missing field uses the default below. The same fields can be passed to `WyrdRoles.define`.
 
 ```wyrd
-role ferry_master
+role ferry_master was: boatman
   scope: place(gullhaven)
   eligibility: alive(candidate) and has_tag(candidate, local)
   default_holder: ada
@@ -366,7 +372,7 @@ role ferry_master
 
 ## Document
 
-A top-level `document` block is either a periodic issue or a readable document. A header that contains `publishes_by`, `every`, or `delay` is the periodic issue below, with the same messages as before. A header without those words is readable: it needs a title, `text: live` or `text: frozen`, and at least one `page`. `document` and `publishes_by` stay reserved as identifiers. `create document <doc_id> copy <copy_id>` is an effect. Content aliases (`was:`), POT extraction, and `create_copy` params are not in this slice.
+A top-level `document` block is either a periodic issue or a readable document. A header that contains `publishes_by`, `every`, or `delay` is the periodic issue below, with the same messages as before. A header without those words is readable: it needs a title, `text: live` or `text: frozen`, and at least one `page`. `document` and `publishes_by` stay reserved as identifiers. `create document <doc_id> copy <copy_id>` is an effect. POT extraction and `create_copy` params are not in this slice.
 
 ```wyrd
 document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day delay 1 hour
@@ -377,7 +383,7 @@ document harbor_gazette "Harbor Gazette" publishes_by harbor_guild every 1 day d
     slant lost_at_sea
 ```
 
-The header is `document <id> ["<title>"] publishes_by <group> every <number> <unit> delay <number> <unit>`. The title is optional. Units are `minute` or `minutes`, `hour` or `hours`, and `day` or `days`. A minute is one game minute, an hour is 60, and a day is 1440. The period must be greater than zero. The delay may be zero. `claim` is the fact whose believed, known, or world value the issue copies. `fact` is a stored symbol that receives one line per issue. `verb` is the `deeds_known_to` filter. Each is optional and may appear once. A `fragment` is `when <condition>` and one `slant <symbol>` child. The first true fragment wins.
+The header is `document <id> ["<title>"] publishes_by <group> every <number> <unit> delay <number> <unit>`. Either header may add `was: <old>[, <old>…]` directly after the id, before `publishes_by` on a periodic issue. Old ids are dotted, the same rule as the document id. The list stops at the first token that is not a comma continuation, so `publishes_by` still starts the periodic header. A malformed list is `E_DOCUMENT_SYNTAX` with `was: needs an old id`. The title is optional. Units are `minute` or `minutes`, `hour` or `hours`, and `day` or `days`. A minute is one game minute, an hour is 60, and a day is 1440. The period must be greater than zero. The delay may be zero. `claim` is the fact whose believed, known, or world value the issue copies. `fact` is a stored symbol that receives one line per issue. `verb` is the `deeds_known_to` filter. Each is optional and may appear once. A `fragment` is `when <condition>` and one `slant <symbol>` child. The first true fragment wins.
 
 | Code | When |
 |---|---|
@@ -394,7 +400,7 @@ The runtime rules for witnesses, rumor believers, the claim pick, the catch-up c
 
 ## Template
 
-A top-level `template <id> "<title>"` block is a quest body plus generator fields. `slot`, `on_empty`, `requires`, and `stage` compile on the quest paths. `param <name>: item|place|object cast(<condition>)` is a cast input. The cast uses the `candidate` binding. A param name that matches a slot or another param is `E_SLOT_DUPLICATE` with `duplicate slot "<name>"`.
+A top-level `template <id> "<title>"` block is a quest body plus generator fields. `slot`, `on_empty`, `requires`, and `stage` compile on the quest paths. A template stage takes the same top-level `was:` list as a quest stage. Stage aliases are scoped to that template id. `param <name>: item|place|object cast(<condition>)` is a cast input. The cast uses the `candidate` binding. A param name that matches a slot or another param is `E_SLOT_DUPLICATE` with `duplicate slot "<name>"`.
 
 `when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` are colon fields, each at most once. `when:` uses the storylet context and sets specificity from the compiled condition. `priority:` defaults to 0. `weight:` defaults to 1 and cannot be negative. `max_active:` defaults to 1 and must be at least 1. `tier:` is `<name>` or `<low>..<high>`. `tier` stays reserved as an identifier and is accepted as this field word only. `assumes:` uses the wait context. Each top-level `and` part keeps its source text. An identifier in an entity argument that names a slot or param of this template compiles as `holder(<name>)` there only. `allow_protected:` is `true` or `false`, default false.
 
@@ -415,6 +421,24 @@ Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPL
 | `W_TEMPLATE_TIER_UNKNOWN` | A template tier name is not in `--pressure-tiers` |
 | `W_TEMPLATE_TIER_ORDER` | `tier: low..high` names a low tier above the high tier |
 | `I_TEMPLATE_SCORE` | The template's specificity and priority |
+
+## Aliases
+
+`was:` renames an id that older content still uses. The compiler resolves chains and stores the tables on the linked pack. Nothing reads them at runtime yet.
+
+```wyrd
+verb pay was: paid, tendered
+```
+
+`verb <new> was: <old>[, <old>…]` is a top-level, one-line statement. It has no title, no children, and no line tag. It only declares aliases. Verbs stay undeclared. A top-level `verb` without `was:` is `E_STMT_UNKNOWN` with `verb needs <new> was: <old>`. Two `verb` statements with the same new id merge their lists. The periodic document field `verb` is unchanged.
+
+Stage aliases are scoped to the top-level stages of one quest or template. Quests and templates share one id namespace, and each keeps its own stage table. Role, document, and verb aliases are pack-wide.
+
+A chain resolves to the final id. `verb settle was: pay` and `verb pay was: paid` store `paid → settle` and `pay → settle`. An old id that is still live in that scope is `E_ALIAS_CONFLICT`. One old id claimed twice is `E_ALIAS_DUPLICATE`. A cycle is `E_ALIAS_CYCLE`. Those entries are left out of the tables. A header id is always live, so a stage, role, or document chain is a conflict. Verb chains are the ones that resolve.
+
+A verb is live when the pack names it: `record deed <verb>`, a template `on_deed <verb>`, or a periodic document's `verb` field.
+
+The tables are `aliases.stage[<quest or template id>][<old>] = <new>`, and `aliases.role`, `aliases.document`, and `aliases.verb` as `<old> → <new>`. A kind key is omitted when that kind has no entries. `export-json` writes the same dictionary only when it is not empty. The manifest hash folds a canonical line `kind<TAB>scope<TAB>old<TAB>new` per entry, sorted, only when the tables are not empty. `scope` is empty except for a stage.
 
 ## Not in this draft
 

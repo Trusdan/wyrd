@@ -700,3 +700,32 @@
 #                                      ^^ source.wyrd keyword.operator.wyrd
 #                                        ^^^^^^^^ source.wyrd
 >
+>stage offer was: offer_old
+#^^^^^ source.wyrd keyword.other.wyrd
+#     ^^^^^^^ source.wyrd
+#            ^^^ source.wyrd keyword.other.wyrd
+#               ^^^^^^^^^^^^ source.wyrd
+>role ferry_master was: boatman
+#^^^^ source.wyrd keyword.other.block.wyrd
+#    ^ source.wyrd
+#     ^^^^^^^^^^^^ source.wyrd entity.name.type.role.wyrd
+#                 ^ source.wyrd
+#                  ^^^ source.wyrd keyword.other.wyrd
+#                     ^^^^^^^^^^ source.wyrd
+>document harbor_gazette "Harbor Gazette" was: gazette
+#^^^^^^^^ source.wyrd keyword.other.block.wyrd
+#        ^ source.wyrd
+#         ^^^^^^^^^^^^^^ source.wyrd entity.name.type.document.wyrd
+#                       ^ source.wyrd
+#                        ^ source.wyrd string.quoted.double.wyrd
+#                         ^^^^^^^^^^^^^^ source.wyrd string.quoted.double.wyrd
+#                                       ^ source.wyrd string.quoted.double.wyrd
+#                                        ^ source.wyrd
+#                                         ^^^ source.wyrd keyword.other.wyrd
+#                                            ^^^^^^^^^^ source.wyrd
+>verb pay was: paid, tendered
+#^^^^ source.wyrd keyword.other.wyrd
+#    ^^^^^ source.wyrd
+#         ^^^ source.wyrd keyword.other.wyrd
+#            ^^^^^^^^^^^^^^^^^ source.wyrd
+>

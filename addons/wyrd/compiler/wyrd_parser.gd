@@ -55,7 +55,7 @@ func parse_tokens(source: WyrdSource, tokens: Array[WyrdToken], diagnostics: Wyr
 	_check_header(statements[0])
 	for i in range(1, statements.size()):
 		var block := statements[i]
-		if block.keyword != "facts" and block.keyword != "events" and block.keyword != "quest" and block.keyword != "scene" and block.keyword != "role" and block.keyword != "storylet" and block.keyword != "sequence" and block.keyword != "document" and block.keyword != "template":
+		if block.keyword != "facts" and block.keyword != "events" and block.keyword != "quest" and block.keyword != "scene" and block.keyword != "role" and block.keyword != "storylet" and block.keyword != "sequence" and block.keyword != "document" and block.keyword != "template" and block.keyword != "verb":
 			diagnostics.add(
 				WyrdDiagnostic.E_UNEXPECTED_TOKEN,
 				"unexpected token \"%s\"" % _shown(block),
@@ -135,6 +135,8 @@ func _parse_statement() -> WyrdNode:
 		node.kind = &"document"
 	elif node.keyword == "template":
 		node.kind = &"template"
+	elif node.keyword == "verb":
+		node.kind = &"verb"
 	return node
 
 

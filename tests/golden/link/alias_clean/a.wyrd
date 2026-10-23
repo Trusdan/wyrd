@@ -1,0 +1,21 @@
+language 1
+
+quest ferry_toll "Ferry Toll"
+  stage offer was: offer_old
+    -> done
+  stage done
+
+template ferry_job "Ferry Job"
+  stage hire was: hire_old
+
+role ferry_master was: boatman
+
+document harbor_gazette "Harbor Gazette" was: gazette
+  text: live
+  page
+    The tide is in.
+
+document tide_notice "Tide Notice" was: notice publishes_by harbor_guild every 1 day delay 1 hour
+
+verb settle was: pay
+verb pay was: paid

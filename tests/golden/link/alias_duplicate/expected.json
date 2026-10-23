@@ -1,0 +1,96 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_ALIAS_DUPLICATE",
+      "col": 56,
+      "line": 5,
+      "message": "alias \"gazette\" is claimed by \"harbor_gazette\" and \"harbor_gazette\"",
+      "path": "res://tests/golden/link/alias_duplicate/a.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ALIAS_DUPLICATE",
+      "col": 22,
+      "line": 3,
+      "message": "alias \"boatman\" is claimed by \"ferry_master\" and \"dock_clerk\"",
+      "path": "res://tests/golden/link/alias_duplicate/b.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "documents": [
+      {
+        "id": "harbor_gazette",
+        "meta": {},
+        "mode": "live",
+        "on_first_read": [],
+        "on_read": [],
+        "pages": [
+          {
+            "paragraphs": [
+              {
+                "id": "",
+                "when": ""
+              }
+            ],
+            "when": ""
+          }
+        ],
+        "tags": [],
+        "title_id": ""
+      }
+    ],
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "5117902fced2ce72",
+        "path": "res://tests/golden/link/alias_duplicate/a.wyrd"
+      },
+      {
+        "hash": "49a10de0a707062d",
+        "path": "res://tests/golden/link/alias_duplicate/b.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "alias_duplicate",
+    "quests": [],
+    "roles": [
+      {
+        "default_holder": "",
+        "eligibility": "",
+        "file": "res://tests/golden/link/alias_duplicate/b.wyrd",
+        "id": "dock_clerk",
+        "kinds": [],
+        "scope": "world",
+        "scope_id": "",
+        "strategy": "none",
+        "succession": "none",
+        "succession_arg": "",
+        "vacancy": "hold",
+        "visibility": "public"
+      },
+      {
+        "default_holder": "",
+        "eligibility": "",
+        "file": "res://tests/golden/link/alias_duplicate/a.wyrd",
+        "id": "ferry_master",
+        "kinds": [],
+        "scope": "world",
+        "scope_id": "",
+        "strategy": "none",
+        "succession": "none",
+        "succession_arg": "",
+        "vacancy": "hold",
+        "visibility": "public"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}

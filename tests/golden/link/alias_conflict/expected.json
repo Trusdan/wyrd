@@ -1,0 +1,119 @@
+{
+  "diagnostics": [
+    {
+      "code": "E_ALIAS_CONFLICT",
+      "col": 20,
+      "line": 4,
+      "message": "alias \"offer\" is still a live stage",
+      "path": "res://tests/golden/link/alias_conflict/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ALIAS_CONFLICT",
+      "col": 24,
+      "line": 9,
+      "message": "alias \"ferry_master\" is still a live role",
+      "path": "res://tests/golden/link/alias_conflict/pack.wyrd",
+      "severity": "error"
+    },
+    {
+      "code": "E_ALIAS_CONFLICT",
+      "col": 15,
+      "line": 11,
+      "message": "alias \"pay\" is still a live verb",
+      "path": "res://tests/golden/link/alias_conflict/pack.wyrd",
+      "severity": "error"
+    }
+  ],
+  "export": {
+    "events": [],
+    "facts": [],
+    "files": [
+      {
+        "hash": "bf589ab01eacc911",
+        "path": "res://tests/golden/link/alias_conflict/pack.wyrd"
+      }
+    ],
+    "language_version": 1,
+    "lines": [],
+    "pack_id": "alias_conflict",
+    "quests": [
+      {
+        "file": "res://tests/golden/link/alias_conflict/pack.wyrd",
+        "id": "ferry_toll",
+        "on_empty": "",
+        "requires": [],
+        "slots": [],
+        "stages": [
+          {
+            "effects": [
+              {
+                "agent": "",
+                "args": [
+                  {
+                    "name": "actor",
+                    "text": "player"
+                  }
+                ],
+                "branch": "",
+                "command": "",
+                "fact_key": "",
+                "kind": "record_deed",
+                "on_fail": "",
+                "outcome": "",
+                "target": null,
+                "topic": "",
+                "value": null,
+                "verb": "pay"
+              }
+            ],
+            "id": "offer",
+            "journals": [],
+            "scenes": [],
+            "transitions": [
+              {
+                "target": "done",
+                "when": ""
+              }
+            ],
+            "variants": [],
+            "waits": ""
+          },
+          {
+            "effects": [],
+            "id": "done",
+            "journals": [],
+            "scenes": [],
+            "transitions": [],
+            "variants": [],
+            "waits": ""
+          }
+        ],
+        "start": null,
+        "title": "Ferry Toll"
+      }
+    ],
+    "roles": [
+      {
+        "default_holder": "",
+        "eligibility": "",
+        "file": "res://tests/golden/link/alias_conflict/pack.wyrd",
+        "id": "ferry_master",
+        "kinds": [],
+        "scope": "world",
+        "scope_id": "",
+        "strategy": "none",
+        "succession": "none",
+        "succession_arg": "",
+        "vacancy": "hold",
+        "visibility": "public"
+      }
+    ],
+    "scenes": [],
+    "wyrd_export": 1,
+    "xref": {
+      "events": [],
+      "facts": []
+    }
+  }
+}
