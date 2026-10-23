@@ -12,6 +12,7 @@ events
 quest ferry_toll "The Ferry Toll"
   slot ferry = ferry_master mode: live
   on_empty: wait
+  on_missing_stage: arrive
   start when false
   stage arrive
     waits_until player.coins >= 1 and not false or harbor.bell_count in 1

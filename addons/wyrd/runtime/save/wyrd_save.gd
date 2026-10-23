@@ -172,9 +172,10 @@ static func capture(runtime: WyrdRuntime) -> Dictionary:
 	return data
 
 
-## Reads a deep copy. Runs migrations and every refusal on that copy.
-## On success the dictionary holds [code]doc[/code], [code]streams[/code], and [code]report[/code].
-## A refusal holds [code]report[/code] only. The runtime is not changed.
+## Reads a deep copy. Runs migrations, alias rewrite, missing-stage moves, and
+## every refusal on that copy. On success the dictionary holds [code]doc[/code],
+## [code]streams[/code], and [code]report[/code]. A refusal holds [code]report[/code]
+## only. The runtime is not changed.
 static func check(runtime: WyrdRuntime, data: Dictionary) -> Dictionary:
 	var report := WyrdLoadReport.new()
 	var content := runtime.content()
@@ -245,8 +246,10 @@ static func check(runtime: WyrdRuntime, data: Dictionary) -> Dictionary:
 		return _refused(report, WyrdDiagnostic.E_SAVE_VERSION, message, _field_path(message))
 	var migrated := WyrdSaveMigrate.apply_aliases(working, content.aliases)
 	working = migrated["doc"]
+	var item: Dictionary = {}
+	var body: Dictionary = {}
 	for note in migrated["diagnostics"]:
-		var item: Dictionary = note
+		item = note
 		report.diagnostics.add(
 			StringName(String(item.get("code", ""))),
 			String(item.get("message", "")),
@@ -256,7 +259,29 @@ static func check(runtime: WyrdRuntime, data: Dictionary) -> Dictionary:
 			WyrdDiagnostic.SEVERITY_WARNING
 		)
 	for added in migrated["rows"]:
-		var body: Dictionary = added
+		body = added
+		report.add_row(
+			String(body.get("kind", "")),
+			String(body.get("id", "")),
+			String(body.get("from", "")),
+			String(body.get("to", "")),
+			int(body.get("count", 0)),
+			String(body.get("code", ""))
+		)
+	var resolved := WyrdSaveMigrate.resolve_stages(working, content)
+	working = resolved["doc"]
+	for note in resolved["diagnostics"]:
+		item = note
+		report.diagnostics.add(
+			StringName(String(item.get("code", ""))),
+			String(item.get("message", "")),
+			"",
+			1,
+			1,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+	for added in resolved["rows"]:
+		body = added
 		report.add_row(
 			String(body.get("kind", "")),
 			String(body.get("id", "")),
@@ -376,6 +401,17 @@ static func _note_kept(runtime: WyrdRuntime, report: WyrdLoadReport) -> void:
 		for id in runtime.documents.stored_doc_ids():
 			if not content.documents.has(String(id)):
 				report.add_row("kept", String(id), "document", "", 1, "")
+	if runtime.quests != null:
+		for id in runtime.quests.kept_quest_ids():
+			report.add_row("kept", String(id), "quest", "", 1, "")
+	if runtime.roles != null:
+		for id in runtime.roles.present_role_ids():
+			var role_id := String(id)
+			if content.roles.has(role_id):
+				continue
+			if runtime.roles.is_host_defined(role_id):
+				continue
+			report.add_row("kept", role_id, "role", "", 1, "")
 
 
 static func _root_spec() -> Dictionary:
@@ -437,6 +473,7 @@ static func _quest_row_spec() -> Dictionary:
 			"status": "string",
 			"step_at": "int",
 			"template": "string",
+			"trail": {"kind": "array", "of": "string"},
 			"variant": "string",
 			"waiting": "string",
 		},

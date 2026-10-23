@@ -161,6 +161,8 @@ func _expected_rows(saved: Dictionary, runtime: WyrdRuntime) -> Array:
 		_alias("role:ferry_master", "ferry_master", "dock_master", 3, ""),
 		_alias("stage:ferry_job#1", "hire", "sign", 1, ""),
 		_alias("stage:ferry_toll", "offer", "depart", 1, ""),
+		_alias("trail:ferry_job#1:hire", "hire", "sign", 1, ""),
+		_alias("trail:ferry_toll:offer", "offer", "depart", 1, ""),
 		_alias("verb:paid", "paid", "settle", 2, ""),
 	]
 	if OS.is_debug_build():

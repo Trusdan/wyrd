@@ -169,7 +169,7 @@ The compiler stores the step on the stage. At stage entry the runtime pauses rem
 
 **Status: draft statement syntax. Sections 1–6 stay frozen.** `tier` remains a reserved word (section 6) and is not a legal identifier. Inside a `template` block only, a leading `tier:` is a field word.
 
-A template is a quest body the generator can start. The header is `template <id> "<title>"`. Children reuse `slot`, `on_empty`, `requires`, and `stage`. A template has no `start`. `on_deed <verb>` or `on_deed <verb> where <condition>` queues pressure when that deed is recorded. A verb may appear once. The condition is a wait and may read `deed.actor`, `deed.target`, `deed.place`, and `deed.magnitude`. It cannot read a slot or param of this template.
+A template is a quest body the generator can start. The header is `template <id> "<title>"`. Children reuse `slot`, `on_empty`, `on_missing_stage`, `requires`, and `stage`. A template has no `start`. `on_deed <verb>` or `on_deed <verb> where <condition>` queues pressure when that deed is recorded. A verb may appear once. The condition is a wait and may read `deed.actor`, `deed.target`, `deed.place`, and `deed.magnitude`. It cannot read a slot or param of this template.
 
 ```wyrd
 template ferry.errand "The Errand"

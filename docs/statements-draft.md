@@ -24,6 +24,7 @@ quest <id> "<Title>"
   slot <name> kind: object mode: cast(<condition>)
   slot <name> kind: item mode: cast(<condition>)
   on_empty: wait
+  on_missing_stage: depart
   requires: [pack.<id>, ...]
   start when <condition>
   stage <id>
@@ -43,6 +44,8 @@ quest <id> "<Title>"
 
 A top-level stage may add `was: <old>[, <old>…]` after its id. Old ids are plain identifiers, the same rule as the stage id. `was:` on a region stage is `E_STMT_UNKNOWN` with `was: is only allowed on a top-level stage`. A malformed list is `E_STMT_UNKNOWN` with `was: needs an old id`. `was` is not reserved and stays a legal identifier everywhere else.
 
+`on_missing_stage: <stage id>` is one plain identifier, the same shape as `on_empty:`, and may appear once. A second one is `duplicate statement "on_missing_stage"`. The stage must be a top-level stage of that quest. A region stage, a `was:` old id, and an unknown id are `E_MISSING_STAGE_TARGET` (`on_missing_stage stage "<id>" is unknown`). Load uses it when a save names a stage this quest no longer has.
+
 A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
 
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
@@ -55,7 +58,7 @@ Slot states: `default`, `successor`, `empty`, `contested`, `hostile`, `unwilling
 
 A stage may contain `region <id>` blocks. Each region holds its own `stage` list. Regions of one parent run together. One region still runs one stage at a time. A `->` inside a region names a sibling stage in that region. The parent `->` still names a stage of the quest. The parent leaves when its own `waits_until` or `-> when` says so. Regions do not join automatically.
 
-The quest stage is depth 1. A stage inside its region is depth 2. A stage nested further warns `W_SUBSTATE_DEPTH` and still runs. Active leaves are saved on the quest row under `regions` (`stage`, `entered`, `step_at`, and nested `regions`). The key is omitted when the stage has no regions. Entry effects do not run again when `entered` is true and `step_at` is past them. A region `scene` or `await_host` uses the quest's one open scene or host slot. If that slot is busy, the region step stays put. With tracing on, each leaf change logs `wyrd region quest=%s path=%s from=%s to=%s`. `path` is the region id, or parent ids joined by `/`.
+The quest stage is depth 1. A stage inside its region is depth 2. A stage nested further warns `W_SUBSTATE_DEPTH` and still runs. Active leaves are saved on the quest row under `regions` (`stage`, `entered`, `step_at`, and nested `regions`). The key is omitted when the stage has no regions. Entry effects do not run again when `entered` is true and `step_at` is past them. A region `scene` or `await_host` uses the quest's one open scene or host slot. If that slot is busy, the region step stays put. With tracing on, each leaf change logs `wyrd region quest=%s path=%s from=%s to=%s`. `path` is the region id, or parent ids joined by `/`. On load, a saved leaf that is no longer one of that region's stages restarts at `stages[0]`, entered, with its entry steps counted, and nested regions reset the same way. The move is a `missing_stage` row.
 
 ```wyrd
 stage repair
@@ -259,6 +262,7 @@ Every record keeps the union of fact keys read by its conditions, effect express
 | `E_SLOT_STATE` | The variant state is not one of the eight names, its condition shape is wrong, or `hostile`, `unwilling`, or `barred` is used on an object or item slot |
 | `E_OBJECT_SUCCESSION` | An object or item slot also names a role, or has a `successor` or `contested` variant |
 | `E_LOCKED_AT_STAGE` | `locked_at` names a stage this quest does not declare |
+| `E_MISSING_STAGE_TARGET` | `on_missing_stage` names a stage that is not a top-level stage of that quest or template |
 | `E_STAGE_UNKNOWN` | `->` names a stage this quest does not declare |
 | `E_STMT_UNKNOWN` | The statement is not part of this draft, or its shape is wrong. `start quest` without an id says `start quest needs a quest id`. `advance` without `<quest> to <stage>` says `advance needs <quest> to <stage>`. `assign role` without `<role> to <entity>` says `assign role needs <role> to <entity>`. `vacate role` without a role id says `vacate role needs a role id`. `adjust baseline` without `<axis>(a, b) by <n>` says `adjust baseline needs <axis>(a, b) by <n>`. `lock topic` without an id says `lock topic needs a topic id`. A sibling scene `on_fail` says `on_fail belongs on the do line`. A `when` prefix on a scene effect says `when is not valid on an effect` |
 | `E_LABEL_UNKNOWN` | A divert, choice, or scene `on_fail` names a label that is not in the scene |
@@ -400,7 +404,7 @@ The runtime rules for witnesses, rumor believers, the claim pick, the catch-up c
 
 ## Template
 
-A top-level `template <id> "<title>"` block is a quest body plus generator fields. `slot`, `on_empty`, `requires`, and `stage` compile on the quest paths. A template stage takes the same top-level `was:` list as a quest stage. Stage aliases are scoped to that template id. `param <name>: item|place|object cast(<condition>)` is a cast input. The cast uses the `candidate` binding. A param name that matches a slot or another param is `E_SLOT_DUPLICATE` with `duplicate slot "<name>"`.
+A top-level `template <id> "<title>"` block is a quest body plus generator fields. `slot`, `on_empty`, `on_missing_stage`, `requires`, and `stage` compile on the quest paths. A template stage takes the same top-level `was:` list as a quest stage. Stage aliases are scoped to that template id. `param <name>: item|place|object cast(<condition>)` is a cast input. The cast uses the `candidate` binding. A param name that matches a slot or another param is `E_SLOT_DUPLICATE` with `duplicate slot "<name>"`.
 
 `when:`, `priority:`, `weight:`, `max_active:`, `tier:`, `assumes:`, and `allow_protected:` are colon fields, each at most once. `when:` uses the storylet context and sets specificity from the compiled condition. `priority:` defaults to 0. `weight:` defaults to 1 and cannot be negative. `max_active:` defaults to 1 and must be at least 1. `tier:` is `<name>` or `<low>..<high>`. `tier` stays reserved as an identifier and is accepted as this field word only. `assumes:` uses the wait context. Each top-level `and` part keeps its source text. An identifier in an entity argument that names a slot or param of this template compiles as `holder(<name>)` there only. `allow_protected:` is `true` or `false`, default false.
 
@@ -424,7 +428,7 @@ Templates share quest ids. The later declaration of a shared id is `E_QUEST_DUPL
 
 ## Aliases
 
-`was:` renames an id that older content still uses. The compiler resolves chains and stores the tables on the linked pack. Load rewrites saved quest stages, role ids, deed verbs, and document ids through those tables.
+`was:` renames an id that older content still uses. The compiler resolves chains and stores the tables on the linked pack. Load rewrites saved quest stages and their `trail` entries, role ids, deed verbs, document ids, periodic publish state, and the verbs of in-flight rumors through those tables.
 
 ```wyrd
 verb pay was: paid, tendered

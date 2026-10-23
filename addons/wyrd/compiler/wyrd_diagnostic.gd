@@ -132,6 +132,8 @@ const E_ALIAS_CONFLICT: StringName = &"E_ALIAS_CONFLICT"
 const E_ALIAS_DUPLICATE: StringName = &"E_ALIAS_DUPLICATE"
 const E_ALIAS_CYCLE: StringName = &"E_ALIAS_CYCLE"
 const W_SAVE_ALIAS: StringName = &"W_SAVE_ALIAS"
+const E_MISSING_STAGE_TARGET: StringName = &"E_MISSING_STAGE_TARGET"
+const W_SAVE_STAGE: StringName = &"W_SAVE_STAGE"
 
 var severity: StringName = SEVERITY_ERROR
 var code: StringName = &""

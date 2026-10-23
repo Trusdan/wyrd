@@ -72,7 +72,7 @@ Later, `msgmerge` updates `wyrd.<locale>.po` when `wyrd.pot` changes. Add each `
 
 `start_new_game(seed)` stores the seed, clears facts, deeds, roles, quests (including generated instances and their counters), RNG streams, and the trace, and sets play minutes to 0.
 
-`load_state(data)` restores a document from `save_state()`. Load content first. `start_new_game` and `load_state` both refuse while a scene is open. A refused or wrong-typed save is rejected before anything is imported. The report's `rows` and `load_report_ready` record the result. Loading adds no trace line. Content aliases rewrite old saved ids on load and are reported as `alias` rows.
+`load_state(data)` restores a document from `save_state()`. Load content first. `start_new_game` and `load_state` both refuse while a scene is open. A refused or wrong-typed save is rejected before anything is imported. The report's `rows` and `load_report_ready` record the result. Loading adds no trace line. Content aliases rewrite old saved ids on load and are reported as `alias` rows. A removed stage moves the quest by `on_missing_stage:`, its trail, or its first stage, and is reported.
 
 ## Save
 

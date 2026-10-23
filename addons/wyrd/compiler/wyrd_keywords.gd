@@ -47,6 +47,7 @@ const FIELDS: PackedStringArray = [
 	"doc",
 	"slot",
 	"on_empty",
+	"on_missing_stage",
 	"start",
 	"requires",
 	"stage",

@@ -75,6 +75,10 @@
 #^^ source.wyrd
 #  ^^^^^^^^ source.wyrd keyword.other.wyrd
 #          ^^^^^^^ source.wyrd
+>  on_missing_stage: arrive
+#^^ source.wyrd
+#  ^^^^^^^^^^^^^^^^ source.wyrd keyword.other.wyrd
+#                  ^^^^^^^^^ source.wyrd
 >  start when false
 #^^ source.wyrd
 #  ^^^^^ source.wyrd keyword.other.wyrd

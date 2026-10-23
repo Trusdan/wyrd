@@ -152,7 +152,7 @@ static func _quests(pack: WyrdLinkedPack) -> Array:
 			var stages: Array = []
 			for stage in quest.stages:
 				stages.append(_stage(stage))
-			rows.append({
+			var row := {
 				"file": str(unit["path"]),
 				"id": quest.id,
 				"on_empty": quest.on_empty,
@@ -161,7 +161,10 @@ static func _quests(pack: WyrdLinkedPack) -> Array:
 				"stages": stages,
 				"start": _cond(quest.start_when),
 				"title": quest.title,
-			})
+			}
+			if not quest.on_missing_stage.is_empty():
+				row["on_missing_stage"] = quest.on_missing_stage
+			rows.append(row)
 	return rows
 
 
@@ -220,6 +223,8 @@ static func _templates(pack: WyrdLinkedPack) -> Array:
 				"weight": template.weight,
 				"when": template.when_text,
 			}
+			if not template.on_missing_stage.is_empty():
+				row["on_missing_stage"] = template.on_missing_stage
 			if not hooks.is_empty():
 				row["on_deed"] = hooks
 			rows.append(row)

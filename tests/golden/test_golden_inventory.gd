@@ -25,6 +25,8 @@ const _ALLOWLIST: PackedStringArray = [
 	"W_SAVE_AI",
 	# Runtime and save only.
 	"W_SAVE_ALIAS",
+	# Runtime and save only.
+	"W_SAVE_STAGE",
 	# Declared, never emitted.
 	"E_RESOLVER_INVALIDATION",
 ]

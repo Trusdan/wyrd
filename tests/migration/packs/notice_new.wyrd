@@ -1,0 +1,20 @@
+// [EXAMPLE CONTENT] Notice ids after the renames. An invented fishing village, not a host game.
+language 1
+
+facts
+  harbor.toll_fate : symbol stored
+  harbor.gazette : symbol stored
+
+quest harbor_guild "The Harbor Guild"
+  start when false
+  stage post
+    waits_until false
+
+document tide_notice "Harbor Gazette" was: harbor_gazette publishes_by harbor_guild every 1 hour delay 1 hour
+  claim harbor.toll_fate
+  fact harbor.gazette
+  verb whispered
+  fragment when held(harbor_guild, harbor.toll_fate)
+    slant lost_at_sea
+
+verb settle was: paid

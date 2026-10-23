@@ -4,7 +4,7 @@ extends WyrdQuestDef
 ## One compiled quest template. Instances are [code]<id>#<n>[/code].
 ##
 ## @experimental
-## The body reuses quest slots, [code]on_empty[/code], [code]requires[/code], and stages.
+## The body reuses quest slots, [code]on_empty[/code], [code]on_missing_stage[/code], [code]requires[/code], and stages.
 ## There is no [code]start[/code]. [member when_cond] is a storylet condition.
 ## [member assumes] is a wait condition. A bare slot or param name in an entity
 ## argument, or compared with an entity, compiles as [code]holder(<name>)[/code].

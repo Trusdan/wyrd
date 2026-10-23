@@ -88,6 +88,8 @@ var host_decides: Callable = Callable()
 
 var _slots: Dictionary = {}
 var _from_content: Dictionary = {}
+## Role ids passed to [method define] since the last [method bind_content].
+var _host_defined: Dictionary = {}
 var _bindings: Dictionary = {}
 var _defs: Dictionary = {}
 var _frozen: Dictionary = {}
@@ -103,6 +105,7 @@ func bind_content(content: WyrdContent) -> void:
 	for id in _from_content.keys():
 		_defs.erase(id)
 	_from_content.clear()
+	_host_defined.clear()
 	if content == null:
 		return
 	var ids: Array = content.quests.keys()
@@ -419,6 +422,7 @@ func define(
 	spec["vacancy"] = StringName(str(vacancy_parsed["vacancy"]))
 	spec["visibility"] = StringName(str(vis_parsed["visibility"]))
 	_defs[role] = spec
+	_host_defined[String(role)] = true
 	_abolished.erase(role)
 	_pending.erase(role)
 	_apply_default(role)
@@ -434,6 +438,33 @@ func install(role: WyrdRoleDef, from_content: bool = false) -> void:
 	_abolished.erase(id)
 	_pending.erase(id)
 	_apply_default(id)
+
+
+## True when [method define] named [param role] since the last content load.
+func is_host_defined(role: String) -> bool:
+	return _host_defined.has(role)
+
+
+## Role ids in the imported block: bindings, defs, told, pending, and abolished.
+func present_role_ids() -> PackedStringArray:
+	var found := {}
+	for role in _bindings.keys():
+		found[String(role)] = true
+	for role in _defs.keys():
+		found[String(role)] = true
+	for role in _told.keys():
+		found[String(role)] = true
+	for role in _pending.keys():
+		found[String(role)] = true
+	for role in _abolished.keys():
+		found[String(role)] = true
+	var names := PackedStringArray()
+	for role in found.keys():
+		var id := String(role)
+		if not id.is_empty():
+			names.append(id)
+	names.sort()
+	return names
 
 
 func definition(role: StringName) -> Dictionary:
