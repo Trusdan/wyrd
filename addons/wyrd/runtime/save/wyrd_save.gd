@@ -44,6 +44,11 @@ extends RefCounted
 ## counters, and warns [code]W_SAVE_TEMPLATE[/code]. Schema 5 is refused.
 ## 64-bit values are lowercase hex. A scene must be closed. A manifest hash
 ## mismatch warns in a debug build and is silent in a release.
+## After the shape check, [WyrdSaveMigrate] rewrites quest stages, role ids,
+## deed verbs, and document ids through the content's alias tables. Empty
+## tables leave the document unchanged. An old id whose new id is also saved
+## is dropped with [code]W_SAVE_ALIAS[/code]. The load stays ok. The import
+## phase does not refuse.
 
 const SCHEMA_VERSION := 4
 const FLIGHT_SINCE_SCHEMA := 3
@@ -238,6 +243,28 @@ static func check(runtime: WyrdRuntime, data: Dictionary) -> Dictionary:
 	if not issues.is_empty():
 		var message := String(issues[0])
 		return _refused(report, WyrdDiagnostic.E_SAVE_VERSION, message, _field_path(message))
+	var migrated := WyrdSaveMigrate.apply_aliases(working, content.aliases)
+	working = migrated["doc"]
+	for note in migrated["diagnostics"]:
+		var item: Dictionary = note
+		report.diagnostics.add(
+			StringName(String(item.get("code", ""))),
+			String(item.get("message", "")),
+			"",
+			1,
+			1,
+			WyrdDiagnostic.SEVERITY_WARNING
+		)
+	for added in migrated["rows"]:
+		var body: Dictionary = added
+		report.add_row(
+			String(body.get("kind", "")),
+			String(body.get("id", "")),
+			String(body.get("from", "")),
+			String(body.get("to", "")),
+			int(body.get("count", 0)),
+			String(body.get("code", ""))
+		)
 	return {"doc": working, "report": report, "streams": built}
 
 
