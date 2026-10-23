@@ -149,7 +149,7 @@ func set_kind(source: StringName, target: StringName, kind: StringName) -> void:
 	if source == &"" or target == &"" or kind == &"":
 		push_error("WyrdSocial.set_kind: missing source, target, or kind")
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("social.set_kind", [source, target, kind])
 	if not _kinds.has(source):
 		_kinds[source] = {}
@@ -165,7 +165,7 @@ func clear_kind(source: StringName, target: StringName, kind: StringName) -> voi
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if not has_kind(source, target, kind):
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("social.clear_kind", [source, target, kind])
 	var outgoing: Dictionary = _kinds[source]
 	var bag: Dictionary = outgoing[target]
@@ -208,7 +208,7 @@ func targets(source: StringName, kind: StringName) -> PackedStringArray:
 
 func set_baseline(source: StringName, target: StringName, axis_name: StringName, value: float) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("social.set_baseline", [source, target, axis_name, value])
 	_baseline[_edge(source, target, axis_name)] = value
 	_touch()
@@ -218,7 +218,7 @@ func set_baseline(source: StringName, target: StringName, axis_name: StringName,
 ## Zero does not touch the cache. Kind scale does not apply. Load does not call this.
 func adjust_baseline(a: StringName, b: StringName, axis_name: StringName, n: float) -> bool:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("social.adjust_baseline", [a, b, axis_name, n])
 	if a == &"" or b == &"":
 		_trace_adjust(a, b, axis_name, 0.0, 0.0, false, "no_entity")
@@ -260,7 +260,7 @@ func clear_baseline(source: StringName, target: StringName, axis_name: StringNam
 	var key := _edge(source, target, axis_name)
 	if not _baseline.has(key):
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("social.clear_baseline", [source, target, axis_name])
 	_baseline.erase(key)
 	_touch()

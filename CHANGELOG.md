@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Performance: a save is deep-copied on load only when an alias or a missing stage rewrites it, deed rows are shape-checked without sorting each row, quest expiry walks only instances that can expire, and host-call tracing allocates nothing while tracing is off. Saves, traces and replays are unchanged.
 - Host calls that change Wyrd state (fact, deed, relationship, role, topic and quest writes, `director.query`, and AI `cancel` and `clear_cache`) are recorded as `host_call` trace rows and replayed by `WyrdTrace.replay`. Calls Wyrd makes inside its own work are not recorded. Calls that change nothing are skipped. Traces without these rows replay as before.
 - Determinism replay suite: every Gullhaven route and every runtime matrix and exit scenario from M4 to M10 is recorded and replayed twice in the same build with byte-identical traces, including after a save and a load into a fresh runtime; a call inventory test lists every public call as a replay input or as not one, with a reason.
 - Replay fixes: a social cache invalidation no longer queues `cache_refresh` units, so the saved scheduler carry and the gameplay save are the same whether the cache was warm or cold (for example after a load); `cache_refresh` tokens in older saves still load and drain. `gen_accept` rows carry `origin` (`host` or `queue`), and `WyrdTrace.replay` replays only host accepts. Emit, proposal and AI request ids restart after a load.

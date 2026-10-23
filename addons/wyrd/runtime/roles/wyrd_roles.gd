@@ -409,7 +409,7 @@ func define(
 		if diags.has_errors():
 			push_error("WyrdRoles.define: %s" % diags.items[0].message)
 			return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("roles.define", [role, succession, secret, hostile_threshold, scope, eligibility, default_holder, vacancy, visibility])
 	var spec := _blank_spec()
 	spec["default_holder"] = StringName(holder_text)
@@ -568,7 +568,7 @@ func assign(role: StringName, entity: StringName) -> void:
 	var old: StringName = prior["holder"]
 	if old == entity and prior["status"] != EMPTY:
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("roles.assign", [role, entity])
 	if old != &"":
 		_push_history(prior, &"assign")
@@ -680,7 +680,7 @@ func vacate(role: StringName, reason: StringName) -> void:
 	var old: StringName = prior["holder"]
 	if old == &"":
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("roles.vacate", [role, reason])
 	_push_history(prior, reason)
 	var strategy := String(_spec(role)["strategy"])
@@ -708,7 +708,7 @@ func tell(role: StringName, agent: StringName) -> void:
 	if role == &"" or agent == &"":
 		push_error("WyrdRoles.tell: missing role or agent")
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("roles.tell", [role, agent])
 	if not _told.has(role):
 		_told[role] = {}

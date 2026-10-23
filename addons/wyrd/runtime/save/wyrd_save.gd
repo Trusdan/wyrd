@@ -708,12 +708,83 @@ static func _shape_array(path: String, value: Variant, spec: Dictionary, facts: 
 	if not (value is Array):
 		return _bad(path, "array")
 	var rows: Array = value
+	# A valid deed log skips the per-field sort. Any reject falls through so the
+	# first message stays the sorted generic walk.
+	if path == "deeds.rows" and _deed_rows_ok(rows):
+		return {}
 	var of: Variant = spec.get("of", "skip")
 	for index in rows.size():
 		var issue := _shape_node("%s.%d" % [path, index], rows[index], of, facts)
 		if not issue.is_empty():
 			return issue
 	return {}
+
+
+static func _deed_rows_ok(rows: Array) -> bool:
+	for item in rows:
+		if not (item is Dictionary) or not _deed_row_ok(item):
+			return false
+	return true
+
+
+static func _deed_row_ok(row: Dictionary) -> bool:
+	for key in row.keys():
+		var name := String(key)
+		var value: Variant = row[key]
+		if name == "actor" or name == "place" or name == "target" or name == "verb" or name == "visibility":
+			if not _is_string(value):
+				return false
+		elif name == "id" or name == "t":
+			if not _is_whole(value):
+				return false
+		elif name == "magnitude":
+			if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+				return false
+		elif name == "memorable":
+			if typeof(value) != TYPE_BOOL:
+				return false
+		elif name == "perception" or name == "tags" or name == "witnesses":
+			if not _string_list_ok(value):
+				return false
+		elif name == "believers":
+			if not _believers_ok(value):
+				return false
+	return true
+
+
+static func _string_list_ok(value: Variant) -> bool:
+	if not (value is Array):
+		return false
+	for item in value:
+		if not _is_string(item):
+			return false
+	return true
+
+
+static func _believers_ok(value: Variant) -> bool:
+	if not (value is Array):
+		return false
+	for item in value:
+		if not (item is Dictionary) or not _believer_ok(item):
+			return false
+	return true
+
+
+static func _believer_ok(row: Dictionary) -> bool:
+	for key in row.keys():
+		var name := String(key)
+		var value: Variant = row[key]
+		if name == "t":
+			if not _is_whole(value):
+				return false
+		elif name == "who":
+			if not _is_string(value):
+				return false
+	return true
+
+
+static func _is_string(value: Variant) -> bool:
+	return value is String or value is StringName
 
 
 static func _shape_fact_map(path: String, value: Variant, facts: WyrdFactStore) -> Dictionary:

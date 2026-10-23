@@ -111,7 +111,7 @@ func bind(host: WyrdRuntime) -> void:
 
 
 func reset() -> void:
-	_states.clear()
+	_states.clear(); _expiring.clear()
 	_declared.clear()
 	_fired.clear()
 	_watch.clear()
@@ -626,6 +626,7 @@ func create_instance(template_id: String, casts: Dictionary = {}, params: Dictio
 	state.template = template_id
 	state.n = n
 	_states[id] = state
+	_note_expiring(id)
 	_declared[id] = _collect(template)
 	if not stored.is_empty():
 		_params[id] = stored
@@ -687,6 +688,14 @@ func _install_created(instance_id: String, entry: Dictionary) -> void:
 	_created[instance_id] = minute
 
 
+func _note_expiring(quest_id: String) -> void:
+	var state := _states.get(quest_id) as QuestState
+	if state == null or state.template == "" or _expires_minutes(state.template) <= 0:
+		_expiring.erase(quest_id)
+		return
+	_expiring[quest_id] = true
+
+
 func _expires_minutes(template_id: String) -> int:
 	var found := _template(template_id)
 	if found is WyrdTemplateDef:
@@ -744,7 +753,7 @@ func _start_quest(quest_id: String) -> void:
 		return
 	var reason := _start_reason(state.status)
 	if reason != "started":
-		if runtime != null:
+		if runtime != null and runtime._host_logs():
 			runtime._host_mark("quests.start", [quest_id])
 		_trace_start(quest_id, false, reason)
 		if state.status != UNAVAILABLE:
@@ -754,7 +763,7 @@ func _start_quest(quest_id: String) -> void:
 	if hops > _HOP_LIMIT:
 		push_error("WyrdQuestRunner: stage hop limit on \"%s\"" % quest_id)
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("quests.start", [quest_id])
 	_trace_start(quest_id, true, "started")
 	if state.status == DORMANT:
@@ -780,7 +789,7 @@ func advance(quest_id: String, stage_id: String) -> String:
 		push_error("WyrdQuestRunner.advance: unknown quest \"%s\"" % quest_id)
 		return ""
 	if state.status != ACTIVE:
-		if runtime != null:
+		if runtime != null and runtime._host_logs():
 			runtime._host_mark("quests.advance", [quest_id, stage_id])
 		_trace_advance(quest_id, state.stage_id, stage_id, false, "not_active")
 		push_warning("WyrdQuestRunner.advance: \"%s\" is %s" % [quest_id, String(state.status)])
@@ -788,7 +797,7 @@ func advance(quest_id: String, stage_id: String) -> String:
 	if _stage_by_id(quest, stage_id) == null:
 		push_error("WyrdQuestRunner.advance: unknown stage \"%s\"" % stage_id)
 		return ""
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("quests.advance", [quest_id, stage_id])
 	if stage_id == state.stage_id:
 		_trace_advance(quest_id, state.stage_id, stage_id, false, "same_stage")
@@ -811,11 +820,17 @@ func advance(quest_id: String, stage_id: String) -> String:
 	return ""
 
 
+## Instance ids whose template can expire. Not saved. Empty skips the tick walk.
+var _expiring: Dictionary = {}
+
+
 ## Abandons generated instances whose [code]expires:[/code] has elapsed.
 ## An open scene of that instance waits for the next tick. Hand-written quests
 ## are skipped. This does not call [method abandon], so another open scene stays up.
 func expire_due(now: int) -> void:
-	var ids: Array = _states.keys()
+	if _expiring.is_empty():
+		return
+	var ids: Array = _expiring.keys()
 	ids.sort()
 	for quest_id in ids:
 		var key := String(quest_id)
@@ -850,7 +865,7 @@ func abandon(quest_id: String) -> void:
 	if state.status != ACTIVE and state.status != AVAILABLE:
 		push_error("WyrdQuestRunner.abandon: \"%s\" is %s" % [quest_id, String(state.status)])
 		return
-	if runtime != null:
+	if runtime != null and runtime._host_logs():
 		runtime._host_mark("quests.abandon", [quest_id])
 	if runtime != null and runtime.dialogue != null and runtime.dialogue.is_open():
 		runtime.dialogue.abort(&"abandoned")
@@ -1863,6 +1878,7 @@ func _import_instance(quest_id: String, item: Dictionary) -> void:
 	_load_row(quest_id, state, item)
 	state.template = template_id
 	state.n = WyrdSave._whole(item.get("n", 0), 0)
+	_note_expiring(quest_id)
 
 
 ## Hand-written quest ids kept raw because the content no longer declares them.
@@ -1894,6 +1910,7 @@ func _drop_instance_states() -> void:
 		if not key.contains("#") and (state == null or state.template == ""):
 			continue
 		_states.erase(key)
+		_expiring.erase(key)
 		_declared.erase(key)
 		_watch.erase(key)
 		_wake.erase(key)
