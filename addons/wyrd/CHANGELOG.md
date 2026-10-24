@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Docs:** a docs site built from `docs/` for GitHub Pages, with a quick start, adapter guide, cookbook and design rationale. A workflow builds it and checks its links on every pull request.
 - **Docs:** `docs/api/`, an API reference generated from the `##` doc comments by `tools/gen_api_docs.sh`, with Stable and Experimental marks. CI checks that it is current.
 - **Docs:** `docs/language.md`, the language 1 reference, replaces the grammar and draft files, which now point to it.
 - **Added:** `scene_started`, the facade relays, `register_disposition_formula`, the deprecation table and warning, `docs/stability.md`, and the stable marks.

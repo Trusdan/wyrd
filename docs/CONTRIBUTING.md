@@ -1,6 +1,6 @@
 # Contributing to Wyrd
 
-Wyrd is a generic narrative engine. Pull requests are small, typed, and tested. Corey reviews them.
+Wyrd is a generic narrative engine. Pull requests are small, typed, and tested. The maintainer reviews them.
 
 ## Generic only
 
@@ -49,6 +49,10 @@ Details are in the repository `README.md`.
 Dialogue text is always displayed. A line's words are presented whether or not the line has audio. Audio is optional and plays on top of the text. Audio never hides text, and audio never advances a line. Advancing is the player's input. A scene does not wait on audio merely because a clip exists.
 
 S0 does not implement scenes or audio. The rule is recorded here so the slice runtime does not skip text or auto-advance when audio is missing.
+
+## Docs site
+
+The site is built from `docs/` by `.github/workflows/pages.yml`. `docs/` stays plain Markdown with no front matter or Liquid. `tools/site_stage.py` makes the Jekyll copy and `tools/site_links.py` checks links on every pull request. Links to repo files outside `docs/` are fine and become GitHub links on the site. To build locally, install the `github-pages` gem, then `python3 tools/site_stage.py --out _site_src`, `bundle exec github-pages build --source _site_src --destination _site` (or `jekyll build`), and `python3 tools/site_links.py _site`.
 
 ## License
 
