@@ -4,7 +4,12 @@ extends RefCounted
 ## Result of a host command: ok, or failed with a reason.
 ##
 
-enum Status { OK, FAILED }
+enum Status {
+	## The command succeeded. The reason is empty.
+	OK,
+	## The command failed. The reason names why.
+	FAILED,
+}
 
 ## Status value. A new result starts as FAILED.
 var status: Status = Status.FAILED

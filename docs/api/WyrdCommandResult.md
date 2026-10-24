@@ -71,6 +71,8 @@ True when the status is OK.
 const OK = 0 # enum Status
 ```
 
+The command succeeded. The reason is empty.
+
 ### `FAILED`
 
 **Stable**
@@ -78,3 +80,5 @@ const OK = 0 # enum Status
 ```gdscript
 const FAILED = 1 # enum Status
 ```
+
+The command failed. The reason names why.
