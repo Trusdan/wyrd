@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host-run election. Wyrd does not pick the successor.
 ##
-## @experimental
 ## [method start_election] runs after [signal WyrdRoles.election_needed].
 ## The host finishes the contest with [method WyrdRoles.assign].
 

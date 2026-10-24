@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One line ready for the host to show.
 ##
-## @experimental
 ## [member text] is always set. [member audio] comes from [code]line_audio[/code]
 ## and may be null. Audio never replaces the text and never advances the line.
 

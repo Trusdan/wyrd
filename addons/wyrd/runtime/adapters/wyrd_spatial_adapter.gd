@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host answers to proximity, place, and access. Wyrd never touches the scene tree.
 ##
-## @experimental
 ## Signatures follow the design sketch. A missing comparison returns [constant INF] once a host
 ## implements [method distance]. These default bodies are not implemented.
 ## [method precision] answers [code]precise[/code] or [code]coarse[/code] for a place.

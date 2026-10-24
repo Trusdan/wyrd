@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Runs host commands and publishes the command schema.
 ##
-## @experimental
 ## Default bodies are not implemented. [method execute] returns a failed result so a caller
 ## never mistakes a stub for success.
 

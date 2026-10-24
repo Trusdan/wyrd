@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host view of entities. Wyrd does not walk the scene tree.
 ##
-## @experimental
 ## Default bodies report that they are not implemented. A host, or the fake host, overrides them.
 
 func exists(id: StringName) -> bool:

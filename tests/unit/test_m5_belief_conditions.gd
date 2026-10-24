@@ -86,22 +86,21 @@ func test_value_read_types_and_zero_stops_the_walk() -> void:
 	assert_true(dynamic.has("E_OP_TYPE"), str(dynamic))
 
 
-func test_known_warns_and_matches_knows() -> void:
-	var warned := _compile_text("known(player, world.storm_heard)")
-	assert_true(warned.has("W_KNOWN_DEPRECATED"), str(warned))
-	var clean := _compile_text("knows(player, world.storm_heard)")
-	assert_false(clean.has("W_KNOWN_DEPRECATED"), str(clean))
+func test_known_is_removed_and_knows_reads() -> void:
+	var removed_runtime := _boot(_FACTS + _IDLE)
+	var removed_diagnostics := WyrdDiagnostics.new()
+	WyrdCondition.new().compile("known(player, world.storm_heard)", removed_runtime.content().schema, removed_diagnostics, "sample.wyrd", 1, 1)
+	assert_true(_codes(removed_diagnostics).has("E_KNOWN_REMOVED"), removed_diagnostics.format())
+	assert_true(removed_diagnostics.format().contains("knows"), removed_diagnostics.format())
 	var runtime := _boot(_FACTS + _IDLE)
 	assert_false(_eval(runtime, "knows(player, world.storm_heard)"))
-	assert_false(_eval(runtime, "known(player, world.storm_heard)"))
 	runtime.facts.set_in(&"world.storm_heard", true, &"known/player")
 	assert_true(_eval(runtime, "knows(player, world.storm_heard)"))
-	assert_true(_eval(runtime, "known(player, world.storm_heard)"))
 	assert_false(_eval(runtime, "believes(player, world.storm_heard)"))
 	runtime.roles.define(&"ferry_master", "none")
 	runtime.roles.assign(&"ferry_master", &"ferry_master")
 	assert_true(_eval(runtime, "knows(player, role.ferry_master.holder)"))
-	assert_true(_eval(runtime, "known(dock_apprentice, role.ferry_master.holder)"))
+	assert_true(_eval(runtime, "knows(dock_apprentice, role.ferry_master.holder)"))
 
 
 func test_lookup_trace_is_one_line_and_filterable() -> void:

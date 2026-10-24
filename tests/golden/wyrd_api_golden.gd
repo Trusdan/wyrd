@@ -80,7 +80,9 @@ static func build() -> Dictionary:
 		covered[reported] = true
 		var script := load(path) as Script
 		var entry := reflect_script(script)
-		entry["experimental"] = _experimental(path)
+		var flags := member_flags(path)
+		entry["experimental"] = bool(flags["class"])
+		_apply_member_flags(entry, flags)
 		entry["path"] = path
 		classes[reported] = entry
 	var known := _known_classes()
@@ -230,6 +232,8 @@ static func _compare_args(diffs: PackedStringArray, label: String, left_method: 
 			diffs.append("%s: return type %s -> %s" % [label, left_return.get("type", ""), right_return.get("type", "")])
 		if str(left_return.get("class", "")) != str(right_return.get("class", "")):
 			diffs.append("%s: return class %s -> %s" % [label, left_return.get("class", ""), right_return.get("class", "")])
+	if left_method.has("experimental") or right_method.has("experimental"):
+		_compare_scalar(diffs, "%s experimental" % label, left_method.get("experimental", null), right_method.get("experimental", null))
 
 
 static func _compare_properties(diffs: PackedStringArray, prefix: String, left_rows: Array, right_rows: Array) -> void:
@@ -256,6 +260,8 @@ static func _compare_properties(diffs: PackedStringArray, prefix: String, left_r
 			diffs.append("%s: type %s -> %s" % [label, left_prop.get("type", ""), right_prop.get("type", "")])
 		if str(left_prop.get("class", "")) != str(right_prop.get("class", "")):
 			diffs.append("%s: class %s -> %s" % [label, left_prop.get("class", ""), right_prop.get("class", "")])
+		if left_prop.has("experimental") or right_prop.has("experimental"):
+			_compare_scalar(diffs, "%s experimental" % label, left_prop.get("experimental", null), right_prop.get("experimental", null))
 
 
 static func _default_at(method: Dictionary, index: int) -> String:
@@ -434,12 +440,103 @@ static func _sort_by_name(rows: Array) -> void:
 	)
 
 
-static func _experimental(path: String) -> bool:
+static func _apply_member_flags(entry: Dictionary, flags: Dictionary) -> void:
+	var methods: Dictionary = flags["methods"]
+	var signals: Dictionary = flags["signals"]
+	var properties: Dictionary = flags["properties"]
+	for row in entry["methods"]:
+		row["experimental"] = bool(methods.get(str(row.get("name", "")), false))
+	for row in entry["signals"]:
+		row["experimental"] = bool(signals.get(str(row.get("name", "")), false))
+	for row in entry["properties"]:
+		row["experimental"] = bool(properties.get(str(row.get("name", "")), false))
+
+
+## Class flag from a [code]## @experimental[/code] line that is not a member doc.
+## Each method, signal, and property flag comes from that member's own doc block.
+static func member_flags(path: String) -> Dictionary:
 	var text := FileAccess.get_file_as_string(path)
-	for line in text.split("\n"):
-		if line.strip_edges() == "## @experimental":
-			return true
-	return false
+	var lines := text.split("\n")
+	var methods := {}
+	var signals := {}
+	var properties := {}
+	var member_lines := {}
+	for index in lines.size():
+		var parsed := _declaration(lines[index])
+		if parsed.is_empty():
+			continue
+		var doc_start := _doc_start(lines, index)
+		var experimental := false
+		if doc_start >= 0:
+			for doc_index in range(doc_start, index):
+				member_lines[doc_index] = true
+				if _experimental_line(lines[doc_index]):
+					experimental = true
+		var member_name := str(parsed["name"])
+		if member_name.is_empty() or member_name.begins_with("_"):
+			continue
+		var kind := str(parsed["kind"])
+		if kind == "method":
+			methods[member_name] = experimental
+		elif kind == "signal":
+			signals[member_name] = experimental
+		else:
+			properties[member_name] = experimental
+	var class_experimental := false
+	for index in lines.size():
+		if member_lines.has(index):
+			continue
+		if _experimental_line(lines[index]):
+			class_experimental = true
+			break
+	return {
+		"class": class_experimental,
+		"methods": methods,
+		"properties": properties,
+		"signals": signals,
+	}
+
+
+static func _declaration(line: String) -> Dictionary:
+	var kind := ""
+	var rest := ""
+	if line.begins_with("signal "):
+		kind = "signal"
+		rest = line.substr(7)
+	elif line.begins_with("static func "):
+		kind = "method"
+		rest = line.substr(12)
+	elif line.begins_with("func "):
+		kind = "method"
+		rest = line.substr(5)
+	elif line.begins_with("var "):
+		kind = "property"
+		rest = line.substr(4)
+	else:
+		return {}
+	var member_name := ""
+	for index in rest.length():
+		var ch := rest.substr(index, 1)
+		if ch == "(" or ch == ":" or ch == " " or ch == "=" or ch == "\t":
+			break
+		member_name += ch
+	return {"kind": kind, "name": member_name}
+
+
+static func _doc_start(lines: PackedStringArray, decl: int) -> int:
+	if decl <= 0:
+		return -1
+	var cursor := decl - 1
+	if lines[cursor].strip_edges().is_empty() or not lines[cursor].lstrip(" \t").begins_with("##"):
+		return -1
+	while cursor > 0 and lines[cursor - 1].lstrip(" \t").begins_with("##"):
+		cursor -= 1
+	return cursor
+
+
+static func _experimental_line(line: String) -> bool:
+	var stripped := line.strip_edges()
+	return stripped == "## @experimental" or stripped.begins_with("## @experimental:")
 
 
 ## Compiles the one-line source [code]language 1[/code] and reads the version

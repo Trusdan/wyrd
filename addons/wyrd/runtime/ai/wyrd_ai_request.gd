@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One AI request. The answer comes back later through [method reply].
 ##
-## @experimental
 ## The owner is a [Callable] set by [WyrdAI]. The request does not keep the runtime.
 
 const KINDS: Array[StringName] = [

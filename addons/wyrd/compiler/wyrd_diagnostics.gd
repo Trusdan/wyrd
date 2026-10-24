@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Collects compiler diagnostics in source order.
 ##
-## @experimental
 
 var items: Array[WyrdDiagnostic] = []
 

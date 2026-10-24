@@ -270,6 +270,13 @@ func _ternary(node: WyrdExprNode, expected: StringName) -> void:
 
 
 func _call(node: WyrdExprNode) -> void:
+	if node.text == "known":
+		_error(WyrdDiagnostic.E_KNOWN_REMOVED, "known was removed in 1.0; use knows(agent, key)", node)
+		node.type_name = &"error"
+		for arg in node.kids:
+			if arg.a != null:
+				_check(arg.a, &"")
+		return
 	var sig := signatures.signature(StringName(node.text))
 	if sig.is_empty():
 		_error(WyrdDiagnostic.E_UNKNOWN_FUNCTION, "unknown function \"%s\"" % node.text, node)
@@ -278,8 +285,6 @@ func _call(node: WyrdExprNode) -> void:
 			if arg.a != null:
 				_check(arg.a, &"")
 		return
-	if node.text == "known":
-		_warn(WyrdDiagnostic.W_KNOWN_DEPRECATED, "known is deprecated; use knows", node)
 	if node.text == "chance":
 		uses_chance = true
 		if context == _WAIT:

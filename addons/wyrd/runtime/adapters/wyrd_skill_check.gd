@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One skill check handed to the host.
 ##
-## @experimental
 ## Wyrd attaches no meaning to [member skill], [member args], or [member roll].
 ## The host decides pass or fail and may ignore [member roll]. [member roll] is
 ## in [code][0, 1)[/code].

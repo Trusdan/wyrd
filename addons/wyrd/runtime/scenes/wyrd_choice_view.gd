@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One choice the host should show.
 ##
-## @experimental
 ## A choice whose condition is false is omitted. [member enabled] is false when
 ## [code]show_disabled_when[/code] is true, and [member reason] is the quoted reason.
 ## [member check] is the skill id, empty when the choice has no check.

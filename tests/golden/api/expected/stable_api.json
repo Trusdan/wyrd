@@ -1,11 +1,12 @@
 {
 	"classes": {
 		"Wyrd": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "can_save",
 					"return": {
 						"class": "",
@@ -15,6 +16,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "condition_count",
 					"return": {
 						"class": "",
@@ -24,6 +26,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "condition_flags",
 					"return": {
 						"class": "",
@@ -39,6 +42,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "configure",
 					"return": {
 						"class": "",
@@ -48,6 +52,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "content",
 					"return": {
 						"class": "WyrdContent",
@@ -75,6 +80,7 @@
 					"defaults": [
 						"&\"\""
 					],
+					"experimental": false,
 					"name": "deeds_known_to",
 					"return": {
 						"class": "",
@@ -90,6 +96,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "draw_u32",
 					"return": {
 						"class": "",
@@ -105,6 +112,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "eval_condition",
 					"return": {
 						"class": "",
@@ -114,6 +122,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "get_version",
 					"return": {
 						"class": "",
@@ -123,6 +132,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "invalidate_groups",
 					"return": {
 						"class": "",
@@ -140,6 +150,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": false,
 					"name": "invalidate_world",
 					"return": {
 						"class": "",
@@ -149,6 +160,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "last_rechecks",
 					"return": {
 						"class": "",
@@ -164,6 +176,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "load_content",
 					"return": {
 						"class": "WyrdLoadReport",
@@ -179,6 +192,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "load_state",
 					"return": {
 						"class": "WyrdLoadReport",
@@ -188,6 +202,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "now_minutes",
 					"return": {
 						"class": "",
@@ -208,6 +223,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "register_adapter",
 					"return": {
 						"class": "",
@@ -223,7 +239,24 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "register_credibility",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "register_disposition_formula",
 					"return": {
 						"class": "",
 						"type": "Nil"
@@ -253,6 +286,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "register_function",
 					"return": {
 						"class": "",
@@ -268,6 +302,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "register_group_precedence",
 					"return": {
 						"class": "",
@@ -283,6 +318,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "register_rumor_policy",
 					"return": {
 						"class": "",
@@ -298,6 +334,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "rng_stream",
 					"return": {
 						"class": "WyrdRng",
@@ -307,6 +344,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "save_state",
 					"return": {
 						"class": "",
@@ -322,6 +360,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "start_new_game",
 					"return": {
 						"class": "",
@@ -337,6 +376,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "tick",
 					"return": {
 						"class": "",
@@ -346,6 +386,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "trace_log",
 					"return": {
 						"class": "Dictionary",
@@ -357,96 +398,115 @@
 			"properties": [
 				{
 					"class": "WyrdAI",
+					"experimental": false,
 					"name": "ai",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdCoverage",
+					"experimental": true,
 					"name": "coverage",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdDebug",
+					"experimental": true,
 					"name": "debug",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdDeedLog",
+					"experimental": false,
 					"name": "deeds",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdSceneRunner",
+					"experimental": false,
 					"name": "dialogue",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdDirector",
+					"experimental": true,
 					"name": "director",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdDocuments",
+					"experimental": false,
 					"name": "documents",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdEvents",
+					"experimental": false,
 					"name": "events",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdFactStore",
+					"experimental": false,
 					"name": "facts",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdGenerator",
+					"experimental": false,
 					"name": "generator",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdPublish",
+					"experimental": true,
 					"name": "publish",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdQuestRunner",
+					"experimental": false,
 					"name": "quests",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdRoles",
+					"experimental": false,
 					"name": "roles",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdRumor",
+					"experimental": true,
 					"name": "rumors",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdSequences",
+					"experimental": true,
 					"name": "sequences",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdSocial",
+					"experimental": true,
 					"name": "social",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdStoryletDeck",
+					"experimental": true,
 					"name": "storylets",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdTopics",
+					"experimental": false,
 					"name": "topics",
 					"type": "Object"
 				},
 				{
 					"class": "WyrdTrace",
+					"experimental": true,
 					"name": "trace",
 					"type": "Object"
 				}
@@ -460,7 +520,46 @@
 							"type": "Object"
 						}
 					],
+					"experimental": false,
 					"name": "bark_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdChoiceView",
+							"name": "choices",
+							"type": "Array"
+						}
+					],
+					"experimental": false,
+					"name": "choices_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "pack_id",
+							"type": "String"
+						}
+					],
+					"experimental": false,
+					"name": "content_unavailable"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed",
+							"type": "Dictionary"
+						}
+					],
+					"experimental": false,
+					"name": "deed_recorded"
 				},
 				{
 					"args": [
@@ -485,7 +584,77 @@
 							"type": "bool"
 						}
 					],
+					"experimental": false,
 					"name": "document_read"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "departed",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "election_needed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "old_value",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "new_value",
+							"type": "Variant"
+						}
+					],
+					"experimental": false,
+					"name": "fact_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entry_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "text",
+							"type": "String"
+						}
+					],
+					"experimental": false,
+					"name": "journal_entry_added"
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdLineView",
+							"name": "line",
+							"type": "Object"
+						}
+					],
+					"experimental": false,
+					"name": "line_ready"
 				},
 				{
 					"args": [
@@ -495,7 +664,125 @@
 							"type": "Object"
 						}
 					],
+					"experimental": false,
 					"name": "load_report_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "branch",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "outcome_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "status",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "quest_state_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "old_holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "new_holder",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "role_holder_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "role_vacant"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "status",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"experimental": false,
+					"name": "scene_ended"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						}
+					],
+					"experimental": false,
+					"name": "scene_started"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "stage_id",
+							"type": "String"
+						}
+					],
+					"experimental": false,
+					"name": "stage_changed"
 				},
 				{
 					"args": [
@@ -505,6 +792,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": true,
 					"name": "topic_locked"
 				},
 				{
@@ -515,12 +803,13 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "topic_unlocked"
 				}
 			]
 		},
 		"WyrdAI": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -531,6 +820,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -558,6 +848,7 @@
 					"defaults": [
 						"&\"\""
 					],
+					"experimental": true,
 					"name": "cache_key",
 					"return": {
 						"class": "",
@@ -567,6 +858,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "cache_keys",
 					"return": {
 						"class": "",
@@ -576,6 +868,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "cache_size",
 					"return": {
 						"class": "",
@@ -591,6 +884,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "cached_text",
 					"return": {
 						"class": "",
@@ -606,6 +900,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "cancel",
 					"return": {
 						"class": "",
@@ -615,6 +910,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear_cache",
 					"return": {
 						"class": "",
@@ -635,6 +931,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "close_owner",
 					"return": {
 						"class": "",
@@ -655,6 +952,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "close_prefixed",
 					"return": {
 						"class": "",
@@ -675,6 +973,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "deliver",
 					"return": {
 						"class": "",
@@ -690,6 +989,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "drop_pending",
 					"return": {
 						"class": "",
@@ -699,6 +999,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_cache",
 					"return": {
 						"class": "",
@@ -724,6 +1025,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "host_text",
 					"return": {
 						"class": "",
@@ -749,6 +1051,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_cache",
 					"return": {
 						"class": "",
@@ -758,6 +1061,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "is_active",
 					"return": {
 						"class": "",
@@ -767,6 +1071,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "is_enabled",
 					"return": {
 						"class": "",
@@ -782,6 +1087,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "kind_for_line",
 					"return": {
 						"class": "",
@@ -791,6 +1097,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "kinds",
 					"return": {
 						"class": "StringName",
@@ -808,6 +1115,7 @@
 					"defaults": [
 						"\"\""
 					],
+					"experimental": true,
 					"name": "locale_ok",
 					"return": {
 						"class": "",
@@ -836,6 +1144,7 @@
 						"&\"bark_paraphrase\"",
 						"&\"\""
 					],
+					"experimental": true,
 					"name": "packet_for_line",
 					"return": {
 						"class": "",
@@ -845,6 +1154,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "pending_count",
 					"return": {
 						"class": "",
@@ -854,6 +1164,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "prefetch_carry",
 					"return": {
 						"class": "",
@@ -863,6 +1174,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "prefetch_has_work",
 					"return": {
 						"class": "",
@@ -895,6 +1207,7 @@
 					"defaults": [
 						"-1"
 					],
+					"experimental": true,
 					"name": "prefetch_lines",
 					"return": {
 						"class": "",
@@ -904,6 +1217,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "prefetch_unit",
 					"return": {
 						"class": "",
@@ -924,6 +1238,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "present",
 					"return": {
 						"class": "",
@@ -933,6 +1248,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "provider",
 					"return": {
 						"class": "WyrdAIProvider",
@@ -942,6 +1258,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "provider_id",
 					"return": {
 						"class": "",
@@ -957,6 +1274,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "register_classifier",
 					"return": {
 						"class": "",
@@ -990,6 +1308,7 @@
 						"null",
 						"&\"\""
 					],
+					"experimental": false,
 					"name": "request",
 					"return": {
 						"class": "",
@@ -1005,6 +1324,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_enabled",
 					"return": {
 						"class": "",
@@ -1020,6 +1340,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "set_provider",
 					"return": {
 						"class": "",
@@ -1040,6 +1361,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "summary_for",
 					"return": {
 						"class": "",
@@ -1060,6 +1382,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "summary_packet",
 					"return": {
 						"class": "",
@@ -1080,6 +1403,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "tick_prefetch",
 					"return": {
 						"class": "",
@@ -1112,6 +1436,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": true,
 					"name": "validate",
 					"return": {
 						"class": "",
@@ -1124,7 +1449,7 @@
 			"signals": []
 		},
 		"WyrdAIProvider": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -1135,6 +1460,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "cancel",
 					"return": {
 						"class": "",
@@ -1144,6 +1470,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "id",
 					"return": {
 						"class": "",
@@ -1153,6 +1480,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "locales",
 					"return": {
 						"class": "",
@@ -1162,6 +1490,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "prompt_version",
 					"return": {
 						"class": "",
@@ -1177,6 +1506,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "request",
 					"return": {
 						"class": "",
@@ -1189,11 +1519,12 @@
 			"signals": []
 		},
 		"WyrdActionAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "command_schema",
 					"return": {
 						"class": "WyrdCommandSchema",
@@ -1209,6 +1540,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "execute",
 					"return": {
 						"class": "WyrdCommandResult",
@@ -1221,17 +1553,19 @@
 			"signals": []
 		},
 		"WyrdCommand": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [],
 			"path": "res://addons/wyrd/runtime/adapters/wyrd_command.gd",
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "args",
 					"type": "Dictionary"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "name",
 					"type": "StringName"
 				}
@@ -1239,7 +1573,7 @@
 			"signals": []
 		},
 		"WyrdCommandResult": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -1250,6 +1584,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "failed",
 					"return": {
 						"class": "WyrdCommandResult",
@@ -1259,6 +1594,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "is_ok",
 					"return": {
 						"class": "",
@@ -1268,6 +1604,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "ok",
 					"return": {
 						"class": "WyrdCommandResult",
@@ -1279,11 +1616,13 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "reason",
 					"type": "StringName"
 				},
 				{
 					"class": "WyrdCommandResult.Status",
+					"experimental": false,
 					"name": "status",
 					"type": "int"
 				}
@@ -1291,7 +1630,7 @@
 			"signals": []
 		},
 		"WyrdCommandSchema": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -1302,6 +1641,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "add_command",
 					"return": {
 						"class": "",
@@ -1317,6 +1657,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "add_skill",
 					"return": {
 						"class": "",
@@ -1332,6 +1673,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "has_command",
 					"return": {
 						"class": "",
@@ -1347,6 +1689,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "has_skill",
 					"return": {
 						"class": "",
@@ -1358,16 +1701,19 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "checks_skills",
 					"type": "bool"
 				},
 				{
 					"class": "StringName",
+					"experimental": false,
 					"name": "command_names",
 					"type": "Array"
 				},
 				{
 					"class": "StringName",
+					"experimental": false,
 					"name": "skill_names",
 					"type": "Array"
 				}
@@ -1375,7 +1721,7 @@
 			"signals": []
 		},
 		"WyrdConfig": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -1391,6 +1737,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "axis_delta",
 					"return": {
 						"class": "",
@@ -1406,6 +1753,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "half_life_for",
 					"return": {
 						"class": "",
@@ -1426,6 +1774,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "kind_scale",
 					"return": {
 						"class": "",
@@ -1441,6 +1790,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "scales_for",
 					"return": {
 						"class": "",
@@ -1466,6 +1816,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_axis_delta",
 					"return": {
 						"class": "",
@@ -1491,6 +1842,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_kind_scale",
 					"return": {
 						"class": "",
@@ -1502,171 +1854,205 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "ai_banned_terms",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "ai_cache_max",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "ai_max_inflight",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "ai_save_cache",
 					"type": "bool"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "axis_deltas",
 					"type": "PackedFloat64Array"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "axis_names",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "axis_verbs",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "compact_after",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "credibility_threshold",
 					"type": "float"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "disposition_default",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "generator_retries",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "half_life_minutes",
 					"type": "PackedFloat64Array"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "half_life_verbs",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "hostile_threshold",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "hour_bucket_minutes",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "kind_scale_axes",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "kind_scale_kinds",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "kind_scale_values",
 					"type": "PackedFloat64Array"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "pressure_tiers",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "publish_catchup_max",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "publish_slice_rows",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "rumor_coarse_minutes",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_frame_warn_usec",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_ai_prefetch",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_cache",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_generate",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_publish",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_rumor",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_share_waits",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_tick_minutes",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scheduler_work_per_tick",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "secrecy_fact",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "secrecy_tiers",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "trace_director",
 					"type": "bool"
 				}
@@ -1674,22 +2060,25 @@
 			"signals": []
 		},
 		"WyrdContentManifest": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [],
 			"path": "res://addons/wyrd/compiler/wyrd_content_manifest.gd",
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "files",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "language_version",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "pack_id",
 					"type": "StringName"
 				}
@@ -1697,7 +2086,7 @@
 			"signals": []
 		},
 		"WyrdDeedLog": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -1708,6 +2097,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "actor_at",
 					"return": {
 						"class": "",
@@ -1723,6 +2113,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "actor_indexes",
 					"return": {
 						"class": "",
@@ -1738,6 +2129,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "agent_names",
 					"return": {
 						"class": "",
@@ -1753,6 +2145,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "believer_deeds",
 					"return": {
 						"class": "",
@@ -1768,6 +2161,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "believer_index",
 					"return": {
 						"class": "",
@@ -1783,6 +2177,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "believer_minutes",
 					"return": {
 						"class": "",
@@ -1798,6 +2193,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "believer_snapshot",
 					"return": {
 						"class": "",
@@ -1807,6 +2203,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -1816,6 +2213,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "compact",
 					"return": {
 						"class": "",
@@ -1862,6 +2260,7 @@
 						"null",
 						"null"
 					],
+					"experimental": true,
 					"name": "count_matching",
 					"return": {
 						"class": "",
@@ -1871,6 +2270,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -1880,6 +2280,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "generation",
 					"return": {
 						"class": "",
@@ -1895,6 +2296,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "id_at",
 					"return": {
 						"class": "",
@@ -1910,6 +2312,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -1925,6 +2328,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "index_of",
 					"return": {
 						"class": "",
@@ -1945,6 +2349,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "index_size",
 					"return": {
 						"class": "",
@@ -1954,6 +2359,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "index_text_bytes",
 					"return": {
 						"class": "",
@@ -1963,6 +2369,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "lookup_enabled",
 					"return": {
 						"class": "",
@@ -1978,6 +2385,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "magnitude_at",
 					"return": {
 						"class": "",
@@ -1993,6 +2401,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "memorable_at",
 					"return": {
 						"class": "",
@@ -2008,6 +2417,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "minute_at",
 					"return": {
 						"class": "",
@@ -2028,6 +2438,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "mode_of",
 					"return": {
 						"class": "",
@@ -2053,6 +2464,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_believer",
 					"return": {
 						"class": "",
@@ -2062,6 +2474,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "pair_keys",
 					"return": {
 						"class": "",
@@ -2077,6 +2490,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "place_at",
 					"return": {
 						"class": "",
@@ -2140,6 +2554,7 @@
 						"&\"public\"",
 						"false"
 					],
+					"experimental": false,
 					"name": "record",
 					"return": {
 						"class": "",
@@ -2155,6 +2570,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "round_sum",
 					"return": {
 						"class": "",
@@ -2170,6 +2586,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "row_at",
 					"return": {
 						"class": "",
@@ -2185,6 +2602,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "rows_for_deed_prefix",
 					"return": {
 						"class": "",
@@ -2200,6 +2618,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "rows_for_pair_prefix",
 					"return": {
 						"class": "",
@@ -2215,6 +2634,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "rows_since",
 					"return": {
 						"class": "",
@@ -2261,6 +2681,7 @@
 						"null",
 						"null"
 					],
+					"experimental": true,
 					"name": "score_matching",
 					"return": {
 						"class": "",
@@ -2276,6 +2697,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "set_lookup",
 					"return": {
 						"class": "",
@@ -2285,6 +2707,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "size",
 					"return": {
 						"class": "",
@@ -2300,6 +2723,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "target_at",
 					"return": {
 						"class": "",
@@ -2315,6 +2739,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "target_indexes",
 					"return": {
 						"class": "",
@@ -2324,6 +2749,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "time_buckets",
 					"return": {
 						"class": "",
@@ -2333,6 +2759,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "time_refs",
 					"return": {
 						"class": "",
@@ -2348,6 +2775,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "verb_at",
 					"return": {
 						"class": "",
@@ -2363,6 +2791,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "verb_indexes",
 					"return": {
 						"class": "",
@@ -2378,6 +2807,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "weight_at",
 					"return": {
 						"class": "",
@@ -2387,6 +2817,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "weight_stamp",
 					"return": {
 						"class": "",
@@ -2396,6 +2827,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_buckets",
 					"return": {
 						"class": "",
@@ -2411,6 +2843,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_count_at",
 					"return": {
 						"class": "",
@@ -2426,6 +2859,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_indexes",
 					"return": {
 						"class": "",
@@ -2446,6 +2880,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_mode_name_at",
 					"return": {
 						"class": "",
@@ -2466,6 +2901,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_name_at",
 					"return": {
 						"class": "",
@@ -2475,6 +2911,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "witness_refs",
 					"return": {
 						"class": "",
@@ -2495,6 +2932,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witnessed",
 					"return": {
 						"class": "",
@@ -2510,6 +2948,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "witnesses_at",
 					"return": {
 						"class": "",
@@ -2521,31 +2960,37 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "clock",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_compact",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_perceived",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "spatial_of",
 					"type": "Callable"
 				}
@@ -2559,6 +3004,7 @@
 							"type": "Dictionary"
 						}
 					],
+					"experimental": false,
 					"name": "deed_recorded"
 				}
 			]
@@ -2575,6 +3021,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -2603,6 +3050,7 @@
 						"\"\"",
 						"\"\""
 					],
+					"experimental": false,
 					"name": "candidate_rows",
 					"return": {
 						"class": "",
@@ -2636,6 +3084,7 @@
 						"\"\"",
 						"\"\""
 					],
+					"experimental": false,
 					"name": "diagnose",
 					"return": {
 						"class": "",
@@ -2661,6 +3110,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "eligible_for_entity",
 					"return": {
 						"class": "",
@@ -2676,6 +3126,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "format_candidate",
 					"return": {
 						"class": "",
@@ -2691,6 +3142,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "format_why_not",
 					"return": {
 						"class": "",
@@ -2719,6 +3171,7 @@
 						"\"\"",
 						"\"\""
 					],
+					"experimental": false,
 					"name": "query",
 					"return": {
 						"class": "",
@@ -2744,6 +3197,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "query_for_entity",
 					"return": {
 						"class": "",
@@ -2764,6 +3218,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "speaker_matches",
 					"return": {
 						"class": "",
@@ -2779,6 +3234,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "when_holds",
 					"return": {
 						"class": "",
@@ -2812,6 +3268,7 @@
 						"\"\"",
 						"\"\""
 					],
+					"experimental": false,
 					"name": "why_not",
 					"return": {
 						"class": "",
@@ -2824,11 +3281,12 @@
 			"signals": []
 		},
 		"WyrdDocuments": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -2862,6 +3320,7 @@
 						"null",
 						"true"
 					],
+					"experimental": false,
 					"name": "create_copy",
 					"return": {
 						"class": "",
@@ -2871,6 +3330,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -2891,6 +3351,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "has_copy",
 					"return": {
 						"class": "",
@@ -2911,6 +3372,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "has_read",
 					"return": {
 						"class": "",
@@ -2926,6 +3388,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -2951,6 +3414,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "open",
 					"return": {
 						"class": "WyrdDocumentView",
@@ -2960,6 +3424,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "stored_doc_ids",
 					"return": {
 						"class": "",
@@ -2971,6 +3436,7 @@
 			"properties": [
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				}
@@ -2999,12 +3465,13 @@
 							"type": "bool"
 						}
 					],
+					"experimental": false,
 					"name": "document_read"
 				}
 			]
 		},
 		"WyrdElectionAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -3020,6 +3487,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "start_election",
 					"return": {
 						"class": "",
@@ -3032,17 +3500,19 @@
 			"signals": []
 		},
 		"WyrdEntityFilter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [],
 			"path": "res://addons/wyrd/runtime/adapters/wyrd_entity_filter.gd",
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "kind",
 					"type": "StringName"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "tag",
 					"type": "StringName"
 				}
@@ -3050,11 +3520,12 @@
 			"signals": []
 		},
 		"WyrdEvents": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "batching",
 					"return": {
 						"class": "",
@@ -3064,6 +3535,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "begin_batch",
 					"return": {
 						"class": "",
@@ -3073,6 +3545,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear_recent",
 					"return": {
 						"class": "",
@@ -3082,6 +3555,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "debug_dump",
 					"return": {
 						"class": "",
@@ -3104,6 +3578,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": false,
 					"name": "emit",
 					"return": {
 						"class": "",
@@ -3113,6 +3588,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "end_batch",
 					"return": {
 						"class": "",
@@ -3128,6 +3604,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "remember",
 					"return": {
 						"class": "",
@@ -3137,6 +3614,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "reset_session",
 					"return": {
 						"class": "",
@@ -3148,36 +3626,43 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "last_flush",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "last_keys",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "last_wave",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_batch",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_emit",
 					"type": "Callable"
 				},
 				{
 					"class": "Dictionary",
+					"experimental": true,
 					"name": "recent",
 					"type": "Array"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "ring_limit",
 					"type": "int"
 				}
@@ -3185,7 +3670,7 @@
 			"signals": []
 		},
 		"WyrdFactStore": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -3196,6 +3681,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind_schema",
 					"return": {
 						"class": "",
@@ -3211,6 +3697,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "cache_view",
 					"return": {
 						"class": "",
@@ -3228,6 +3715,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": true,
 					"name": "choice_summary",
 					"return": {
 						"class": "",
@@ -3248,6 +3736,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear_in",
 					"return": {
 						"class": "",
@@ -3257,6 +3746,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear_values",
 					"return": {
 						"class": "",
@@ -3272,6 +3762,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "decay_evidence",
 					"return": {
 						"class": "",
@@ -3281,6 +3772,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "evidence_rows",
 					"return": {
 						"class": "",
@@ -3290,6 +3782,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -3312,6 +3805,7 @@
 					"defaults": [
 						"&\"world\""
 					],
+					"experimental": true,
 					"name": "get_in",
 					"return": {
 						"class": "",
@@ -3327,6 +3821,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -3349,6 +3844,7 @@
 					"defaults": [
 						"&\"\""
 					],
+					"experimental": false,
 					"name": "invalidate",
 					"return": {
 						"class": "",
@@ -3364,6 +3860,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "invalidate_event",
 					"return": {
 						"class": "",
@@ -3409,6 +3906,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_evidence",
 					"return": {
 						"class": "",
@@ -3424,6 +3922,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "refresh_poll",
 					"return": {
 						"class": "",
@@ -3449,6 +3948,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "remember",
 					"return": {
 						"class": "",
@@ -3466,6 +3966,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": true,
 					"name": "render_choice_summary",
 					"return": {
 						"class": "",
@@ -3486,6 +3987,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "saved_type_issue",
 					"return": {
 						"class": "",
@@ -3513,6 +4015,7 @@
 					"defaults": [
 						"&\"world\""
 					],
+					"experimental": false,
 					"name": "set_in",
 					"return": {
 						"class": "",
@@ -3528,6 +4031,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "subscribe",
 					"return": {
 						"class": "",
@@ -3537,6 +4041,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "world_keys",
 					"return": {
 						"class": "",
@@ -3548,61 +4053,73 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "belief_trace_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "clock",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_belief",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_belief_touch",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_choice_summary",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_keys",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_knowledge",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "on_resolved",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "provenance_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "resolver_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "tracer",
 					"type": "Callable"
 				}
@@ -3626,12 +4143,13 @@
 							"type": "Variant"
 						}
 					],
+					"experimental": false,
 					"name": "fact_changed"
 				}
 			]
 		},
 		"WyrdGenerator": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -3642,6 +4160,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "accept",
 					"return": {
 						"class": "",
@@ -3657,6 +4176,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -3666,6 +4186,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -3675,6 +4196,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "finish_reservations",
 					"return": {
 						"class": "",
@@ -3690,6 +4212,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "fulfill",
 					"return": {
 						"class": "",
@@ -3723,6 +4246,7 @@
 						"&\"\"",
 						"null"
 					],
+					"experimental": false,
 					"name": "offer",
 					"return": {
 						"class": "",
@@ -3732,6 +4256,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "pending",
 					"return": {
 						"class": "",
@@ -3741,6 +4266,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "pending_count",
 					"return": {
 						"class": "",
@@ -3750,6 +4276,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "pending_creations",
 					"return": {
 						"class": "",
@@ -3765,6 +4292,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "proposal",
 					"return": {
 						"class": "WyrdProposal",
@@ -3780,6 +4308,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "propose",
 					"return": {
 						"class": "WyrdProposal",
@@ -3805,6 +4334,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "queue_deed",
 					"return": {
 						"class": "",
@@ -3814,6 +4344,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "take_next",
 					"return": {
 						"class": "",
@@ -3834,6 +4365,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "tier_matches",
 					"return": {
 						"class": "",
@@ -3849,6 +4381,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "tier_rank",
 					"return": {
 						"class": "",
@@ -3864,6 +4397,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "why_not",
 					"return": {
 						"class": "",
@@ -3875,26 +4409,31 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "candidate_traces",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "generate_handler",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "trace_of",
 					"type": "Callable"
 				}
@@ -3902,7 +4441,7 @@
 			"signals": []
 		},
 		"WyrdInventoryAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -3918,6 +4457,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "count",
 					"return": {
 						"class": "",
@@ -3938,6 +4478,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "items",
 					"return": {
 						"class": "",
@@ -3953,6 +4494,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "owner_of",
 					"return": {
 						"class": "",
@@ -3965,47 +4507,55 @@
 			"signals": []
 		},
 		"WyrdLineView": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [],
 			"path": "res://addons/wyrd/runtime/scenes/wyrd_line_view.gd",
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "audio",
 					"type": "Variant"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "display_name",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "id",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "roles",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "speaker",
 					"type": "StringName"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "tags",
 					"type": "PackedStringArray"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "text",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "text_source",
 					"type": "StringName"
 				}
@@ -4013,7 +4563,7 @@
 			"signals": []
 		},
 		"WyrdLoadReport": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -4049,6 +4599,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "add_row",
 					"return": {
 						"class": "",
@@ -4058,6 +4609,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "error_count",
 					"return": {
 						"class": "",
@@ -4067,6 +4619,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "sort_rows",
 					"return": {
 						"class": "",
@@ -4078,21 +4631,25 @@
 			"properties": [
 				{
 					"class": "WyrdDiagnostics",
+					"experimental": false,
 					"name": "diagnostics",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "manifest_hash",
 					"type": "int"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "ok",
 					"type": "bool"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "rows",
 					"type": "Array"
 				}
@@ -4105,6 +4662,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -4132,6 +4690,7 @@
 					"defaults": [
 						"&\"\""
 					],
+					"experimental": false,
 					"name": "deeds_known_to",
 					"return": {
 						"class": "",
@@ -4141,6 +4700,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "enqueue_due",
 					"return": {
 						"class": "",
@@ -4150,6 +4710,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -4165,6 +4726,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -4180,6 +4742,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "issue",
 					"return": {
 						"class": "",
@@ -4191,51 +4754,61 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "content_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "cursor_trace_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdDeedLog",
+					"experimental": false,
 					"name": "deeds",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "enqueue_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "eval_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdFactStore",
+					"experimental": false,
 					"name": "facts",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "members_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "now_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "trace_of",
 					"type": "Callable"
 				}
@@ -4243,7 +4816,7 @@
 			"signals": []
 		},
 		"WyrdQuestRunner": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -4254,6 +4827,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "abandon",
 					"return": {
 						"class": "",
@@ -4269,6 +4843,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "active_count",
 					"return": {
 						"class": "",
@@ -4289,6 +4864,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "advance",
 					"return": {
 						"class": "",
@@ -4304,6 +4880,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -4313,6 +4890,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear_event_fires",
 					"return": {
 						"class": "",
@@ -4333,6 +4911,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "complete_host_step",
 					"return": {
 						"class": "",
@@ -4361,6 +4940,7 @@
 						"null",
 						"null"
 					],
+					"experimental": true,
 					"name": "create_instance",
 					"return": {
 						"class": "",
@@ -4376,6 +4956,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "entry_step_count",
 					"return": {
 						"class": "",
@@ -4391,6 +4972,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "entry_steps",
 					"return": {
 						"class": "",
@@ -4406,6 +4988,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "expire_due",
 					"return": {
 						"class": "",
@@ -4415,6 +4998,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_generator",
 					"return": {
 						"class": "",
@@ -4424,6 +5008,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -4439,6 +5024,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "format_date",
 					"return": {
 						"class": "",
@@ -4454,6 +5040,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "host_returns",
 					"return": {
 						"class": "",
@@ -4474,6 +5061,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_generator",
 					"return": {
 						"class": "",
@@ -4489,6 +5077,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -4504,6 +5093,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "journal",
 					"return": {
 						"class": "",
@@ -4513,6 +5103,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "kept_quest_ids",
 					"return": {
 						"class": "",
@@ -4538,6 +5129,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_outcome",
 					"return": {
 						"class": "",
@@ -4553,6 +5145,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_ready",
 					"return": {
 						"class": "",
@@ -4568,6 +5161,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "offer_for",
 					"return": {
 						"class": "",
@@ -4583,6 +5177,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "offered_scene",
 					"return": {
 						"class": "",
@@ -4608,6 +5203,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "on_scene_ended",
 					"return": {
 						"class": "",
@@ -4617,6 +5213,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "on_tick",
 					"return": {
 						"class": "",
@@ -4642,6 +5239,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "on_world_event",
 					"return": {
 						"class": "",
@@ -4662,6 +5260,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "outcome",
 					"return": {
 						"class": "",
@@ -4682,6 +5281,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "param_entity",
 					"return": {
 						"class": "",
@@ -4697,6 +5297,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "regions_of",
 					"return": {
 						"class": "",
@@ -4712,6 +5313,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "register_date_formatter",
 					"return": {
 						"class": "",
@@ -4732,6 +5334,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "remember_trail",
 					"return": {
 						"class": "",
@@ -4759,6 +5362,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": true,
 					"name": "request_host_step",
 					"return": {
 						"class": "",
@@ -4768,6 +5372,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "reset",
 					"return": {
 						"class": "",
@@ -4783,6 +5388,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "stage",
 					"return": {
 						"class": "",
@@ -4803,6 +5409,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "stage_body",
 					"return": {
 						"class": "WyrdStageDef",
@@ -4818,6 +5425,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "start",
 					"return": {
 						"class": "",
@@ -4833,6 +5441,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "status",
 					"return": {
 						"class": "",
@@ -4848,6 +5457,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "summary",
 					"return": {
 						"class": "",
@@ -4863,6 +5473,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "summary_source",
 					"return": {
 						"class": "",
@@ -4878,6 +5489,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "template_counter",
 					"return": {
 						"class": "",
@@ -4893,6 +5505,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "variant_of",
 					"return": {
 						"class": "",
@@ -4908,6 +5521,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "waiting_reason",
 					"return": {
 						"class": "",
@@ -4919,6 +5533,7 @@
 			"properties": [
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				}
@@ -4937,6 +5552,7 @@
 							"type": "String"
 						}
 					],
+					"experimental": false,
 					"name": "content_unavailable"
 				},
 				{
@@ -4957,6 +5573,7 @@
 							"type": "PackedStringArray"
 						}
 					],
+					"experimental": true,
 					"name": "host_step_requested"
 				},
 				{
@@ -4977,6 +5594,7 @@
 							"type": "String"
 						}
 					],
+					"experimental": false,
 					"name": "journal_entry_added"
 				},
 				{
@@ -4992,6 +5610,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "quest_state_changed"
 				},
 				{
@@ -5007,12 +5626,13 @@
 							"type": "String"
 						}
 					],
+					"experimental": false,
 					"name": "stage_changed"
 				}
 			]
 		},
 		"WyrdRoles": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -5023,6 +5643,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "abolished",
 					"return": {
 						"class": "",
@@ -5043,6 +5664,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "assign",
 					"return": {
 						"class": "",
@@ -5063,6 +5685,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "assign_from_content",
 					"return": {
 						"class": "",
@@ -5078,6 +5701,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "begin_quest",
 					"return": {
 						"class": "",
@@ -5093,6 +5717,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind_content",
 					"return": {
 						"class": "",
@@ -5113,6 +5738,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind_instance",
 					"return": {
 						"class": "",
@@ -5128,6 +5754,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "binding_since",
 					"return": {
 						"class": "",
@@ -5143,6 +5770,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "binding_status",
 					"return": {
 						"class": "",
@@ -5158,6 +5786,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "cast_pool",
 					"return": {
 						"class": "",
@@ -5173,6 +5802,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "cast_pool_scan",
 					"return": {
 						"class": "",
@@ -5182,6 +5812,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -5246,6 +5877,7 @@
 						"\"\"",
 						"\"\""
 					],
+					"experimental": true,
 					"name": "define",
 					"return": {
 						"class": "",
@@ -5261,6 +5893,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "definition",
 					"return": {
 						"class": "",
@@ -5276,6 +5909,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "departed",
 					"return": {
 						"class": "",
@@ -5285,6 +5919,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "drop_cast_index",
 					"return": {
 						"class": "",
@@ -5294,6 +5929,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "drop_instances",
 					"return": {
 						"class": "",
@@ -5314,6 +5950,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "eligible",
 					"return": {
 						"class": "",
@@ -5334,6 +5971,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "enter_stage",
 					"return": {
 						"class": "",
@@ -5343,6 +5981,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -5368,6 +6007,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "freeze_given",
 					"return": {
 						"class": "",
@@ -5383,6 +6023,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "history",
 					"return": {
 						"class": "",
@@ -5398,6 +6039,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "holder",
 					"return": {
 						"class": "",
@@ -5413,6 +6055,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -5422,6 +6065,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "indexed_digest",
 					"return": {
 						"class": "",
@@ -5431,6 +6075,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "indexed_digest_ready",
 					"return": {
 						"class": "",
@@ -5440,6 +6085,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "indexed_pool",
 					"return": {
 						"class": "",
@@ -5462,6 +6108,7 @@
 					"defaults": [
 						"false"
 					],
+					"experimental": true,
 					"name": "install",
 					"return": {
 						"class": "",
@@ -5482,6 +6129,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "install_casts",
 					"return": {
 						"class": "",
@@ -5491,6 +6139,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "instance_casts",
 					"return": {
 						"class": "",
@@ -5508,6 +6157,7 @@
 					"defaults": [
 						"null"
 					],
+					"experimental": true,
 					"name": "invalidate_world",
 					"return": {
 						"class": "",
@@ -5523,6 +6173,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "is_host_defined",
 					"return": {
 						"class": "",
@@ -5532,6 +6183,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_started",
 					"return": {
 						"class": "",
@@ -5547,6 +6199,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "param_pool",
 					"return": {
 						"class": "",
@@ -5562,6 +6215,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "param_pool_scan",
 					"return": {
 						"class": "",
@@ -5587,6 +6241,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "pick_id",
 					"return": {
 						"class": "",
@@ -5596,6 +6251,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "present_role_ids",
 					"return": {
 						"class": "",
@@ -5613,6 +6269,7 @@
 					"defaults": [
 						"\"\""
 					],
+					"experimental": true,
 					"name": "render_table",
 					"return": {
 						"class": "",
@@ -5640,6 +6297,7 @@
 					"defaults": [
 						"false"
 					],
+					"experimental": true,
 					"name": "resolve_slot",
 					"return": {
 						"class": "",
@@ -5660,6 +6318,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "revealed",
 					"return": {
 						"class": "",
@@ -5675,6 +6334,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "roles_of",
 					"return": {
 						"class": "",
@@ -5690,6 +6350,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "set_faction_rank",
 					"return": {
 						"class": "",
@@ -5705,6 +6366,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "set_host_decides",
 					"return": {
 						"class": "",
@@ -5725,6 +6387,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "slot_holder",
 					"return": {
 						"class": "",
@@ -5747,6 +6410,7 @@
 					"defaults": [
 						"\"\""
 					],
+					"experimental": true,
 					"name": "slot_state",
 					"return": {
 						"class": "",
@@ -5762,6 +6426,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "store_indexed_digest",
 					"return": {
 						"class": "",
@@ -5782,6 +6447,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "tell",
 					"return": {
 						"class": "",
@@ -5802,6 +6468,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "vacate",
 					"return": {
 						"class": "",
@@ -5817,6 +6484,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "vacate_from_content",
 					"return": {
 						"class": "",
@@ -5828,91 +6496,109 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "cast_index_enabled",
 					"type": "bool"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "clock",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "content_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdDeedLog",
+					"experimental": true,
 					"name": "deeds",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "election_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "eval_value",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "eval_with",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "faction_rank",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdFactStore",
+					"experimental": true,
 					"name": "facts",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "host_decides",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "inventory_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "seed_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdSocial",
+					"experimental": true,
 					"name": "social",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "stage_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "trace_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "world_of",
 					"type": "Callable"
 				}
@@ -5931,6 +6617,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "election_needed"
 				},
 				{
@@ -5951,6 +6638,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "role_holder_changed"
 				},
 				{
@@ -5961,6 +6649,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "role_vacant"
 				},
 				{
@@ -5976,6 +6665,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": true,
 					"name": "succession_requested"
 				}
 			]
@@ -5986,6 +6676,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_flight",
 					"return": {
 						"class": "",
@@ -5995,6 +6686,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "enqueue_due",
 					"return": {
 						"class": "",
@@ -6004,6 +6696,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -6013,6 +6706,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "has_reach",
 					"return": {
 						"class": "",
@@ -6028,6 +6722,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "hop",
 					"return": {
 						"class": "",
@@ -6043,6 +6738,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -6063,6 +6759,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "materialize",
 					"return": {
 						"class": "",
@@ -6083,6 +6780,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "missing_policy_message",
 					"return": {
 						"class": "",
@@ -6108,6 +6806,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "note_deed",
 					"return": {
 						"class": "",
@@ -6128,6 +6827,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "reach_level",
 					"return": {
 						"class": "",
@@ -6143,6 +6843,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "register",
 					"return": {
 						"class": "",
@@ -6154,71 +6855,85 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdDeedLog",
+					"experimental": false,
 					"name": "deeds",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "enqueue_hop",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdFactStore",
+					"experimental": false,
 					"name": "facts",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "now_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "on_reach",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "reach_any",
 					"type": "bool"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "score_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "seed_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdSocial",
+					"experimental": false,
 					"name": "social",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "spatial_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "threshold_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "trace_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "tracing_of",
 					"type": "Callable"
 				}
@@ -6226,7 +6941,7 @@
 			"signals": []
 		},
 		"WyrdSceneRunner": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -6237,6 +6952,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "abort",
 					"return": {
 						"class": "",
@@ -6246,6 +6962,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "advance",
 					"return": {
 						"class": "",
@@ -6266,6 +6983,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "ask_topic",
 					"return": {
 						"class": "",
@@ -6281,6 +6999,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "audio_for",
 					"return": {
 						"class": "",
@@ -6296,6 +7015,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -6305,6 +7025,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "can_save",
 					"return": {
 						"class": "",
@@ -6314,6 +7035,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "choices",
 					"return": {
 						"class": "WyrdChoiceView",
@@ -6329,6 +7051,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "choose",
 					"return": {
 						"class": "",
@@ -6338,6 +7061,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "force_close",
 					"return": {
 						"class": "",
@@ -6347,6 +7071,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "is_open",
 					"return": {
 						"class": "",
@@ -6356,6 +7081,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "line",
 					"return": {
 						"class": "WyrdLineView",
@@ -6381,6 +7107,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "note_role",
 					"return": {
 						"class": "",
@@ -6390,6 +7117,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "on_tick",
 					"return": {
 						"class": "",
@@ -6405,6 +7133,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "open",
 					"return": {
 						"class": "",
@@ -6414,6 +7143,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "open_quest_id",
 					"return": {
 						"class": "",
@@ -6429,6 +7159,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "open_scene",
 					"return": {
 						"class": "",
@@ -6444,6 +7175,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "register_line_audio",
 					"return": {
 						"class": "",
@@ -6464,6 +7196,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "render_prose",
 					"return": {
 						"class": "",
@@ -6475,11 +7208,13 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": true,
 					"name": "locale",
 					"type": "String"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				}
@@ -6493,6 +7228,7 @@
 							"type": "Array"
 						}
 					],
+					"experimental": false,
 					"name": "choices_ready"
 				},
 				{
@@ -6503,6 +7239,7 @@
 							"type": "Object"
 						}
 					],
+					"experimental": false,
 					"name": "line_ready"
 				},
 				{
@@ -6523,7 +7260,19 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "scene_ended"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						}
+					],
+					"experimental": false,
+					"name": "scene_started"
 				},
 				{
 					"args": [
@@ -6543,6 +7292,7 @@
 							"type": "Object"
 						}
 					],
+					"experimental": true,
 					"name": "topic_answered"
 				}
 			]
@@ -6559,6 +7309,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -6568,6 +7319,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -6583,6 +7335,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "done",
 					"return": {
 						"class": "",
@@ -6592,6 +7345,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -6607,6 +7361,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -6627,6 +7382,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "on_emit",
 					"return": {
 						"class": "",
@@ -6636,6 +7392,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "on_tick",
 					"return": {
 						"class": "",
@@ -6651,6 +7408,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "progress",
 					"return": {
 						"class": "",
@@ -6660,6 +7418,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "stored_ids",
 					"return": {
 						"class": "",
@@ -6671,6 +7430,7 @@
 			"properties": [
 				{
 					"class": "WyrdRuntime",
+					"experimental": false,
 					"name": "runtime",
 					"type": "Object"
 				}
@@ -6678,7 +7438,7 @@
 			"signals": []
 		},
 		"WyrdSkillAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -6689,6 +7449,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "check",
 					"return": {
 						"class": "WyrdCommandResult",
@@ -6701,32 +7462,37 @@
 			"signals": []
 		},
 		"WyrdSkillCheck": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [],
 			"path": "res://addons/wyrd/runtime/adapters/wyrd_skill_check.gd",
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "args",
 					"type": "Dictionary"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "choice_id",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "roll",
 					"type": "float"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "scene_id",
 					"type": "String"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "skill",
 					"type": "StringName"
 				}
@@ -6745,6 +7511,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "@members_of_setter",
 					"return": {
 						"class": "",
@@ -6775,6 +7542,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "adjust_baseline",
 					"return": {
 						"class": "",
@@ -6795,6 +7563,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "affinity",
 					"return": {
 						"class": "",
@@ -6820,6 +7589,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "axis",
 					"return": {
 						"class": "",
@@ -6829,6 +7599,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "cache_bytes",
 					"return": {
 						"class": "",
@@ -6838,6 +7609,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "cache_enabled",
 					"return": {
 						"class": "",
@@ -6847,6 +7619,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "cache_entries",
 					"return": {
 						"class": "",
@@ -6872,6 +7645,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_baseline",
 					"return": {
 						"class": "",
@@ -6897,6 +7671,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_kind",
 					"return": {
 						"class": "",
@@ -6906,6 +7681,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_state",
 					"return": {
 						"class": "",
@@ -6926,6 +7702,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "disposition",
 					"return": {
 						"class": "",
@@ -6935,6 +7712,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -6950,6 +7728,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "fill_pair_matrix",
 					"return": {
 						"class": "",
@@ -6975,6 +7754,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "has_kind",
 					"return": {
 						"class": "",
@@ -6990,6 +7770,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -6999,6 +7780,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "invalidate_members",
 					"return": {
 						"class": "",
@@ -7029,6 +7811,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "path_exists",
 					"return": {
 						"class": "",
@@ -7044,6 +7827,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "rebuild_cached",
 					"return": {
 						"class": "",
@@ -7059,6 +7843,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "register_formula",
 					"return": {
 						"class": "",
@@ -7079,6 +7864,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "reputation",
 					"return": {
 						"class": "",
@@ -7109,6 +7895,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_baseline",
 					"return": {
 						"class": "",
@@ -7124,6 +7911,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_cache",
 					"return": {
 						"class": "",
@@ -7149,6 +7937,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_kind",
 					"return": {
 						"class": "",
@@ -7158,6 +7947,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "sync_cache",
 					"return": {
 						"class": "",
@@ -7178,6 +7968,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "targets",
 					"return": {
 						"class": "",
@@ -7189,56 +7980,67 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "config_of",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdDeedLog",
+					"experimental": false,
 					"name": "deeds",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "enqueue_cache",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "formula",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "members_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "on_cache",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "on_changed",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "on_reputation",
 					"type": "Callable"
 				},
 				{
 					"class": "WyrdRuntime",
+					"experimental": false,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "trace_of",
 					"type": "Callable"
 				},
 				{
 					"class": "",
+					"experimental": false,
 					"name": "tracing_of",
 					"type": "Callable"
 				}
@@ -7246,7 +8048,7 @@
 			"signals": []
 		},
 		"WyrdSpatialAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -7262,6 +8064,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "can_perceive",
 					"return": {
 						"class": "",
@@ -7282,6 +8085,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "can_reach",
 					"return": {
 						"class": "",
@@ -7302,6 +8106,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "distance",
 					"return": {
 						"class": "",
@@ -7327,6 +8132,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "nearby",
 					"return": {
 						"class": "",
@@ -7357,6 +8163,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "perceive",
 					"return": {
 						"class": "",
@@ -7372,6 +8179,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "place_of",
 					"return": {
 						"class": "",
@@ -7387,6 +8195,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "precision",
 					"return": {
 						"class": "",
@@ -7412,6 +8221,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "witnesses_of",
 					"return": {
 						"class": "",
@@ -7435,6 +8245,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "bind",
 					"return": {
 						"class": "",
@@ -7444,6 +8255,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -7453,6 +8265,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_draws",
 					"return": {
 						"class": "",
@@ -7462,6 +8275,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "clear_speakers",
 					"return": {
 						"class": "",
@@ -7484,6 +8298,7 @@
 					"defaults": [
 						"Callable()"
 					],
+					"experimental": false,
 					"name": "draw",
 					"return": {
 						"class": "",
@@ -7493,6 +8308,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_speakers",
 					"return": {
 						"class": "",
@@ -7502,6 +8318,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -7511,6 +8328,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "ignored_ids",
 					"return": {
 						"class": "",
@@ -7526,6 +8344,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_speakers",
 					"return": {
 						"class": "",
@@ -7541,6 +8360,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -7556,6 +8376,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "last_minute_of",
 					"return": {
 						"class": "",
@@ -7581,6 +8402,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "note_bark_speaker",
 					"return": {
 						"class": "",
@@ -7601,6 +8423,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "note_selected",
 					"return": {
 						"class": "",
@@ -7616,6 +8439,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "seen_of",
 					"return": {
 						"class": "",
@@ -7631,6 +8455,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "set_seed",
 					"return": {
 						"class": "",
@@ -7646,6 +8471,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "speaker_cooldown_of",
 					"return": {
 						"class": "",
@@ -7666,6 +8492,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "speaker_cooling",
 					"return": {
 						"class": "",
@@ -7686,6 +8513,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "speaker_remaining",
 					"return": {
 						"class": "",
@@ -7697,6 +8525,7 @@
 			"properties": [
 				{
 					"class": "",
+					"experimental": false,
 					"name": "on_coverage",
 					"type": "Callable"
 				}
@@ -7704,11 +8533,12 @@
 			"signals": []
 		},
 		"WyrdTimeAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "now_minutes",
 					"return": {
 						"class": "",
@@ -7718,6 +8548,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "season",
 					"return": {
 						"class": "",
@@ -7730,11 +8561,12 @@
 			"signals": []
 		},
 		"WyrdTopics": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "clear",
 					"return": {
 						"class": "",
@@ -7744,6 +8576,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "export_state",
 					"return": {
 						"class": "",
@@ -7759,6 +8592,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "import_state",
 					"return": {
 						"class": "",
@@ -7774,6 +8608,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "is_unlocked",
 					"return": {
 						"class": "",
@@ -7789,6 +8624,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "lock",
 					"return": {
 						"class": "",
@@ -7804,6 +8640,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": true,
 					"name": "unlock",
 					"return": {
 						"class": "",
@@ -7813,6 +8650,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": true,
 					"name": "unlocked",
 					"return": {
 						"class": "",
@@ -7824,11 +8662,13 @@
 			"properties": [
 				{
 					"class": "WyrdRuntime",
+					"experimental": true,
 					"name": "runtime",
 					"type": "Object"
 				},
 				{
 					"class": "",
+					"experimental": true,
 					"name": "trace_of",
 					"type": "Callable"
 				}
@@ -7842,6 +8682,7 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": true,
 					"name": "topic_locked"
 				},
 				{
@@ -7852,12 +8693,13 @@
 							"type": "StringName"
 						}
 					],
+					"experimental": false,
 					"name": "topic_unlocked"
 				}
 			]
 		},
 		"WyrdWorldAdapter": {
-			"experimental": true,
+			"experimental": false,
 			"methods": [
 				{
 					"args": [
@@ -7873,6 +8715,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "attr",
 					"return": {
 						"class": "",
@@ -7888,6 +8731,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "candidates",
 					"return": {
 						"class": "",
@@ -7903,6 +8747,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "display_name",
 					"return": {
 						"class": "",
@@ -7918,6 +8763,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "exists",
 					"return": {
 						"class": "",
@@ -7933,6 +8779,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "groups_of",
 					"return": {
 						"class": "",
@@ -7953,6 +8800,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "in_bounds",
 					"return": {
 						"class": "",
@@ -7968,6 +8816,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "is_alive",
 					"return": {
 						"class": "",
@@ -7983,6 +8832,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "is_protected",
 					"return": {
 						"class": "",
@@ -7998,6 +8848,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "kind",
 					"return": {
 						"class": "",
@@ -8013,6 +8864,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "members",
 					"return": {
 						"class": "",
@@ -8022,6 +8874,7 @@
 				{
 					"args": [],
 					"defaults": [],
+					"experimental": false,
 					"name": "reports_changes",
 					"return": {
 						"class": "",
@@ -8037,6 +8890,7 @@
 						}
 					],
 					"defaults": [],
+					"experimental": false,
 					"name": "tags",
 					"return": {
 						"class": "",

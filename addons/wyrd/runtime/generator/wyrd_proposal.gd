@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One unsaved pick, cast, and bind result.
 ##
-## @experimental
 ## [member id] is [code]p<seq>[/code]. The sequence resets on a new game and on
 ## load. [member casts] maps a cast slot to the picked entity. [member params]
 ## maps a param to [code]{entity, kind}[/code], plus [code]owner[/code] for an

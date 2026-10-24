@@ -3,7 +3,6 @@ extends RefCounted
 
 ## A host command the action adapter runs.
 ##
-## @experimental
 ## [member args] is an untyped dictionary until the command schema describes each argument.
 
 var name: StringName = &""

@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Stored facts, resolver cache, and perspectives.
 ##
-## @experimental
 ## World values are [method Object.set] and [method Object.get], implemented
 ## here as [method _set] and [method _get]. Godot already owns those names, so
 ## a perspective argument cannot be added and [code]set[/code] cannot return a
@@ -17,24 +16,36 @@ extends RefCounted
 
 signal fact_changed(key: StringName, old_value: Variant, new_value: Variant)
 
+## @experimental
 var on_keys: Callable = Callable()
+## @experimental
 var tracer: Callable = Callable()
 ## Called after a [code]believed/[/code] or [code]held/[/code] value changes.
 ## [code]op[/code] is [code]believe[/code], [code]unbelieve[/code], [code]declare[/code], or [code]retract[/code].
+## @experimental
 var on_belief: Callable = Callable()
 ## [code]() -> void[/code]. The same change, with no row. Used to drop a cache without a trace.
+## @experimental
 var on_belief_touch: Callable = Callable()
 ## [code]() -> bool[/code]. When this is valid and false, [member on_belief] is not called.
+## @experimental
 var belief_trace_of: Callable = Callable()
 ## Called after a [code]known/[/code] value changes. [code]op[/code] is [code]learn[/code] or [code]forget[/code].
+## @experimental
 var on_knowledge: Callable = Callable()
+## @experimental
 var on_resolved: Callable = Callable()
+## @experimental
 var clock: Callable = Callable()
+## @experimental
 var resolver_of: Callable = Callable()
 ## [code]() -> Dictionary[/code] of fact key to scene, choice, and time. Not saved here.
+## @experimental
 var provenance_of: Callable = Callable()
 ## [code](fields, line)[/code]. Records one choice-summary read when tracing is on.
+## @experimental
 var on_choice_summary: Callable = Callable()
+## @experimental
 var runtime: WyrdRuntime
 
 var _schema: WyrdFactSchema
@@ -55,6 +66,7 @@ var _find_fact: WyrdFact
 var _evidence: Array = []
 
 
+## @experimental
 func bind_schema(schema: WyrdFactSchema) -> void:
 	_schema = schema
 	_find_text = ""
@@ -69,6 +81,7 @@ const _SUMMARY_FILTERS: PackedStringArray = ["choice", "from", "prefix", "scene"
 ## [code]choice[/code], [code]prefix[/code], [code]from[/code], and [code]to[/code].
 ## An omitted field does not filter. [code]from[/code] and [code]to[/code] are
 ## inclusive game minutes. One [code]choice_summary[/code] line is logged when tracing is on.
+## @experimental
 func choice_summary(query: Dictionary = {}) -> Array:
 	if not _summary_query(query):
 		return []
@@ -100,6 +113,7 @@ func choice_summary(query: Dictionary = {}) -> Array:
 
 
 ## Sorted table of [method choice_summary]. Columns are key, scene, choice, time, and recap.
+## @experimental
 func render_choice_summary(query: Dictionary = {}) -> String:
 	var found := choice_summary(query)
 	var header := PackedStringArray(["key", "scene", "choice", "time", "recap"])
@@ -211,6 +225,7 @@ func _summary_line(cells: PackedStringArray, width: PackedInt32Array) -> String:
 	return "  ".join(parts)
 
 
+## @experimental
 func export_state() -> Dictionary:
 	var out := {
 		"believed": _export_layers(_believed),
@@ -225,6 +240,7 @@ func export_state() -> Dictionary:
 
 ## Empty when [param value] is acceptable for a saved [param key], or the type word when it is not.
 ## An unknown key is acceptable here. Import still reports a missing schema entry.
+## @experimental
 func saved_type_issue(key: String, value: Variant) -> String:
 	var fact := _find(key)
 	if fact == null:
@@ -251,6 +267,7 @@ func saved_type_issue(key: String, value: Variant) -> String:
 	return ""
 
 
+## @experimental
 func import_state(data: Dictionary) -> void:
 	clear_values()
 	_quiet = true
@@ -388,6 +405,7 @@ func _saved_value(key: String, value: Variant) -> Variant:
 	return value
 
 
+## @experimental
 func clear_values() -> void:
 	_world.clear()
 	_known.clear()
@@ -400,6 +418,7 @@ func clear_values() -> void:
 
 
 ## Replaces any deadline already stored for [param key]. [param until] of [code]-1[/code] does not decay.
+## @experimental
 func note_evidence(
 	key: String,
 	value: Variant,
@@ -426,11 +445,13 @@ func note_evidence(
 	_evidence = next
 
 
+## @experimental
 func evidence_rows() -> Array:
 	return _evidence.duplicate(true)
 
 
 ## Drops deadlines that have come due. Clears the world fact when it still holds the evidence value.
+## @experimental
 func decay_evidence(now: int) -> void:
 	if _evidence.is_empty():
 		return
@@ -447,6 +468,7 @@ func decay_evidence(now: int) -> void:
 	_evidence = next
 
 
+## @experimental
 func subscribe(prefix: StringName) -> void:
 	var text := String(prefix)
 	if not _subs.has(text):
@@ -455,6 +477,7 @@ func subscribe(prefix: StringName) -> void:
 
 ## Sorted keys that currently hold a world value. Resolved facts are not included.
 ## The returned array is a copy.
+## @experimental
 func world_keys() -> PackedStringArray:
 	var names: Array = _world.keys()
 	names.sort()
@@ -464,6 +487,7 @@ func world_keys() -> PackedStringArray:
 	return out
 
 
+## @experimental
 func get_in(key: StringName, perspective: StringName = &"world") -> Variant:
 	var text := String(key)
 	var kind := _kind(perspective)
@@ -523,6 +547,7 @@ func set_in(key: StringName, new_value: Variant, perspective: StringName = &"wor
 
 
 ## Removes one [code]known/[/code], [code]believed/[/code], or [code]held/[/code] key. A missing key is a no-op.
+## @experimental
 func clear_in(key: StringName, perspective: StringName) -> bool:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var text := String(key)
@@ -590,6 +615,7 @@ func _stored_key(text: String) -> bool:
 
 
 ## Writes a [code]known/[/code] value that is not a schema fact. Role reveals use this.
+## @experimental
 func remember(key: StringName, value: Variant, perspective: StringName) -> bool:
 	var text := String(key)
 	if _kind(perspective) != "known":
@@ -649,6 +675,7 @@ func invalidate(prefix: StringName, reason: StringName = &"") -> PackedStringArr
 
 ## Drops every [code]on_event[/code] fact bound to [param event_name], including
 ## every concrete cache of a pattern fact. The returned keys are sorted.
+## @experimental
 func invalidate_event(event_name: StringName) -> PackedStringArray:
 	var found := {}
 	if _schema == null:
@@ -665,6 +692,7 @@ func invalidate_event(event_name: StringName) -> PackedStringArray:
 ## [code]mode[/code] is the schema invalidation ([code]on_event[/code], [code]poll[/code],
 ## [code]per_query[/code], [code]manual[/code]) or [code]absent[/code]. [code]event[/code]
 ## is the last invalidate reason. [code]cached[/code] is false for [code]per_query[/code].
+## @experimental
 func cache_view(key: String) -> Dictionary:
 	var fact := _find(key)
 	var mode := "absent"
@@ -676,6 +704,7 @@ func cache_view(key: String) -> Dictionary:
 	return {"cached": _cache.has(key), "event": event, "mode": mode}
 
 
+## @experimental
 func refresh_poll(now: int) -> void:
 	var doomed := PackedStringArray()
 	for cached in _cache.keys():

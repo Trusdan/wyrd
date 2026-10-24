@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Result of a host command: ok, or failed with a reason.
 ##
-## @experimental
 
 enum Status { OK, FAILED }
 

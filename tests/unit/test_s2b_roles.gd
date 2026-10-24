@@ -207,8 +207,8 @@ quest gate "Gate"
   stage done
 scene room
   when deed_count(player, verb: gift, against: keeper) > 0: narrator: Count. #line:count
-  when known(player, role.dock_keeper.holder): narrator: Secret. #line:secret
-  when known(player, player.coins): narrator: Coins. #line:coins
+  when knows(player, role.dock_keeper.holder): narrator: Secret. #line:secret
+  when knows(player, player.coins): narrator: Coins. #line:coins
   when slot_state(keeper) == empty: narrator: Empty. #line:empty
   when slot_state(keeper) == hostile: narrator: Hostile. #line:hostile
   when disposition(holder(keeper), player) < 20: narrator: Cold. #line:cold

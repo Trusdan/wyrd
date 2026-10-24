@@ -3,7 +3,6 @@ extends RefCounted
 
 ## One opened readable document.
 ##
-## @experimental
 ## [member pages] leaves out a page that has no visible paragraph. Each page is
 ## an array of [code]{id, text}[/code]. [member title] and each paragraph are
 ## translated with the line id, the same way dialogue is.

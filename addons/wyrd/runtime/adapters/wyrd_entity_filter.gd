@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Filter for a spatial query.
 ##
-## @experimental
 ## [member tag] and [member kind] are empty when that field is unconstrained.
 ## Precision flags (precise versus coarse) are not part of this filter.
 ## A place's flag is [method WyrdSpatialAdapter.precision].

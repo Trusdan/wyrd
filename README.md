@@ -10,6 +10,8 @@ Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) 
 
 Pin a tag and run `tools/vendor_wyrd.sh` with the host project directory (the parent of its `addons/` folder). The script copies `addons/wyrd` only. The steps are in [docs/host-checklist.md](docs/host-checklist.md). Tags before 1.0 are for the host check only.
 
+The stable surface, the save promise, and the deprecation rules are in [docs/stability.md](docs/stability.md).
+
 ## Tests
 
 Install that Godot so `godot` is on your `PATH`, then run `tools/run_tests.sh`. It imports the project and runs GUT.

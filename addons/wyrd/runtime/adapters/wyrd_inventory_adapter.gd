@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host view of carried items.
 ##
-## @experimental
 ## [param filter] on [method items] is a tag. An empty tag asks for every item that holder carries.
 ## [method count] takes either an item id or a tag. Default bodies are not implemented.
 

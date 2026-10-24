@@ -1,0 +1,179 @@
+{
+  "conditions": [
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "world.flag"
+            },
+            {
+              "t": "name",
+              "v": "known"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 LOAD_FACT \"world.flag\"",
+            "0004 CALL \"known\" 2"
+          ],
+          "reads": [
+            "world.flag"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 35,
+            "end_line": 7,
+            "line": 7
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 7,
+              "text": "player",
+              "type": "symbol"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 7,
+            "type": ""
+          },
+          {
+            "a": {
+              "col": 24,
+              "kind": "fact",
+              "line": 7,
+              "text": "world.flag",
+              "type": "bool"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 7,
+            "type": ""
+          }
+        ],
+        "kind": "call",
+        "line": 7,
+        "text": "known",
+        "type": "error"
+      },
+      "diagnostics": [
+        {
+          "code": "E_KNOWN_REMOVED",
+          "col": 10,
+          "line": 7,
+          "message": "known was removed in 1.0; use knows(agent, key)",
+          "path": "res://tests/golden/conditions/c_known_removed.wyrd",
+          "severity": "error"
+        }
+      ],
+      "expr": "known(player, world.flag)",
+      "kind": "when",
+      "line": 7
+    },
+    {
+      "ast": {
+        "col": 10,
+        "compiled": {
+          "code": [
+            1,
+            0,
+            5,
+            1,
+            21,
+            2,
+            2
+          ],
+          "consts": [
+            {
+              "t": "name",
+              "v": "player"
+            },
+            {
+              "t": "name",
+              "v": "world.flag"
+            },
+            {
+              "t": "name",
+              "v": "knows"
+            }
+          ],
+          "ops": [
+            "0000 PUSH_CONST \"player\"",
+            "0002 LOAD_FACT \"world.flag\"",
+            "0004 CALL \"knows\" 2"
+          ],
+          "reads": [
+            "world.flag"
+          ],
+          "source_span": {
+            "col": 10,
+            "end_col": 35,
+            "end_line": 8,
+            "line": 8
+          },
+          "specificity": 1,
+          "uses_chance": false
+        },
+        "kids": [
+          {
+            "a": {
+              "col": 16,
+              "kind": "name",
+              "line": 8,
+              "text": "player",
+              "type": "entity"
+            },
+            "col": 16,
+            "kind": "arg",
+            "line": 8,
+            "type": "entity"
+          },
+          {
+            "a": {
+              "col": 24,
+              "kind": "fact",
+              "line": 8,
+              "text": "world.flag",
+              "type": "symbol"
+            },
+            "col": 24,
+            "kind": "arg",
+            "line": 8,
+            "type": "symbol"
+          }
+        ],
+        "kind": "call",
+        "line": 8,
+        "text": "knows",
+        "type": "bool"
+      },
+      "diagnostics": [],
+      "expr": "knows(player, world.flag)",
+      "kind": "when",
+      "line": 8
+    }
+  ],
+  "diagnostics": [],
+  "interps": []
+}

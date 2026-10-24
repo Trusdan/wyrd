@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Walks one open scene. The facade exposes this as [code]Wyrd.dialogue[/code].
 ##
-## @experimental
 ## Line text is always emitted. [code]line_audio(line_id, locale)[/code] may
 ## return null and never hides text or advances a line. [method advance] is
 ## the only way past a line. [method choose] runs the choice effects, then
@@ -19,10 +18,15 @@ extends RefCounted
 
 signal line_ready(line: WyrdLineView)
 signal choices_ready(choices: Array[WyrdChoiceView])
+## Fires after a scene opens and before its first line_ready.
+signal scene_started(scene_id: String)
 signal scene_ended(scene_id: String, status: StringName, reason: StringName)
+## @experimental
 signal topic_answered(npc: StringName, topic: StringName, line: WyrdLineView)
 
+## @experimental
 var runtime: WyrdRuntime
+## @experimental
 var locale: String = ""
 var _text: WyrdText
 var _stack: Array = []
@@ -44,12 +48,14 @@ class Frame extends RefCounted:
 	var holders: Dictionary = {}
 
 
+## @experimental
 func bind(host: WyrdRuntime) -> void:
 	runtime = host
 	_text = WyrdText.new()
 	_text.runtime = host
 
 
+## @experimental
 func register_line_audio(fn: Callable) -> void:
 	if not fn.is_valid():
 		push_error("WyrdSceneRunner.register_line_audio: missing callable")
@@ -57,11 +63,13 @@ func register_line_audio(fn: Callable) -> void:
 	_line_audio = fn
 
 
+## @experimental
 func is_open() -> bool:
 	return not _stack.is_empty()
 
 
 ## Quest id of the open scene, or empty when the scene was not offered by a quest.
+## @experimental
 func open_quest_id() -> String:
 	var frame := _top()
 	if frame == null:
@@ -69,6 +77,7 @@ func open_quest_id() -> String:
 	return frame.quest_id
 
 
+## @experimental
 func can_save() -> bool:
 	return not is_open()
 
@@ -238,20 +247,24 @@ func _ask_row(row: Dictionary, reason: String) -> Dictionary:
 	return out
 
 
+## @experimental
 func line() -> WyrdLineView:
 	return _line
 
 
+## @experimental
 func render_prose(prose: WyrdExprNode, line_id: String) -> String:
 	if _text == null:
 		return ""
 	return _text.render(prose, line_id)
 
 
+## @experimental
 func audio_for(line_id: String) -> Variant:
 	return _audio(line_id)
 
 
+## @experimental
 func choices() -> Array[WyrdChoiceView]:
 	return _choices.duplicate()
 
@@ -274,6 +287,7 @@ func open_scene(scene_id: String) -> void:
 		slots = offer["slots"]
 	_root_id = scene_id
 	_push(scene_id, quest_id, slots)
+	scene_started.emit(scene_id)
 	_pump()
 
 
@@ -364,6 +378,7 @@ func abort(reason: StringName) -> void:
 	_finish(&"aborted", reason)
 
 
+## @experimental
 func on_tick() -> void:
 	if not is_open() or _aborting or runtime == null:
 		return
@@ -381,6 +396,7 @@ func on_tick() -> void:
 				return
 
 
+## @experimental
 func note_role(role_id: StringName, _old_holder: StringName, _new_holder: StringName) -> void:
 	if not is_open() or _aborting or runtime == null:
 		return
@@ -407,6 +423,7 @@ func note_role(role_id: StringName, _old_holder: StringName, _new_holder: String
 				return
 
 
+## @experimental
 func force_close() -> void:
 	_close_scene_requests()
 	_stack.clear()
