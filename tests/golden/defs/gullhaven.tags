@@ -91,7 +91,7 @@ harbor_gossip.storm	example/content/gullhaven/harbor_storylets.wyrd	63;"	t
 harbor_gossip.tavern	example/content/gullhaven/harbor_storylets.wyrd	9;"	t
 harbor_guild	example/content/gullhaven/harbor_guild.wyrd	4;"	q
 harbor_guild.petition	example/content/gullhaven/harbor_guild.wyrd	11;"	s
-harbor_guild.signed	example/content/gullhaven/harbor_guild.wyrd	32;"	s
+harbor_guild.signed	example/content/gullhaven/harbor_guild.wyrd	36;"	s
 harbor_ledger	example/content/gullhaven/harbor_storylets.wyrd	42;"	q
 harbor_ledger.note	example/content/gullhaven/harbor_storylets.wyrd	44;"	s
 harbor_ledger.open	example/content/gullhaven/harbor_storylets.wyrd	48;"	t
@@ -125,7 +125,8 @@ sent	example/content/gullhaven/dock_errand.wyrd	11;"	s
 served	example/content/gullhaven/harbor_templates.wyrd	136;"	s
 served	example/content/gullhaven/harbor_templates.wyrd	158;"	s
 served	example/content/gullhaven/harbor_templates.wyrd	180;"	s
-signed	example/content/gullhaven/harbor_guild.wyrd	32;"	s
+signed	example/content/gullhaven/harbor_guild.wyrd	36;"	s
+smugglers_contact	example/content/gullhaven/harbor_roles.wyrd	37;"	r
 spliced	example/content/gullhaven/bell_repair.wyrd	13;"	s
 stolen_catch	example/content/gullhaven/harbor_templates.wyrd	50;"	p
 stolen_catch.returned	example/content/gullhaven/harbor_templates.wyrd	64;"	s

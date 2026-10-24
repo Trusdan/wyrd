@@ -33,3 +33,9 @@ role harbor_reeve
 role dock_runner
   succession: none
   vacancy: hold
+
+role smugglers_contact
+  visibility: secret
+  default_holder: storm_watcher
+  succession: host_decides
+  vacancy: hold

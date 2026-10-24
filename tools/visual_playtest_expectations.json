@@ -13,7 +13,9 @@
     "FactFilter",
     "FactScroll",
     "Continue",
-    "Events"
+    "Events",
+    "Routes",
+    "LoadReport"
   ],
   "defaults": {
     "ferry_alive": true,

@@ -15,6 +15,8 @@ const _PANELS: PackedStringArray = [
 	"FactScroll",
 	"Continue",
 	"Events",
+	"Routes",
+	"LoadReport",
 ]
 
 
@@ -78,7 +80,9 @@ func test_quest_panel_labels_title_and_stage() -> void:
 	assert_eq(ui.quest_stage(), "pay_toll")
 	var journal := ui.find_child("JournalList", true, false) as ItemList
 	assert_not_null(journal)
-	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(journal.is_item_selectable(0))
+	assert_eq(journal.get_item_text(1), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 	assert_true(lines.has("slot tavern — tavern owner — innkeeper — default"), "\n".join(lines))
 	assert_true(lines.has("slot ferry — ferry master — Bram — default"), "\n".join(lines))
 	assert_true(lines.has("slot lookout — storm watcher — Nia — default"), "\n".join(lines))
@@ -95,7 +99,9 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	assert_true(successor_lines.has("slot ferry — ferry master — Nia — successor"), "\n".join(successor_lines))
 	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
 	assert_not_null(successor_journal)
-	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(successor_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(successor_journal.is_item_selectable(0))
+	assert_eq(successor_journal.get_item_text(1), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
 	var empty := _spawn()
 	_set_toggle(empty, "ferry_alive", false)
 	_press(empty, "New game")
@@ -104,7 +110,9 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	assert_true(empty_lines.has("slot ferry — ferry master — none — empty"), "\n".join(empty_lines))
 	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
 	assert_not_null(empty_journal)
-	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	assert_eq(empty_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(empty_journal.is_item_selectable(0))
+	assert_eq(empty_journal.get_item_text(1), "day 1, 00:00  The dock is empty, so the crossing waits.")
 	await wait_process_frames(1)
 
 
@@ -212,7 +220,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var rest := _read_lines(bram)
 	assert_eq(_line_named(rest, "Two coins, and the boat will cross."), "Bram")
 	var journal := bram.find_child("JournalList", true, false) as ItemList
-	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(journal.is_item_selectable(0))
+	assert_eq(journal.get_item_text(1), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 	_assert_no_missing_holder(opening)
 	_assert_no_missing_holder(rest)
 	var successor := _spawn()
@@ -227,7 +237,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var successor_rest := _read_lines(successor)
 	assert_eq(_line_named(successor_rest, "Two coins, and the boat will cross."), "Nia")
 	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
-	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(successor_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(successor_journal.is_item_selectable(0))
+	assert_eq(successor_journal.get_item_text(1), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
 	_assert_no_missing_holder(successor_opening)
 	_assert_no_missing_holder(successor_rest)
 	var empty := _spawn()
@@ -241,7 +253,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	assert_false(_has_text(empty_rest, "Bram, the ferry master, is on the dock."))
 	assert_false(_has_text(empty_rest, "Nia, the ferry master, is on the dock."))
 	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
-	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	assert_eq(empty_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(empty_journal.is_item_selectable(0))
+	assert_eq(empty_journal.get_item_text(1), "day 1, 00:00  The dock is empty, so the crossing waits.")
 	var empty_facts := empty.find_child("FactList", true, false) as ItemList
 	var empty_fact_lines := PackedStringArray()
 	for i in empty_facts.item_count:

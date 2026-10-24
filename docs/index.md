@@ -51,6 +51,7 @@ func _on_choices(_choices: Array) -> void:
 ## Docs
 
 - [Language reference](language.md): grammar, built-ins, and effects.
+- [Tutorial](tutorial.md): the ferry quest in the playtest.
 - [API reference](api/index.md): generated from the doc comments, with Stable and Experimental marks.
 - [Adapter guide](adapters.md) and the [host checklist](host-checklist.md).
 - [Cookbook](cookbook/index.md): role fallbacks, topics, barks, social and reputation, epilogues, and migration.

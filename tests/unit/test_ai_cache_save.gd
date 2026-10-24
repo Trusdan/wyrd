@@ -1,6 +1,7 @@
 extends GutTest
 
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
+const _Load := preload("res://tests/migration/fixture_load.gd")
 const _FIXTURE := "res://tests/fixtures/schema4_ai_harbor.json"
 
 
@@ -208,7 +209,7 @@ func test_schema4_fixture_loads_and_is_ignorable() -> void:
 	var runtime: WyrdRuntime = opened["runtime"]
 	var report := runtime.load_state(data)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(_Load.codes(report), _Load.manifest_warning(_Load.pack_hash(data), WyrdRng.format_u64(runtime.content().manifest_hash)))
 	assert_eq(runtime.ai.cache_size(), 2)
 	for row in listed:
 		assert_eq(runtime.ai.cached_text(str(row["k"])), str(row["t"]))

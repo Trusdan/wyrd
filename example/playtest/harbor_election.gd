@@ -1,3 +1,4 @@
+# [EXAMPLE CONTENT] Gullhaven election adapter. An invented fishing village, not a host game.
 extends WyrdElectionAdapter
 
 ## Gullhaven records an election and does not pick the reeve.

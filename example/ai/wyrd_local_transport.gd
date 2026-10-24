@@ -1,3 +1,4 @@
+# [EXAMPLE CONTENT] Reference local AI transport. An invented fishing village, not a host game.
 extends Node
 
 ## One HTTPRequest per open call. The provider cannot own scene-tree nodes.

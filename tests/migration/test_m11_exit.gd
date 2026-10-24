@@ -9,7 +9,7 @@ const _Inventory := preload("res://tests/determinism/replay_inventory.gd")
 const _M10 := preload("res://tests/scenario/m10_gullhaven.gd")
 const _Fuzz := preload("res://tests/migration/test_load_fuzz.gd")
 
-const _CURRENT_HASH := "f003b6b54c91ad8e"
+const _CURRENT_HASH := "918b2aad2be7d4fa"
 const _HARBOR_OLD := "res://tests/migration/packs/harbor_old.wyrdmanifest.tres"
 const _HARBOR_NEW := "res://tests/migration/packs/harbor_new.wyrdmanifest.tres"
 const _STAGE_OLD := "res://tests/migration/packs/stage_old.wyrdmanifest.tres"

@@ -1,6 +1,7 @@
 extends GutTest
 
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
+const _Load := preload("res://tests/migration/fixture_load.gd")
 
 var _unlocked: Array = []
 var _locked: Array = []
@@ -267,7 +268,7 @@ func test_schema_2_fixture_still_loads() -> void:
 	var runtime: WyrdRuntime = opened["runtime"]
 	var report := runtime.load_state(parsed)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(_Load.codes(report), _Load.manifest_warning(_Load.pack_hash(parsed), WyrdRng.format_u64(runtime.content().manifest_hash)))
 	assert_eq(runtime.topics.unlocked(), PackedStringArray())
 
 

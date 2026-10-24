@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Example:** Gullhaven adds the secret role `smugglers_contact` and a `hostile` guild variant. `example/versions/gullhaven_next/` renames one ferry stage with `was:`. A coverage test lists the 1.0 features. The playtest gains a route list, a load-report panel, a journal grouped by quest, and Tell secret.
+- **Docs:** `docs/tutorial.md` walks the ferry quest in the playtest.
 - **Docs:** a docs site built from `docs/` for GitHub Pages, with a quick start, adapter guide, cookbook and design rationale. A workflow builds it and checks its links on every pull request.
 - **Docs:** `docs/api/`, an API reference generated from the `##` doc comments by `tools/gen_api_docs.sh`, with Stable and Experimental marks. CI checks that it is current.
 - **Docs:** `docs/language.md`, the language 1 reference, replaces the grammar and draft files, which now point to it.

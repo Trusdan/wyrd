@@ -1,3 +1,4 @@
+# [EXAMPLE CONTENT] Reference local AI prompts. An invented fishing village, not a host game.
 extends RefCounted
 
 ## Fixed prompts for the reference local provider. Prompt version 1.

@@ -16,6 +16,10 @@ quest harbor_guild "The Harbor Guild"
     variant factor.unwilling(harbor.factor_refuses):
       journal: The factor will not sign. #line:j_guild_unwilling
       waits_until false
+    variant factor.hostile:
+      journal: The factor turns you away at the door. #line:j_guild_hostile
+      ~ outcome petition = failed
+      waits_until false
     variant factor.empty:
       journal: The factor's chair is empty. #line:j_guild_empty
       waits_until false
