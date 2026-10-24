@@ -43,11 +43,15 @@ func test_result_type_and_calls_stay_in_the_ai_boundary() -> void:
 		for rel in call_hits:
 			assert_false(rel.begins_with(prefix + "/") or rel == prefix, rel)
 	assert_eq(_sites("ai.present("), [
-		"runtime/scenes/wyrd_scene_runner.gd:537",
-		"runtime/wyrd_runtime.gd:2912",
+		"runtime/scenes/wyrd_scene_runner.gd|_show_line_body|runtime.ai.present(view, view.id)",
+		"runtime/wyrd_runtime.gd|_story_line_view|ai.present(view, view.id)",
 	])
-	assert_eq(_sites("ai.summary_for("), ["runtime/quests/wyrd_quest_runner.gd:354"])
-	assert_eq(_sites("ai.cached_text("), ["runtime/quests/wyrd_quest_runner.gd:367"])
+	assert_eq(_sites("ai.summary_for("), [
+		"runtime/quests/wyrd_quest_runner.gd|summary|return runtime.ai.summary_for(quest_id, entries)",
+	])
+	assert_eq(_sites("ai.cached_text("), [
+		"runtime/quests/wyrd_quest_runner.gd|summary_source|if runtime.ai.cached_text(key).is_empty():",
+	])
 
 
 func test_a_fact_value_in_ai_text_does_not_write_gameplay() -> void:
@@ -92,10 +96,31 @@ func _sites(needle: String) -> Array:
 			continue
 		var lines := FileAccess.get_file_as_string(path).split("\n")
 		for index in lines.size():
-			if String(lines[index]).contains(needle):
-				found.append("%s:%d" % [rel, index + 1])
+			var statement := String(lines[index]).strip_edges()
+			if statement.contains(needle):
+				found.append("%s|%s|%s" % [rel, _enclosing_func(lines, index), statement])
 	found.sort()
 	return found
+
+
+func _enclosing_func(lines: PackedStringArray, index: int) -> String:
+	for cursor in range(index, -1, -1):
+		var line := String(lines[cursor])
+		var rest := ""
+		if line.begins_with("static func "):
+			rest = line.substr(12)
+		elif line.begins_with("func "):
+			rest = line.substr(5)
+		else:
+			continue
+		var name := ""
+		for ch_index in rest.length():
+			var ch := rest.substr(ch_index, 1)
+			if ch == "(" or ch == ":" or ch == " " or ch == "\t":
+				break
+			name += ch
+		return name
+	return ""
 
 
 func _files(root: String) -> PackedStringArray:
