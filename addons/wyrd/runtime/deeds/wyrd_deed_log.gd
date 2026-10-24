@@ -225,9 +225,10 @@ func generation() -> int:
 ## @experimental
 func import_state(data: Dictionary) -> void:
 	clear()
+	var width := _bucket()
 	for item in data.get("rows", []):
 		if item is Dictionary:
-			_append_stored(item)
+			_append_stored(item, width)
 	var next := WyrdSave._whole(data.get("next", 1), 1)
 	_next = next if next > 0 else 1
 
@@ -251,8 +252,9 @@ func compact() -> int:
 		var rows: Array = plan["rows"]
 		clear()
 		_next = next if next > 0 else 1
+		var width := _bucket()
 		for row in rows:
-			_append_stored(row)
+			_append_stored(row, width)
 	var after := size()
 	if on_compact.is_valid():
 		on_compact.call({"after": after, "before": before, "dropped": dropped, "merged": merged})
@@ -305,39 +307,117 @@ func _export_row(index: int) -> Dictionary:
 	return row
 
 
-func _append_stored(row: Dictionary) -> void:
-	var tags := _packed(row.get("tags", []))
-	var witnesses := _packed(row.get("witnesses", []))
-	var perception := _align_modes(witnesses, _packed(row.get("perception", [])))
+func _append_stored(row: Dictionary, bucket_width: int) -> void:
+	var tags := _stored_texts(row.get("tags", []))
+	var witnesses := _stored_texts(row.get("witnesses", []))
+	var perception := _align_modes(witnesses, _stored_texts(row.get("perception", [])))
 	var index := _id.size()
-	_id.append(WyrdSave._whole(row.get("id", 0), 0))
-	_t.append(WyrdSave._whole(row.get("t", 0), 0))
-	_verb.append(WyrdSave.text_of(row.get("verb", ""), ""))
-	_actor.append(WyrdSave.text_of(row.get("actor", ""), ""))
-	_target.append(WyrdSave.text_of(row.get("target", ""), ""))
-	_place.append(WyrdSave.text_of(row.get("place", ""), ""))
-	_magnitude.append(WyrdSave.number_of(row.get("magnitude", 1.0), 1.0))
-	_visibility.append(WyrdSave.text_of(row.get("visibility", "public"), "public"))
-	_memorable.append(1 if WyrdSave.flag_of(row.get("memorable", false), false) else 0)
+	var id := _stored_whole(row.get("id", 0), 0)
+	var minute := _stored_whole(row.get("t", 0), 0)
+	var verb := _stored_text(row.get("verb", ""), "")
+	var actor := _stored_text(row.get("actor", ""), "")
+	var target := _stored_text(row.get("target", ""), "")
+	_id.append(id)
+	_t.append(minute)
+	_verb.append(verb)
+	_actor.append(actor)
+	_target.append(target)
+	_place.append(_stored_text(row.get("place", ""), ""))
+	_magnitude.append(_stored_number(row.get("magnitude", 1.0), 1.0))
+	_visibility.append(_stored_text(row.get("visibility", "public"), "public"))
+	_memorable.append(1 if _stored_flag(row.get("memorable", false), false) else 0)
 	_tag_at.append(_tags.size())
 	_tag_n.append(tags.size())
 	for tag in tags:
 		_tags.append(tag)
-	_wit_at.append(_witnesses.size())
+	var wit_at := _witnesses.size()
+	_wit_at.append(wit_at)
 	_wit_n.append(witnesses.size())
 	for i in witnesses.size():
 		_witnesses.append(witnesses[i])
 		_modes.append(perception[i])
-	_index(_by_actor, StringName(_actor[index]), index)
-	_index(_by_target, StringName(_target[index]), index)
-	_index(_by_verb, StringName(_verb[index]), index)
-	_row_of[int(_id[index])] = index
-	_index_witnesses(index)
+	_index_text(_by_actor, actor, index)
+	_index_text(_by_target, target, index)
+	_index_text(_by_verb, verb, index)
+	_row_of[id] = index
+	for offset in witnesses.size():
+		_index_text(_by_witness, witnesses[offset], index)
 	_pairs_dirty = true
-	_note_time(index)
+	if bucket_width != _time_width:
+		_time_width = bucket_width
+		_by_time.clear()
+		for i in size():
+			_push_width(i, bucket_width)
+	else:
+		var bucket := minute if bucket_width <= 0 else int(minute / float(bucket_width)) * bucket_width
+		var timed := PackedInt32Array()
+		if _by_time.has(bucket):
+			timed = _by_time[bucket]
+		timed.append(index)
+		_by_time[bucket] = timed
 	for item in row.get("believers", []):
 		if item is Dictionary:
-			note_believer(int(_id[index]), StringName(str(item.get("who", ""))), WyrdSave._whole(item.get("t", 0), 0))
+			note_believer(id, StringName(str(item.get("who", ""))), _stored_whole(item.get("t", 0), 0))
+
+
+func _stored_text(value: Variant, fallback: String) -> String:
+	if value is String:
+		return value
+	if value is StringName:
+		return String(value)
+	return WyrdSave.text_of(value, fallback)
+
+
+func _stored_whole(value: Variant, fallback: int) -> int:
+	var kind := typeof(value)
+	if kind == TYPE_INT or kind == TYPE_FLOAT:
+		return int(value)
+	return fallback
+
+
+func _stored_number(value: Variant, fallback: float) -> float:
+	var kind := typeof(value)
+	if kind == TYPE_INT or kind == TYPE_FLOAT:
+		return float(value)
+	return fallback
+
+
+func _stored_flag(value: Variant, fallback: bool) -> bool:
+	if typeof(value) == TYPE_BOOL:
+		return value
+	return fallback
+
+
+func _stored_texts(value: Variant) -> PackedStringArray:
+	if value is PackedStringArray:
+		return value
+	var rows := PackedStringArray()
+	if value is Array:
+		var items: Array = value
+		rows.resize(items.size())
+		for i in items.size():
+			rows[i] = _stored_text(items[i], "")
+	return rows
+
+
+func _index_text(table: Dictionary, key: String, row: int) -> void:
+	if key.is_empty():
+		return
+	var rows := PackedInt32Array()
+	if table.has(key):
+		rows = table[key]
+	rows.append(row)
+	table[key] = rows
+
+
+func _push_width(index: int, width: int) -> void:
+	var minute := int(_t[index])
+	var bucket := minute if width <= 0 else int(minute / float(width)) * width
+	var rows := PackedInt32Array()
+	if _by_time.has(bucket):
+		rows = _by_time[bucket]
+	rows.append(index)
+	_by_time[bucket] = rows
 
 
 func _compact_plan() -> Dictionary:

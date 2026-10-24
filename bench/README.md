@@ -78,3 +78,16 @@ Full profile, 7 samples, `--mode warn`, one machine (Intel Xeon, 4 cores, Linux 
 Found, not fixed. On a 50,000-deed save, `check_shape` is still about 242 ms after the deed path (about 914 ms before), and `check` still deep-copies the save once (about 184 ms). That is the gap that remains against the `v0.8.0-m10` `load.time` median of 0.950 s from the reference job. With AI and the generator idle, `ai.tick_prefetch` is about 3 µs and `_apply_generations` about 1 µs. `reputation.cold` and `director.why_not` did not reproduce the hosted trend: cold was −3.6% against `v0.6.4-m3` and +1.6% against `v0.8.0-m10`; why-not was +3.3% and +5.1%.
 
 One smoke run of every metric, 3 samples, same base: `load.time` −46%, `tick.recheck` p95 −27%. Other medians stayed within about 12%. `deeds_known_to` median +12% with a faster p95, checksum unchanged. `perceive.credibility` warns on its budget and was slightly faster.
+
+## M12 load-time pass
+
+Full profile, 7 samples, `--mode warn`, one machine (Intel Xeon, 4 cores, Linux 6.12.94+, Godot 4.7.2). The base is `8deec7e`. Checksums matched the base on every metric below. Base and head samples alternated, and that comparison was run twice.
+
+- Load, first run: `load.time` median 1.142 s → 0.891 s, `load.flight` 1.294 s → 1.027 s, `load.generated` 1.321 s → 1.080 s.
+- Load, second run: `load.time` median 1.175 s → 0.922 s, `load.flight` 1.244 s → 0.957 s, `load.generated` 1.367 s → 1.113 s.
+- A current-schema save shares deed-row dictionaries. On a 50,000-deed save that copy went from about 147 ms to about 6–8 ms. An older schema is still copied in full. The deed import reads the time-bucket width once. That import went from about 570–630 ms to about 470–550 ms. Rows, indexes and buckets stay the same.
+- A key-to-kind table for the deed shape check measured about 320 ms against about 230 ms for the existing walk, so the walk stayed.
+
+Found, not fixed. On a 50,000-deed save, `check_shape` is still about 240–260 ms. After `check` and the deed import, the rest of `load_state` is about 0–13 ms, so the quest, role and flight blocks were left as they are.
+
+One smoke run of every metric, 3 samples, same base: `load.time` −20%, `load.flight` −20%, `load.generated` −16%. `tick.recheck` median −16%, checksum unchanged. Other medians stayed within about 8%. `perceive.credibility` warns on its budget and moved +0.7%.
