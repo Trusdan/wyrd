@@ -7,10 +7,12 @@ const _ROOT_PAGES: PackedStringArray = [
 	"res://docs/index.md",
 	"res://docs/adapters.md",
 	"res://docs/rationale.md",
+	"res://docs/tutorial.md",
 ]
 
 const _INDEX_LINKS: PackedStringArray = [
 	"language.md",
+	"tutorial.md",
 	"api/index.md",
 	"adapters.md",
 	"host-checklist.md",

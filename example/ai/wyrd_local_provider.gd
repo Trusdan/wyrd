@@ -1,3 +1,4 @@
+# [EXAMPLE CONTENT] Reference local AI provider. An invented fishing village, not a host game.
 extends WyrdAIProvider
 
 ## Reference provider for an OpenAI-compatible server on this machine.

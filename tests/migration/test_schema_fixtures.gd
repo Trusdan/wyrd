@@ -5,7 +5,7 @@ extends GutTest
 
 const _Load := preload("res://tests/migration/fixture_load.gd")
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
-const _CURRENT_HASH := "f003b6b54c91ad8e"
+const _CURRENT_HASH := "918b2aad2be7d4fa"
 
 
 func test_schema_1_fixture_loads_and_round_trips() -> void:

@@ -2,6 +2,7 @@ extends GutTest
 
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 const _ROLE := """
 role ferry_master
@@ -267,6 +268,7 @@ func _harbor() -> WyrdRuntime:
 	var report := runtime.load_content(manifest)
 	assert_true(report.ok, report.diagnostics.format())
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(5)
 	return runtime
 

@@ -15,6 +15,17 @@ const _PANELS: PackedStringArray = [
 	"FactScroll",
 	"Continue",
 	"Events",
+	"Routes",
+	"LoadReport",
+]
+
+const _WALK_CONTROLS: PackedStringArray = [
+	"Continue",
+	"Controls",
+	"RouteList",
+	"Start route",
+	"Tell secret",
+	"Load in next version",
 ]
 
 
@@ -78,7 +89,9 @@ func test_quest_panel_labels_title_and_stage() -> void:
 	assert_eq(ui.quest_stage(), "pay_toll")
 	var journal := ui.find_child("JournalList", true, false) as ItemList
 	assert_not_null(journal)
-	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(journal.is_item_selectable(0))
+	assert_eq(journal.get_item_text(1), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 	assert_true(lines.has("slot tavern — tavern owner — innkeeper — default"), "\n".join(lines))
 	assert_true(lines.has("slot ferry — ferry master — Bram — default"), "\n".join(lines))
 	assert_true(lines.has("slot lookout — storm watcher — Nia — default"), "\n".join(lines))
@@ -95,7 +108,9 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	assert_true(successor_lines.has("slot ferry — ferry master — Nia — successor"), "\n".join(successor_lines))
 	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
 	assert_not_null(successor_journal)
-	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(successor_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(successor_journal.is_item_selectable(0))
+	assert_eq(successor_journal.get_item_text(1), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
 	var empty := _spawn()
 	_set_toggle(empty, "ferry_alive", false)
 	_press(empty, "New game")
@@ -104,7 +119,9 @@ func test_slot_row_shows_a_named_successor_or_an_empty_slot() -> void:
 	assert_true(empty_lines.has("slot ferry — ferry master — none — empty"), "\n".join(empty_lines))
 	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
 	assert_not_null(empty_journal)
-	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	assert_eq(empty_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(empty_journal.is_item_selectable(0))
+	assert_eq(empty_journal.get_item_text(1), "day 1, 00:00  The dock is empty, so the crossing waits.")
 	await wait_process_frames(1)
 
 
@@ -212,7 +229,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var rest := _read_lines(bram)
 	assert_eq(_line_named(rest, "Two coins, and the boat will cross."), "Bram")
 	var journal := bram.find_child("JournalList", true, false) as ItemList
-	assert_eq(journal.get_item_text(0), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(journal.is_item_selectable(0))
+	assert_eq(journal.get_item_text(1), "day 1, 00:00  Bram, the ferry master, at the dock wants 2 coins before the crossing.")
 	_assert_no_missing_holder(opening)
 	_assert_no_missing_holder(rest)
 	var successor := _spawn()
@@ -227,7 +246,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var successor_rest := _read_lines(successor)
 	assert_eq(_line_named(successor_rest, "Two coins, and the boat will cross."), "Nia")
 	var successor_journal := successor.find_child("JournalList", true, false) as ItemList
-	assert_eq(successor_journal.get_item_text(0), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
+	assert_eq(successor_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(successor_journal.is_item_selectable(0))
+	assert_eq(successor_journal.get_item_text(1), "day 1, 00:00  Nia, the ferry master, at the dock wants 2 coins before the crossing.")
 	_assert_no_missing_holder(successor_opening)
 	_assert_no_missing_holder(successor_rest)
 	var empty := _spawn()
@@ -241,7 +262,9 @@ func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	assert_false(_has_text(empty_rest, "Bram, the ferry master, is on the dock."))
 	assert_false(_has_text(empty_rest, "Nia, the ferry master, is on the dock."))
 	var empty_journal := empty.find_child("JournalList", true, false) as ItemList
-	assert_eq(empty_journal.get_item_text(0), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	assert_eq(empty_journal.get_item_text(0), "The Ferry Toll — active")
+	assert_false(empty_journal.is_item_selectable(0))
+	assert_eq(empty_journal.get_item_text(1), "day 1, 00:00  The dock is empty, so the crossing waits.")
 	var empty_facts := empty.find_child("FactList", true, false) as ItemList
 	var empty_fact_lines := PackedStringArray()
 	for i in empty_facts.item_count:
@@ -266,7 +289,7 @@ func test_panels_fit_at_1280_and_1920() -> void:
 	var saved_size := window.size
 	var saved_mode := window.content_scale_mode
 	window.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
-	var sizes: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1920, 1080)]
+	var sizes: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080)]
 	for size in sizes:
 		window.size = size
 		var ui := _spawn_on(window)
@@ -318,6 +341,13 @@ func _press(ui: Node, title: String) -> void:
 	var button := _button_with_text(ui, title)
 	assert_not_null(button, title)
 	button.pressed.emit()
+
+
+func _control_named(ui: Node, label: String) -> Control:
+	var by_name := ui.find_child(label, true, false) as Control
+	if by_name != null:
+		return by_name
+	return _button_with_text(ui, label)
 
 
 func _button_with_text(ui: Node, title: String) -> Button:
@@ -441,6 +471,27 @@ func _assert_layout(ui: Control, size: Vector2i, phase: String) -> void:
 		assert_gt(rect.size.x, 1.0, "%s %s width" % [where, node_name])
 		assert_gt(rect.size.y, 1.0, "%s %s height" % [where, node_name])
 		assert_true(viewport.grow(1.0).encloses(rect), "%s %s %s outside %s" % [where, node_name, rect, viewport])
+	for label in _WALK_CONTROLS:
+		var control := _control_named(ui, label)
+		assert_not_null(control, "%s %s" % [where, label])
+		var control_rect := control.get_global_rect()
+		assert_gt(control_rect.size.x, 1.0, "%s %s width" % [where, label])
+		assert_gt(control_rect.size.y, 1.0, "%s %s height" % [where, label])
+		assert_true(viewport.grow(1.0).encloses(control_rect), "%s %s %s outside %s" % [where, label, control_rect, viewport])
+	if phase == "choices":
+		var choices := ui.find_child("Choices", true, false) as VBoxContainer
+		assert_not_null(choices, where)
+		var choice_count := 0
+		for child in choices.get_children():
+			var choice := child as Button
+			if choice == null or not choice.is_visible_in_tree():
+				continue
+			choice_count += 1
+			var choice_rect := choice.get_global_rect()
+			assert_gt(choice_rect.size.x, 1.0, "%s choice '%s' width" % [where, choice.text])
+			assert_gt(choice_rect.size.y, 1.0, "%s choice '%s' height" % [where, choice.text])
+			assert_true(viewport.grow(1.0).encloses(choice_rect), "%s choice '%s' %s outside %s" % [where, choice.text, choice_rect, viewport])
+		assert_gt(choice_count, 0, "%s choices" % where)
 	for node in ui.find_children("*", "Button", true, false):
 		var button := node as Button
 		if button == null or not button.is_visible_in_tree():

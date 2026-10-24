@@ -1,3 +1,4 @@
+# [EXAMPLE CONTENT] Gullhaven playtest. An invented fishing village, not a host game.
 extends Control
 
 ## Playable Gullhaven slice. No art. Text stays on screen with or without voice.
@@ -6,6 +7,7 @@ extends Control
 ## The host is the scripted fake host. F5 runs this scene.
 
 const _MANIFEST := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
+const _NEXT_MANIFEST := "res://example/versions/gullhaven_next/harbor_next.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
 const _LocalProvider := preload("res://example/ai/wyrd_local_provider.gd")
 const _LocalTransport := preload("res://example/ai/wyrd_local_transport.gd")
@@ -14,6 +16,104 @@ const _FERRY_NAME := "Bram"
 const _SUCCESSOR_NAME := "Nia"
 const _QUEST_ID := "ferry_toll"
 const _CHANGED_BG := Color(0.62, 0.42, 0.1)
+const _ROUTE_DEFAULTS := {
+	"ai_local": false,
+	"apprentice": false,
+	"ferry_alive": true,
+	"local": false,
+	"lodging": true,
+	"notice": true,
+	"short": false,
+	"storm": false,
+	"voice": false,
+	"watch_alive": false,
+}
+const _ROUTES: Array[Dictionary] = [
+	{
+		"id": "defaults",
+		"label": "Defaults",
+		"flags": {},
+		"hint": "Innkeeper room line, Nia on \"The headland bell rang twice before the rain.\" and \"Bram, the ferry master, is on the dock.\", bell, then Take the room, then the dock lines spoken by Bram. Coins go from 4 to 2. Journal day 1, 00:00. Advance time moves the stage to cross and finishes the quest after the dock lines.",
+	},
+	{
+		"id": "local",
+		"label": "Local tag",
+		"flags": {"local": true},
+		"hint": "A second choice appears: \"I have a place in town\". Press it. Coins stay 4. The dock lines still play. The stage is still pay_toll and the journal still appears.",
+	},
+	{
+		"id": "lodging",
+		"label": "Lodging available",
+		"flags": {"lodging": false},
+		"hint": "After Take the room the innkeeper says \"No room left tonight.\" and \"The board lists the price as {two coins}}\". The second line really does show a single { and an extra }. Coins stay 4. The stage is pay_toll.",
+	},
+	{
+		"id": "notice",
+		"label": "Notice succeeds",
+		"flags": {"notice": false},
+		"hint": "The room conversation plays as in section 5, then the tavern conversation is offered again and the stage is gossip. The journal already has Bram's toll line.",
+	},
+	{
+		"id": "ferry-gone",
+		"label": "Ferry master gone",
+		"flags": {"ferry_alive": false},
+		"hint": "Nia says \"The dock is empty.\" You do not see a line with {?holder(ferry).name}. Take the room. The journal says \"The dock is empty, so the crossing waits.\" dated day 1, 00:00. The stage returns to gossip and then waits with no new scene. The ferry slot row is slot ferry — ferry master — none — empty.",
+	},
+	{
+		"id": "successor",
+		"label": "Successor",
+		"flags": {"apprentice": true, "ferry_alive": false},
+		"hint": "The successor is Nia, a different person from Bram. Nia also speaks the lookout line \"Nia, the ferry master, is on the dock.\" The journal says \"Nia, the ferry master, at the dock wants 2 coins before the crossing.\" The ferry slot row is slot ferry — ferry master — Nia — successor. Advance time reaches cross.",
+	},
+	{
+		"id": "storm",
+		"label": "Season storm",
+		"flags": {"storm": true},
+		"hint": "An extra line appears before the bell: narrator, \"The season smells like rain.\"",
+	},
+	{
+		"id": "abort",
+		"label": "Abort scene",
+		"flags": {},
+		"hint": "This step comes later. Abort scene while the first lines are up. The conversation stops. The status says you can save. The stage stays gossip and the tavern scene is offered again. The last line stays visible.",
+	},
+	{
+		"id": "short",
+		"label": "Short on coins",
+		"flags": {"short": true},
+		"hint": "\"Take the room (short on coins)\" is grey and cannot be pressed.",
+	},
+	{
+		"id": "watch",
+		"label": "Watch alive",
+		"flags": {"watch_alive": true},
+		"hint": "This step comes later. Press Emit alive while the innkeeper line is up. The conversation stays on that line. Continue then shows narrator: \"The ferry master is gone.\"",
+	},
+	{
+		"id": "batch",
+		"label": "Batch world",
+		"flags": {},
+		"hint": "This step comes later. Press Batch world after New game. The events line shows season_changed and mechanism_state, then flush 1. The journal gains \"The harbor bell was struck.\"",
+	},
+	{
+		"id": "bell",
+		"label": "Strike bell",
+		"flags": {},
+		"hint": "This step comes later. Press Strike bell after New game, then Strike bell again. The journal says \"The harbor bell was struck.\" harbor.bell_count is 1 and stays 1 the second time. The innkeeper line stays up.",
+	},
+	{
+		"id": "secret",
+		"label": "Tell secret",
+		"flags": {},
+		"hint": "Press Tell secret. Before it, the quest summary says secret role smugglers_contact — holder hidden. After it, the row names the holder and ends with (told). Save and Load keep the tell.",
+	},
+	{
+		"id": "next",
+		"label": "Next version",
+		"flags": {},
+		"hint": "Play until the journal appears and Continue is disabled. Press Save, then Load in next version. The status says Next version: ferry stage renamed pay_toll → toll_due. The load report lists the pay_toll to toll_due rows.",
+	},
+]
 
 var _runtime: WyrdRuntime
 
@@ -33,7 +133,14 @@ var _continue: Button
 var _choices: VBoxContainer
 var _journal: ItemList
 var _facts: ItemList
+var _load_list: ItemList
 var _summary: Label
+var _route_list: OptionButton
+var _route_hint: Label
+var _pack_path := _MANIFEST
+var _saw_load := false
+var _load_rows: Array = []
+var _boot_diag_count := 0
 var _fact_filter: LineEdit
 var _events: Label
 var _fact_rows: Array[Dictionary] = []
@@ -59,22 +166,7 @@ var _flags := {
 
 func _ready() -> void:
 	_build()
-	_runtime = WyrdRuntime.new()
-	_host = WyrdFakeHost.new()
-	_host.register_into(_runtime)
-	# harbor_reeve is an election. New game errors without an adapter.
-	_runtime.register_adapter(WyrdElectionAdapter, _Election.new())
-	_dlg().register_line_audio(Callable(self, &"_line_audio"))
-	_runtime.facts.subscribe(&"")
-	_runtime.facts.fact_changed.connect(func(_key: StringName, _old_value: Variant, _new_value: Variant) -> void: _refresh())
-	_dlg().line_ready.connect(_on_line)
-	_dlg().choices_ready.connect(func(_rows: Array[WyrdChoiceView]) -> void: _refresh())
-	_dlg().scene_ended.connect(func(_id: String, _status: StringName, _reason: StringName) -> void: _refresh())
-	_runtime.quests.journal_entry_added.connect(func(_quest: String, _id: String, _text: String) -> void: _refresh())
-	var report := _runtime.load_content(load(_MANIFEST) as WyrdContentManifest)
-	_boot = "" if report.ok else report.diagnostics.format()
-	if _boot.is_empty():
-		_register_harbor_whisper()
+	_boot_pack(_MANIFEST)
 	_status.text = "Press New game." if _boot.is_empty() else _boot
 
 
@@ -82,7 +174,44 @@ func boot_error() -> String:
 	return _boot
 
 
+func _boot_pack(path: String) -> void:
+	_pack_path = path
+	_runtime = WyrdRuntime.new()
+	_host = WyrdFakeHost.new()
+	_host.register_into(_runtime)
+	# harbor_reeve is an election. New game errors without an adapter.
+	_runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	# smugglers_contact uses host_decides. New game errors without a callback.
+	_runtime.roles.set_host_decides(func(_role: StringName, _departed: StringName) -> void:
+		pass
+	)
+	_dlg().register_line_audio(Callable(self, &"_line_audio"))
+	_runtime.facts.subscribe(&"")
+	_runtime.facts.fact_changed.connect(func(_key: StringName, _old_value: Variant, _new_value: Variant) -> void: _refresh())
+	_dlg().line_ready.connect(_on_line)
+	_dlg().choices_ready.connect(func(_rows: Array[WyrdChoiceView]) -> void: _refresh())
+	_dlg().scene_ended.connect(func(_id: String, _status: StringName, _reason: StringName) -> void: _refresh())
+	_runtime.quests.journal_entry_added.connect(func(_quest: String, _id: String, _text: String) -> void: _refresh())
+	_runtime.load_report_ready.connect(_on_load_report)
+	var report := _runtime.load_content(load(path) as WyrdContentManifest)
+	_boot = "" if report.ok else report.diagnostics.format()
+	_boot_diag_count = report.diagnostics.items.size()
+	_saw_load = false
+	_load_rows = []
+	if _boot.is_empty():
+		_register_harbor_whisper()
+	_paint_load_report()
+
+
+func _on_load_report(report: WyrdLoadReport) -> void:
+	_saw_load = true
+	_load_rows = report.rows.duplicate(true)
+	_paint_load_report()
+
+
 func new_game(seed_value: int) -> void:
+	if _pack_path != _MANIFEST:
+		_boot_pack(_MANIFEST)
 	if not _boot.is_empty():
 		return
 	_begin_step()
@@ -293,8 +422,41 @@ func load_game() -> bool:
 	return true
 
 
+func load_next_version() -> bool:
+	if _slot.is_empty():
+		_status.text = "Save first."
+		return false
+	_begin_step()
+	_boot_pack(_NEXT_MANIFEST)
+	if not _boot.is_empty():
+		_status.text = _boot
+		_end_step()
+		return false
+	_place_entities()
+	var report := _runtime.load_state(_slot)
+	_started = report.ok
+	_open_offered()
+	if report.ok:
+		_status.text = "Next version: ferry stage renamed pay_toll → toll_due."
+	else:
+		_status.text = report.diagnostics.format()
+	_refresh()
+	_end_step()
+	return report.ok
+
+
+func tell_secret() -> void:
+	if _runtime == null or not _boot.is_empty():
+		return
+	_runtime.roles.tell(&"smugglers_contact", &"player")
+	_status.text = "Told the player who holds smugglers_contact."
+	_refresh()
+
+
 func reset_play() -> void:
 	_begin_step()
+	if _pack_path != _MANIFEST:
+		_boot_pack(_MANIFEST)
 	_slot.clear()
 	if FileAccess.file_exists(_SAVE_PATH):
 		DirAccess.remove_absolute(_SAVE_PATH)
@@ -436,9 +598,7 @@ func _refresh() -> void:
 		# bind copies the index. A loop lambda would share the last value.
 		button.pressed.connect(_choose_pressed.bind(button, index))
 		_choices.add_child(button)
-	_journal.clear()
-	for entry in _journal_records():
-		_journal.add_item("%s  %s" % [String(entry["date"]), String(entry["text"])])
+	_fill_journal_list()
 	if _events != null:
 		_events.text = _events_text()
 	_paint_inspector()
@@ -459,6 +619,7 @@ func inspector_state() -> Dictionary:
 		"outcomes": {"crossing": _shown(_runtime.quests.outcome(_QUEST_ID, "crossing"))},
 		"slots": _slot_records(),
 		"journal": _journal_records(),
+		"load_report": _load_rows.duplicate(true),
 	}
 
 
@@ -467,6 +628,7 @@ func _paint_inspector() -> void:
 		return
 	var state := inspector_state()
 	_summary.text = _summary_text(state)
+	_paint_load_report()
 	_fact_rows.clear()
 	var facts: Dictionary = state["facts"]
 	for key in facts.keys():
@@ -500,6 +662,7 @@ func _summary_text(state: Dictionary) -> String:
 	for item in slots:
 		var slot := item as Dictionary
 		lines.append("slot %s — %s — %s — %s" % [String(slot["name"]), String(slot["role"]), String(slot["holder"]), String(slot["state"])])
+	lines.append(_secret_row())
 	return "\n".join(lines)
 
 
@@ -587,6 +750,95 @@ func _journal_records() -> Array:
 			continue
 		_append_journal(rows, String(quest_id))
 	return rows
+
+
+func _fill_journal_list() -> void:
+	if _journal == null or _runtime == null:
+		return
+	_journal.clear()
+	var content := _runtime.content()
+	if content == null:
+		return
+	var ids: Array = []
+	ids.append(_QUEST_ID)
+	var rest: Array = content.quests.keys()
+	rest.sort()
+	for quest_id in rest:
+		if String(quest_id) == _QUEST_ID:
+			continue
+		ids.append(String(quest_id))
+	for quest_id in ids:
+		var entries: Array = _runtime.quests.journal(String(quest_id))
+		if entries.is_empty():
+			continue
+		var header := "%s — %s" % [_quest_title(String(quest_id)), _shown(String(_runtime.quests.status(String(quest_id))))]
+		_journal.add_item(header)
+		_journal.set_item_selectable(_journal.item_count - 1, false)
+		for entry in entries:
+			_journal.add_item("%s  %s" % [String(entry["date"]), String(entry["text"])])
+
+
+func _quest_title(quest_id: String) -> String:
+	var content := _runtime.content()
+	if content == null:
+		return quest_id
+	var quest := content.quests.get(quest_id) as WyrdQuestDef
+	if quest != null and not quest.title.is_empty():
+		return quest.title
+	return quest_id
+
+
+func _secret_row() -> String:
+	if _runtime == null or not _boot.is_empty():
+		return "secret role smugglers_contact — holder hidden"
+	var told := _runtime.roles.revealed(&"player", &"role.smugglers_contact.holder")
+	if not told:
+		return "secret role smugglers_contact — holder hidden"
+	var holder := _runtime.roles.holder(&"smugglers_contact")
+	var holder_name := "none"
+	if holder != &"":
+		holder_name = _host.world.display_name(holder)
+		if holder_name.is_empty():
+			holder_name = String(holder)
+	return "secret role smugglers_contact — %s (told)" % holder_name
+
+
+func _paint_load_report() -> void:
+	if _load_list == null:
+		return
+	_load_list.clear()
+	if not _saw_load:
+		if _boot.is_empty():
+			_load_list.add_item("Content loaded.")
+		else:
+			_load_list.add_item("%d diagnostics" % _boot_diag_count)
+		return
+	if _load_rows.is_empty():
+		_load_list.add_item("No changes.")
+		return
+	for row in _load_rows:
+		_load_list.add_item(_format_load_row(row))
+
+
+func _format_load_row(row: Dictionary) -> String:
+	var parts := PackedStringArray()
+	var kind := String(row.get("kind", ""))
+	if not kind.is_empty():
+		parts.append(kind)
+	var id := String(row.get("id", ""))
+	if not id.is_empty():
+		parts.append(id)
+	var from_id := String(row.get("from", ""))
+	var to_id := String(row.get("to", ""))
+	if not from_id.is_empty() or not to_id.is_empty():
+		parts.append("%s → %s" % [from_id, to_id])
+	var count := int(row.get("count", 0))
+	if count != 0:
+		parts.append("×%d" % count)
+	var code := String(row.get("code", ""))
+	if not code.is_empty():
+		parts.append(code)
+	return " ".join(parts)
 
 
 func _append_journal(rows: Array, quest_id: String) -> void:
@@ -742,6 +994,7 @@ func _build() -> void:
 	root.add_child(_status)
 	root.add_child(_controls())
 	root.add_child(_world_buttons())
+	root.add_child(_routes())
 	root.add_child(_toggles())
 	_events = Label.new()
 	_events.name = "Events"
@@ -780,6 +1033,7 @@ func _controls() -> HBoxContainer:
 	row.add_child(_button("Advance time", advance_time))
 	row.add_child(_button("Save", func() -> void: save_game()))
 	row.add_child(_button("Load", func() -> void: load_game()))
+	row.add_child(_button("Load in next version", load_next_version))
 	row.add_child(_button("Reset", reset_play))
 	row.add_child(_button("Abort scene", func() -> void:
 		if _dlg().is_open():
@@ -799,7 +1053,75 @@ func _world_buttons() -> HBoxContainer:
 	row.add_child(_button("Emit alive", emit_alive))
 	row.add_child(_button("Batch world", batch_world))
 	row.add_child(_button("Strike bell", strike_bell))
+	row.add_child(_button("Tell secret", tell_secret))
 	return row
+
+
+func _routes() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "Routes"
+	row.add_theme_constant_override("separation", 8)
+	var list := OptionButton.new()
+	list.name = "RouteList"
+	list.clip_text = true
+	list.custom_minimum_size = Vector2(160, 0)
+	for route in _ROUTES:
+		list.add_item(String(route["label"]))
+	row.add_child(list)
+	_route_list = list
+	row.add_child(_button("Start route", _start_selected_route))
+	_route_hint = Label.new()
+	_route_hint.name = "RouteHint"
+	_route_hint.clip_text = true
+	_route_hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_route_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_route_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(_route_hint)
+	return row
+
+
+func _start_selected_route() -> void:
+	if _route_list == null:
+		return
+	var index := _route_list.selected
+	if index < 0 or index >= _ROUTES.size():
+		return
+	var route: Dictionary = _ROUTES[index]
+	var flags: Dictionary = route["flags"]
+	for key in _flags.keys():
+		var value := bool(_ROUTE_DEFAULTS[key])
+		if flags.has(key):
+			value = bool(flags[key])
+		set_flag(String(key), value)
+	_route_hint.text = String(route["hint"])
+	var seed_value := 1
+	if _seed.text.is_valid_int():
+		seed_value = int(_seed.text)
+	new_game(seed_value)
+
+
+func _load_panel() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.name = "LoadReport"
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 0)
+	var label := Label.new()
+	label.text = "Load report"
+	box.add_child(label)
+	var scroll := ScrollContainer.new()
+	scroll.name = "LoadReportScroll"
+	scroll.custom_minimum_size = Vector2(0, 28)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var list := ItemList.new()
+	list.name = "LoadReportList"
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	list.fixed_icon_size = Vector2i(0, 0)
+	list.custom_minimum_size = Vector2(0, 28)
+	scroll.add_child(list)
+	box.add_child(scroll)
+	_load_list = list
+	return box
 
 
 func _toggles() -> VBoxContainer:
@@ -870,11 +1192,11 @@ func _side() -> VBoxContainer:
 	column.custom_minimum_size = Vector2(320, 0)
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 4)
 	var journal_label := Label.new()
 	journal_label.text = "Journal"
 	column.add_child(journal_label)
-	column.add_child(_scroll_list("Journal", 72))
+	column.add_child(_scroll_list("Journal", 28))
 	# Quest, stage, status, outcome, waiting, and slots stay on screen.
 	# The fact list below them scrolls, and a filter can hide rows.
 	_summary = Label.new()
@@ -883,13 +1205,14 @@ func _side() -> VBoxContainer:
 	_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	column.add_child(_summary)
+	column.add_child(_load_panel())
 	_fact_filter = LineEdit.new()
 	_fact_filter.name = "FactFilter"
 	_fact_filter.placeholder_text = "Filter facts"
 	_fact_filter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_fact_filter.text_changed.connect(_on_fact_filter)
 	column.add_child(_fact_filter)
-	column.add_child(_scroll_list("Fact", 80))
+	column.add_child(_scroll_list("Fact", 32))
 	return column
 
 

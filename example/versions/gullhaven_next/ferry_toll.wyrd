@@ -1,0 +1,37 @@
+// [EXAMPLE CONTENT] Gullhaven ferry toll quest. An invented fishing village, not a host game. next version: one stage renamed with `was:`
+language 1
+
+quest ferry_toll "The Ferry Toll"
+  slot tavern  = tavern_owner mode: live
+  slot ferry   = ferry_master mode: locked_at(toll_due)
+  slot lookout = storm_watcher mode: cast(world.storm_heard)
+  on_empty: wait
+  requires: [pack.harbor]
+  start when deed_count(player, verb: arrived, place: gullhaven) > 0
+
+  stage gossip
+    scene toll.offer_room with tavern, lookout
+    -> toll_due
+
+  stage toll_due was: pay_toll
+    waits_until player.coins >= 2 and ferry.toll_coins >= 0
+    // Count the toll before the journal so the entry can show it.
+    // "the ferry master" is prose. A role has no title field.
+    ~ inc ferry.toll_coins by 2
+    journal: {holder(ferry).name}, the ferry master, at the dock wants {ferry.toll_coins} coins before the crossing. #line:j_ft_01
+    ~ inc tavern.stew_bowls by 1
+    ~ record deed paid(actor: player, target: ferry, place: gullhaven, tags: [toll], magnitude: 1, witnesses: auto, visibility: public, memorable: true)
+    ~ unlock topic storm_rumour
+    ~ do post_notice(player) on_fail -> gossip
+    variant ferry.locked_gone:
+      journal: The ferry master who took the lock is gone. #line:j_ft_gone
+      waits_until false
+    variant ferry.empty:
+      journal: The dock is empty, so the crossing waits. #line:j_ft_empty
+      -> gossip
+    -> cross when player.coins >= 2
+
+  stage cross
+    ~ set world.storm_heard = true
+    ~ outcome crossing = done
+    scene toll.depart with ferry

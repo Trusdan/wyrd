@@ -139,31 +139,36 @@ msgid "The factor will not sign."
 msgstr ""
 
 #: example/content/gullhaven/harbor_guild.wyrd:20
+msgctxt "j_guild_hostile"
+msgid "The factor turns you away at the door."
+msgstr ""
+
+#: example/content/gullhaven/harbor_guild.wyrd:24
 msgctxt "j_guild_empty"
 msgid "The factor's chair is empty."
 msgstr ""
 
-#: example/content/gullhaven/harbor_guild.wyrd:23
+#: example/content/gullhaven/harbor_guild.wyrd:27
 msgctxt "j_guild_next"
 msgid "The guild names a new factor."
 msgstr ""
 
-#: example/content/gullhaven/harbor_guild.wyrd:26
+#: example/content/gullhaven/harbor_guild.wyrd:30
 msgctxt "j_guild_levy"
 msgid "The factor reads the levy."
 msgstr ""
 
-#: example/content/gullhaven/harbor_guild.wyrd:34
+#: example/content/gullhaven/harbor_guild.wyrd:38
 msgctxt "j_guild_vote"
 msgid "The harbor votes for a reeve."
 msgstr ""
 
-#: example/content/gullhaven/harbor_guild.wyrd:37
+#: example/content/gullhaven/harbor_guild.wyrd:41
 msgctxt "j_guild_noreeve"
 msgid "No reeve sits the chair."
 msgstr ""
 
-#: example/content/gullhaven/harbor_guild.wyrd:39
+#: example/content/gullhaven/harbor_guild.wyrd:43
 msgctxt "j_guild_signed"
 msgid "The levy is signed."
 msgstr ""

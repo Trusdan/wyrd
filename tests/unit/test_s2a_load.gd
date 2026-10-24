@@ -3,6 +3,7 @@ extends GutTest
 const _Facade := preload("res://addons/wyrd/runtime/wyrd.gd")
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 
 func test_harbor_loads_and_hash_is_stable() -> void:
@@ -68,6 +69,7 @@ func test_facade_forwards_load_tick_and_facts() -> void:
 	facade.register_adapter(WyrdElectionAdapter, _Election.new())
 	var report: WyrdLoadReport = facade.load_content(load(_HARBOR) as WyrdContentManifest)
 	assert_true(report.ok, report.diagnostics.format())
+	_Harness.new().register_host_decides(facade._runtime)
 	facade.start_new_game(3)
 	facade.facts.set(&"player.coins", 4)
 	assert_eq(facade.facts.get(&"player.coins"), 4)
@@ -105,5 +107,6 @@ func _open() -> Dictionary:
 	host.register_into(runtime)
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
 	var report := runtime.load_content(load(_HARBOR) as WyrdContentManifest)
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(11)
 	return {"host": host, "report": report, "runtime": runtime}

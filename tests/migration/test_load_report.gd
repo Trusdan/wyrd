@@ -11,8 +11,9 @@ const _M10 := "res://tests/migration/fixtures/gullhaven_v0.8.0-m10.json"
 
 func test_clean_load_has_no_rows() -> void:
 	var runtime := _fresh()
+	var saved := runtime.save_state()
 	var hits := _watch(runtime)
-	var report := runtime.load_state(_Load.read(_M10))
+	var report := runtime.load_state(saved)
 	assert_true(report.ok, report.diagnostics.format())
 	assert_eq(report.rows.size(), 0)
 	assert_eq(report.diagnostics.items.size(), 0)
@@ -50,16 +51,16 @@ func test_manifest_row_names_both_hashes() -> void:
 	assert_eq(String(row["kind"]), "manifest")
 	assert_eq(String(row["code"]), "W_SAVE_MANIFEST")
 	assert_eq(String(row["from"]), "8bf113c14f107242")
-	assert_eq(String(row["to"]), "f003b6b54c91ad8e")
+	assert_eq(String(row["to"]), "918b2aad2be7d4fa")
 	assert_eq(int(row["count"]), 0)
 	assert_eq(String(row["id"]), "")
 	assert_eq(hits[0], 1)
 
 
 func test_kept_storylet_row() -> void:
-	var data := _copy(_Load.read(_M10))
-	data["storylets"] = {"unknown_story": {"seen": 1}}
 	var runtime := _fresh()
+	var data := _copy(runtime.save_state())
+	data["storylets"] = {"unknown_story": {"seen": 1}}
 	var hits := _watch(runtime)
 	var report := runtime.load_state(data)
 	assert_true(report.ok, report.diagnostics.format())
@@ -196,7 +197,7 @@ func test_missing_schema_refuses_before_import() -> void:
 
 
 func test_wrong_typed_field_refuses_before_import() -> void:
-	var data := _copy(_Load.read(_SCHEMA4))
+	var data := _fresh().save_state()
 	(data["quests"]["ferry_toll"] as Dictionary)["outcomes"] = "nope"
 	var report := _refuse(data, "quests.ferry_toll.outcomes", "")
 	assert_true(String(report.diagnostics.items[0].message).find("quests.ferry_toll.outcomes must be a dictionary") >= 0)

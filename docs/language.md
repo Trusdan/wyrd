@@ -152,7 +152,7 @@ Condition types are `bool`, `int`, `float`, `symbol`, `entity`, `duration`, `dis
 Perspectives:
 
 - `world` is the stored world value. A bare fact read such as `player.coins` reads it.
-- `known/<agent>` is what that agent knows. `knows(agent, key)` reads a role reveal or that perspective. `~ learn` writes it. `~ forget` removes it.
+- `known/<agent>` is what that agent knows. `knows(agent, key)` reads `known/<agent>`. In a `.wyrd` file a role key such as `role.<id>.holder` is not a declared fact (`E_UNKNOWN_FACT`), so content can't branch on a role reveal; the host tells an agent with `WyrdRoles.tell` and reads it with `WyrdRoles.revealed` (both Experimental). `~ learn` writes it. `~ forget` removes it.
 - `believed:` is the agent's own belief bag. `believes(agent, key)` and `belief(agent, key)` read the resolved belief, which walks this bag first.
 - `held:` is one group's bag. `held(group, key)` reads that group only. `~ declare` writes it. `~ retract` removes it.
 
@@ -168,7 +168,7 @@ A concrete stored fact may carry `recap: true` or `recap: false`. See [Effects](
 
 `m` is minutes or metres from the parameter that expects a duration or a distance. If neither is expected, the compiler reports `E_EXPR_UNIT`. `h` and `d` are always durations. A day is 1440 minutes until a calendar resource exists. Callers can pass a different `minutes_per_day`. The 10k-fact / 5k-condition benchmark records numbers only. It is not a CI gate. Conditions have no string literals. Text comparisons use symbols.
 
-`knows(agent, key)` reads a role reveal or `known/<agent>`. `believes(agent, key)` is true when the resolved belief is truthy. `belief(agent, key)` and a comparison `believes(agent, key) == v` read the value. `held(group, key)` reads that group's bag only.
+`knows(agent, key)` reads `known/<agent>`. In a `.wyrd` file a role key such as `role.<id>.holder` is not a declared fact (`E_UNKNOWN_FACT`), so content can't branch on a role reveal; the host tells an agent with `WyrdRoles.tell` and reads it with `WyrdRoles.revealed` (both Experimental). `believes(agent, key)` is true when the resolved belief is truthy. `belief(agent, key)` and a comparison `believes(agent, key) == v` read the value. `held(group, key)` reads that group's bag only.
 
 A set literal is `[a, b]`. A computed key segment (`npc.{holder(ferry)}.alive`) is allowed outside prose. Inside a prose span, `{...}` closes at the first `}`, so the same read is `fact(npc, holder(ferry), alive)`.
 
@@ -293,7 +293,7 @@ One row per compiler signature. The condition context registers a reader for eve
 | `outcome(` | `outcome(quest:symbol, branch:symbol)->symbol` | The quest's outcome for that branch, or null when unset. Content cannot name a template here. |
 | `progress(` | `progress(id:symbol)->int` | Sequence progress. An unknown id is an error and yields 0. |
 | `done(` | `done(id:symbol)->bool` | Whether the sequence is finished. An unknown id is an error and yields false. |
-| `knows(` | `knows(agent:entity, key:fact_key)->bool` | A role reveal or `known/<agent>`. |
+| `knows(` | `knows(agent:entity, key:fact_key)->bool` | `known/<agent>`. A role key such as `role.<id>.holder` is not a declared fact (`E_UNKNOWN_FACT`), so content can't branch on a reveal. The host uses `WyrdRoles.tell` and `WyrdRoles.revealed` (both Experimental). |
 | `believes(` | `believes(agent:entity, key:fact_key)->bool` | Whether the resolved belief is truthy. |
 | `belief(` | `belief(agent:entity, key:fact_key)->symbol` | The resolved belief value. The declared return is the fallback for a dynamic key. The checker uses the fact's type. |
 | `conflicted(` | `conflicted(agent:entity, key:fact_key)->bool` | True when two of the agent's groups hold different present values for the key. |

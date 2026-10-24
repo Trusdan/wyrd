@@ -28,7 +28,7 @@ On load, Wyrd rewrites quest stages, role ids, deed verbs, and document ids. A s
 | `E_ALIAS_DUPLICATE` | One old id is claimed by two new ids. The message is `alias "<old>" is claimed by "<a>" and "<b>"`. |
 | `E_ALIAS_CYCLE` | The alias graph cycles. The message is `alias cycle: <a> -> <b> -> <a>`. Those entries are left out of the table. |
 
-`test_exit_S1_lints_chain_and_manifest_hash` compiles a small source for each code and for the chain above. Content with no aliases keeps its manifest hash: Gullhaven stays `f003b6b54c91ad8e`.
+`test_exit_S1_lints_chain_and_manifest_hash` compiles a small source for each code and for the chain above. Content with no aliases keeps its manifest hash: Gullhaven stays `918b2aad2be7d4fa`. The side pack `example/versions/gullhaven_next/` shows one rename, `pay_toll` to `toll_due` with `was:`.
 
 ## Removing a stage
 

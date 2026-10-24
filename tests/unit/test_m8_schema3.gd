@@ -9,6 +9,7 @@ extends GutTest
 
 
 const _Harness := preload("res://tests/scenario/s2c_harness.gd")
+const _Load := preload("res://tests/migration/fixture_load.gd")
 
 const _BODY := """
 language 1
@@ -49,7 +50,7 @@ func test_schema_2_fixture_loads_with_empty_flight() -> void:
 	var runtime: WyrdRuntime = opened["runtime"]
 	var report := runtime.load_state(data)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(_Load.codes(report), _Load.manifest_warning(_Load.pack_hash(data), WyrdRng.format_u64(runtime.content().manifest_hash)))
 	assert_eq(runtime.facts.get(&"harbor.toll_fate"), &"stolen")
 	assert_eq(runtime.facts.get(&"player.coins"), 4)
 	assert_gt(runtime.scheduler().dirty_count(), 0)
@@ -77,7 +78,7 @@ func test_schema_3_fixture_loads_and_round_trips() -> void:
 	var runtime: WyrdRuntime = opened["runtime"]
 	var report := runtime.load_state(data)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(_Load.codes(report), _Load.manifest_warning(_Load.pack_hash(data), WyrdRng.format_u64(runtime.content().manifest_hash)))
 	assert_eq(runtime.play_minutes(), 1)
 	assert_eq(runtime.quests.status("mooring_post"), &"dormant")
 	assert_eq(runtime.quests.status("bell_repair"), &"active")
@@ -85,7 +86,15 @@ func test_schema_3_fixture_loads_and_round_trips() -> void:
 	assert_eq(runtime.roles.holder(&"ferry_master"), &"ferry_master")
 	var covered: Dictionary = runtime.publish.export_state().get("covered", {})
 	assert_eq(int(covered.get("harbor_gazette", -1)), 1)
-	assert_eq(JSON.stringify(runtime.save_state(), "\t", true), text.replace("\"schema_version\": 3,", "\"schema_version\": 4,"))
+	var saved := runtime.save_state()
+	var fixture_hash := _Load.pack_hash(data)
+	var live_hash := WyrdRng.format_u64(runtime.content().manifest_hash)
+	assert_eq(fixture_hash, "f003b6b54c91ad8e")
+	assert_eq(_Load.pack_hash(saved), live_hash)
+	assert_eq(live_hash, "918b2aad2be7d4fa")
+	var expected := text.replace("\"schema_version\": 3,", "\"schema_version\": 4,")
+	expected = expected.replace("\"hash\": \"%s\"" % fixture_hash, "\"hash\": \"%s\"" % live_hash)
+	assert_eq(JSON.stringify(saved, "\t", true), expected)
 	runtime.tick(1)
 
 
@@ -99,7 +108,7 @@ func test_schema_3_save_without_flight_clears_dirty_waits() -> void:
 	assert_gt(runtime.scheduler().dirty_count(), 0)
 	var report := runtime.load_state(data)
 	assert_true(report.ok, report.diagnostics.format())
-	assert_false(report.diagnostics.has_warnings(), report.diagnostics.format())
+	assert_eq(_Load.codes(report), _Load.manifest_warning(_Load.pack_hash(data), WyrdRng.format_u64(runtime.content().manifest_hash)))
 	assert_eq(runtime.scheduler().dirty_count(), 0)
 	assert_eq(runtime.scheduler().carry("rumor"), 0)
 	assert_eq(runtime.scheduler().carry("publish"), 0)

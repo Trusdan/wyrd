@@ -661,6 +661,7 @@ static func _boot_harbor() -> WyrdRuntime:
 	if not report.ok:
 		push_error(report.diagnostics.format())
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(5)
 	runtime.set_meta("host", host)
 	runtime.set_meta("m10_host", host)

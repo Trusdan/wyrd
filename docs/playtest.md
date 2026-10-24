@@ -48,18 +48,19 @@ The play scene is already set: `example/playtest/gullhaven_playtest.tscn`. If Go
 
 Press **F5**, or the Play button at the top right. (F6 plays whatever scene is open in the editor. F5 plays the main scene, which is the one you want.)
 
-A window opens at 1600×900. Drag the edges to resize it. The panels stay inside the window and grow with it. The journal and the fact list scroll when the text is taller than the pane.
+A window opens at 1600×900. Drag the edges to resize it. The panels stay inside the window and grow with it, including at 1280×720 and 1920×1080. The journal pane and the fact pane start short, so Continue, the choice buttons, the controls, the route list, Start route, Tell secret, and Load in next version stay inside the window. Those panes grow when the window is taller. The journal and the fact list scroll when the text is taller than the pane.
 
 The status line says "Press New game." You will see:
 
-- A seed box (it starts at `1`) and buttons: New game, Advance time, Save, Load, Reset, Abort scene.
-- A second button row: Emit alive, Batch world, Strike bell.
+- A seed box (it starts at `1`) and buttons: New game, Advance time, Save, Load, Load in next version, Reset, Abort scene.
+- A second button row: Emit alive, Batch world, Strike bell, Tell secret.
+- A route list under that row: a menu, **Start route**, and a hint. Pick a route and press **Start route**. That resets the toggles, sets the ones that route needs, and presses New game. The hint names the next presses. Abort scene, Watch alive, Batch world, and Strike bell say "This step comes later" because you press those after New game.
 - Toggles: Ferry master alive, Local tag, Lodging available, Notice succeeds, Season storm, Apprentice ready, Short on coins, Voice, Watch alive, Local AI flavor. Local AI flavor starts off. See [AI flavor](ai.md).
 - An events line under the toggles. It lists recent world events and ends with `flush 1` after an emit or a batch. `flush 0` means nothing has been emitted since New game or Load.
 - A dialogue panel: speaker, text, Continue. Space or Enter also continues.
 - Choice buttons. A choice you cannot take is grey and shows the reason in parentheses.
-- A journal. Each line starts with a game time such as `day 1, 00:00`.
-- A quest summary that stays on screen: the quest title, the stage, the status, the outcome, the waiting reason, and one row per slot. A slot row is the role title, the current holder's personal name, and the slot state. Under that, a fact list with a filter box. The filter keeps rows whose name or value contains what you type. A fact that changed on the last press is highlighted. A fact with no value shows `absent`. The season is one of those until Season storm is on, so the row reads `world world.season = absent`. The summary does not scroll away when the fact list does.
+- A journal. Quests that have entries get a header, `<quest title> — <status>`, then the dated lines. Each entry still starts with a game time such as `day 1, 00:00`.
+- A quest summary that stays on screen: the quest title, the stage, the status, the outcome, the waiting reason, and one row per slot. A slot row is the role title, the current holder's personal name, and the slot state. One more row names the secret role. Under that, a load report and a fact list with a filter box. Before any load the report says `Content loaded.` After a load with no rows it says `No changes.` The filter keeps rows whose name or value contains what you type. A fact that changed on the last press is highlighted. A fact with no value shows `absent`. The season is one of those until Season storm is on, so the row reads `world world.season = absent`. The summary does not scroll away when the fact list does.
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
@@ -70,6 +71,8 @@ The pack also contains The Harbor Guild. It stays dormant on this walk. It start
 The Toll Tale stays dormant too. It starts after a deed `asked_council` at Gullhaven. The harbor council has declared the toll lost at sea. A fisher believes it was stolen. `dock_hand` inherits the council line and will not sit while that is the official line. The player believing it was stolen bars the hearing. One witness can hear the tale through a wall, and one statement fails when the listener does not trust the fisher.
 
 ## 5. Walk one route
+
+This walk is the **Defaults** route. The route list can press New game for you.
 
 1. Press **New game**.
 2. The speaker is **innkeeper**. The text is: "A room's two coins a night, and the stew is free."
@@ -84,7 +87,7 @@ The Toll Tale stays dormant too. It starts after a deed `asked_council` at Gullh
 
 On the right:
 
-- The journal has one line dated `day 1, 00:00`: "Bram, the ferry master, at the dock wants 2 coins before the crossing." That sentence stays as it was written. Bram is the personal name the play host gave the person in the ferry slot. The words "the ferry master" are written in the example. A role has no title field, so the game does not look that phrase up.
+- The journal has a header `The Ferry Toll — active`, then one line dated `day 1, 00:00`: "Bram, the ferry master, at the dock wants 2 coins before the crossing." That sentence stays as it was written. Bram is the personal name the play host gave the person in the ferry slot. The words "the ferry master" are written in the example. A role has no title field, so the game does not look that phrase up.
 - The fact list shows `player.coins` as `2` and `harbor.room_taken` as `true`. A row whose value changed on the last press is highlighted. Rows that did not change stay plain. Resolved facts also have a cache row, such as `cache world.season = on_event season_changed`. The value is the cache mode and the last event that dropped it. `per_query` facts are never cached.
 - The summary says `The Ferry Toll`, stage `pay_toll`, status `active`, and outcome `absent`. A waiting row shows the time check. That block stays put while the fact list scrolls.
 - Each slot row is `slot <slot> — <role title> — <holder name> — <state>`. The title is the role id with spaces (`ferry_master` becomes `ferry master`), because a role has no title field. The state is the runtime slot state, not the slot mode in the quest file. `default` means the first holder is in the slot. `successor` means someone else took it. `empty` means nobody holds it. `hostile` means disposition is too low. After this walk the rows are `slot tavern — tavern owner — innkeeper — default`, `slot ferry — ferry master — Bram — default`, and `slot lookout — storm watcher — Nia — default`. Nia is the cast pick, not the storm watcher's personal name.
@@ -101,14 +104,16 @@ Press **Reset** or **New game** between routes. Set the toggles before you press
 | **Local tag** on before New game | A second choice appears: "I have a place in town". Press it. Coins stay 4. The dock lines still play. The stage is still `pay_toll` and the journal still appears. |
 | **Lodging available** off before Take the room | After Take the room the innkeeper says "No room left tonight." and "The board lists the price as {two coins}}." The second line really does show a single `{` and an extra `}`. Coins stay 4. The stage is `pay_toll`. |
 | **Notice succeeds** off before Take the room | The room conversation plays as in section 5, then the tavern conversation is offered again and the stage is `gossip`. The journal already has Bram's toll line. |
-| **Ferry master alive** off before New game, or after New game before you continue to the dock line | Nia says "The dock is empty." You do not see a line with `{?holder(ferry).name}`. Take the room. The journal says "The dock is empty, so the crossing waits." dated `day 1, 00:00`. The stage returns to `gossip` and then waits with no new scene. The fact list shows `alive ferry_master = false`. The ferry slot row is `slot ferry — ferry master — none — empty`. |
-| **Apprentice ready** on before New game, then **Ferry master alive** off before Take the room | The successor is Nia, a different person from Bram. Nia also speaks the lookout line "Nia, the ferry master, is on the dock." The journal says "Nia, the ferry master, at the dock wants 2 coins before the crossing." The ferry slot row is `slot ferry — ferry master — Nia — successor`. Advance time reaches `cross`. The dock speaker is **Nia**, and the quest completes. |
+| **Ferry master gone** (**Ferry master alive** off before New game, or after New game before you continue to the dock line) | Nia says "The dock is empty." You do not see a line with `{?holder(ferry).name}`. Take the room. The journal says "The dock is empty, so the crossing waits." dated `day 1, 00:00`. The stage returns to `gossip` and then waits with no new scene. The fact list shows `alive ferry_master = false`. The ferry slot row is `slot ferry — ferry master — none — empty`. |
+| **Successor** (**Apprentice ready** on before New game, then **Ferry master alive** off before Take the room) | The successor is Nia, a different person from Bram. Nia also speaks the lookout line "Nia, the ferry master, is on the dock." The journal says "Nia, the ferry master, at the dock wants 2 coins before the crossing." The ferry slot row is `slot ferry — ferry master — Nia — successor`. Advance time reaches `cross`. The dock speaker is **Nia**, and the quest completes. |
 | **Season storm** on before New game, or before you continue past "Bram, the ferry master, is on the dock." | An extra line appears before the bell: narrator, "The season smells like rain." |
 | **Abort scene** while the first lines are up | The conversation stops. The status says you can save. The stage stays `gossip` and the tavern scene is offered again. The last line stays visible. |
 | **Short on coins** on before the choices appear | "Take the room (short on coins)" is grey and cannot be pressed. |
 | **Watch alive** on before New game, then **Emit alive** while the innkeeper line is up | The conversation stays on that line. Continue then shows narrator: "The ferry master is gone." The fact list shows `alive ferry_master = false` and `cache npc.ferry_master.alive = on_event entity_alive_changed`. The ferry slot is still filled. Emit alive does not vacate the role. |
 | **Batch world** after New game | The events line shows `season_changed` and `mechanism_state`, then `flush 1`. The season fact becomes `storm`. The journal gains "The harbor bell was struck." |
 | **Strike bell** after New game, then Strike bell again | The journal says "The harbor bell was struck." `harbor.bell_count` is `1` and stays `1` the second time. The innkeeper line stays up. |
+| **Tell secret** after New game | Before the press, the quest summary says `secret role smugglers_contact — holder hidden`. Press **Tell secret**. The row becomes `secret role smugglers_contact — watcher (told)`. Save and Load keep that row. `roles.tell` and `roles.revealed` are Experimental host calls. |
+| **Next version** after the journal appears | Press **Save**, then **Load in next version**. The status says `Next version: ferry stage renamed pay_toll → toll_due.` The stage is `toll_due`. The load report lists the alias rows from `pay_toll` to `toll_due`. |
 
 ## 7. Save and load
 
@@ -117,7 +122,8 @@ Finish a conversation first. Save is refused while lines are still advancing. Th
 1. Play section 5 until the journal appears and Continue is disabled. Do not press Advance time yet.
 2. Press **Save**. The status says the save is in memory and in `user://playtest_save.json`.
 3. Press **Advance time**. The dock lines open again and the clock moves to `day 1, 01:00`.
-4. Press **Load**. That conversation closes. Coins are 2 again, the stage is `pay_toll`, and the journal line is back. The clock returns to the saved time. The events line clears. World events are not stored in the save.
+4. Press **Load**. That conversation closes. Coins are 2 again, the stage is `pay_toll`, and the journal line is back. The clock returns to the saved time. The events line clears. World events are not stored in the save. The load report says `No changes.`
+5. Press **Load in next version** after a save. The playtest boots the later Gullhaven pack, loads the slot, and the status says `Next version: ferry stage renamed pay_toll → toll_due.` **Reset** or **New game** returns to Gullhaven. An empty slot says `Save first.`
 
 **Reset** starts a fresh game at seed 0 and deletes that save file.
 

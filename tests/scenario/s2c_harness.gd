@@ -11,8 +11,16 @@ func open_pack(path: String) -> Dictionary:
 	host.register_into(runtime)
 	if path == HARBOR:
 		runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+		register_host_decides(runtime)
 	var report := runtime.load_content(load(path) as WyrdContentManifest)
 	return {"host": host, "report": report, "runtime": runtime}
+
+
+## smugglers_contact uses host_decides. New game errors without a callback.
+func register_host_decides(runtime: WyrdRuntime) -> void:
+	runtime.roles.set_host_decides(func(_role: StringName, _departed: StringName) -> void:
+		pass
+	)
 
 
 func boot_gullhaven(local_tag: bool = false, coins: int = 4, storm_heard: bool = true) -> Dictionary:
