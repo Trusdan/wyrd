@@ -12,5 +12,6 @@ func _init() -> void:
 	var pots := WyrdPotGolden.write_expected()
 	var defs := WyrdDefsGolden.write_expected()
 	var tag_lines := WyrdTagLinesGolden.write_expected()
-	print("Updated %d golden files, %d condition files, %d statement files, %d link files, %d role files, %d pot files, %d defs files, and %d tag-lines files." % [count, conditions, statements, links, roles, pots, defs, tag_lines])
+	var api := WyrdApiGolden.write_expected()
+	print("Updated %d golden files, %d condition files, %d statement files, %d link files, %d role files, %d pot files, %d defs files, %d tag-lines files, and %d api files." % [count, conditions, statements, links, roles, pots, defs, tag_lines, api])
 	quit(0)

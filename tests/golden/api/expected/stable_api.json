@@ -1,0 +1,8081 @@
+{
+	"classes": {
+		"Wyrd": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "can_save",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "condition_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "condition_flags",
+					"return": {
+						"class": "",
+						"type": "PackedByteArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdConfig",
+							"name": "config",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "configure",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "content",
+					"return": {
+						"class": "WyrdContent",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "group",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "since",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "filter",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"\""
+					],
+					"name": "deeds_known_to",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "draw_u32",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "eval_condition",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "get_version",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "invalidate_groups",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "ids",
+							"type": "PackedStringArray"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "invalidate_world",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "last_rechecks",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdContentManifest",
+							"name": "manifest",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "load_content",
+					"return": {
+						"class": "WyrdLoadReport",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "load_state",
+					"return": {
+						"class": "WyrdLoadReport",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "now_minutes",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "Script",
+							"name": "base",
+							"type": "Object"
+						},
+						{
+							"class": "RefCounted",
+							"name": "adapter",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "register_adapter",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_credibility",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						},
+						{
+							"class": "",
+							"name": "arg_types",
+							"type": "Array"
+						},
+						{
+							"class": "",
+							"name": "return_type",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "register_function",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_group_precedence",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRumorPolicy",
+							"name": "policy",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "register_rumor_policy",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "rng_stream",
+					"return": {
+						"class": "WyrdRng",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "save_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "seed_value",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "start_new_game",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "game_minutes",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "tick",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "trace_log",
+					"return": {
+						"class": "Dictionary",
+						"type": "Array"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/wyrd.gd",
+			"properties": [
+				{
+					"class": "WyrdAI",
+					"name": "ai",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdCoverage",
+					"name": "coverage",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdDebug",
+					"name": "debug",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdDeedLog",
+					"name": "deeds",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdSceneRunner",
+					"name": "dialogue",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdDirector",
+					"name": "director",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdDocuments",
+					"name": "documents",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdEvents",
+					"name": "events",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdFactStore",
+					"name": "facts",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdGenerator",
+					"name": "generator",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdPublish",
+					"name": "publish",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdQuestRunner",
+					"name": "quests",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdRoles",
+					"name": "roles",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdRumor",
+					"name": "rumors",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdSequences",
+					"name": "sequences",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdSocial",
+					"name": "social",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdStoryletDeck",
+					"name": "storylets",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdTopics",
+					"name": "topics",
+					"type": "Object"
+				},
+				{
+					"class": "WyrdTrace",
+					"name": "trace",
+					"type": "Object"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "WyrdLineView",
+							"name": "line",
+							"type": "Object"
+						}
+					],
+					"name": "bark_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "copy_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "reader",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "first_time",
+							"type": "bool"
+						}
+					],
+					"name": "document_read"
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdLoadReport",
+							"name": "report",
+							"type": "Object"
+						}
+					],
+					"name": "load_report_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "topic",
+							"type": "StringName"
+						}
+					],
+					"name": "topic_locked"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "topic",
+							"type": "StringName"
+						}
+					],
+					"name": "topic_unlocked"
+				}
+			]
+		},
+		"WyrdAI": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "runtime",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "packet",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "locale",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"\""
+					],
+					"name": "cache_key",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "cache_keys",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "cache_size",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "cached_text",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "request_id",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "cancel",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_cache",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "owner",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "close_owner",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "close_prefixed",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "request_id",
+							"type": "int"
+						},
+						{
+							"class": "WyrdAIResult",
+							"name": "result",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "deliver",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "drop_pending",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_cache",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "packet",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "fallback",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "host_text",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "raw",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "present",
+							"type": "bool"
+						},
+						{
+							"class": "WyrdLoadReport",
+							"name": "report",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "import_cache",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "is_active",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "is_enabled",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "line_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "kind_for_line",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "kinds",
+					"return": {
+						"class": "StringName",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "locale",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\""
+					],
+					"name": "locale_ok",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "line_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "speaker",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"bark_paraphrase\"",
+						"&\"\""
+					],
+					"name": "packet_for_line",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "pending_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "prefetch_carry",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "prefetch_has_work",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "rows",
+							"type": "Array"
+						},
+						{
+							"class": "",
+							"name": "owner_cap",
+							"type": "int"
+						}
+					],
+					"defaults": [
+						"-1"
+					],
+					"name": "prefetch_lines",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "prefetch_unit",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdLineView",
+							"name": "view",
+							"type": "Object"
+						},
+						{
+							"class": "",
+							"name": "line_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "present",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "provider",
+					"return": {
+						"class": "WyrdAIProvider",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "provider_id",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_classifier",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "packet",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "constraints",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "path",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"null",
+						"&\"\""
+					],
+					"name": "request",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "on",
+							"type": "bool"
+						}
+					],
+					"defaults": [],
+					"name": "set_enabled",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdAIProvider",
+							"name": "next",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "set_provider",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entries",
+							"type": "Array"
+						}
+					],
+					"defaults": [],
+					"name": "summary_for",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entries",
+							"type": "Array"
+						}
+					],
+					"defaults": [],
+					"name": "summary_packet",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "now",
+							"type": "int"
+						},
+						{
+							"class": "WyrdScheduler",
+							"name": "scheduler",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "tick_prefetch",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "text",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "packet",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "constraints",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "validate",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/ai/wyrd_ai.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdAIProvider": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_request_id",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "cancel",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "id",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "locales",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "prompt_version",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdAIRequest",
+							"name": "_req",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "request",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_ai_provider.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdActionAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "command_schema",
+					"return": {
+						"class": "WyrdCommandSchema",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdCommand",
+							"name": "cmd",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "execute",
+					"return": {
+						"class": "WyrdCommandResult",
+						"type": "Object"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_action_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdCommand": {
+			"experimental": true,
+			"methods": [],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_command.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "args",
+					"type": "Dictionary"
+				},
+				{
+					"class": "",
+					"name": "name",
+					"type": "StringName"
+				}
+			],
+			"signals": []
+		},
+		"WyrdCommandResult": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "failure_reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "failed",
+					"return": {
+						"class": "WyrdCommandResult",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "is_ok",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "ok",
+					"return": {
+						"class": "WyrdCommandResult",
+						"type": "Object"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_command_result.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "reason",
+					"type": "StringName"
+				},
+				{
+					"class": "WyrdCommandResult.Status",
+					"name": "status",
+					"type": "int"
+				}
+			],
+			"signals": []
+		},
+		"WyrdCommandSchema": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "command_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "add_command",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "skill_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "add_skill",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "command_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "has_command",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "skill_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "has_skill",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_command_schema.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "checks_skills",
+					"type": "bool"
+				},
+				{
+					"class": "StringName",
+					"name": "command_names",
+					"type": "Array"
+				},
+				{
+					"class": "StringName",
+					"name": "skill_names",
+					"type": "Array"
+				}
+			],
+			"signals": []
+		},
+		"WyrdConfig": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "axis_delta",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "half_life_for",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "kind_scale",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "scales_for",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "delta",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "set_axis_delta",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "scale",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "set_kind_scale",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/wyrd_config.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "ai_banned_terms",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "ai_cache_max",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "ai_max_inflight",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "ai_save_cache",
+					"type": "bool"
+				},
+				{
+					"class": "",
+					"name": "axis_deltas",
+					"type": "PackedFloat64Array"
+				},
+				{
+					"class": "",
+					"name": "axis_names",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "axis_verbs",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "compact_after",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "credibility_threshold",
+					"type": "float"
+				},
+				{
+					"class": "",
+					"name": "disposition_default",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "generator_retries",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "half_life_minutes",
+					"type": "PackedFloat64Array"
+				},
+				{
+					"class": "",
+					"name": "half_life_verbs",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "hostile_threshold",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "hour_bucket_minutes",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "kind_scale_axes",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "kind_scale_kinds",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "kind_scale_values",
+					"type": "PackedFloat64Array"
+				},
+				{
+					"class": "",
+					"name": "pressure_tiers",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "publish_catchup_max",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "publish_slice_rows",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "rumor_coarse_minutes",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_frame_warn_usec",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_ai_prefetch",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_cache",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_generate",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_publish",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_rumor",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_share_waits",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_tick_minutes",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "scheduler_work_per_tick",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "secrecy_fact",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "secrecy_tiers",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "trace_director",
+					"type": "bool"
+				}
+			],
+			"signals": []
+		},
+		"WyrdContentManifest": {
+			"experimental": true,
+			"methods": [],
+			"path": "res://addons/wyrd/compiler/wyrd_content_manifest.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "files",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "language_version",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "pack_id",
+					"type": "StringName"
+				}
+			],
+			"signals": []
+		},
+		"WyrdDeedLog": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "actor_at",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "actor",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "actor_indexes",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "agent_names",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "who",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "believer_deeds",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "who",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "believer_index",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "believer_minutes",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "members",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "believer_snapshot",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "compact",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "actor",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "verb",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "within",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "tags",
+							"type": "PackedStringArray"
+						}
+					],
+					"defaults": [
+						"null",
+						"null",
+						"null",
+						"null",
+						"null"
+					],
+					"name": "count_matching",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "generation",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "id_at",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "index_of",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "which",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "index_size",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "index_text_bytes",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "lookup_enabled",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "magnitude_at",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "memorable_at",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "minute_at",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "mode_of",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "who",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "note_believer",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "pair_keys",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "place_at",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "actor",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "tags",
+							"type": "PackedStringArray"
+						},
+						{
+							"class": "",
+							"name": "magnitude",
+							"type": "float"
+						},
+						{
+							"class": "",
+							"name": "witnesses",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "visibility",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "memorable",
+							"type": "bool"
+						}
+					],
+					"defaults": [
+						"&\"\"",
+						"&\"\"",
+						"null",
+						"1.0",
+						"null",
+						"&\"public\"",
+						"false"
+					],
+					"name": "record",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "value",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "round_sum",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "row_at",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "rows_for_deed_prefix",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "rows_for_pair_prefix",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "rows_since",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "actor",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "verb",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "within",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "tags",
+							"type": "PackedStringArray"
+						}
+					],
+					"defaults": [
+						"null",
+						"null",
+						"null",
+						"null",
+						"null"
+					],
+					"name": "score_matching",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "enabled",
+							"type": "bool"
+						}
+					],
+					"defaults": [],
+					"name": "set_lookup",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "size",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "target_at",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "target_indexes",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "time_buckets",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "time_refs",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "verb_at",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "verb",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "verb_indexes",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "weight_at",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "weight_stamp",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "witness_buckets",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "witness_count_at",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "witness_indexes",
+					"return": {
+						"class": "",
+						"type": "PackedInt32Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "offset",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "witness_mode_name_at",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "offset",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "witness_name_at",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "witness_refs",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "witnessed",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "witnesses_at",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/deeds/wyrd_deed_log.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "clock",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_compact",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_perceived",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "spatial_of",
+					"type": "Callable"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed",
+							"type": "Dictionary"
+						}
+					],
+					"name": "deed_recorded"
+				}
+			]
+		},
+		"WyrdDirector": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "runtime",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "speaker",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\"",
+						"\"\""
+					],
+					"name": "candidate_rows",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "storylet_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "speaker",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\"",
+						"\"\""
+					],
+					"name": "diagnose",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entity",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "eligible_for_entity",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "row",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "format_candidate",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "row",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "format_why_not",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "speaker",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\"",
+						"\"\""
+					],
+					"name": "query",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entity",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "query_for_entity",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "story_speaker",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "query_speaker",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "speaker_matches",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdStoryletDef",
+							"name": "story",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "when_holds",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "storylet_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "scope_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "speaker",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\"",
+						"\"\""
+					],
+					"name": "why_not",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/storylets/wyrd_director.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdDocuments": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "copy_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "params",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "from_host",
+							"type": "bool"
+						}
+					],
+					"defaults": [
+						"null",
+						"true"
+					],
+					"name": "create_copy",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "copy_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "has_copy",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "reader",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "has_read",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "copy_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "reader",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "open",
+					"return": {
+						"class": "WyrdDocumentView",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "stored_doc_ids",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/documents/wyrd_documents.gd",
+			"properties": [
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "doc_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "copy_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "reader",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "first_time",
+							"type": "bool"
+						}
+					],
+					"name": "document_read"
+				}
+			]
+		},
+		"WyrdElectionAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "departed",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "start_election",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_election_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdEntityFilter": {
+			"experimental": true,
+			"methods": [],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_entity_filter.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "kind",
+					"type": "StringName"
+				},
+				{
+					"class": "",
+					"name": "tag",
+					"type": "StringName"
+				}
+			],
+			"signals": []
+		},
+		"WyrdEvents": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "batching",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "begin_batch",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_recent",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "debug_dump",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "event_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "payload",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "emit",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "end_batch",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "row",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "remember",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "reset_session",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/wyrd_events.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "last_flush",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "last_keys",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "last_wave",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "on_batch",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_emit",
+					"type": "Callable"
+				},
+				{
+					"class": "Dictionary",
+					"name": "recent",
+					"type": "Array"
+				},
+				{
+					"class": "",
+					"name": "ring_limit",
+					"type": "int"
+				}
+			],
+			"signals": []
+		},
+		"WyrdFactStore": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdFactSchema",
+							"name": "schema",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind_schema",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "cache_view",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "query",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "choice_summary",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "perspective",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "clear_in",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_values",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "now",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "decay_evidence",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "evidence_rows",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "perspective",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"world\""
+					],
+					"name": "get_in",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"\""
+					],
+					"name": "invalidate",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "event_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "invalidate_event",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "until",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "event_name",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "actor",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "note_evidence",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "now",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "refresh_poll",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "perspective",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "remember",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "query",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "render_choice_summary",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "Variant"
+						}
+					],
+					"defaults": [],
+					"name": "saved_type_issue",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "new_value",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "perspective",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"world\""
+					],
+					"name": "set_in",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "subscribe",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "world_keys",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/facts/wyrd_fact_store.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "belief_trace_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "clock",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_belief",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_belief_touch",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_choice_summary",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_keys",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_knowledge",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_resolved",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "provenance_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "resolver_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "tracer",
+					"type": "Callable"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "old_value",
+							"type": "Variant"
+						},
+						{
+							"class": "",
+							"name": "new_value",
+							"type": "Variant"
+						}
+					],
+					"name": "fact_changed"
+				}
+			]
+		},
+		"WyrdGenerator": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdProposal",
+							"name": "proposal",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "accept",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "host",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "finish_reservations",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "entry",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "fulfill",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "tier",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "payload",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"&\"\"",
+						"null"
+					],
+					"name": "offer",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "pending",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "pending_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "pending_creations",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "proposal",
+					"return": {
+						"class": "WyrdProposal",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "context",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "propose",
+					"return": {
+						"class": "WyrdProposal",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "template_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "payload",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "queue_deed",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "take_next",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "offer_tier",
+							"type": "StringName"
+						},
+						{
+							"class": "WyrdTemplateDef",
+							"name": "template",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "tier_matches",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "name",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "tier_rank",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "template_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "why_not",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/generator/wyrd_generator.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "candidate_traces",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "generate_handler",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				}
+			],
+			"signals": []
+		},
+		"WyrdInventoryAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "item_or_tag",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "filter",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "items",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "item",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "owner_of",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_inventory_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdLineView": {
+			"experimental": true,
+			"methods": [],
+			"path": "res://addons/wyrd/runtime/scenes/wyrd_line_view.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "audio",
+					"type": "Variant"
+				},
+				{
+					"class": "",
+					"name": "display_name",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "id",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "roles",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "speaker",
+					"type": "StringName"
+				},
+				{
+					"class": "",
+					"name": "tags",
+					"type": "PackedStringArray"
+				},
+				{
+					"class": "",
+					"name": "text",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "text_source",
+					"type": "StringName"
+				}
+			],
+			"signals": []
+		},
+		"WyrdLoadReport": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "kind",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "from_value",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "to_value",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "count",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "code",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "add_row",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "error_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "sort_rows",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/wyrd_load_report.gd",
+			"properties": [
+				{
+					"class": "WyrdDiagnostics",
+					"name": "diagnostics",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "manifest_hash",
+					"type": "int"
+				},
+				{
+					"class": "",
+					"name": "ok",
+					"type": "bool"
+				},
+				{
+					"class": "",
+					"name": "rows",
+					"type": "Array"
+				}
+			],
+			"signals": []
+		},
+		"WyrdPublish": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "group",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "since",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "filter",
+							"type": "StringName"
+						}
+					],
+					"defaults": [
+						"&\"\""
+					],
+					"name": "deeds_known_to",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "enqueue_due",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "token",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "issue",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/publish/wyrd_publish.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "content_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "cursor_trace_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdDeedLog",
+					"name": "deeds",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "enqueue_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "eval_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdFactStore",
+					"name": "facts",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "members_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "now_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				}
+			],
+			"signals": []
+		},
+		"WyrdQuestRunner": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "abandon",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "template_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "active_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "stage_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "advance",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "host",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_event_fires",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "values",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "complete_host_step",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "template_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "casts",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "params",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [
+						"null",
+						"null"
+					],
+					"name": "create_instance",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdStageDef",
+							"name": "body",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "entry_step_count",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdStageDef",
+							"name": "body",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "entry_steps",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "now",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "expire_due",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_generator",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "minutes",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "format_date",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "host_returns",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						},
+						{
+							"class": "WyrdLoadReport",
+							"name": "report",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "import_generator",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "journal",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "kept_quest_ids",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "branch",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "note_outcome",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "note_ready",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "offer_for",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "offered_scene",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "status",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "on_scene_ended",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "on_tick",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "emit_id",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "event_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "payload",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "on_world_event",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "branch",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "outcome",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "instance_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "name",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "param_entity",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "regions_of",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_date_formatter",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "entries",
+							"type": "Array"
+						},
+						{
+							"class": "",
+							"name": "stage_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "remember_trail",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "screen_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "fields",
+							"type": "PackedStringArray"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "request_host_step",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "reset",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "stage",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdStageDef",
+							"name": "stage",
+							"type": "Object"
+						},
+						{
+							"class": "",
+							"name": "variant_key",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "stage_body",
+					"return": {
+						"class": "WyrdStageDef",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "start",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "status",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "summary",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "summary_source",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "template_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "template_counter",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "variant_of",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "waiting_reason",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/quests/wyrd_quest_runner.gd",
+			"properties": [
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "pack_id",
+							"type": "String"
+						}
+					],
+					"name": "content_unavailable"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "screen_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "fields",
+							"type": "PackedStringArray"
+						}
+					],
+					"name": "host_step_requested"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "entry_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "text",
+							"type": "String"
+						}
+					],
+					"name": "journal_entry_added"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "status",
+							"type": "StringName"
+						}
+					],
+					"name": "quest_state_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "stage_id",
+							"type": "String"
+						}
+					],
+					"name": "stage_changed"
+				}
+			]
+		},
+		"WyrdRoles": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "abolished",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "entity",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "assign",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "entity",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "assign_from_content",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "begin_quest",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdContent",
+							"name": "content",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind_content",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "instance_id",
+							"type": "String"
+						},
+						{
+							"class": "WyrdQuestDef",
+							"name": "quest",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind_instance",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "binding_since",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "binding_status",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdSlotDef",
+							"name": "slot",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "cast_pool",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdSlotDef",
+							"name": "slot",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "cast_pool_scan",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "succession",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "secret",
+							"type": "bool"
+						},
+						{
+							"class": "",
+							"name": "hostile_threshold",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "scope",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "eligibility",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "default_holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "vacancy",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "visibility",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"none\"",
+						"false",
+						"-1",
+						"\"\"",
+						"\"\"",
+						"&\"\"",
+						"\"\"",
+						"\"\""
+					],
+					"name": "define",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "definition",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "departed",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "drop_cast_index",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "drop_instances",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "entity",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "eligible",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "stage_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "enter_stage",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "WyrdSlotDef",
+							"name": "slot",
+							"type": "Object"
+						},
+						{
+							"class": "",
+							"name": "holder",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "freeze_given",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "history",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "slot_or_role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "holder",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "indexed_digest",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "indexed_digest_ready",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "indexed_pool",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRoleDef",
+							"name": "role",
+							"type": "Object"
+						},
+						{
+							"class": "",
+							"name": "from_content",
+							"type": "bool"
+						}
+					],
+					"defaults": [
+						"false"
+					],
+					"name": "install",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "casts",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "install_casts",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "instance_casts",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "ids",
+							"type": "PackedStringArray"
+						}
+					],
+					"defaults": [
+						"null"
+					],
+					"name": "invalidate_world",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "is_host_defined",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "note_started",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdParamDef",
+							"name": "param",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "param_pool",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdParamDef",
+							"name": "param",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "param_pool_scan",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "ids",
+							"type": "Array"
+						},
+						{
+							"class": "",
+							"name": "stream",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "decision_key",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "pick_id",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "present_role_ids",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "prefix",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\""
+					],
+					"name": "render_table",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "slot_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "trace_it",
+							"type": "bool"
+						}
+					],
+					"defaults": [
+						"false"
+					],
+					"name": "resolve_slot",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "revealed",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "entity",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "roles_of",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "set_faction_rank",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "set_host_decides",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "slot_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "slot_holder",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "slot_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "quest_id",
+							"type": "String"
+						}
+					],
+					"defaults": [
+						"\"\""
+					],
+					"name": "slot_state",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "digest",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "store_indexed_digest",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "tell",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "vacate",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "vacate_from_content",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/roles/wyrd_roles.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "cast_index_enabled",
+					"type": "bool"
+				},
+				{
+					"class": "",
+					"name": "clock",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "content_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdDeedLog",
+					"name": "deeds",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "election_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "eval_value",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "eval_with",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "faction_rank",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdFactStore",
+					"name": "facts",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "host_decides",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "inventory_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "seed_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdSocial",
+					"name": "social",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "stage_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "world_of",
+					"type": "Callable"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "departed",
+							"type": "StringName"
+						}
+					],
+					"name": "election_needed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "old_holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "new_holder",
+							"type": "StringName"
+						}
+					],
+					"name": "role_holder_changed"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						}
+					],
+					"name": "role_vacant"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "departed",
+							"type": "StringName"
+						}
+					],
+					"name": "succession_requested"
+				}
+			]
+		},
+		"WyrdRumor": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_flight",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "enqueue_due",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "has_reach",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "token",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "hop",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "who",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "materialize",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "policy_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "missing_policy_message",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed",
+							"type": "Dictionary"
+						},
+						{
+							"class": "",
+							"name": "claim_key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "claim_value",
+							"type": "Variant"
+						}
+					],
+					"defaults": [],
+					"name": "note_deed",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "deed_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "reach_level",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRumorPolicy",
+							"name": "policy",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "register",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/rumor/wyrd_rumor.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdDeedLog",
+					"name": "deeds",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "enqueue_hop",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdFactStore",
+					"name": "facts",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "now_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_reach",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "reach_any",
+					"type": "bool"
+				},
+				{
+					"class": "",
+					"name": "score_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "seed_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdSocial",
+					"name": "social",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "spatial_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "threshold_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "tracing_of",
+					"type": "Callable"
+				}
+			],
+			"signals": []
+		},
+		"WyrdSceneRunner": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "abort",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "advance",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "npc",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "topic",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "ask_topic",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "line_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "audio_for",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "host",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "can_save",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "choices",
+					"return": {
+						"class": "WyrdChoiceView",
+						"type": "Array"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "index",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "choose",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "force_close",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "is_open",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "line",
+					"return": {
+						"class": "WyrdLineView",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "role_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_old_holder",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_new_holder",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "note_role",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "on_tick",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "npc",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "open",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "open_quest_id",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "open_scene",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_line_audio",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdExprNode",
+							"name": "prose",
+							"type": "Object"
+						},
+						{
+							"class": "",
+							"name": "line_id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "render_prose",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/scenes/wyrd_scene_runner.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "locale",
+					"type": "String"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "WyrdChoiceView",
+							"name": "choices",
+							"type": "Array"
+						}
+					],
+					"name": "choices_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdLineView",
+							"name": "line",
+							"type": "Object"
+						}
+					],
+					"name": "line_ready"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "scene_id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "status",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "reason",
+							"type": "StringName"
+						}
+					],
+					"name": "scene_ended"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "npc",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "topic",
+							"type": "StringName"
+						},
+						{
+							"class": "WyrdLineView",
+							"name": "line",
+							"type": "Object"
+						}
+					],
+					"name": "topic_answered"
+				}
+			]
+		},
+		"WyrdSequences": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "host",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "done",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "event_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "payload",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "on_emit",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "on_tick",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "progress",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "stored_ids",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/quests/wyrd_sequences.gd",
+			"properties": [
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				}
+			],
+			"signals": []
+		},
+		"WyrdSkillAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdSkillCheck",
+							"name": "request",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "check",
+					"return": {
+						"class": "WyrdCommandResult",
+						"type": "Object"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_skill_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdSkillCheck": {
+			"experimental": true,
+			"methods": [],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_skill_check.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "args",
+					"type": "Dictionary"
+				},
+				{
+					"class": "",
+					"name": "choice_id",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "roll",
+					"type": "float"
+				},
+				{
+					"class": "",
+					"name": "scene_id",
+					"type": "String"
+				},
+				{
+					"class": "",
+					"name": "skill",
+					"type": "StringName"
+				}
+			],
+			"signals": []
+		},
+		"WyrdSocial": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "value",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "@members_of_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "a",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "b",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "n",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "adjust_baseline",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "affinity",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "axis",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "cache_bytes",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "cache_enabled",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "cache_entries",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "clear_baseline",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "clear_kind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "disposition",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "count",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "fill_pair_matrix",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "has_kind",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "invalidate_members",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "kinds",
+							"type": "PackedStringArray"
+						},
+						{
+							"class": "",
+							"name": "max_hops",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "path_exists",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "token",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "rebuild_cached",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "fn",
+							"type": "Callable"
+						}
+					],
+					"defaults": [],
+					"name": "register_formula",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "subject",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "group",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "reputation",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "axis_name",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "value",
+							"type": "float"
+						}
+					],
+					"defaults": [],
+					"name": "set_baseline",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "enabled",
+							"type": "bool"
+						}
+					],
+					"defaults": [],
+					"name": "set_cache",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "set_kind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "sync_cache",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "source",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "kind",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "targets",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/social/wyrd_social.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "config_of",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdDeedLog",
+					"name": "deeds",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "enqueue_cache",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "formula",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "members_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_cache",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_changed",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "on_reputation",
+					"type": "Callable"
+				},
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				},
+				{
+					"class": "",
+					"name": "tracing_of",
+					"type": "Callable"
+				}
+			],
+			"signals": []
+		},
+		"WyrdSpatialAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "observer",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "target",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "can_perceive",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "agent",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "place",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "can_reach",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "a",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "b",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "distance",
+					"return": {
+						"class": "",
+						"type": "float"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "center",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "radius_m",
+							"type": "float"
+						},
+						{
+							"class": "WyrdEntityFilter",
+							"name": "filter",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "nearby",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_observer",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_actor",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_place",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "perceive",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "entity",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "place_of",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_place",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "precision",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_actor",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_target",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_place",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "witnesses_of",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_spatial_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdStoryletDeck": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "WyrdContent",
+							"name": "content",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "bind",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_draws",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear_speakers",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "visible",
+							"type": "Callable"
+						}
+					],
+					"defaults": [
+						"Callable()"
+					],
+					"name": "draw",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_speakers",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "Dictionary"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "ignored_ids",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_speakers",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "data",
+							"type": "Dictionary"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "last_minute_of",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "cooldown",
+							"type": "int"
+						},
+						{
+							"class": "",
+							"name": "minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "note_bark_speaker",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "note_selected",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "seen_of",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "seed_value",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "set_seed",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "speaker_cooldown_of",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "now_minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "speaker_cooling",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "key",
+							"type": "String"
+						},
+						{
+							"class": "",
+							"name": "now_minute",
+							"type": "int"
+						}
+					],
+					"defaults": [],
+					"name": "speaker_remaining",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/storylets/wyrd_storylet_deck.gd",
+			"properties": [
+				{
+					"class": "",
+					"name": "on_coverage",
+					"type": "Callable"
+				}
+			],
+			"signals": []
+		},
+		"WyrdTimeAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "now_minutes",
+					"return": {
+						"class": "",
+						"type": "int"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "season",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_time_adapter.gd",
+			"properties": [],
+			"signals": []
+		},
+		"WyrdTopics": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"name": "clear",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "export_state",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "ids",
+							"type": "Array"
+						}
+					],
+					"defaults": [],
+					"name": "import_state",
+					"return": {
+						"class": "",
+						"type": "Nil"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "is_unlocked",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "lock",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "unlock",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "unlocked",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/topics/wyrd_topics.gd",
+			"properties": [
+				{
+					"class": "WyrdRuntime",
+					"name": "runtime",
+					"type": "Object"
+				},
+				{
+					"class": "",
+					"name": "trace_of",
+					"type": "Callable"
+				}
+			],
+			"signals": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "topic",
+							"type": "StringName"
+						}
+					],
+					"name": "topic_locked"
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "topic",
+							"type": "StringName"
+						}
+					],
+					"name": "topic_unlocked"
+				}
+			]
+		},
+		"WyrdWorldAdapter": {
+			"experimental": true,
+			"methods": [
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "key",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "attr",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdEntityFilter",
+							"name": "filter",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"name": "candidates",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "display_name",
+					"return": {
+						"class": "",
+						"type": "String"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "exists",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_agent",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "groups_of",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_id",
+							"type": "StringName"
+						},
+						{
+							"class": "",
+							"name": "_pack",
+							"type": "String"
+						}
+					],
+					"defaults": [],
+					"name": "in_bounds",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "is_alive",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "_id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "is_protected",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "kind",
+					"return": {
+						"class": "",
+						"type": "StringName"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "faction",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "members",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"name": "reports_changes",
+					"return": {
+						"class": "",
+						"type": "bool"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "",
+							"name": "id",
+							"type": "StringName"
+						}
+					],
+					"defaults": [],
+					"name": "tags",
+					"return": {
+						"class": "",
+						"type": "PackedStringArray"
+					}
+				}
+			],
+			"path": "res://addons/wyrd/runtime/adapters/wyrd_world_adapter.gd",
+			"properties": [],
+			"signals": []
+		}
+	},
+	"language": 1,
+	"save_schema": 4,
+	"unlisted_types": [
+		"RefCounted",
+		"Script",
+		"WyrdAIRequest",
+		"WyrdAIResult",
+		"WyrdChoiceView",
+		"WyrdContent",
+		"WyrdCoverage",
+		"WyrdDebug",
+		"WyrdDiagnostics",
+		"WyrdDocumentView",
+		"WyrdExprNode",
+		"WyrdFactSchema",
+		"WyrdParamDef",
+		"WyrdProposal",
+		"WyrdQuestDef",
+		"WyrdRng",
+		"WyrdRoleDef",
+		"WyrdRumorPolicy",
+		"WyrdRuntime",
+		"WyrdScheduler",
+		"WyrdSlotDef",
+		"WyrdStageDef",
+		"WyrdStoryletDef",
+		"WyrdTemplateDef",
+		"WyrdTrace"
+	]
+}
