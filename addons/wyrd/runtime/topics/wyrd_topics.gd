@@ -9,6 +9,7 @@ extends RefCounted
 ## that is not unlocked traces [code]not_unlocked[/code] and does not warn.
 ## The save bag is a sorted id list, omitted when empty. Unknown ids are kept.
 
+## Fires when a topic becomes unlocked. A repeat unlock does not fire.
 signal topic_unlocked(topic: StringName)
 ## @experimental
 signal topic_locked(topic: StringName)

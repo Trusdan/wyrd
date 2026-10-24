@@ -11,6 +11,7 @@ extends RefCounted
 ## boolean in walk order, and each value with [method WyrdSave.pack_claim].
 ## It does not store rendered strings.
 
+## Fires after a successful open, including whether this reader is new.
 signal document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool)
 
 ## @experimental
@@ -37,6 +38,7 @@ func has_copy(doc_id: StringName, copy_id: String) -> bool:
 	return _copies.has(_copy_key(doc_id, copy_id))
 
 
+## Opens a document for a reader and returns the view. Returns null when the document, reader, mode, secrecy, or frozen copy is refused.
 func open(doc_id: StringName, copy_id: String, reader: StringName) -> WyrdDocumentView:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var document := _document(doc_id)
@@ -76,6 +78,7 @@ func open(doc_id: StringName, copy_id: String, reader: StringName) -> WyrdDocume
 	return view
 
 
+## Stores a frozen copy. Returns false for a missing document, a live document, an empty copy id, or a non-empty params dictionary.
 func create_copy(doc_id: StringName, copy_id: String, params: Dictionary = {}, from_host: bool = true) -> bool:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var source := "host" if from_host else "content"

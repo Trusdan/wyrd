@@ -17,6 +17,7 @@ CI greps the pull request diff against a private deny-list. The list is the repo
 - Put logic in plain `RefCounted` classes. `plugin.gd` and anything under `editor/` stay thin, because the editor is hard to test.
 - No C#, no .NET, and no native extensions.
 - Unfinished API is marked `@experimental` in the doc comment. The stable surface is frozen for 1.0: the facade calls and signals, adapter bases, `WyrdConfig`, the `language` version, and the value types named in [docs/stability.md](stability.md). From 1.0.0 those change only in add-only ways in 1.x. Everything else stays `@experimental`. See [docs/stability.md](stability.md).
+- After a doc comment or public API change, run `tools/gen_api_docs.sh` and commit `docs/api/`. CI fails if it is stale.
 - Version with SemVer. `0.x` lasts until 1.0. The addon version is the single line in `addons/wyrd/VERSION`.
 - Commits use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 - A behavior change arrives with a GUT test. Golden snapshots live under `tests/golden/`. See `tests/golden/README.md`.

@@ -7,7 +7,9 @@ extends RefCounted
 ## Precision flags (precise versus coarse) are not part of this filter.
 ## A place's flag is [method WyrdSpatialAdapter.precision].
 
+## Tag the query requires. Empty when the tag is unconstrained.
 var tag: StringName = &""
+## Kind the query requires. Empty when the kind is unconstrained.
 var kind: StringName = &""
 
 

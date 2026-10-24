@@ -2,6 +2,8 @@
 
 What 1.0 freezes, what stays experimental, and how a stable call or keyword is retired.
 
+The generated reference with per-member status is in [docs/api](api/index.md).
+
 ## Stable surface
 
 From 1.0.0 these change only in add-only ways in 1.x. No existing call, signal, argument, default, return type, or property is renamed, removed, or reshaped. New members may be added.

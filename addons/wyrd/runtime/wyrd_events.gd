@@ -26,11 +26,13 @@ var recent: Array[Dictionary] = []
 var _depth: int = 0
 
 
+## Calls the runtime hook with the event name and payload.
 func emit(event_name: StringName, payload: Dictionary = {}) -> void:
 	if on_emit.is_valid():
 		on_emit.call(event_name, payload)
 
 
+## Opens a batch. Nested calls wait for the matching end.
 func begin_batch() -> void:
 	var outer := _depth == 0
 	_depth += 1
@@ -38,6 +40,7 @@ func begin_batch() -> void:
 		on_batch.call(true)
 
 
+## Closes one batch. The outer close notifies the runtime hook.
 func end_batch() -> void:
 	if _depth <= 0:
 		push_error("Wyrd.events.end_batch: no open batch")

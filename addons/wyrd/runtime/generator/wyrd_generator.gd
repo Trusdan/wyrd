@@ -28,6 +28,7 @@ var _why: Dictionary = {}
 var candidate_traces: int = 0
 
 
+## Queues a host offer, or replaces the tier and payload when that source and key are already queued. Returns false when the source, key, tier, or payload is refused.
 func offer(source: StringName, key: String, tier: StringName = &"", payload: Dictionary = {}) -> bool:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if source == &"" or key.is_empty():

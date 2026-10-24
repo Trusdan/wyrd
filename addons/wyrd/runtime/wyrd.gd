@@ -1,3 +1,5 @@
+## Facade over one runtime.
+## Host calls, signals, and member objects are exposed here.
 extends Node
 
 const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
@@ -18,29 +20,50 @@ const _Runtime := preload("res://addons/wyrd/runtime/wyrd_runtime.gd")
 ## [signal scene_started] fires after a scene opens and before its first [signal line_ready].
 ## The other design-list signals are repeated here with the member object's arguments.
 
+## Fires with the line when a bark wins.
 signal bark_ready(line: WyrdLineView)
+## Fires when a topic becomes unlocked.
 signal topic_unlocked(topic: StringName)
 ## @experimental
 signal topic_locked(topic: StringName)
+## Fires when a document is opened.
 signal document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool)
+## Fires once at the end of a load, whether the load applied or was refused.
 signal load_report_ready(report: WyrdLoadReport)
+## Fires with the line the open scene is showing.
 signal line_ready(line: WyrdLineView)
+## Fires with the choices the open scene is showing.
 signal choices_ready(choices: Array[WyrdChoiceView])
+## Fires after a scene opens and before its first line.
 signal scene_started(scene_id: String)
+## Fires when a scene closes, with its status and reason.
 signal scene_ended(scene_id: String, status: StringName, reason: StringName)
+## Fires when a quest status changes.
 signal quest_state_changed(quest_id: String, status: StringName)
+## Fires when a quest enters a stage.
 signal stage_changed(quest_id: String, stage_id: String)
+## Fires when a quest outcome branch changes.
 signal outcome_changed(quest_id: String, branch: StringName, value: StringName)
+## Fires when a journal entry is written.
 signal journal_entry_added(quest_id: String, entry_id: String, text: String)
+## Fires when a role holder changes.
 signal role_holder_changed(role_id: StringName, old_holder: StringName, new_holder: StringName)
+## Fires when a role is left empty or abolished.
 signal role_vacant(role_id: StringName)
+## Fires when an election is waiting for a new holder.
 signal election_needed(role_id: StringName, departed: StringName)
+## Fires with the deed that was just stored.
 signal deed_recorded(deed: Dictionary)
+## Fires when a subscribed fact value changes.
 signal fact_changed(key: StringName, old_value: Variant, new_value: Variant)
+## Fires when a quest's required pack is missing.
 signal content_unavailable(quest_id: String, pack_id: String)
 
+## Fact store for this runtime.
 var facts: WyrdFactStore
+## Event entry for this runtime.
 var events: WyrdEvents
+## Deed log for this runtime.
 var deeds: WyrdDeedLog
 ## @experimental
 var social: WyrdSocial
@@ -48,10 +71,15 @@ var social: WyrdSocial
 var rumors: WyrdRumor
 ## @experimental
 var publish: WyrdPublish
+## Role bindings for this runtime.
 var roles: WyrdRoles
+## Unlocked topics for this runtime.
 var topics: WyrdTopics
+## Readable documents for this runtime.
 var documents: WyrdDocuments
+## Quest runner for this runtime.
 var quests: WyrdQuestRunner
+## Scene runner for this runtime.
 var dialogue: WyrdSceneRunner
 ## @experimental
 var storylets: WyrdStoryletDeck
@@ -59,7 +87,9 @@ var storylets: WyrdStoryletDeck
 var sequences: WyrdSequences
 ## @experimental
 var director: WyrdDirector
+## Story-pressure queue for this runtime.
 var generator: WyrdGenerator
+## AI hook for this runtime. It stays idle with the null provider.
 var ai: WyrdAI
 ## @experimental
 var trace: WyrdTrace
@@ -197,18 +227,22 @@ func _relay_content_unavailable(quest_id: String, pack_id: String) -> void:
 	content_unavailable.emit(quest_id, pack_id)
 
 
+## Returns the addon version string.
 func get_version() -> String:
 	return _runtime.get_version()
 
 
+## Installs one config on the runtime. A null config is refused.
 func configure(config: WyrdConfig) -> void:
 	_runtime.configure(config)
 
 
+## Registers a host adapter whose script extends the given base.
 func register_adapter(base: Script, adapter: RefCounted) -> void:
 	_runtime.register_adapter(base, adapter)
 
 
+## Registers a content callable. Returns false when the callable is missing or the name is already used.
 func register_function(name: StringName, fn: Callable, arg_types: Array, return_type: StringName) -> bool:
 	return _runtime.register_function(name, fn, arg_types, return_type)
 
@@ -233,10 +267,12 @@ func register_rumor_policy(policy: WyrdRumorPolicy) -> void:
 	_runtime.register_rumor_policy(policy)
 
 
+## Returns deeds a current member of a group witnessed at or after a minute. An empty filter keeps every verb.
 func deeds_known_to(group: StringName, since: int, filter: StringName = &"") -> Array:
 	return _runtime.deeds_known_to(group, since, filter)
 
 
+## Drops the membership cache and wakes conditions that read group membership.
 func invalidate_groups() -> void:
 	_runtime.invalidate_groups()
 
@@ -246,14 +282,17 @@ func invalidate_world(ids: PackedStringArray = PackedStringArray()) -> void:
 	_runtime.invalidate_world(ids)
 
 
+## Clears play state and starts a game from a seed.
 func start_new_game(seed_value: int) -> void:
 	_runtime.start_new_game(seed_value)
 
 
+## Compiles a content manifest and returns the load report.
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	return _runtime.load_content(manifest)
 
 
+## Advances the runtime by the given number of game minutes.
 func tick(game_minutes: float) -> void:
 	_runtime.tick(game_minutes)
 
@@ -263,14 +302,17 @@ func now_minutes() -> int:
 	return _runtime.now_minutes()
 
 
+## True when no scene is open.
 func can_save() -> bool:
 	return _runtime.can_save()
 
 
+## Returns the save dictionary. Refuses, and returns an empty dictionary, while a scene is open.
 func save_state() -> Dictionary:
 	return _runtime.save_state()
 
 
+## Applies a save dictionary and returns the load report. Refuses while a scene is open.
 func load_state(data: Dictionary) -> WyrdLoadReport:
 	return _runtime.load_state(data)
 

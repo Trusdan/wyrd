@@ -14,6 +14,7 @@ extends RefCounted
 ## [signal fact_changed] fires only for prefixes passed to [method subscribe].
 ## Callables on this object are the runtime's hooks. They are not saved.
 
+## Fires for a changed key whose prefix was passed to subscribe.
 signal fact_changed(key: StringName, old_value: Variant, new_value: Variant)
 
 ## @experimental
@@ -508,6 +509,7 @@ func get_in(key: StringName, perspective: StringName = &"world") -> Variant:
 	return _resolved(fact, text)
 
 
+## Stores a value in one perspective. Returns false when the perspective, key, or type is refused.
 func set_in(key: StringName, new_value: Variant, perspective: StringName = &"world") -> bool:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var text := String(key)
