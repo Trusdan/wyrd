@@ -181,7 +181,11 @@ static func check(runtime: WyrdRuntime, data: Dictionary) -> Dictionary:
 	var content := runtime.content()
 	if content == null:
 		return _refused(report, WyrdDiagnostic.E_SAVE_VERSION, "load content before loading a save", "content")
-	var working: Dictionary = data.duplicate(true)
+	# An older schema is copied in full before migrations rewrite it. A current
+	# schema shares deed-row dictionaries: later steps only read them, or copy
+	# the document before a rewrite, and the import keeps no row dictionary.
+	var share_rows := _whole(data.get("schema_version", -1), -1) == SCHEMA_VERSION
+	var working := _copy_for_check(data, share_rows)
 	var version := _whole(working.get("schema_version", -1), -1)
 	if version < 1:
 		return _refused(report, WyrdDiagnostic.E_SAVE_VERSION, "save schema_version is missing", "schema_version")
@@ -750,6 +754,39 @@ static func _deed_row_ok(row: Dictionary) -> bool:
 			if not _believers_ok(value):
 				return false
 	return true
+
+
+static func _copy_for_check(data: Dictionary, share_deed_rows: bool) -> Dictionary:
+	if not share_deed_rows:
+		return data.duplicate(true)
+	var deeds_value: Variant = data.get("deeds", null)
+	if not (deeds_value is Dictionary):
+		return data.duplicate(true)
+	var deeds: Dictionary = deeds_value
+	var rows_value: Variant = deeds.get("rows", null)
+	if not (rows_value is Array):
+		return data.duplicate(true)
+	var working: Dictionary = {}
+	for key in data.keys():
+		if String(key) == "deeds":
+			var copied: Dictionary = {}
+			for deed_key in deeds.keys():
+				if String(deed_key) == "rows":
+					copied[deed_key] = (rows_value as Array).duplicate(false)
+				else:
+					copied[deed_key] = _deep_value(deeds[deed_key])
+			working[key] = copied
+		else:
+			working[key] = _deep_value(data[key])
+	return working
+
+
+static func _deep_value(value: Variant) -> Variant:
+	if value is Dictionary:
+		return (value as Dictionary).duplicate(true)
+	if value is Array:
+		return (value as Array).duplicate(true)
+	return value
 
 
 static func _string_list_ok(value: Variant) -> bool:
