@@ -81,3 +81,45 @@ func test_compare_catches_type_and_default_changes() -> void:
 			saw_default = true
 	assert_true(saw_type, "\n".join(diffs))
 	assert_true(saw_default, "\n".join(diffs))
+
+
+func test_compare_checks_return_and_experimental_once() -> void:
+	var zero_left := {
+		"name": "ping",
+		"args": [],
+		"return": {"type": "int", "class": "WyrdLineView"},
+		"experimental": true,
+	}
+	var type_right := zero_left.duplicate(true)
+	type_right["return"]["type"] = "String"
+	var type_diffs := _method_diffs(zero_left, type_right)
+	assert_eq(type_diffs.size(), 1, "\n".join(type_diffs))
+	assert_true(str(type_diffs[0]).contains("return type"), type_diffs[0])
+	var class_right := zero_left.duplicate(true)
+	class_right["return"]["class"] = "WyrdChoiceView"
+	var class_diffs := _method_diffs(zero_left, class_right)
+	assert_eq(class_diffs.size(), 1, "\n".join(class_diffs))
+	assert_true(str(class_diffs[0]).contains("return class"), class_diffs[0])
+	var flag_right := zero_left.duplicate(true)
+	flag_right["experimental"] = false
+	var flag_diffs := _method_diffs(zero_left, flag_right)
+	assert_eq(flag_diffs.size(), 1, "\n".join(flag_diffs))
+	assert_true(str(flag_diffs[0]).contains("true -> false"), flag_diffs[0])
+	var two_left := {
+		"name": "place",
+		"args": [
+			{"name": "who", "type": "String", "class": ""},
+			{"name": "where", "type": "String", "class": ""},
+		],
+		"return": {"type": "void", "class": ""},
+		"experimental": false,
+	}
+	var two_right := two_left.duplicate(true)
+	two_right["return"]["type"] = "bool"
+	var two_diffs := _method_diffs(two_left, two_right)
+	assert_eq(two_diffs.size(), 1, "\n".join(two_diffs))
+	assert_true(str(two_diffs[0]).contains("return type"), two_diffs[0])
+
+
+func _method_diffs(left_method: Dictionary, right_method: Dictionary) -> PackedStringArray:
+	return WyrdApiGolden.compare({"methods": [left_method]}, {"methods": [right_method]})

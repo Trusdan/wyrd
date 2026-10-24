@@ -225,15 +225,15 @@ static func _compare_args(diffs: PackedStringArray, label: String, left_method: 
 			var right_default := _default_at(right_method, index)
 			if left_default != right_default:
 				diffs.append("%s: argument %d default %s -> %s" % [label, number, _shown_default(left_default), _shown_default(right_default)])
-		if with_return:
-			var left_return: Dictionary = left_method.get("return", {})
-			var right_return: Dictionary = right_method.get("return", {})
-			if str(left_return.get("type", "")) != str(right_return.get("type", "")):
-				diffs.append("%s: return type %s -> %s" % [label, left_return.get("type", ""), right_return.get("type", "")])
-			if str(left_return.get("class", "")) != str(right_return.get("class", "")):
-				diffs.append("%s: return class %s -> %s" % [label, left_return.get("class", ""), right_return.get("class", "")])
-		if left_method.has("experimental") or right_method.has("experimental"):
-			_compare_scalar(diffs, "%s experimental" % label, left_method.get("experimental", null), right_method.get("experimental", null))
+	if with_return:
+		var left_return: Dictionary = left_method.get("return", {})
+		var right_return: Dictionary = right_method.get("return", {})
+		if str(left_return.get("type", "")) != str(right_return.get("type", "")):
+			diffs.append("%s: return type %s -> %s" % [label, left_return.get("type", ""), right_return.get("type", "")])
+		if str(left_return.get("class", "")) != str(right_return.get("class", "")):
+			diffs.append("%s: return class %s -> %s" % [label, left_return.get("class", ""), right_return.get("class", "")])
+	if left_method.has("experimental") or right_method.has("experimental"):
+		_compare_scalar(diffs, "%s experimental" % label, left_method.get("experimental", null), right_method.get("experimental", null))
 
 
 static func _compare_properties(diffs: PackedStringArray, prefix: String, left_rows: Array, right_rows: Array) -> void:
