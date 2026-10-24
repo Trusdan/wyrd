@@ -38,7 +38,7 @@ Details are in the repository `README.md`.
 1. Read the description first: files touched, the pinned Godot and GUT versions, how to run the tests, and anything deferred.
 2. Read the tests next. They are the contract. A runtime or compiler change should be visible in a test without a tour of the engine.
 3. `addons/wyrd/runtime` is the engine. If a change puts logic in `plugin.gd` or `editor/`, ask for it to move to a plain class.
-4. A grammar change updates `docs/grammar-v1.md` and names the open choices. Do not treat an example in that doc as a parser.
+4. A language change updates `docs/language.md` and follows `docs/stability.md`.
 5. Example prose belongs in `example/` or in docs, and it stays in Gullhaven.
 6. Skip `addons/gut` unless the pull request is a planned GUT upgrade. That tree is vendored.
 7. CI imports the project, runs GUT, runs the benchmark as information only, and runs the content-hygiene check. A red hygiene step means a deny-listed term is in the diff. The log will not show the term.

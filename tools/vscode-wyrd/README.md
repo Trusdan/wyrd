@@ -2,7 +2,7 @@
 
 A local VS Code extension that colors `.wyrd` files and matches `check` diagnostics. It is not published.
 
-The TextMate grammar is a draft. It follows the lexer and parser on `main`, not only the frozen lexical set in `docs/grammar-v1.md`. Snapshot tests under `tests/snap/` record every scope.
+The TextMate grammar follows the lexer and parser on `main`. The language reference is `docs/language.md`. Snapshot tests under `tests/snap/` record every scope.
 
 ## What it contributes
 

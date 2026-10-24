@@ -1,6 +1,6 @@
 # conditions
 
-Runtime condition index and stack evaluator. The draft language is `docs/conditions-draft.md`.
+Runtime condition index and stack evaluator. The language is `docs/language.md#conditions`.
 
 `WyrdDepIndex` maps exact fact keys and `{id}` patterns to condition indexes. It is built from each condition's `reads` and is never saved. A pattern matches the whole key. A computed segment stays a wildcard.
 

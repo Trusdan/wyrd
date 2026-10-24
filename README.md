@@ -26,6 +26,6 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-sm
 
 `tests/bench` is informational and does not gate CI. The milestone suite lives in `bench/` and `tools/perf_bench.sh`. Pull requests do not run it. Tags and a manual dispatch run the full scale and report a metric more than 20% slower or larger than the base build as a warning; benchmark runs never fail on a regression. The 07:00 UTC nightly does the same, and skips when the default branch SHA matches the last successful nightly. See `bench/README.md`.
 
-`addons/wyrd` is the folder a host copies. `example/` is the Gullhaven placeholder. `tests/fake_host` is the scripted host. The grammar draft is `docs/grammar-v1.md`. Examples use only that invented village. See `docs/CONTRIBUTING.md`.
+`addons/wyrd` is the folder a host copies. `example/` is the Gullhaven placeholder. `tests/fake_host` is the scripted host. The language reference is `docs/language.md`. Examples use only that invented village. See `docs/CONTRIBUTING.md`.
 
 License: [MIT](LICENSE). Copyright (c) 2026 Corey Patrick Jones (github.com/Trusdan).
