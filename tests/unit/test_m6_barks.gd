@@ -3,6 +3,7 @@ extends GutTest
 const _Facade := preload("res://addons/wyrd/runtime/wyrd.gd")
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 
 func test_adapters_answer_nearby_reach_and_carried_items() -> void:
@@ -227,6 +228,7 @@ func _harbor() -> WyrdRuntime:
 	var report := runtime.load_content(manifest)
 	assert_true(report.ok, report.diagnostics.format())
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(5)
 	runtime.set_meta("host", host)
 	return runtime

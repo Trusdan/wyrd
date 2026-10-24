@@ -48,7 +48,7 @@ The play scene is already set: `example/playtest/gullhaven_playtest.tscn`. If Go
 
 Press **F5**, or the Play button at the top right. (F6 plays whatever scene is open in the editor. F5 plays the main scene, which is the one you want.)
 
-A window opens at 1600×900. Drag the edges to resize it. The panels stay inside the window and grow with it. The journal and the fact list scroll when the text is taller than the pane.
+A window opens at 1600×900. Drag the edges to resize it. The panels stay inside the window and grow with it, including at 1280×720 and 1920×1080. The journal pane and the fact pane start short, so Continue, the choice buttons, the controls, the route list, Start route, Tell secret, and Load in next version stay inside the window. Those panes grow when the window is taller. The journal and the fact list scroll when the text is taller than the pane.
 
 The status line says "Press New game." You will see:
 

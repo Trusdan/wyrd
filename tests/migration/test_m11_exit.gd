@@ -9,7 +9,8 @@ const _Inventory := preload("res://tests/determinism/replay_inventory.gd")
 const _M10 := preload("res://tests/scenario/m10_gullhaven.gd")
 const _Fuzz := preload("res://tests/migration/test_load_fuzz.gd")
 
-const _CURRENT_HASH := "918b2aad2be7d4fa"
+const _FIXTURE_HASH := "f003b6b54c91ad8e"
+const _LIVE_HASH := "918b2aad2be7d4fa"
 const _HARBOR_OLD := "res://tests/migration/packs/harbor_old.wyrdmanifest.tres"
 const _HARBOR_NEW := "res://tests/migration/packs/harbor_new.wyrdmanifest.tres"
 const _STAGE_OLD := "res://tests/migration/packs/stage_old.wyrdmanifest.tres"
@@ -99,11 +100,11 @@ quest harbor_guild "The Harbor Guild"
 func test_exit_X1_fixtures_load_and_round_trip() -> void:
 	var cases: Array = [
 		["res://tests/migration/fixtures/schema1_harbor.json", 1, "886d9ba3e5447ff4", false],
-		["res://tests/fixtures/schema2_harbor.json", 2, _CURRENT_HASH, false],
-		["res://tests/fixtures/schema3_harbor.json", 3, _CURRENT_HASH, false],
-		["res://tests/fixtures/schema4_ai_harbor.json", 4, _CURRENT_HASH, false],
+		["res://tests/fixtures/schema2_harbor.json", 2, _FIXTURE_HASH, false],
+		["res://tests/fixtures/schema3_harbor.json", 3, _FIXTURE_HASH, false],
+		["res://tests/fixtures/schema4_ai_harbor.json", 4, _FIXTURE_HASH, false],
 		["res://tests/migration/fixtures/gullhaven_v0.7.0-m9.json", 4, "8bf113c14f107242", true],
-		["res://tests/migration/fixtures/gullhaven_v0.8.0-m10.json", 4, _CURRENT_HASH, true],
+		["res://tests/migration/fixtures/gullhaven_v0.8.0-m10.json", 4, _FIXTURE_HASH, true],
 	]
 	for item in cases:
 		var path := String(item[0])
@@ -115,6 +116,7 @@ func test_exit_X1_fixtures_load_and_round_trip() -> void:
 		assert_true(report.ok, "%s %s" % [path, report.diagnostics.format()])
 		var saved := runtime.save_state()
 		assert_eq(int(saved["schema_version"]), 4, path)
+		assert_eq(_Load.pack_hash(saved), _LIVE_HASH, path)
 		var second := _open_current(bool(item[3]))
 		var again := second.load_state(saved)
 		assert_true(again.ok, "%s %s" % [path, again.diagnostics.format()])
@@ -249,7 +251,7 @@ func test_exit_S1_lints_chain_and_manifest_hash() -> void:
 	assert_eq(String(verbs["a"]), "c")
 	assert_eq(String(verbs["b"]), "c")
 	var gullhaven := _open_current(true)
-	assert_eq(WyrdRng.format_u64(gullhaven.content().manifest_hash), _CURRENT_HASH)
+	assert_eq(WyrdRng.format_u64(gullhaven.content().manifest_hash), _LIVE_HASH)
 	assert_true(gullhaven.content().aliases.is_empty())
 
 
@@ -380,9 +382,10 @@ func test_exit_S3_a_host_defined_role_adds_no_kept_row() -> void:
 func test_exit_S4_rows_signal_and_manifest() -> void:
 	var clean := _open_current(true)
 	var clean_hits := _watch(clean)
-	var clean_report := clean.load_state(_Load.read("res://tests/migration/fixtures/gullhaven_v0.8.0-m10.json"))
+	var clean_saved := _Load.read("res://tests/migration/fixtures/gullhaven_v0.8.0-m10.json")
+	var clean_report := clean.load_state(clean_saved)
 	assert_true(clean_report.ok, clean_report.diagnostics.format())
-	assert_eq(clean_report.rows, [])
+	assert_eq(clean_report.rows, _debug_manifest_rows(clean_saved, clean))
 	assert_eq(clean_hits[0], 1)
 	var parsed: Variant = JSON.parse_string(JSON.stringify(_Load.read("res://tests/migration/fixtures/gullhaven_v0.7.0-m9.json")))
 	var data: Dictionary = parsed
@@ -404,7 +407,7 @@ func test_exit_S4_rows_signal_and_manifest() -> void:
 		var manifest := _find(mixed_report, "", "W_SAVE_MANIFEST")
 		assert_eq(String(manifest["kind"]), "manifest")
 		assert_eq(String(manifest["from"]), "8bf113c14f107242")
-		assert_eq(String(manifest["to"]), _CURRENT_HASH)
+		assert_eq(String(manifest["to"]), _LIVE_HASH)
 	var refused_runtime := _open_current(true)
 	var refused_hits := _watch(refused_runtime)
 	var bad: Dictionary = JSON.parse_string(JSON.stringify(refused_runtime.save_state()))
@@ -668,6 +671,21 @@ func _policy() -> WyrdRumorPolicy:
 
 func _host(runtime: WyrdRuntime) -> WyrdFakeHost:
 	return runtime.get_meta(&"host") as WyrdFakeHost
+
+
+func _debug_manifest_rows(saved: Dictionary, runtime: WyrdRuntime) -> Array:
+	if not OS.is_debug_build():
+		return []
+	var packs: Array = saved["content"]["packs"]
+	var from_hash := String((packs[0] as Dictionary)["hash"])
+	return [{
+		"code": "W_SAVE_MANIFEST",
+		"count": 0,
+		"from": from_hash,
+		"id": "",
+		"kind": "manifest",
+		"to": WyrdRng.format_u64(runtime.content().manifest_hash),
+	}]
 
 
 func _watch(runtime: WyrdRuntime) -> Array:

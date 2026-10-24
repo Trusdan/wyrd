@@ -19,6 +19,15 @@ const _PANELS: PackedStringArray = [
 	"LoadReport",
 ]
 
+const _WALK_CONTROLS: PackedStringArray = [
+	"Continue",
+	"Controls",
+	"RouteList",
+	"Start route",
+	"Tell secret",
+	"Load in next version",
+]
+
 
 func test_choice_and_continue_signals_do_not_error() -> void:
 	var routes: Array[Dictionary] = [
@@ -280,7 +289,7 @@ func test_panels_fit_at_1280_and_1920() -> void:
 	var saved_size := window.size
 	var saved_mode := window.content_scale_mode
 	window.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
-	var sizes: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1920, 1080)]
+	var sizes: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080)]
 	for size in sizes:
 		window.size = size
 		var ui := _spawn_on(window)
@@ -332,6 +341,13 @@ func _press(ui: Node, title: String) -> void:
 	var button := _button_with_text(ui, title)
 	assert_not_null(button, title)
 	button.pressed.emit()
+
+
+func _control_named(ui: Node, label: String) -> Control:
+	var by_name := ui.find_child(label, true, false) as Control
+	if by_name != null:
+		return by_name
+	return _button_with_text(ui, label)
 
 
 func _button_with_text(ui: Node, title: String) -> Button:
@@ -455,6 +471,27 @@ func _assert_layout(ui: Control, size: Vector2i, phase: String) -> void:
 		assert_gt(rect.size.x, 1.0, "%s %s width" % [where, node_name])
 		assert_gt(rect.size.y, 1.0, "%s %s height" % [where, node_name])
 		assert_true(viewport.grow(1.0).encloses(rect), "%s %s %s outside %s" % [where, node_name, rect, viewport])
+	for label in _WALK_CONTROLS:
+		var control := _control_named(ui, label)
+		assert_not_null(control, "%s %s" % [where, label])
+		var control_rect := control.get_global_rect()
+		assert_gt(control_rect.size.x, 1.0, "%s %s width" % [where, label])
+		assert_gt(control_rect.size.y, 1.0, "%s %s height" % [where, label])
+		assert_true(viewport.grow(1.0).encloses(control_rect), "%s %s %s outside %s" % [where, label, control_rect, viewport])
+	if phase == "choices":
+		var choices := ui.find_child("Choices", true, false) as VBoxContainer
+		assert_not_null(choices, where)
+		var choice_count := 0
+		for child in choices.get_children():
+			var choice := child as Button
+			if choice == null or not choice.is_visible_in_tree():
+				continue
+			choice_count += 1
+			var choice_rect := choice.get_global_rect()
+			assert_gt(choice_rect.size.x, 1.0, "%s choice '%s' width" % [where, choice.text])
+			assert_gt(choice_rect.size.y, 1.0, "%s choice '%s' height" % [where, choice.text])
+			assert_true(viewport.grow(1.0).encloses(choice_rect), "%s choice '%s' %s outside %s" % [where, choice.text, choice_rect, viewport])
+		assert_gt(choice_count, 0, "%s choices" % where)
 	for node in ui.find_children("*", "Button", true, false):
 		var button := node as Button
 		if button == null or not button.is_visible_in_tree():

@@ -2,6 +2,7 @@ extends GutTest
 
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 const _VOICE := """id=dock_voice text=The crossing stays open. {holder(ferry_master)|variants} tags=voiced scene= context=storylet:dock_voice_crossing
 id=dock_voice_master text=The ferry master keeps the crossing open. tags=voiced scene= context=variant:ferry_master storylet:dock_voice_crossing
@@ -396,6 +397,7 @@ func _harbor() -> WyrdRuntime:
 	var report := runtime.load_content(manifest)
 	assert_true(report.ok, report.diagnostics.format())
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(5)
 	runtime.set_meta("host", host)
 	return runtime

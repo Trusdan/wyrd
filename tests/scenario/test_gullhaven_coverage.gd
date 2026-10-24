@@ -189,6 +189,16 @@ func test_hostile_factor_reaches_the_journal() -> void:
 	assert_true(found, "j_guild_hostile")
 
 
+func test_booting_gullhaven_without_host_decides_reports_the_error() -> void:
+	var runtime := WyrdRuntime.new()
+	runtime.register_adapter(WyrdElectionAdapter, preload("res://example/playtest/harbor_election.gd").new())
+	var report := runtime.load_content(load(_GULLHAVEN) as WyrdContentManifest)
+	assert_true(report.ok, report.diagnostics.format())
+	runtime.start_new_game(1)
+	assert_push_error("WyrdRoles: host_decides has no callback")
+	assert_engine_error_count(0)
+
+
 func _assert_baseline(path: String) -> void:
 	var result: Dictionary = WyrdCli.execute(PackedStringArray(["check", "--strict", "--manifest", path]))
 	var output := String(result["output"])

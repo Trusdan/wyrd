@@ -23,7 +23,7 @@ Gullhaven is a fishing village invented for Wyrd. Its people and places are not 
 - `mooring_post.wyrd` is The Mooring Post. It starts when `harbor.mooring_check` is set and casts the post from a bollard.
 - `harbor_gazette.wyrd` is the harbor gazette. It publishes `harbor.gazette` once a day after a one-hour delay.
 - `harbor_templates.wyrd` is seven generated templates: `net_delivery` delivers a net to the harbor factor, `stolen_catch` recovers a stolen catch, `cut_line` investigates a cut mooring, `night_walk` escorts a visitor, and `tavern_stew_low`, `tavern_stew_mid`, and `tavern_stew_high` are one recurring stew favor tiered by pressure.
-- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`, and the skill `strength`. `playtest/harbor_election.gd` is the no-op election adapter New game registers. New game also registers the rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
+- `harbor.wyrdmanifest.tres` lists those files. `wyrd_commands.json` names `assign_lodging` and `post_notice`, and the skill `strength`. `playtest/harbor_election.gd` is the no-op election adapter New game registers. A host running Gullhaven registers `set_host_decides` before New game, the way the playtest does, because `smugglers_contact` uses `host_decides`. New game also registers the rumor policy `harbor_whisper` (kind `apprentice`, two hops, verb `whispered`).
 
 ```bash
 godot --headless --path . -s res://addons/wyrd/cli/wyrd_cli.gd -- check --manifest example/content/gullhaven/harbor.wyrdmanifest.tres

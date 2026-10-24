@@ -2,6 +2,7 @@ extends GutTest
 
 const _HARBOR := "res://example/content/gullhaven/harbor.wyrdmanifest.tres"
 const _Election := preload("res://example/playtest/harbor_election.gd")
+const _Harness := preload("res://tests/scenario/s2c_harness.gd")
 
 
 func test_parallel_regions_advance_on_their_own() -> void:
@@ -290,6 +291,7 @@ func test_gullhaven_bell_repair_and_signal() -> void:
 		assert_ne(code, "W_FACT_NEVER_SET")
 		assert_ne(code, "W_FACT_UNUSED")
 	runtime.register_adapter(WyrdElectionAdapter, _Election.new())
+	_Harness.new().register_host_decides(runtime)
 	runtime.start_new_game(5)
 	runtime.tick(0)
 	assert_eq(runtime.quests.stage("bell_repair"), "repair")

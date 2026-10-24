@@ -112,6 +112,8 @@ role smugglers_contact
   vacancy: hold
 ```
 
+A host running Gullhaven registers `set_host_decides` before New game, the way the playtest does. Without that callback, New game reports that `host_decides` has no callback.
+
 Press **New game**, then **Tell secret**. The quest summary row changes.
 
 - Before the press: `secret role smugglers_contact — holder hidden`

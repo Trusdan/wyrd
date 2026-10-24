@@ -1110,14 +1110,14 @@ func _load_panel() -> VBoxContainer:
 	box.add_child(label)
 	var scroll := ScrollContainer.new()
 	scroll.name = "LoadReportScroll"
-	scroll.custom_minimum_size = Vector2(0, 48)
+	scroll.custom_minimum_size = Vector2(0, 28)
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var list := ItemList.new()
 	list.name = "LoadReportList"
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	list.fixed_icon_size = Vector2i(0, 0)
-	list.custom_minimum_size = Vector2(0, 48)
+	list.custom_minimum_size = Vector2(0, 28)
 	scroll.add_child(list)
 	box.add_child(scroll)
 	_load_list = list
@@ -1192,11 +1192,11 @@ func _side() -> VBoxContainer:
 	column.custom_minimum_size = Vector2(320, 0)
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 4)
 	var journal_label := Label.new()
 	journal_label.text = "Journal"
 	column.add_child(journal_label)
-	column.add_child(_scroll_list("Journal", 72))
+	column.add_child(_scroll_list("Journal", 28))
 	# Quest, stage, status, outcome, waiting, and slots stay on screen.
 	# The fact list below them scrolls, and a filter can hide rows.
 	_summary = Label.new()
@@ -1212,7 +1212,7 @@ func _side() -> VBoxContainer:
 	_fact_filter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_fact_filter.text_changed.connect(_on_fact_filter)
 	column.add_child(_fact_filter)
-	column.add_child(_scroll_list("Fact", 80))
+	column.add_child(_scroll_list("Fact", 32))
 	return column
 
 
