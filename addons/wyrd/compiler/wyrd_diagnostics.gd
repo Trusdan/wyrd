@@ -4,9 +4,11 @@ extends RefCounted
 ## Collects compiler diagnostics in source order.
 ##
 
+## Diagnostics in the order they were added, until sort_items runs.
 var items: Array[WyrdDiagnostic] = []
 
 
+## Appends one diagnostic. The line and column are at least 1.
 func add(
 	code: StringName,
 	message: String,
@@ -18,10 +20,12 @@ func add(
 	items.append(WyrdDiagnostic.new(severity, code, message, source_path, maxi(line, 1), maxi(col, 1)))
 
 
+## True when any item is an error.
 func has_errors() -> bool:
 	return _has(WyrdDiagnostic.SEVERITY_ERROR)
 
 
+## True when any item is a warning.
 func has_warnings() -> bool:
 	return _has(WyrdDiagnostic.SEVERITY_WARNING)
 
@@ -58,6 +62,7 @@ static func _less_row(a: Dictionary, b: Dictionary) -> bool:
 	return int(a["i"]) < int(b["i"])
 
 
+## One formatted line per item, ending in a newline. Empty when there are no items.
 func format() -> String:
 	if items.is_empty():
 		return ""

@@ -5,31 +5,37 @@ extends RefCounted
 ##
 ## Default bodies report that they are not implemented. A host, or the fake host, overrides them.
 
+## Whether the host knows this entity. The default body reports that it is not implemented and returns false.
 func exists(id: StringName) -> bool:
 	push_error("not implemented: WyrdWorldAdapter.exists(%s)" % id)
 	return false
 
 
+## Kind of one entity. The default body reports that it is not implemented and returns an empty name.
 func kind(id: StringName) -> StringName:
 	push_error("not implemented: WyrdWorldAdapter.kind(%s)" % id)
 	return &""
 
 
+## Tags of one entity. The default body reports that it is not implemented and returns an empty list.
 func tags(id: StringName) -> PackedStringArray:
 	push_error("not implemented: WyrdWorldAdapter.tags(%s)" % id)
 	return PackedStringArray()
 
 
+## One attribute of an entity. The default body reports that it is not implemented and returns null.
 func attr(id: StringName, key: StringName) -> Variant:
 	push_error("not implemented: WyrdWorldAdapter.attr(%s, %s)" % [id, key])
 	return null
 
 
+## Whether an entity is alive. The default body reports that it is not implemented and returns false.
 func is_alive(id: StringName) -> bool:
 	push_error("not implemented: WyrdWorldAdapter.is_alive(%s)" % id)
 	return false
 
 
+## Name the host shows for an entity. The default body reports that it is not implemented and returns an empty string.
 func display_name(id: StringName) -> String:
 	push_error("not implemented: WyrdWorldAdapter.display_name(%s)" % id)
 	return ""

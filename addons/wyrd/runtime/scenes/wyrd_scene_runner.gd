@@ -16,10 +16,13 @@ extends RefCounted
 ## [method open] lists unlocked topics with an eligible storylet.
 ## [method ask_topic] runs that storylet. A line or set emits [signal topic_answered].
 
+## Fires with the line the host should show.
 signal line_ready(line: WyrdLineView)
+## Fires with the choices the host should show.
 signal choices_ready(choices: Array[WyrdChoiceView])
 ## Fires after a scene opens and before its first line_ready.
 signal scene_started(scene_id: String)
+## Fires when a scene closes, with its status and reason.
 signal scene_ended(scene_id: String, status: StringName, reason: StringName)
 ## @experimental
 signal topic_answered(npc: StringName, topic: StringName, line: WyrdLineView)
@@ -269,6 +272,7 @@ func choices() -> Array[WyrdChoiceView]:
 	return _choices.duplicate()
 
 
+## Opens a scene and emits scene_started. Refuses when a scene is already open or the id is unknown.
 func open_scene(scene_id: String) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if is_open():
@@ -291,6 +295,7 @@ func open_scene(scene_id: String) -> void:
 	_pump()
 
 
+## Leaves the current line and continues the scene.
 func advance() -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _wait != &"line":
@@ -306,6 +311,7 @@ func advance() -> void:
 	_pump()
 
 
+## Runs the choice at that index, including its skill check, then continues.
 func choose(index: int) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _wait != &"choice":
@@ -352,6 +358,7 @@ func choose(index: int) -> void:
 	_pump()
 
 
+## Stops the open scene from the inside out.
 func abort(reason: StringName) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if not is_open():

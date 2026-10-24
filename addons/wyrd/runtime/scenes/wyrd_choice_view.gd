@@ -10,11 +10,19 @@ extends RefCounted
 ## disabled choice never calls the skill adapter. [member index] is the position
 ## in this presented list. [method WyrdSceneRunner.choose] uses that index.
 
+## Position in the presented list. The scene runner's choose call uses it.
 var index: int = 0
+## Choice line id.
 var id: String = ""
+## Rendered choice label.
 var text: String = ""
+## False when the choice is shown disabled.
 var enabled: bool = true
+## Reason text when the choice is disabled. Empty when the choice is enabled.
 var reason: String = ""
+## Tags on the choice.
 var tags: PackedStringArray = PackedStringArray()
+## Skill id for this choice. Empty when the choice has no check.
 var check: StringName = &""
+## Check arguments, evaluated when the choice is presented.
 var check_args: Dictionary = {}

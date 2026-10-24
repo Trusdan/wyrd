@@ -12,9 +12,13 @@ extends RefCounted
 ## [code]count[/code], and [code]code[/code]. Unused text is empty and an unused
 ## count is 0. Rows are sorted by kind, then id, then code.
 
+## False when the compiler reported any error.
 var ok: bool = false
+## Compiler diagnostics for this load.
 var diagnostics: WyrdDiagnostics
+## Content hash. Zero when the load was refused.
 var manifest_hash: int = 0
+## Load rows. Empty for a content load.
 var rows: Array = []
 
 
@@ -22,6 +26,7 @@ func _init() -> void:
 	diagnostics = WyrdDiagnostics.new()
 
 
+## Appends one row with kind, id, from, to, count, and code.
 func add_row(kind: String, id: String, from_value: String, to_value: String, count: int, code: String) -> void:
 	rows.append({
 		"code": code,
@@ -33,6 +38,7 @@ func add_row(kind: String, id: String, from_value: String, to_value: String, cou
 	})
 
 
+## Sorts rows by kind, then id, then code.
 func sort_rows() -> void:
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var kind_a := String(a.get("kind", ""))
@@ -47,6 +53,7 @@ func sort_rows() -> void:
 	)
 
 
+## Number of error diagnostics. Zero when diagnostics is missing.
 func error_count() -> int:
 	var count := 0
 	if diagnostics == null:

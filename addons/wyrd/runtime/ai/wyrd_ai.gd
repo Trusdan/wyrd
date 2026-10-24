@@ -41,6 +41,7 @@ func bind(runtime: WyrdRuntime) -> void:
 	_runtime = runtime
 
 
+## Turns the hook on or off. Turning it off drops pending requests.
 func set_enabled(on: bool) -> void:
 	if on == _enabled:
 		return
@@ -80,6 +81,7 @@ func kinds() -> Array[StringName]:
 	return copy
 
 
+## Sends one host request. Returns 0 when the kind is unknown, the hook is off, or the provider is null.
 func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {}, path: StringName = &"") -> int:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if _runtime != null:
@@ -102,6 +104,7 @@ func request(kind: StringName, packet: Dictionary, constraints: Dictionary = {},
 	return _send(kind, packet, path, "", constraints)
 
 
+## Validates a provider answer on the main thread and caches the text when it passes. Returns false off the main thread or for an unknown request.
 func deliver(request_id: int, result: WyrdAIResult) -> bool:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	var off_thread := OS.get_thread_caller_id() != OS.get_main_thread_id()
@@ -143,6 +146,7 @@ func deliver(request_id: int, result: WyrdAIResult) -> bool:
 	return true
 
 
+## Cancels one pending request and tells the provider. Returns false when that id is not pending.
 func cancel(request_id: int) -> bool:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if not _pending.has(request_id):

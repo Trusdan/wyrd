@@ -5,7 +5,9 @@ extends RefCounted
 ##
 ## [member args] is an untyped dictionary until the command schema describes each argument.
 
+## Command name the action adapter runs.
 var name: StringName = &""
+## Untyped argument dictionary until a schema describes each argument.
 var args: Dictionary = {}
 
 

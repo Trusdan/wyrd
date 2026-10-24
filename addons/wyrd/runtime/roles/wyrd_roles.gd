@@ -32,7 +32,9 @@ extends RefCounted
 ## A secret holder's key [code]role.<id>.holder[/code] is in [code]known/[/code]
 ## only for agents passed to [method tell].
 
+## Fires when the holder changes.
 signal role_holder_changed(role_id: StringName, old_holder: StringName, new_holder: StringName)
+## Fires when the role is left empty or abolished.
 signal role_vacant(role_id: StringName)
 ## Emitted when [code]host_decides[/code] is waiting for [method assign].
 ## @experimental
@@ -40,14 +42,23 @@ signal succession_requested(role_id: StringName, departed: StringName)
 ## Emitted when [code]election[/code] is waiting for [method assign].
 signal election_needed(role_id: StringName, departed: StringName)
 
+## Entity id used when a slot checks disposition toward the player.
 const PLAYER: StringName = &"player"
+## Binding status when the role has no holder.
 const EMPTY: StringName = &"empty"
+## Binding status after assign, and the slot state when no earlier state applies.
 const DEFAULT: StringName = &"default"
+## Binding status after a strategy picks the next holder.
 const SUCCESSOR: StringName = &"successor"
+## Slot state when disposition toward the player is below the threshold.
 const HOSTILE: StringName = &"hostile"
+## Slot state when the frozen holder was vacated or is not alive.
 const LOCKED_GONE: StringName = &"locked_gone"
+## Slot state when a barred variant's condition matches the holder.
 const BARRED: StringName = &"barred"
+## Slot state when an unwilling variant's condition matches the holder.
 const UNWILLING: StringName = &"unwilling"
+## Binding status while an election or a host decision is waiting.
 const CONTESTED: StringName = &"contested"
 const _STATE_ORDER: PackedStringArray = [
 	"locked_gone", "contested", "empty", "barred", "hostile", "unwilling", "successor", "default",
@@ -585,6 +596,7 @@ func departed(role: StringName) -> StringName:
 	return (_pending[role] as Dictionary).get("departed", &"")
 
 
+## Sets the holder and marks the binding default. Refuses an empty role or entity, an abolished role, or the departed holder.
 func assign(role: StringName, entity: StringName) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if role == &"" or entity == &"":
@@ -707,6 +719,7 @@ func _living(entity: StringName) -> bool:
 	return world.exists(entity) and world.is_alive(entity)
 
 
+## Clears the holder and runs the role's succession strategy.
 func vacate(role: StringName, reason: StringName) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if _abolished.has(role) or _pending.has(role):

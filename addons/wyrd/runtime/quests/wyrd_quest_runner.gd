@@ -25,19 +25,30 @@ extends RefCounted
 ## name parallel [code]region[/code] blocks. Their active leaves are saved on
 ## the quest row and omitted when the stage has none.
 
+## Fires when a quest status changes.
 signal quest_state_changed(quest_id: String, status: StringName)
+## Fires when a quest enters a stage.
 signal stage_changed(quest_id: String, stage_id: String)
+## Fires when a journal entry is written.
 signal journal_entry_added(quest_id: String, entry_id: String, text: String)
+## Fires when a quest's required pack is missing.
 signal content_unavailable(quest_id: String, pack_id: String)
 ## @experimental
 signal host_step_requested(quest_id: String, screen_id: StringName, fields: PackedStringArray)
 
+## Quest status before the quest has been offered.
 const DORMANT: StringName = &"dormant"
+## Quest status after the quest is offered and before it is active.
 const AVAILABLE: StringName = &"available"
+## Quest status while the quest is running.
 const ACTIVE: StringName = &"active"
+## Quest status when every declared outcome is done and the body has no transition.
 const COMPLETED: StringName = &"completed"
+## Quest status when an outcome has failed.
 const FAILED: StringName = &"failed"
+## Quest status after the quest is abandoned or expires.
 const ABANDONED: StringName = &"abandoned"
+## Quest status when a required pack is missing.
 const UNAVAILABLE: StringName = &"unavailable"
 const _HOP_LIMIT := 24
 ## Returned while a region step list defers a top-level advance. Not a stage id.

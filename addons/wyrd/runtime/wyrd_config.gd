@@ -26,18 +26,29 @@ extends Resource
 ## and [member ai_max_inflight].
 ## S2a uses the hour bucket for [code]chance[/code] and the work cap for each tick.
 
+## Minutes in one hour bucket. The default is 60.
 @export var hour_bucket_minutes: int = 60
+## Verbs that have a half-life. Parallel to half_life_minutes.
 @export var half_life_verbs: PackedStringArray = PackedStringArray()
+## Half-life of each verb, in game minutes. Parallel to half_life_verbs.
 @export var half_life_minutes: PackedFloat64Array = PackedFloat64Array()
+## Starting disposition before a formula runs. The default is 50.
 @export var disposition_default: int = 50
+## Disposition below this counts as hostile. The default is 20.
 @export var hostile_threshold: int = 20
+## Verb of each axis delta. Parallel to axis_names and axis_deltas.
 @export var axis_verbs: PackedStringArray = PackedStringArray()
+## Axis of each delta. Parallel to axis_verbs and axis_deltas.
 @export var axis_names: PackedStringArray = PackedStringArray()
+## Delta of each verb and axis. Parallel to axis_verbs and axis_names.
 @export var axis_deltas: PackedFloat64Array = PackedFloat64Array()
 ## Parallel to [member kind_scale_axes] and [member kind_scale_values]. Not saved.
 @export var kind_scale_kinds: PackedStringArray = PackedStringArray()
+## Axis of each kind scale. Parallel to kind_scale_kinds and kind_scale_values.
 @export var kind_scale_axes: PackedStringArray = PackedStringArray()
+## Scale of each kind and axis. Parallel to kind_scale_kinds and kind_scale_axes.
 @export var kind_scale_values: PackedFloat64Array = PackedFloat64Array()
+## Work units one scheduler tick may run. The default is 64. The share weights split this.
 @export var scheduler_work_per_tick: int = 64
 ## Game minutes in one scheduler tick. Slices of [code]Wyrd.tick[/code] add up
 ## until this many minutes have accumulated. Not saved.
@@ -45,8 +56,11 @@ extends Resource
 ## Weights for waits, rumor, publish, cache refresh, generate, and AI pre-fetch.
 ## They split [member scheduler_work_per_tick]. Not saved.
 @export var scheduler_share_waits: int = 40
+## Weight of the rumor queue. The default is 12. Not saved.
 @export var scheduler_share_rumor: int = 12
+## Weight of the publish queue. The default is 8. Not saved.
 @export var scheduler_share_publish: int = 8
+## Weight of the cache refresh queue. The default is 4. Not saved.
 @export var scheduler_share_cache: int = 4
 ## Weight of the generate queue. The default is 0, so a generate unit runs
 ## only when earlier queues are idle and a handler is set. Not saved.
@@ -101,6 +115,7 @@ extends Resource
 @export var ai_max_inflight: int = 4
 
 
+## Minutes of half-life for one verb, or 0 when that verb is not listed.
 func half_life_for(verb: StringName) -> float:
 	var count := mini(half_life_verbs.size(), half_life_minutes.size())
 	for i in count:
@@ -109,6 +124,7 @@ func half_life_for(verb: StringName) -> float:
 	return 0.0
 
 
+## Sets the delta for one verb and axis. Appends a row when none matches.
 func set_axis_delta(verb: StringName, axis_name: StringName, delta: float) -> void:
 	var count := mini(axis_verbs.size(), mini(axis_names.size(), axis_deltas.size()))
 	for i in count:
@@ -152,6 +168,7 @@ func scales_for(axis_name: StringName) -> Array:
 	return rows
 
 
+## Sum of the stored deltas for one verb and axis.
 func axis_delta(verb: StringName, axis_name: StringName) -> float:
 	var total := 0.0
 	var count := mini(axis_verbs.size(), mini(axis_names.size(), axis_deltas.size()))

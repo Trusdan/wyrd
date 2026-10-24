@@ -22,11 +22,13 @@ extends RefCounted
 ## [code]saw[/code], [code]heard[/code], or [code]inferred[/code]. An empty mode
 ## drops that witness. A rumor adoption is not a witness. It is a believer.
 
+## Fires with the deed row that was just stored.
 signal deed_recorded(deed: Dictionary)
 
 ## @experimental
 var runtime: WyrdRuntime
 
+## Scale used when returned sums are rounded to 6 decimal places.
 const ROUND_SCALE: float = 1000000.0
 
 ## @experimental
@@ -529,6 +531,7 @@ func index_size(which: StringName, key: StringName) -> int:
 	return (table[String(key)] as PackedInt32Array).size()
 
 
+## Stores one deed and returns its id. An empty verb or actor returns -1.
 func record(
 	verb: StringName,
 	actor: StringName,
