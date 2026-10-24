@@ -2,7 +2,7 @@
 
 `WyrdRoles` keeps one binding per role: `holder`, `since`, `status` (`default`, `successor`, `empty`, `contested`), and `history`. `contested` is the open `election` or `host_decides` request.
 
-A role definition comes from a `role <id>` block or from `define()`. Both store `scope`, `eligibility`, `default_holder`, `visibility`, `succession`, and `vacancy`. See `docs/statements-draft.md`.
+A role definition comes from a `role <id>` block or from `define()`. Both store `scope`, `eligibility`, `default_holder`, `visibility`, `succession`, and `vacancy`. See `docs/language.md#role`.
 
 `eligible(role, entity)` runs the eligibility condition with `candidate` bound to that entity. No condition means every entity passes. When a condition is present, the trace bus gets one `eligible` line (`role`, `entity`, `ok`) and, if tracing is on, the console prints `wyrd eligible role=<id> entity=<id> ok=<bool>`. The line does not grow with the facts the condition reads.
 

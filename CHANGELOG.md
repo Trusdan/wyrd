@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Docs:** `docs/language.md`, the language 1 reference, replaces the grammar and draft files, which now point to it.
 - **Added:** `scene_started`, the facade relays, `register_disposition_formula`, the deprecation table and warning, `docs/stability.md`, and the stable marks.
 - **Removed:** `known`, now `E_KNOWN_REMOVED`; use `knows`. Breaking for content.
 - A golden snapshot test of the public API surface, with a list of where the code differs from the design.
