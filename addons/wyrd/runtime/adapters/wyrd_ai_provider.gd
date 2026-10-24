@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host hook for an AI answer.
 ##
-## @experimental
 ## [method request] returns at once. The answer comes later, on the main thread,
 ## through [method WyrdAIRequest.reply] or [method WyrdAI.deliver].
 ## A provider never waits. The core has no network code.

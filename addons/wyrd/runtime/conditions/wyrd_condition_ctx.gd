@@ -5,9 +5,9 @@ extends RefCounted
 ##
 ## @experimental
 ## [code]holder[/code], [code]deed_count[/code], [code]deed_score[/code],
-## [code]known[/code], and the social reads use the runtime. [code]chance[/code]
+## [code]knows[/code], and the social reads use the runtime. [code]chance[/code]
 ## draws [method WyrdRng.for_decision] on stream [code]chance[/code] with key
-## [code]<record>:<site>[/code]. [code]knows[/code] and [code]known[/code] read a
+## [code]<record>:<site>[/code]. [code]knows[/code] reads a
 ## role reveal or [code]known/<agent>[/code]. [code]believes[/code] is truthy of
 ## the resolved belief. [code]belief[/code] returns that value. [code]held[/code]
 ## reads one group's bag. [code]conflicted[/code] is true when the agent's groups
@@ -65,7 +65,6 @@ func bind(runtime: WyrdRuntime) -> void:
 		&"has_tag": Callable(self, &"_has_tag"),
 		&"held": Callable(self, &"_held"),
 		&"holder": Callable(self, &"_holder"),
-		&"known": Callable(self, &"_known"),
 		&"nearby": Callable(self, &"_nearby"),
 		&"outcome": Callable(self, &"_outcome"),
 		&"progress": Callable(self, &"_progress"),

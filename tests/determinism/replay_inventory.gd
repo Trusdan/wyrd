@@ -146,6 +146,7 @@ static func entries() -> Array:
 		{"call": "Wyrd.now_minutes", "category": "read", "reason": "Returns a value and does not change saved state, a later decision, or a compared trace row."},
 		{"call": "Wyrd.register_adapter", "category": "setup", "reason": "Facade adapter registration. Done the same way at boot."},
 		{"call": "Wyrd.register_credibility", "category": "setup", "reason": "Facade credibility registration. Done the same way at boot."},
+		{"call": "Wyrd.register_disposition_formula", "category": "setup", "reason": "Facade disposition-formula registration. Done the same way at boot."},
 		{"call": "Wyrd.register_function", "category": "setup", "reason": "Facade function registration. Done the same way at boot."},
 		{"call": "Wyrd.register_group_precedence", "category": "setup", "reason": "Facade precedence registration. Done the same way at boot."},
 		{"call": "Wyrd.register_rumor_policy", "category": "setup", "reason": "Facade rumor-policy registration. Done the same way at boot."},

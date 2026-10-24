@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Names of the commands a host accepts, and an optional skill list.
 ##
-## @experimental
 ## Argument types land with the real schema. S0 only records command names.
 ## [member checks_skills] is true when [code]wyrd_commands.json[/code] has a [code]skills[/code] key.
 

@@ -1,0 +1,8 @@
+// The condition built-in known is gone. knows remains.
+language 1
+
+facts
+  world.flag : bool stored
+
+// @when known(player, world.flag)
+// @when knows(player, world.flag)

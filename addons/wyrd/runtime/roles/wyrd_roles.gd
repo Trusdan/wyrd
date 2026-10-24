@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Role bindings and the quest-slot subset.
 ##
-## @experimental
 ## A binding holds [code]holder[/code], [code]since[/code], [code]status[/code]
 ## ([code]default[/code], [code]successor[/code], [code]empty[/code],
 ## [code]contested[/code]), and [code]history[/code]. [method assign] is host
@@ -36,6 +35,7 @@ extends RefCounted
 signal role_holder_changed(role_id: StringName, old_holder: StringName, new_holder: StringName)
 signal role_vacant(role_id: StringName)
 ## Emitted when [code]host_decides[/code] is waiting for [method assign].
+## @experimental
 signal succession_requested(role_id: StringName, departed: StringName)
 ## Emitted when [code]election[/code] is waiting for [method assign].
 signal election_needed(role_id: StringName, departed: StringName)
@@ -53,21 +53,33 @@ const _STATE_ORDER: PackedStringArray = [
 	"locked_gone", "contested", "empty", "barred", "hostile", "unwilling", "successor", "default",
 ]
 
+## @experimental
 var social: WyrdSocial
+## @experimental
 var deeds: WyrdDeedLog
+## @experimental
 var facts: WyrdFactStore
+## @experimental
 var runtime: WyrdRuntime
+## @experimental
 var clock: Callable = Callable()
+## @experimental
 var config_of: Callable = Callable()
+## @experimental
 var content_of: Callable = Callable()
+## @experimental
 var world_of: Callable = Callable()
 ## [code]inventory_of()[/code] returns the registered [WyrdInventoryAdapter], or null.
+## @experimental
 var inventory_of: Callable = Callable()
 ## [code]eval_with(condition, locals)[/code] evaluates one eligibility or cast condition.
+## @experimental
 var eval_with: Callable = Callable()
 ## [code]eval_value(condition, locals)[/code] evaluates one cast pin expression.
+## @experimental
 var eval_value: Callable = Callable()
 ## Internal. Default true. Not a [WyrdConfig] field and not saved.
+## @experimental
 var cast_index_enabled: bool = true
 var _cast_index := WyrdCastIndex.new()
 var _indexed_pool: bool = false
@@ -75,16 +87,22 @@ var _indexed_ready: bool = false
 var _indexed_digest: int = 0
 var _indexed_filter: String = ""
 ## [code]trace_of(kind, fields)[/code] records one eligibility, slot-state, succession, or cast line. Optional.
+## @experimental
 var trace_of: Callable = Callable()
 ## [code]stage_of(quest_id)[/code] returns the quest's current stage id. Optional.
+## @experimental
 var stage_of: Callable = Callable()
 ## [code]seed_of()[/code] returns the game seed used for a faction tie-break or a cast pick.
+## @experimental
 var seed_of: Callable = Callable()
 ## [code]election_of()[/code] returns the registered [WyrdElectionAdapter], or null.
+## @experimental
 var election_of: Callable = Callable()
 ## [code]faction_rank(faction, entity)[/code] returns an int. Higher wins.
+## @experimental
 var faction_rank: Callable = Callable()
 ## [code]host_decides(role, departed)[/code] is told about a pending request.
+## @experimental
 var host_decides: Callable = Callable()
 
 var _slots: Dictionary = {}
@@ -100,6 +118,7 @@ var _abolished: Dictionary = {}
 var _started: bool = false
 
 
+## @experimental
 func bind_content(content: WyrdContent) -> void:
 	_slots.clear()
 	_frozen.clear()
@@ -130,6 +149,7 @@ func bind_content(content: WyrdContent) -> void:
 		install(content.roles[role_id] as WyrdRoleDef, true)
 
 
+## @experimental
 func clear() -> void:
 	_bindings.clear()
 	_frozen.clear()
@@ -139,6 +159,7 @@ func clear() -> void:
 	_apply_all_defaults()
 
 
+## @experimental
 func export_state() -> Dictionary:
 	var bindings := {}
 	var roles: Array = _bindings.keys()
@@ -242,6 +263,7 @@ func _import_dict(value: Variant) -> Dictionary:
 	return {}
 
 
+## @experimental
 func import_state(data: Dictionary) -> void:
 	_bindings.clear()
 	_defs.clear()
@@ -357,6 +379,7 @@ func import_state(data: Dictionary) -> void:
 	_recompile_eligibility()
 
 
+## @experimental
 func define(
 	role: StringName,
 	succession: String = "none",
@@ -432,6 +455,7 @@ func define(
 	_apply_default(role)
 
 
+## @experimental
 func install(role: WyrdRoleDef, from_content: bool = false) -> void:
 	if role == null or role.id.is_empty():
 		return
@@ -445,11 +469,13 @@ func install(role: WyrdRoleDef, from_content: bool = false) -> void:
 
 
 ## True when [method define] named [param role] since the last content load.
+## @experimental
 func is_host_defined(role: String) -> bool:
 	return _host_defined.has(role)
 
 
 ## Role ids in the imported block: bindings, defs, told, pending, and abolished.
+## @experimental
 func present_role_ids() -> PackedStringArray:
 	var found := {}
 	for role in _bindings.keys():
@@ -471,6 +497,7 @@ func present_role_ids() -> PackedStringArray:
 	return names
 
 
+## @experimental
 func definition(role: StringName) -> Dictionary:
 	var spec := _spec(role)
 	var kinds: Array = []
@@ -492,6 +519,7 @@ func definition(role: StringName) -> Dictionary:
 	}
 
 
+## @experimental
 func eligible(role: StringName, entity: StringName) -> bool:
 	var spec := _spec(role)
 	var text := String(spec.get("eligibility", ""))
@@ -516,6 +544,7 @@ func eligible(role: StringName, entity: StringName) -> bool:
 	return ok
 
 
+## @experimental
 func set_faction_rank(fn: Callable) -> void:
 	if not fn.is_valid():
 		push_error("WyrdRoles.set_faction_rank: missing callable")
@@ -523,6 +552,7 @@ func set_faction_rank(fn: Callable) -> void:
 	faction_rank = fn
 
 
+## @experimental
 func set_host_decides(fn: Callable) -> void:
 	if not fn.is_valid():
 		push_error("WyrdRoles.set_host_decides: missing callable")
@@ -534,6 +564,7 @@ func set_host_decides(fn: Callable) -> void:
 ## [code]host_decides[/code] needs a callback or a [signal succession_requested]
 ## connection before play starts. A role that uses [code]election[/code] needs
 ## a [WyrdElectionAdapter] or an [signal election_needed] connection.
+## @experimental
 func note_started() -> void:
 	_started = true
 	if _any_strategy("host_decides") and not _host_ready():
@@ -542,10 +573,12 @@ func note_started() -> void:
 		push_error("WyrdRoles: election has no adapter")
 
 
+## @experimental
 func abolished(role: StringName) -> bool:
 	return _abolished.has(role)
 
 
+## @experimental
 func departed(role: StringName) -> StringName:
 	if not _pending.has(role):
 		return &""
@@ -590,6 +623,7 @@ func assign(role: StringName, entity: StringName) -> void:
 ## Unknown roles [code]push_error[/code] and do not trace. Other refusals warn.
 ## [code]same_holder[/code] traces and does not warn. A first holder has no
 ## [code]role_changed[/code] deed, because a deed needs an actor.
+## @experimental
 func assign_from_content(role: StringName, entity: StringName) -> bool:
 	if not _defs.has(role):
 		push_error("WyrdRoles.assign_from_content: unknown role \"%s\"" % String(role))
@@ -629,6 +663,7 @@ func _refuse_assign(role: StringName, old: StringName, entity: StringName, reaso
 
 
 ## Content [code]vacate role[/code]. Checks, then [method vacate] with reason [code]content[/code].
+## @experimental
 func vacate_from_content(role: StringName) -> bool:
 	if not _defs.has(role):
 		push_error("WyrdRoles.vacate_from_content: unknown role \"%s\"" % String(role))
@@ -703,6 +738,7 @@ func vacate(role: StringName, reason: StringName) -> void:
 	_leave_empty(role, prior)
 
 
+## @experimental
 func tell(role: StringName, agent: StringName) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if role == &"" or agent == &"":
@@ -717,6 +753,7 @@ func tell(role: StringName, agent: StringName) -> void:
 
 
 ## World role ids whose binding holder is [param entity]. Sorted.
+## @experimental
 func roles_of(entity: StringName) -> PackedStringArray:
 	var found := PackedStringArray()
 	if entity == &"":
@@ -730,6 +767,7 @@ func roles_of(entity: StringName) -> PackedStringArray:
 	return found
 
 
+## @experimental
 func holder(slot_or_role: StringName) -> StringName:
 	var name := String(slot_or_role)
 	if _slots.has(name):
@@ -737,10 +775,12 @@ func holder(slot_or_role: StringName) -> StringName:
 	return _binding(slot_or_role)["holder"]
 
 
+## @experimental
 func slot_holder(quest_id: String, slot_name: StringName) -> StringName:
 	return _resolved(quest_id, String(slot_name))["holder"]
 
 
+## @experimental
 func slot_state(slot_name: StringName, quest_id: String = "") -> StringName:
 	var quest := quest_id if not quest_id.is_empty() else _primary(String(slot_name))
 	return resolve_slot(quest, slot_name, false)["state"]
@@ -749,6 +789,7 @@ func slot_state(slot_name: StringName, quest_id: String = "") -> StringName:
 ## Resolves one slot. [param trace_it] asks the runtime to log one line when the
 ## state or reason changed. The returned [code]variant[/code] is the first
 ## declared match, or null when the stage does not cover the winning state.
+## @experimental
 func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = false) -> Dictionary:
 	var resolved: Dictionary = _resolved(quest_id, String(slot_name))
 	var who: StringName = resolved["holder"]
@@ -814,6 +855,7 @@ func resolve_slot(quest_id: String, slot_name: StringName, trace_it: bool = fals
 	}
 
 
+## @experimental
 func binding_status(role: StringName) -> StringName:
 	return _binding(role)["status"]
 
@@ -821,6 +863,7 @@ func binding_status(role: StringName) -> StringName:
 ## Sorted table of every role. [param prefix] keeps ids that start with that text.
 ## Columns are role, holder, status, strategy, flags (pending and/or abolished),
 ## and frozen slots. Built in one pass so a few hundred roles stay cheap.
+## @experimental
 func render_table(prefix: String = "") -> String:
 	var header := PackedStringArray(["role", "holder", "status", "strategy", "flags", "frozen"])
 	var frozen_of := _frozen_by_role()
@@ -845,14 +888,17 @@ func render_table(prefix: String = "") -> String:
 	return _format_table(header, rows)
 
 
+## @experimental
 func binding_since(role: StringName) -> int:
 	return int(_binding(role)["since"])
 
 
+## @experimental
 func history(role: StringName) -> Array:
 	return (_binding(role)["history"] as Array).duplicate(true)
 
 
+## @experimental
 func revealed(agent: StringName, key: StringName) -> bool:
 	var role := _role_of_key(key)
 	if role == &"":
@@ -863,6 +909,7 @@ func revealed(agent: StringName, key: StringName) -> bool:
 
 
 ## Appends slot rows for one generated instance. Content rows stay first.
+## @experimental
 func bind_instance(instance_id: String, quest: WyrdQuestDef) -> void:
 	if quest == null or instance_id.is_empty():
 		return
@@ -888,6 +935,7 @@ func bind_instance(instance_id: String, quest: WyrdQuestDef) -> void:
 
 
 ## Drops freeze keys and slot rows whose quest id contains [code]#[/code].
+## @experimental
 func drop_instances() -> void:
 	var locks: Array = _frozen.keys()
 	for lock in locks:
@@ -908,6 +956,7 @@ func drop_instances() -> void:
 
 
 ## Freezes one supplied cast and logs [code]reason=given[/code].
+## @experimental
 func freeze_given(quest_id: String, slot: WyrdSlotDef, holder: StringName) -> void:
 	if slot == null:
 		return
@@ -922,6 +971,7 @@ func freeze_given(quest_id: String, slot: WyrdSlotDef, holder: StringName) -> vo
 
 
 ## Loads saved instance casts. Load logs nothing.
+## @experimental
 func install_casts(quest_id: String, casts: Dictionary) -> void:
 	for slot_name in casts.keys():
 		var snap: Variant = casts[slot_name]
@@ -938,6 +988,7 @@ func install_casts(quest_id: String, casts: Dictionary) -> void:
 
 
 ## Instance id to slot name to [code]{holder, status[, owner]}[/code].
+## @experimental
 func instance_casts() -> Dictionary:
 	var out := {}
 	var locks: Array = _frozen.keys()
@@ -959,6 +1010,7 @@ func instance_casts() -> Dictionary:
 	return out
 
 
+## @experimental
 func begin_quest(quest_id: String) -> void:
 	var quest := _quest(quest_id)
 	if quest == null:
@@ -980,6 +1032,7 @@ func begin_quest(quest_id: String) -> void:
 		_trace_cast(quest_id, slot, picked, snap)
 
 
+## @experimental
 func enter_stage(quest_id: String, stage_id: String) -> void:
 	var quest := _quest(quest_id)
 	if quest == null:
@@ -1120,6 +1173,7 @@ func _record_role_changed(role: StringName, old: StringName, next: StringName) -
 ## Sorted candidate ids and the ids the cast condition accepts.
 ## [code]raw[/code] is every deduped host answer. [code]accepted[/code] is that
 ## list after the condition. Both are sorted. A missing world yields two empty lists.
+## @experimental
 func cast_pool(slot: WyrdSlotDef) -> Dictionary:
 	if slot == null:
 		_note_scan_pool()
@@ -1131,6 +1185,7 @@ func cast_pool(slot: WyrdSlotDef) -> Dictionary:
 
 
 ## The full candidate walk. Same result as [method cast_pool] when the index is off.
+## @experimental
 func cast_pool_scan(slot: WyrdSlotDef) -> Dictionary:
 	if slot == null:
 		return {"accepted": [], "raw": []}
@@ -1139,6 +1194,7 @@ func cast_pool_scan(slot: WyrdSlotDef) -> Dictionary:
 
 
 ## Sorted candidate ids for one param. The filter always carries the param kind and tag.
+## @experimental
 func param_pool(param: WyrdParamDef) -> Dictionary:
 	if param == null:
 		_note_scan_pool()
@@ -1150,6 +1206,7 @@ func param_pool(param: WyrdParamDef) -> Dictionary:
 
 
 ## The full candidate walk for one param.
+## @experimental
 func param_pool_scan(param: WyrdParamDef) -> Dictionary:
 	if param == null:
 		return {"accepted": [], "raw": []}
@@ -1157,6 +1214,7 @@ func param_pool_scan(param: WyrdParamDef) -> Dictionary:
 
 
 ## Drops every cached candidate list. Role changes do not call this.
+## @experimental
 func drop_cast_index() -> void:
 	_cast_index.clear()
 	_note_scan_pool()
@@ -1164,23 +1222,28 @@ func drop_cast_index() -> void:
 
 ## [param ids] empty drops the cache. Otherwise those entities are checked again
 ## on the next cast, and every cached host answer is refreshed once.
+## @experimental
 func invalidate_world(ids: PackedStringArray = PackedStringArray()) -> void:
 	_cast_index.invalidate(ids)
 	_note_scan_pool()
 
 
+## @experimental
 func indexed_pool() -> bool:
 	return _indexed_pool
 
 
+## @experimental
 func indexed_digest_ready() -> bool:
 	return _indexed_ready
 
 
+## @experimental
 func indexed_digest() -> int:
 	return _indexed_digest
 
 
+## @experimental
 func store_indexed_digest(digest: int) -> void:
 	if _indexed_filter.is_empty():
 		return
@@ -1190,6 +1253,7 @@ func store_indexed_digest(digest: int) -> void:
 
 
 ## Picks one id from an already sorted list. Empty yields [code]&""[/code].
+## @experimental
 func pick_id(ids: Array, stream: StringName, decision_key: String) -> StringName:
 	if ids.is_empty():
 		return &""

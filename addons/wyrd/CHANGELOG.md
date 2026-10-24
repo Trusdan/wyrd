@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Added:** `scene_started`, the facade relays, `register_disposition_formula`, the deprecation table and warning, `docs/stability.md`, and the stable marks.
+- **Removed:** `known`, now `E_KNOWN_REMOVED`; use `knows`. Breaking for content.
 - A golden snapshot test of the public API surface, with a list of where the code differs from the design.
 
 ## 0.9.0-m11 - 2026-10-23

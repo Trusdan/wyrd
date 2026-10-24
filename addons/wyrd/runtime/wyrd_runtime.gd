@@ -41,6 +41,7 @@ var coverage: WyrdCoverage
 var _config: WyrdConfig
 ## Unknown secrecy names already reported. Not saved.
 var _secrecy_warned: Dictionary = {}
+var _deprecated_warned: Dictionary = {}
 var _content: WyrdContent
 var _queue: WyrdScheduler
 ## verb -> rows of template id and [WyrdDeedHookDef]. Not saved.
@@ -452,6 +453,19 @@ func now_minutes() -> int:
 	return now
 
 
+func _warn_deprecated(id: String, table: Dictionary = {}) -> void:
+	var use: Dictionary = WyrdDeprecations.TABLE
+	if not table.is_empty():
+		use = table
+	WyrdDeprecations.warn_once(id, _deprecated_warned, use)
+
+
+func _warn_deprecated_keywords(diagnostics: WyrdDiagnostics) -> void:
+	if diagnostics == null:
+		return
+	WyrdDeprecations.warn_keywords(diagnostics.items, _deprecated_warned)
+
+
 func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	var _host_gate := _host_enter()
 	var report := WyrdLoadReport.new()
@@ -487,12 +501,14 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 		documents.clear()
 	if manifest == null:
 		report.diagnostics.add(WyrdDiagnostic.E_HEADER_MISSING, "missing content manifest", "", 1, 1)
+		_warn_deprecated_keywords(report.diagnostics)
 		return report
 	var files := PackedStringArray()
 	for listed in manifest.files:
 		files.append(_resolve(listed))
 	if files.is_empty():
 		report.diagnostics.add(WyrdDiagnostic.E_HEADER_MISSING, "content manifest has no files", manifest.resource_path, 1, 1)
+		_warn_deprecated_keywords(report.diagnostics)
 		return report
 	var commands: WyrdCommandSchema = null
 	var skip_note := false
@@ -511,6 +527,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 		skip_note
 	)
 	if report.diagnostics.has_errors():
+		_warn_deprecated_keywords(report.diagnostics)
 		return report
 	_content = WyrdContent.from_pack(pack)
 	if coverage != null:
@@ -528,6 +545,7 @@ func load_content(manifest: WyrdContentManifest) -> WyrdLoadReport:
 	_reset_event_memory()
 	_arm_queue()
 	_reset_play()
+	_warn_deprecated_keywords(report.diagnostics)
 	return report
 
 

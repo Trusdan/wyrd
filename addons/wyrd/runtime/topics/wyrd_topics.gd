@@ -3,7 +3,6 @@ extends RefCounted
 
 ## The player's unlocked topic ids.
 ##
-## @experimental
 ## There is no topic declaration. An id is whatever [code]unlock topic[/code],
 ## [code]lock topic[/code], or [code]scope: topic[/code] uses. A repeat unlock
 ## traces [code]already[/code] and does not signal again. A lock of a topic
@@ -11,18 +10,23 @@ extends RefCounted
 ## The save bag is a sorted id list, omitted when empty. Unknown ids are kept.
 
 signal topic_unlocked(topic: StringName)
+## @experimental
 signal topic_locked(topic: StringName)
 
+## @experimental
 var trace_of: Callable = Callable()
+## @experimental
 var runtime: WyrdRuntime
 
 var _ids: Dictionary = {}
 
 
+## @experimental
 func is_unlocked(id: StringName) -> bool:
 	return _ids.has(id)
 
 
+## @experimental
 func unlocked() -> PackedStringArray:
 	var names := PackedStringArray()
 	for id in _ids.keys():
@@ -31,6 +35,7 @@ func unlocked() -> PackedStringArray:
 	return names
 
 
+## @experimental
 func unlock(id: StringName) -> String:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null and runtime._host_logs():
@@ -44,6 +49,7 @@ func unlock(id: StringName) -> String:
 	return "unlocked"
 
 
+## @experimental
 func lock(id: StringName) -> String:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null and runtime._host_logs():
@@ -57,14 +63,17 @@ func lock(id: StringName) -> String:
 	return "locked"
 
 
+## @experimental
 func clear() -> void:
 	_ids.clear()
 
 
+## @experimental
 func export_state() -> PackedStringArray:
 	return unlocked()
 
 
+## @experimental
 func import_state(ids: Array) -> void:
 	_ids.clear()
 	for item in ids:

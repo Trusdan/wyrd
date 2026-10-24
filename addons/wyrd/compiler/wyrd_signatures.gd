@@ -6,8 +6,8 @@ extends RefCounted
 ## @experimental
 ## [method register] matches the compiler side of [code]Wyrd.register_function[/code]:
 ## a name, positional parameters, and a return type. There is no callable here.
-## [code]knows[/code] reads what an agent knows. [code]known[/code] is the same
-## function and warns [code]W_KNOWN_DEPRECATED[/code]. [code]believes[/code] is the
+## [code]knows[/code] reads what an agent knows. [code]known[/code] was removed;
+## compiling it reports [code]E_KNOWN_REMOVED[/code]. [code]believes[/code] is the
 ## truthy belief. [code]belief[/code] reads the value; its declared return is only
 ## the fallback for a dynamic key, and the checker uses the fact's type.
 ## [code]conflicted[/code] is the WFR9 group-position check. The M4 slot state
@@ -55,7 +55,6 @@ const _BUILTINS: PackedStringArray = [
 	"outcome(quest:symbol, branch:symbol)->symbol",
 	"progress(id:symbol)->int",
 	"done(id:symbol)->bool",
-	"known(agent:entity, key:fact_key)->bool",
 	"knows(agent:entity, key:fact_key)->bool",
 	"believes(agent:entity, key:fact_key)->bool",
 	"belief(agent:entity, key:fact_key)->symbol",

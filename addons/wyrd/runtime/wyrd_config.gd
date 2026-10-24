@@ -3,7 +3,6 @@ extends Resource
 
 ## Host knobs for one runtime. Plain exported data. No callables.
 ##
-## @experimental
 ## Field names beyond the design list: [member hour_bucket_minutes],
 ## [member half_life_verbs], [member half_life_minutes], [member disposition_default],
 ## [member hostile_threshold], [member axis_verbs], [member axis_names],

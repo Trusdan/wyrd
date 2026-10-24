@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Deed log with hour-bucketed decay. [method compact] merges interchangeable rows.
 ##
-## @experimental
 ## Rows are parallel packed arrays. Indexes are by actor, target, and verb.
 ## A witness index stores each witness once per deed. That witness is the
 ## knower of the deed. [code]saw[/code], [code]heard[/code], and
@@ -25,16 +24,22 @@ extends RefCounted
 
 signal deed_recorded(deed: Dictionary)
 
+## @experimental
 var runtime: WyrdRuntime
 
 const ROUND_SCALE: float = 1000000.0
 
+## @experimental
 var clock: Callable = Callable()
+## @experimental
 var config_of: Callable = Callable()
+## @experimental
 var spatial_of: Callable = Callable()
 ## Called once per stored witness: [code](agent, mode, verb)[/code]. Not saved.
+## @experimental
 var on_perceived: Callable = Callable()
 ## Called after [method compact]: [code]{before, after, merged, dropped}[/code]. Not saved.
+## @experimental
 var on_compact: Callable = Callable()
 
 var _next: int = 1
@@ -81,6 +86,7 @@ var _lookup: bool = true
 var _gen: int = 1
 
 
+## @experimental
 func export_state() -> Dictionary:
 	var rows: Array = []
 	for i in size():
@@ -89,21 +95,25 @@ func export_state() -> Dictionary:
 
 
 ## Rows for [param actor], in log order. The array is the live index: do not mutate it.
+## @experimental
 func actor_indexes(actor: StringName) -> PackedInt32Array:
 	return _index_rows(_by_actor, actor)
 
 
 ## Rows whose target is [param agent], in log order. The array is the live index.
+## @experimental
 func target_indexes(agent: StringName) -> PackedInt32Array:
 	return _index_rows(_by_target, agent)
 
 
 ## Rows [param agent] witnessed, in log order. The array is the live index.
+## @experimental
 func witness_indexes(agent: StringName) -> PackedInt32Array:
 	return _index_rows(_by_witness, agent)
 
 
 ## Row index for [param deed_id], or [code]-1[/code] when that id is not stored.
+## @experimental
 func index_of(deed_id: int) -> int:
 	return int(_row_of.get(deed_id, -1))
 
@@ -111,6 +121,7 @@ func index_of(deed_id: int) -> int:
 ## Records that [param who] adopted [param deed_id] at [param minute].
 ## A later note for the same pair keeps the earlier minute. A missing deed id
 ## is stored until the next rebuild and is not exported.
+## @experimental
 func note_believer(deed_id: int, who: StringName, minute: int) -> void:
 	if deed_id <= 0 or who == &"":
 		return
@@ -132,6 +143,7 @@ func note_believer(deed_id: int, who: StringName, minute: int) -> void:
 
 ## Listener minutes for deeds any key of [param members] believes, copied at this call.
 ## The copy does not follow later [method note_believer] writes.
+## @experimental
 func believer_snapshot(members: Dictionary) -> Dictionary:
 	var out := {}
 	for deed_id in _believers.keys():
@@ -148,6 +160,7 @@ func believer_snapshot(members: Dictionary) -> Dictionary:
 
 
 ## Live map of listener to adoption minute for [param deed_id]. Do not mutate it.
+## @experimental
 func believer_minutes(deed_id: int) -> Dictionary:
 	if deed_id <= 0 or not _believers.has(deed_id):
 		return {}
@@ -155,6 +168,7 @@ func believer_minutes(deed_id: int) -> Dictionary:
 
 
 ## Live map of deed id to adoption minute for [param who]. Do not mutate it.
+## @experimental
 func believer_index(who: StringName) -> Dictionary:
 	var text := String(who)
 	if who == &"" or not _by_believer.has(text):
@@ -164,6 +178,7 @@ func believer_index(who: StringName) -> Dictionary:
 
 ## Deeds [param who] believes through a rumor, sorted by id.
 ## Each item is [code]{id, t}[/code]. [code]t[/code] is the adoption minute.
+## @experimental
 func believer_deeds(who: StringName) -> Array:
 	var rows: Array = []
 	var text := String(who)
@@ -185,6 +200,7 @@ func _index_rows(table: Dictionary, name: StringName) -> PackedInt32Array:
 
 
 ## Changes when a row is added, replaced, or dropped, or when decay can move.
+## @experimental
 func weight_stamp() -> int:
 	var now := _now()
 	var width := _bucket()
@@ -199,10 +215,12 @@ func weight_stamp() -> int:
 
 
 ## Bumps when rows are replaced. A publish cursor restarts when this changes.
+## @experimental
 func generation() -> int:
 	return _gen
 
 
+## @experimental
 func import_state(data: Dictionary) -> void:
 	clear()
 	for item in data.get("rows", []):
@@ -217,6 +235,7 @@ func import_state(data: Dictionary) -> void:
 ## merged group is kept. Believers from a merged group move onto that id, and the
 ## same listener keeps the earlier minute. A dropped row loses its believers.
 ## [code]_next[/code] does not go backwards. Perception callbacks do not run.
+## @experimental
 func compact() -> int:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	if runtime != null and runtime._host_logs():
@@ -463,6 +482,7 @@ func _packed(value: Variant) -> PackedStringArray:
 	return rows
 
 
+## @experimental
 func clear() -> void:
 	_next = 1
 	_id = PackedInt32Array()
@@ -496,10 +516,12 @@ func clear() -> void:
 	_gen += 1
 
 
+## @experimental
 func size() -> int:
 	return _id.size()
 
 
+## @experimental
 func index_size(which: StringName, key: StringName) -> int:
 	var table := _index_table(which)
 	if table.is_empty() or not table.has(String(key)):
@@ -566,6 +588,7 @@ func record(
 	return int(deed["id"])
 
 
+## @experimental
 func count_matching(
 	actor: StringName,
 	verb: Variant = null,
@@ -577,6 +600,7 @@ func count_matching(
 	return _scan(actor, verb, target, place, within, tags, false)
 
 
+## @experimental
 func score_matching(
 	actor: StringName,
 	verb: Variant = null,
@@ -588,44 +612,54 @@ func score_matching(
 	return float(_scan(actor, verb, target, place, within, tags, true))
 
 
+## @experimental
 func verb_at(index: int) -> StringName:
 	return StringName(_verb[index])
 
 
+## @experimental
 func actor_at(index: int) -> StringName:
 	return StringName(_actor[index])
 
 
+## @experimental
 func target_at(index: int) -> StringName:
 	return StringName(_target[index])
 
 
+## @experimental
 func id_at(index: int) -> int:
 	return int(_id[index])
 
 
+## @experimental
 func minute_at(index: int) -> int:
 	return int(_t[index])
 
 
+## @experimental
 func place_at(index: int) -> StringName:
 	return StringName(_place[index])
 
 
+## @experimental
 func magnitude_at(index: int) -> float:
 	return _magnitude[index]
 
 
+## @experimental
 func memorable_at(index: int) -> bool:
 	return _memorable[index] != 0
 
 
 ## Rows whose verb is [param verb], in log order. The array is the live index.
+## @experimental
 func verb_indexes(verb: StringName) -> PackedInt32Array:
 	return _index_rows(_by_verb, verb)
 
 
 ## Rows in hour buckets at or after [param minute]. The caller still checks the minute.
+## @experimental
 func rows_since(minute: int) -> PackedInt32Array:
 	_ensure_time()
 	var start := _bucketed(minute if minute > 0 else 0)
@@ -639,19 +673,23 @@ func rows_since(minute: int) -> PackedInt32Array:
 	return merged
 
 
+## @experimental
 func witness_count_at(index: int) -> int:
 	return int(_wit_n[index])
 
 
+## @experimental
 func witness_name_at(index: int, offset: int) -> String:
 	return _witnesses[int(_wit_at[index]) + offset]
 
 
+## @experimental
 func witness_mode_name_at(index: int, offset: int) -> String:
 	return _modes[int(_wit_at[index]) + offset]
 
 
 ## Pair keys [code]source\ttarget[/code] from deed targets and witnesses. Not saved.
+## @experimental
 func pair_keys() -> PackedStringArray:
 	_ensure_pairs()
 	var keys := PackedStringArray()
@@ -663,19 +701,23 @@ func pair_keys() -> PackedStringArray:
 	return keys
 
 
+## @experimental
 func witnesses_at(index: int) -> PackedStringArray:
 	return _slice(_witnesses, int(_wit_at[index]), int(_wit_n[index]))
 
 
+## @experimental
 func witnessed(index: int, agent: StringName) -> bool:
 	return _has_in(_witnesses, _wit_at[index], _wit_n[index], String(agent))
 
 
 ## False makes snapshot and [code]within[/code] scans walk rows instead of the indexes.
+## @experimental
 func set_lookup(enabled: bool) -> void:
 	_lookup = enabled
 
 
+## @experimental
 func lookup_enabled() -> bool:
 	return _lookup
 
@@ -683,24 +725,29 @@ func lookup_enabled() -> bool:
 ## UTF-8 size of witness names and time-bucket labels, plus 4 bytes per stored row ref.
 ## Actor, target, and verb indexes are not included. Each deed row is stored once
 ## per witness and once in its time bucket.
+## @experimental
 func index_text_bytes() -> int:
 	_ensure_time()
 	return _table_text(_by_witness, false) + _table_text(_by_time, true)
 
 
+## @experimental
 func witness_buckets() -> int:
 	return _by_witness.size()
 
 
+## @experimental
 func witness_refs() -> int:
 	return _ref_count(_by_witness)
 
 
+## @experimental
 func time_buckets() -> int:
 	_ensure_time()
 	return _by_time.size()
 
 
+## @experimental
 func time_refs() -> int:
 	_ensure_time()
 	return _ref_count(_by_time)
@@ -708,6 +755,7 @@ func time_refs() -> int:
 
 ## Deed rows whose actor can start [code]actor/verb/target[/code] for [param prefix].
 ## An empty prefix is every row, grouped by time bucket.
+## @experimental
 func rows_for_deed_prefix(prefix: String) -> PackedInt32Array:
 	_ensure_time()
 	if prefix.is_empty():
@@ -720,6 +768,7 @@ func rows_for_deed_prefix(prefix: String) -> PackedInt32Array:
 
 ## Deed rows whose target or witness can start [code]source/actor[/code] for [param prefix].
 ## An empty prefix is every row.
+## @experimental
 func rows_for_pair_prefix(prefix: String) -> PackedInt32Array:
 	_ensure_time()
 	if prefix.is_empty():
@@ -732,6 +781,7 @@ func rows_for_pair_prefix(prefix: String) -> PackedInt32Array:
 
 
 ## Actor, target, and witness names that begin with [param prefix].
+## @experimental
 func agent_names(prefix: String) -> PackedStringArray:
 	var seen := {}
 	var names := PackedStringArray()
@@ -747,6 +797,7 @@ func agent_names(prefix: String) -> PackedStringArray:
 	return names
 
 
+## @experimental
 func weight_at(index: int) -> float:
 	if _memorable[index] != 0:
 		return _magnitude[index]
@@ -759,6 +810,7 @@ func weight_at(index: int) -> float:
 	return _magnitude[index] * pow(0.5, age / life)
 
 
+## @experimental
 func row_at(index: int) -> Dictionary:
 	return {
 		"actor": StringName(_actor[index]),
@@ -777,6 +829,7 @@ func row_at(index: int) -> Dictionary:
 
 
 ## Latest mode for [param agent] on [param verb], or empty when they never perceived it.
+## @experimental
 func mode_of(agent: StringName, verb: StringName) -> StringName:
 	if agent == &"" or verb == &"":
 		return &""
@@ -808,6 +861,7 @@ func _mode_of_scan(who: String, verb: StringName) -> StringName:
 	return &""
 
 
+## @experimental
 static func round_sum(value: float) -> float:
 	return round(value * ROUND_SCALE) / ROUND_SCALE
 

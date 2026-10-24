@@ -169,7 +169,7 @@ func _walk_perspective(node: WyrdExprNode, mode: String, found: Dictionary) -> v
 		var next := ""
 		if node.text == "belief" or node.text == "believes" or node.text == "held":
 			next = "claim"
-		elif node.text == "knows" or node.text == "known":
+		elif node.text == "knows":
 			next = "knows"
 		var slots := _call_slots(node)
 		for i in slots.size():

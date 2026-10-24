@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Result of loading a content manifest. Named in the save/load design.
 ##
-## @experimental
 ## [member ok] is false when the compiler reported any error. Warnings stay in
 ## [member diagnostics] and do not refuse the load. [member manifest_hash] is 0
 ## when the load was refused. [member rows] is empty for a content load.

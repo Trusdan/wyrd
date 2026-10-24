@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host hook for a choice's skill check.
 ##
-## @experimental
 ## The default body is not implemented. [method check] returns a failed result so a caller
 ## never mistakes a stub for success.
 

@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Quest status, stages, waits, variants, outcomes, and the journal.
 ##
-## @experimental
 ## [code]start when[/code] and [code]waits_until[/code] advance only after the
 ## tick queue has re-checked them. A stage that names a scene offers it; the
 ## host opens it, and transitions wait until that scene ends normally. An
@@ -30,6 +29,7 @@ signal quest_state_changed(quest_id: String, status: StringName)
 signal stage_changed(quest_id: String, stage_id: String)
 signal journal_entry_added(quest_id: String, entry_id: String, text: String)
 signal content_unavailable(quest_id: String, pack_id: String)
+## @experimental
 signal host_step_requested(quest_id: String, screen_id: StringName, fields: PackedStringArray)
 
 const DORMANT: StringName = &"dormant"
@@ -43,6 +43,7 @@ const _HOP_LIMIT := 24
 ## Returned while a region step list defers a top-level advance. Not a stage id.
 const _LIFT := "\u0001"
 
+## @experimental
 var runtime: WyrdRuntime
 var _states: Dictionary = {}
 var _declared: Dictionary = {}
@@ -104,12 +105,14 @@ class QuestState extends RefCounted:
 	var trail: PackedStringArray = PackedStringArray()
 
 
+## @experimental
 func bind(host: WyrdRuntime) -> void:
 	runtime = host
 	_text = WyrdText.new()
 	_text.runtime = host
 
 
+## @experimental
 func reset() -> void:
 	_states.clear(); _expiring.clear()
 	_declared.clear()
@@ -146,6 +149,7 @@ func reset() -> void:
 			_sync_watch(key, state)
 
 
+## @experimental
 func register_date_formatter(fn: Callable) -> void:
 	if not fn.is_valid():
 		push_error("WyrdQuestRunner.register_date_formatter: missing callable")
@@ -153,12 +157,14 @@ func register_date_formatter(fn: Callable) -> void:
 	_formatter = fn
 
 
+## @experimental
 func format_date(minutes: int) -> String:
 	if _formatter.is_valid():
 		return str(_formatter.call(minutes))
 	return WyrdText.game_date(minutes)
 
 
+## @experimental
 func note_ready(index: int) -> void:
 	if not _by_cond.has(index):
 		return
@@ -166,6 +172,7 @@ func note_ready(index: int) -> void:
 		_wake[String(quest_id)] = true
 
 
+## @experimental
 func on_tick() -> void:
 	var ids: Array = []
 	if runtime != null and not runtime.locals_empty():
@@ -197,6 +204,7 @@ func on_tick() -> void:
 			runtime.pop_scope()
 
 
+## @experimental
 func clear_event_fires() -> void:
 	_fired.clear()
 
@@ -204,6 +212,7 @@ func clear_event_fires() -> void:
 ## Runs the current stage's first matching [code]on[/code] handler for this emit.
 ## A stage handles one emit id once. A transition does not enter the next stage's
 ## handlers for the same emit.
+## @experimental
 func on_world_event(emit_id: int, event_name: StringName, payload: Dictionary) -> void:
 	if runtime == null:
 		return
@@ -261,6 +270,7 @@ func _on_world_event_body(
 		runtime.clear_locals()
 
 
+## @experimental
 func on_scene_ended(scene_id: String, status: StringName, _reason: StringName) -> void:
 	if status != &"ended":
 		return
@@ -280,6 +290,7 @@ func on_scene_ended(scene_id: String, status: StringName, _reason: StringName) -
 			return
 
 
+## @experimental
 func note_outcome(quest_id: String, branch: StringName, value: StringName) -> void:
 	var state := _states.get(quest_id) as QuestState
 	if state == null or branch == &"":
@@ -287,6 +298,7 @@ func note_outcome(quest_id: String, branch: StringName, value: StringName) -> vo
 	state.outcomes[String(branch)] = String(value)
 
 
+## @experimental
 func status(quest_id: String) -> StringName:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -294,6 +306,7 @@ func status(quest_id: String) -> StringName:
 	return state.status
 
 
+## @experimental
 func stage(quest_id: String) -> String:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -302,6 +315,7 @@ func stage(quest_id: String) -> String:
 
 
 ## Active region leaves for [param quest_id], in the save shape. Empty for a flat stage.
+## @experimental
 func regions_of(quest_id: String) -> Dictionary:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -309,6 +323,7 @@ func regions_of(quest_id: String) -> Dictionary:
 	return _export_regions(state.regions)
 
 
+## @experimental
 func outcome(quest_id: String, branch: String) -> String:
 	var state := _states.get(quest_id) as QuestState
 	if state == null or not state.outcomes.has(branch):
@@ -316,6 +331,7 @@ func outcome(quest_id: String, branch: String) -> String:
 	return String(state.outcomes[branch])
 
 
+## @experimental
 func waiting_reason(quest_id: String) -> String:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -323,6 +339,7 @@ func waiting_reason(quest_id: String) -> String:
 	return state.waiting
 
 
+## @experimental
 func offered_scene(quest_id: String) -> String:
 	var state := _states.get(quest_id) as QuestState
 	if state == null or state.scene_done:
@@ -330,6 +347,7 @@ func offered_scene(quest_id: String) -> String:
 	return state.offered
 
 
+## @experimental
 func variant_of(quest_id: String) -> String:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -337,6 +355,7 @@ func variant_of(quest_id: String) -> String:
 	return state.variant
 
 
+## @experimental
 func journal(quest_id: String) -> Array:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -377,6 +396,7 @@ func _joined_entries(entries: Array) -> String:
 	return "\n".join(lines)
 
 
+## @experimental
 func host_returns(quest_id: String) -> Dictionary:
 	var state := _states.get(quest_id) as QuestState
 	if state == null:
@@ -384,6 +404,7 @@ func host_returns(quest_id: String) -> Dictionary:
 	return state.host_returns.duplicate(true)
 
 
+## @experimental
 func offer_for(scene_id: String) -> Dictionary:
 	var ids: Array = _states.keys()
 	ids.sort()
@@ -394,10 +415,12 @@ func offer_for(scene_id: String) -> Dictionary:
 	return {"quest": "", "slots": PackedStringArray()}
 
 
+## @experimental
 func template_counter(template_id: String) -> int:
 	return int(_counters.get(template_id, 0))
 
 
+## @experimental
 func param_entity(instance_id: String, name: String) -> StringName:
 	var rows: Variant = _params.get(instance_id, {})
 	if not (rows is Dictionary) or not (rows as Dictionary).has(name):
@@ -408,6 +431,7 @@ func param_entity(instance_id: String, name: String) -> StringName:
 	return StringName(str((snap as Dictionary).get("entity", "")))
 
 
+## @experimental
 func active_count(template_id: String) -> int:
 	var count := 0
 	for quest_id in _states.keys():
@@ -419,6 +443,7 @@ func active_count(template_id: String) -> int:
 	return count
 
 
+## @experimental
 func export_generator() -> Dictionary:
 	if _counters.is_empty():
 		return {}
@@ -475,6 +500,7 @@ func _param_row(instance_id: String) -> Dictionary:
 	return copy
 
 
+## @experimental
 func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 	_counters.clear()
 	_params.clear()
@@ -510,6 +536,7 @@ func import_generator(data: Dictionary, report: WyrdLoadReport) -> void:
 			_note_missing(template_id, key)
 
 
+## @experimental
 func export_state() -> Dictionary:
 	var out := {}
 	var ids: Array = _states.keys()
@@ -563,6 +590,7 @@ func export_state() -> Dictionary:
 	return out
 
 
+## @experimental
 func import_state(data: Dictionary) -> void:
 	_fired.clear()
 	_drop_instance_states()
@@ -827,6 +855,7 @@ var _expiring: Dictionary = {}
 ## Abandons generated instances whose [code]expires:[/code] has elapsed.
 ## An open scene of that instance waits for the next tick. Hand-written quests
 ## are skipped. This does not call [method abandon], so another open scene stays up.
+## @experimental
 func expire_due(now: int) -> void:
 	if _expiring.is_empty():
 		return
@@ -856,6 +885,7 @@ func expire_due(now: int) -> void:
 		_trace_expire(key)
 
 
+## @experimental
 func abandon(quest_id: String) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var state := _states.get(quest_id) as QuestState
@@ -875,6 +905,7 @@ func abandon(quest_id: String) -> void:
 	_set_status(quest_id, state, ABANDONED)
 
 
+## @experimental
 func request_host_step(quest_id: String, screen_id: StringName, fields: PackedStringArray = PackedStringArray()) -> void:
 	var state := _states.get(quest_id) as QuestState
 	if state == null or state.status != ACTIVE:
@@ -894,6 +925,7 @@ func request_host_step(quest_id: String, screen_id: StringName, fields: PackedSt
 	host_step_requested.emit(quest_id, screen_id, state.host_fields)
 
 
+## @experimental
 func complete_host_step(quest_id: String, values: Dictionary) -> void:
 	var _host_gate: Variant = runtime._host_enter() if runtime != null else null
 	var state := _states.get(quest_id) as QuestState
@@ -1050,6 +1082,7 @@ func _entry_steps(body: WyrdStageDef) -> Array:
 
 
 ## Journal lines, effects, scenes, and host steps of one stage body, source order.
+## @experimental
 static func entry_steps(body: WyrdStageDef) -> Array:
 	var steps: Array = []
 	if body == null:
@@ -1072,11 +1105,13 @@ static func entry_steps(body: WyrdStageDef) -> Array:
 
 
 ## How many entry steps [method entry_steps] lists. Shared with the load pass.
+## @experimental
 static func entry_step_count(body: WyrdStageDef) -> int:
 	return entry_steps(body).size()
 
 
 ## The variant body whose [code]<slot>.<state>[/code] equals [param variant_key], else the stage.
+## @experimental
 static func stage_body(stage: WyrdStageDef, variant_key: String) -> WyrdStageDef:
 	if stage == null or variant_key.is_empty():
 		return stage
@@ -1088,6 +1123,7 @@ static func stage_body(stage: WyrdStageDef, variant_key: String) -> WyrdStageDef
 
 
 ## Drops [param stage_id] if present, appends it, and keeps the newest 32.
+## @experimental
 static func remember_trail(entries: Array, stage_id: String) -> Array:
 	var kept: Array = []
 	for prior in entries:
@@ -1882,6 +1918,7 @@ func _import_instance(quest_id: String, item: Dictionary) -> void:
 
 
 ## Hand-written quest ids kept raw because the content no longer declares them.
+## @experimental
 func kept_quest_ids() -> PackedStringArray:
 	var names := PackedStringArray()
 	for quest_id in _raw_rows.keys():

@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Readable documents: open, frozen copies, and read flags.
 ##
-## @experimental
 ## Read flags are a set of [code](reader, doc_id)[/code] pairs. They are not
 ## stored facts. [code]Wyrd.facts[/code], the fact schema, the [code]W_FACT_*[/code]
 ## lints, the facts export, and the snapshot [code]facts[/code] section do not
@@ -14,6 +13,7 @@ extends RefCounted
 
 signal document_read(doc_id: StringName, copy_id: String, reader: StringName, first_time: bool)
 
+## @experimental
 var runtime: WyrdRuntime
 
 var _read: Dictionary = {}
@@ -21,15 +21,18 @@ var _copies: Dictionary = {}
 var _text: WyrdText = WyrdText.new()
 
 
+## @experimental
 func clear() -> void:
 	_read.clear()
 	_copies.clear()
 
 
+## @experimental
 func has_read(reader: StringName, doc_id: StringName) -> bool:
 	return _read.has(_pair(reader, doc_id))
 
 
+## @experimental
 func has_copy(doc_id: StringName, copy_id: String) -> bool:
 	return _copies.has(_copy_key(doc_id, copy_id))
 
@@ -106,6 +109,7 @@ func create_copy(doc_id: StringName, copy_id: String, params: Dictionary = {}, f
 	return true
 
 
+## @experimental
 func export_state() -> Dictionary:
 	var reads: Array = []
 	for key in _read.keys():
@@ -134,6 +138,7 @@ func export_state() -> Dictionary:
 	return {"copies": copies, "read": reads}
 
 
+## @experimental
 func stored_doc_ids() -> PackedStringArray:
 	var found := {}
 	for key in _read.keys():
@@ -152,6 +157,7 @@ func stored_doc_ids() -> PackedStringArray:
 	return out
 
 
+## @experimental
 func import_state(data: Dictionary) -> void:
 	clear()
 	var reads: Variant = data.get("read", [])

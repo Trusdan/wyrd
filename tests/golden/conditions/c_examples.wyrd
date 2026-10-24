@@ -15,7 +15,7 @@ facts
 // @when filled(ferry) and disposition(holder(ferry), player) >= 40
 // @when deed_score(player, verb: theft, against: faction.harbor, within: 14d) > 0
 // @when nearby(player, 6m, tag: corpse) > 0
-// @when known(player, secret.missing_toll)
+// @when knows(player, secret.missing_toll)
 // @when season == spring and hour in 6..18
 // @when chance(0.25) and player.coins >= 5
 // @when npc.{holder(ferry)}.alive

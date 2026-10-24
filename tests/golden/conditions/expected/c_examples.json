@@ -612,13 +612,13 @@
             },
             {
               "t": "name",
-              "v": "known"
+              "v": "knows"
             }
           ],
           "ops": [
             "0000 PUSH_CONST \"player\"",
             "0002 LOAD_FACT \"secret.missing_toll\"",
-            "0004 CALL \"known\" 2"
+            "0004 CALL \"knows\" 2"
           ],
           "reads": [
             "secret.missing_toll"
@@ -662,20 +662,11 @@
         ],
         "kind": "call",
         "line": 18,
-        "text": "known",
+        "text": "knows",
         "type": "bool"
       },
-      "diagnostics": [
-        {
-          "code": "W_KNOWN_DEPRECATED",
-          "col": 10,
-          "line": 18,
-          "message": "known is deprecated; use knows",
-          "path": "res://tests/golden/conditions/c_examples.wyrd",
-          "severity": "warning"
-        }
-      ],
-      "expr": "known(player, secret.missing_toll)",
+      "diagnostics": [],
+      "expr": "knows(player, secret.missing_toll)",
       "kind": "when",
       "line": 18
     },

@@ -3,7 +3,6 @@ extends RefCounted
 
 ## AI hook for one runtime. Open requests are not saved.
 ##
-## @experimental
 ## The null provider is the default. A request keeps no pending state while that
 ## provider is active, or while the hook is disabled. [method deliver] closes a
 ## pending request, validates the text, and caches it when it passes.
@@ -37,6 +36,7 @@ var _sweep_once: bool = false
 var _sweep_at: int = -1
 
 
+## @experimental
 func bind(runtime: WyrdRuntime) -> void:
 	_runtime = runtime
 
@@ -50,14 +50,17 @@ func set_enabled(on: bool) -> void:
 	_trace_provider()
 
 
+## @experimental
 func is_enabled() -> bool:
 	return _enabled
 
 
+## @experimental
 func provider() -> WyrdAIProvider:
 	return _provider
 
 
+## @experimental
 func provider_id() -> StringName:
 	if _provider == null:
 		return &""
@@ -65,10 +68,12 @@ func provider_id() -> StringName:
 
 
 ## True when the hook is enabled and the provider is not [WyrdNullAIProvider].
+## @experimental
 func is_active() -> bool:
 	return _enabled and _provider != null and not (_provider is WyrdNullAIProvider)
 
 
+## @experimental
 func kinds() -> Array[StringName]:
 	var copy: Array[StringName] = []
 	copy.assign(WyrdAIRequest.KINDS)
@@ -152,6 +157,7 @@ func cancel(request_id: int) -> bool:
 	return true
 
 
+## @experimental
 func pending_count() -> int:
 	return _pending.size()
 
@@ -179,6 +185,7 @@ func _send(kind: StringName, packet: Dictionary, path: StringName, owner: String
 
 ## True when [param locale] is listed by the provider, or its language part is.
 ## An empty argument means the current locale. The null provider is never OK.
+## @experimental
 func locale_ok(locale: String = "") -> bool:
 	if not is_active():
 		return false
@@ -200,6 +207,7 @@ func locale_ok(locale: String = "") -> bool:
 ## Returns without a trace when AI is off, the provider is null, or the cap is off.
 ## [param owner_cap] of 0 or more also caps rows when that many requests with this
 ## source's owner prefix are already open. [code]-1[/code] does not.
+## @experimental
 func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int = -1) -> void:
 	if not is_active():
 		return
@@ -240,6 +248,7 @@ func prefetch_lines(source: StringName, id: String, rows: Array, owner_cap: int 
 
 ## Expires old bark requests, then arms a bark sweep when one is due.
 ## Called once per game tick, before the scheduler runs.
+## @experimental
 func tick_prefetch(now: int, scheduler: WyrdScheduler) -> void:
 	_expire_owned(now)
 	if not is_active() or _inflight_cap() <= 1 or not _sweep.is_empty():
@@ -265,16 +274,19 @@ func tick_prefetch(now: int, scheduler: WyrdScheduler) -> void:
 
 
 ## True when a bark sweep can send another request.
+## @experimental
 func prefetch_has_work() -> bool:
 	return is_active() and not _sweep.is_empty() and _owned_count("bark:") < _bark_cap()
 
 
 ## Storylets still waiting in the current sweep.
+## @experimental
 func prefetch_carry() -> int:
 	return _sweep.size()
 
 
 ## Visits the next bark storylet. Does not write gameplay state.
+## @experimental
 func prefetch_unit() -> void:
 	if _sweep.is_empty():
 		return
@@ -284,6 +296,7 @@ func prefetch_unit() -> void:
 
 
 ## Sets [member WyrdLineView.text_source] for an opted-in line. Does not send.
+## @experimental
 func present(view: WyrdLineView, line_id: String) -> void:
 	if view == null or _runtime == null or _runtime.content() == null:
 		return
@@ -316,11 +329,13 @@ func present(view: WyrdLineView, line_id: String) -> void:
 
 
 ## Moves open requests with this owner to the late list, in id order.
+## @experimental
 func close_owner(owner: String, reason: StringName) -> void:
 	_move_owned(owner, false, reason)
 
 
 ## Moves open requests whose owner starts with [param prefix] to the late list.
+## @experimental
 func close_prefixed(prefix: String, reason: StringName) -> void:
 	_move_owned(prefix, true, reason)
 
@@ -328,6 +343,7 @@ func close_prefixed(prefix: String, reason: StringName) -> void:
 ## 16 lowercase hex digits. Constraints are not part of the key. A host that
 ## sends the same packet under different constraints should vary the packet.
 ## An empty [param locale] means the current locale.
+## @experimental
 func cache_key(kind: StringName, packet: Dictionary, locale: StringName = &"") -> String:
 	var loc := String(locale)
 	if loc.is_empty():
@@ -345,6 +361,7 @@ func cache_key(kind: StringName, packet: Dictionary, locale: StringName = &"") -
 
 ## [code]gossip[/code] when [param line_id] is opted in and tagged [code]gossip[/code].
 ## Otherwise [code]bark_paraphrase[/code]. A gossip tag without [code]#tag:ai[/code] does nothing.
+## @experimental
 func kind_for_line(line_id: String) -> StringName:
 	if _runtime == null or _runtime.content() == null or not _runtime.content().ai_lines.has(line_id):
 		return &"bark_paraphrase"
@@ -355,11 +372,13 @@ func kind_for_line(line_id: String) -> StringName:
 
 
 ## Packet for an opted-in line. Does not send a request, and ignores the provider and the on/off state.
+## @experimental
 func packet_for_line(line_id: String, kind: StringName = &"bark_paraphrase", speaker: StringName = &"") -> Dictionary:
 	return WyrdAIPacket.for_line(_runtime, line_id, kind, speaker)
 
 
 ## Journal summary packet. [param entries] are frozen journal rows. Does not send.
+## @experimental
 func summary_packet(quest_id: String, entries: Array) -> Dictionary:
 	var ids: Array = []
 	var texts: Array = []
@@ -385,6 +404,7 @@ func summary_packet(quest_id: String, entries: Array) -> Dictionary:
 
 ## Joined journal text, or validated cached summary text. Sends one request on a miss.
 ## An empty journal returns [code]""[/code] and logs nothing.
+## @experimental
 func summary_for(quest_id: String, entries: Array) -> String:
 	if entries.is_empty():
 		return ""
@@ -424,6 +444,7 @@ func host_text(kind: StringName, packet: Dictionary, fallback: String) -> String
 
 
 ## First failing rule, or an empty name when [param text] passes.
+## @experimental
 func validate(text: String, kind: StringName, packet: Dictionary, constraints: Dictionary = {}) -> StringName:
 	var checker := WyrdAIValidator.new()
 	checker.classifier = _classifier
@@ -448,6 +469,7 @@ func register_classifier(fn: Callable) -> void:
 	_trace_classifier("set")
 
 
+## @experimental
 func set_provider(next: WyrdAIProvider) -> void:
 	if next == null:
 		push_error("WyrdAI.set_provider: provider is null")
@@ -458,6 +480,7 @@ func set_provider(next: WyrdAIProvider) -> void:
 
 
 ## Drops every pending request. [code]new_game[/code] and [code]load[/code] also reset the id counter.
+## @experimental
 func drop_pending(reason: StringName) -> void:
 	_forget_late(String(reason))
 	var ids: Array = _pending.keys()
@@ -492,20 +515,24 @@ func _trace_provider() -> void:
 	_runtime.trace_ai_provider(String(provider_id()), state)
 
 
+## @experimental
 func cached_text(key: String) -> String:
 	return _cache.text_for(key)
 
 
+## @experimental
 func cache_size() -> int:
 	return _cache.size()
 
 
 ## Oldest first.
+## @experimental
 func cache_keys() -> PackedStringArray:
 	return _cache.keys()
 
 
 ## Empties the cache. Traces [code]op=clear[/code] only when it held entries.
+## @experimental
 func clear_cache() -> void:
 	var _host_gate: Variant = _runtime._host_enter() if _runtime != null else null
 	if _runtime != null and _runtime._host_logs() and (_cache.size() > 0 or not _rejected.is_empty()):
@@ -518,12 +545,14 @@ func clear_cache() -> void:
 
 
 ## [code]v[/code] 1 and the rows, oldest first.
+## @experimental
 func export_cache() -> Dictionary:
 	return {"cache": _cache.export_rows(), "v": 1}
 
 
 ## Applies an [code]ai[/code] save key. A missing key clears the cache.
 ## A malformed key warns [code]W_SAVE_AI[/code] and clears it. The load still succeeds.
+## @experimental
 func import_cache(raw: Variant, present: bool, report: WyrdLoadReport) -> void:
 	if not present:
 		clear_cache()

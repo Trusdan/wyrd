@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Host clock, in whole minutes from the game epoch.
 ##
-## @experimental
 ## The calendar itself will live on the future config resource, not on this adapter.
 ## The default body is not implemented.
 

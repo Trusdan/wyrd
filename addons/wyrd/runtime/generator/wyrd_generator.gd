@@ -3,14 +3,17 @@ extends RefCounted
 
 ## Unsaved story-pressure queue.
 ##
-## @experimental
 ## [method offer] appends a host offer, or replaces tier and payload when the
 ## same source and key are already queued. Deed hooks use [method queue_deed].
 ## The queue is not saved. [member generate_handler] is the runtime's handler.
 
+## @experimental
 var generate_handler: Callable = Callable()
+## @experimental
 var config_of: Callable = Callable()
+## @experimental
 var trace_of: Callable = Callable()
+## @experimental
 var runtime: WyrdRuntime = null
 
 var _offers: Array[Dictionary] = []
@@ -21,6 +24,7 @@ var _seq: int = 0
 ## Template id to the last decision that considered it. Not saved.
 var _why: Dictionary = {}
 ## How many times [method _trace_candidates] ran. Not saved.
+## @experimental
 var candidate_traces: int = 0
 
 
@@ -40,12 +44,14 @@ func offer(source: StringName, key: String, tier: StringName = &"", payload: Dic
 
 
 ## Queues one deed-hook offer. [param deed_id] is the deed's id text.
+## @experimental
 func queue_deed(template_id: String, deed_id: String, payload: Dictionary) -> void:
 	if template_id.is_empty() or deed_id.is_empty():
 		return
 	_enqueue(&"deed", "%s:%s" % [template_id, deed_id], &"", _copy_payload(payload), "deed", template_id)
 
 
+## @experimental
 func pending() -> Array:
 	var out: Array = []
 	for entry in _offers:
@@ -53,14 +59,17 @@ func pending() -> Array:
 	return out
 
 
+## @experimental
 func pending_count() -> int:
 	return _offers.size()
 
 
+## @experimental
 func bind(host: WyrdRuntime) -> void:
 	runtime = host
 
 
+## @experimental
 func clear() -> void:
 	_offers.clear()
 	_proposals.clear()
@@ -72,6 +81,7 @@ func clear() -> void:
 
 
 ## [code]-1[/code] when [param name] is empty or not in [member WyrdConfig.pressure_tiers].
+## @experimental
 func tier_rank(name: String) -> int:
 	if name.is_empty():
 		return -1
@@ -84,6 +94,7 @@ func tier_rank(name: String) -> int:
 
 ## An empty offer tier matches every template. A template with no tier matches
 ## every offer. Unknown names do not match a tiered template.
+## @experimental
 func tier_matches(offer_tier: StringName, template: WyrdTemplateDef) -> bool:
 	if offer_tier == &"":
 		return true
@@ -102,6 +113,7 @@ func tier_matches(offer_tier: StringName, template: WyrdTemplateDef) -> bool:
 
 
 ## Pops the oldest offer. Empty when the queue is empty.
+## @experimental
 func take_next() -> Dictionary:
 	if _offers.is_empty():
 		return {}
@@ -209,10 +221,12 @@ func _copy_entry(entry: Dictionary) -> Dictionary:
 	}
 
 
+## @experimental
 func proposal(id: String) -> WyrdProposal:
 	return _proposals.get(id) as WyrdProposal
 
 
+## @experimental
 func pending_creations() -> Array:
 	var out: Array = []
 	for item in _pending:
@@ -220,6 +234,7 @@ func pending_creations() -> Array:
 	return out
 
 
+## @experimental
 func finish_reservations() -> void:
 	_pending.clear()
 	_reserved.clear()
@@ -257,6 +272,7 @@ func propose(context: Dictionary) -> WyrdProposal:
 
 
 ## One generate-queue unit. Reserves a successful proposal for the end of the tick.
+## @experimental
 func fulfill(entry: Dictionary) -> void:
 	if entry.is_empty():
 		return
@@ -311,6 +327,7 @@ func accept(proposal: WyrdProposal) -> String:
 
 ## [code]{template, reason, rules}[/code], or [code]{reason: missing}[/code] for an unknown id.
 ## An existing template with no decision yet has an empty reason. Not saved.
+## @experimental
 func why_not(template_id: String) -> Dictionary:
 	if runtime == null or runtime.content() == null or not runtime.content().templates.has(template_id):
 		return {"reason": "missing"}

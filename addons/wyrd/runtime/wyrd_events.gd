@@ -3,18 +3,24 @@ extends RefCounted
 
 ## Host entry for [code]Wyrd.events.emit[/code].
 ##
-## @experimental
 ## [method emit] asks the runtime to type-check the payload, drop
 ## [code]on_event[/code] caches, and re-check dirty conditions before it
 ## returns. [method begin_batch] coalesces those re-checks until the matching
 ## [method end_batch]. The ring buffer is for the playtest. It is not saved.
 
+## @experimental
 var on_emit: Callable = Callable()
+## @experimental
 var on_batch: Callable = Callable()
+## @experimental
 var ring_limit: int = 32
+## @experimental
 var last_flush: int = 0
+## @experimental
 var last_wave: int = 0
+## @experimental
 var last_keys: PackedStringArray = PackedStringArray()
+## @experimental
 var recent: Array[Dictionary] = []
 
 var _depth: int = 0
@@ -41,10 +47,12 @@ func end_batch() -> void:
 		on_batch.call(false)
 
 
+## @experimental
 func batching() -> bool:
 	return _depth > 0
 
 
+## @experimental
 func reset_session() -> void:
 	_depth = 0
 	recent.clear()
@@ -53,10 +61,12 @@ func reset_session() -> void:
 	last_keys = PackedStringArray()
 
 
+## @experimental
 func clear_recent() -> void:
 	recent.clear()
 
 
+## @experimental
 func remember(row: Dictionary) -> void:
 	recent.append(row.duplicate(true))
 	var cap := ring_limit if ring_limit > 0 else 0
@@ -64,6 +74,7 @@ func remember(row: Dictionary) -> void:
 		recent.remove_at(0)
 
 
+## @experimental
 func debug_dump() -> String:
 	var lines := PackedStringArray()
 	lines.append("batch_depth %d" % _depth)
