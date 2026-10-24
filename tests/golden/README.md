@@ -2,8 +2,11 @@
 
 Golden tests snapshot the compiler. Each family is a `.wyrd` source and a JSON file written by one serializer. CI compares the JSON. It does not regenerate it.
 
+The API surface snapshot pins names, argument names and types, defaults and return types, so an intended API change regenerates it in the same PR.
+
 | Family | Sources | Expected | Runner |
 |---|---|---|---|
+| API surface | the scripts in `WyrdApiGolden.STABLE_CLASSES` | `tests/golden/api/expected/stable_api.json` | `tests/golden/test_api_surface.gd` |
 | Lexical/tree | `tests/golden/cases/*.wyrd` | `tests/golden/expected/*.json` | `tests/golden/test_goldens.gd` |
 | Conditions | `tests/golden/conditions/*.wyrd` | `tests/golden/conditions/expected/*.json` | `tests/golden/test_condition_goldens.gd` |
 | Statements | `tests/golden/statements/*.wyrd` | `tests/golden/statements/expected/*.json` | `tests/golden/test_statement_goldens.gd` |

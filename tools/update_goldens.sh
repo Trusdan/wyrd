@@ -13,5 +13,6 @@ if ! command -v godot >/dev/null 2>&1; then
 	exit 1
 fi
 
+# Also writes tests/golden/api/expected/stable_api.json.
 godot --headless --path . --import
 godot --headless --path . -s res://tests/golden/update_goldens.gd

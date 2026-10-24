@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A golden snapshot test of the public API surface, with a list of where the code differs from the design.
+
 ## 0.9.0-m11 - 2026-10-23
 
 M11 Migration and hardening (M11 PRs 1–8, including 6a (#117) and 6b (#118), plus #110). `addons/wyrd/VERSION` is `0.9.0-m11`. `plugin.cfg` version is `0.9.0-m11`. Save schema stays 4. Saves without aliases or removed content load as before. The tag `v0.9.0-m11` is cut only on request.
