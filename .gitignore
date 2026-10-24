@@ -1,4 +1,7 @@
 .godot/
+_site_src/
+_site/
+.sass-cache/
 *.gguf
 *.translation
 tests/bench/out/

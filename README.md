@@ -1,10 +1,16 @@
 # Wyrd
 
-Wyrd is a generic narrative and dialogue engine for Godot 4, written in typed GDScript. It is itself the dialogue manager. A host vendors `addons/wyrd` and implements the adapters.
+Wyrd is a generic narrative and dialogue engine for Godot 4, written in typed GDScript. It is itself the dialogue manager. A host vendors `addons/wyrd` and implements the adapters. Facts, storylets, authored scenes, and role casting live in the addon. The host simulates the world, renders what Wyrd signals, and plays audio.
 
-This repository is the S0 skeleton through the M5 deed and social runtime, plus typed host world events. Condition and statement drafts are not frozen. `check --manifest` compiles and links a pack. `WyrdRuntime.load_content` compiles that manifest again at runtime. `save_state` / `load_state` round-trip a closed scene, and a recorded trace replays the same decisions. Press F5 to run the Gullhaven playtest. A walkthrough for someone without a Godot setup is [docs/playtest.md](docs/playtest.md). There is no support guarantee before 1.0.
+The docs are published at <https://trusdan.github.io/wyrd/>. The same pages are in `docs/`. Start at [docs/index.md](docs/index.md).
 
-Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.9.0-m11` (`addons/wyrd/VERSION`).
+## Quick start
+
+From a Wyrd checkout, vendor the addon, then add `res://addons/wyrd/runtime/wyrd.gd` as the autoload `Wyrd` and call `load_content` with a manifest. The full sequence, including adapters and the first scene, is the site's [quick start](https://trusdan.github.io/wyrd/#quick-start).
+
+```bash
+tools/vendor_wyrd.sh /path/to/host-project
+```
 
 ## Hosts
 
@@ -26,6 +32,16 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-sm
 
 `tests/bench` is informational and does not gate CI. The milestone suite lives in `bench/` and `tools/perf_bench.sh`. Pull requests do not run it. Tags and a manual dispatch run the full scale and report a metric more than 20% slower or larger than the base build as a warning; benchmark runs never fail on a regression. The 07:00 UTC nightly does the same, and skips when the default branch SHA matches the last successful nightly. See `bench/README.md`.
 
-`addons/wyrd` is the folder a host copies. `example/` is the Gullhaven placeholder. `tests/fake_host` is the scripted host. The language reference is `docs/language.md`. Examples use only that invented village. See `docs/CONTRIBUTING.md`.
+## Example
+
+`example/` is the Gullhaven playtest. Press F5 to run it. A walkthrough is [docs/playtest.md](docs/playtest.md). `tests/fake_host` is the scripted host. Examples use only that invented village.
+
+## Contributing
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.9.0-m11` (`addons/wyrd/VERSION`).
+
+There is no support guarantee before 1.0.
 
 License: [MIT](LICENSE). Copyright (c) 2026 Corey Patrick Jones (github.com/Trusdan).

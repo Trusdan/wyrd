@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% seo %}
+<link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+</head>
+<body>
+<nav>
+<a href="{{ "/" | relative_url }}">Home</a>
+<a href="{{ "/index.html#quick-start" | relative_url }}">Quick start</a>
+<a href="{{ "/language.html" | relative_url }}">Language</a>
+<a href="{{ "/api/index.html" | relative_url }}">API</a>
+<a href="{{ "/adapters.html" | relative_url }}">Adapters</a>
+<a href="{{ "/host-checklist.html" | relative_url }}">Host checklist</a>
+<a href="{{ "/cookbook/index.html" | relative_url }}">Cookbook</a>
+<a href="{{ "/stability.html" | relative_url }}">Stability</a>
+<a href="{{ "/rationale.html" | relative_url }}">Rationale</a>
+<a href="{{ "/CONTRIBUTING.html" | relative_url }}">Contributing</a>
+</nav>
+<main>
+{{ content }}
+</main>
+</body>
+</html>
