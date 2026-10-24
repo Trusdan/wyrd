@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.0.0 - 2026-10-24
+
+1.0 release (M12 PRs 1–8: #122–#128 and this PR). `addons/wyrd/VERSION` is `1.0.0`. `plugin.cfg` version is `1.0.0`. The stable surface, the save promise, the deprecation policy, and the support note are in `docs/stability.md`. Save schema stays 4, and 1.0.0 loads every schema 1–4 save. `known` is removed; use `knows`. Benchmarks are informational and do not gate 1.0. Known: the `load.time` median was 1.336 s at the `v0.9.0-m11` tag run (`bench/TREND.md`) and 1.142 s → 0.891 s locally after the M12 load-time pass (`bench/README.md`); the `v1.0.0` tag run records the 1.0.0 number. The tag `v1.0.0` and the first GitHub Release are cut only on request.
+
 - **Performance:** loading a current-schema save skips the deep copy of deed rows and reads the deed time bucket once per import. Saves, traces and replays are unchanged.
 - **Example:** Gullhaven adds the secret role `smugglers_contact` and a `hostile` guild variant. `example/versions/gullhaven_next/` renames one ferry stage with `was:`. A coverage test lists the 1.0 features. The playtest gains a route list, a load-report panel, a journal grouped by quest, and Tell secret.
 - **Docs:** `docs/tutorial.md` walks the ferry quest in the playtest.
@@ -11,6 +15,7 @@
 - **Added:** `scene_started`, the facade relays, `register_disposition_formula`, the deprecation table and warning, `docs/stability.md`, and the stable marks.
 - **Removed:** `known`, now `E_KNOWN_REMOVED`; use `knows`. Breaking for content.
 - A golden snapshot test of the public API surface, with a list of where the code differs from the design.
+- 1.0 exit suite (`tests/scenario/test_1_0_exit.gd`), version `1.0.0`, and the support note in `docs/stability.md`.
 
 ## 0.9.0-m11 - 2026-10-23
 

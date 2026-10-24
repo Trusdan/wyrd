@@ -378,4 +378,8 @@ The runtime warning is `Wyrd: <id> is deprecated since <since>; use <replacement
 
 ## Removed before 1.0
 
-`known` (use `knows`) was removed in this release. Compiling it reports `E_KNOWN_REMOVED` with the message `known was removed in 1.0; use knows(agent, key)`. The `known/<agent>` fact perspective is a different name and stays.
+`known` (use `knows`) was removed in 1.0.0. Compiling it reports `E_KNOWN_REMOVED` with the message `known was removed in 1.0; use knows(agent, key)`. The `known/<agent>` fact perspective is a different name and stays.
+
+## Support
+
+Wyrd 1.x keeps the stable surface, the save promise, and the deprecation policy above. Report bugs as GitHub issues on this repository. Fixes land on `main` and ship in the next 1.x release. There is no guaranteed response time and no backport to an older 1.x release.

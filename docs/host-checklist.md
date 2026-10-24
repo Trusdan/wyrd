@@ -1,6 +1,6 @@
 # Host checklist
 
-A host pins a Wyrd tag and vendors `addons/wyrd`. The host's own `.wyrd` content and tests stay in the host repository. Tags before 1.0 are for the host check only. Godot and GUT stay on the pins in `tools/pins.env`.
+A host pins a Wyrd tag and vendors `addons/wyrd`. The host's own `.wyrd` content and tests stay in the host repository. Pin a 1.x tag. A 1.x upgrade keeps the stable surface and loads 1.x saves; see [docs/stability.md](stability.md). Godot and GUT stay on the pins in `tools/pins.env`.
 
 ## Vendor
 
