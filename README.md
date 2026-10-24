@@ -14,7 +14,7 @@ tools/vendor_wyrd.sh /path/to/host-project
 
 ## Hosts
 
-Pin a tag and run `tools/vendor_wyrd.sh` with the host project directory (the parent of its `addons/` folder). The script copies `addons/wyrd` only. The steps are in [docs/host-checklist.md](docs/host-checklist.md). Tags before 1.0 are for the host check only.
+Pin a tag and run `tools/vendor_wyrd.sh` with the host project directory (the parent of its `addons/` folder). The script copies `addons/wyrd` only. The steps are in [docs/host-checklist.md](docs/host-checklist.md). Pin a 1.x tag. A 1.x upgrade keeps the stable surface and loads 1.x saves; see [docs/stability.md](docs/stability.md).
 
 The stable surface, the save promise, and the deprecation rules are in [docs/stability.md](docs/stability.md).
 
@@ -40,8 +40,8 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-sm
 
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
-Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `0.9.0-m11` (`addons/wyrd/VERSION`).
+Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `1.0.0` (`addons/wyrd/VERSION`).
 
-There is no support guarantee before 1.0.
+Support for 1.x is in [docs/stability.md](docs/stability.md#support).
 
 License: [MIT](LICENSE). Copyright (c) 2026 Corey Patrick Jones (github.com/Trusdan).

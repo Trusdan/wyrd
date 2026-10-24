@@ -3,7 +3,7 @@ extends GutTest
 
 func test_render_prints_version_and_command_list() -> void:
 	var text := WyrdCli.render()
-	assert_true(text.begins_with("wyrd 0.9.0-m11\n"))
+	assert_true(text.begins_with("wyrd 1.0.0\n"))
 	assert_eq(text, WyrdCli.version_line() + "\n" + "\n".join(WyrdCli.command_lines()) + "\n")
 	assert_true(text.contains("check: compile and link a content pack"))
 	assert_true(text.contains("test: not implemented"))
