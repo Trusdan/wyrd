@@ -57,7 +57,7 @@ const _ROUTES: Array[Dictionary] = [
 		"id": "ferry-gone",
 		"label": "Ferry master gone",
 		"flags": {"ferry_alive": false},
-		"hint": "Nia says \"The dock is empty.\" You do not see a line with {?holder(ferry).name}. Take the room. The journal says \"The dock is empty, so the crossing waits.\" dated day 1, 00:00. The stage returns to gossip and then waits with no new scene. The ferry slot row is slot ferry — ferry master — none — empty.",
+		"hint": "Nia says \"The dock is empty.\" You do not see a line with {?holder(ferry).name}. Take the room. The journal says \"The dock is empty, so the crossing waits.\" dated day 1, 00:00. The stage returns to gossip and the room is offered again. Continue is enabled. The summary says waiting scene:toll.offer_room. The ferry slot row is slot ferry — ferry master — none — empty.",
 	},
 	{
 		"id": "successor",

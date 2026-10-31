@@ -89,11 +89,11 @@
         {"name": "06_take_room", "action": "choice", "target": "Take the room", "expect": {"speaker": "innkeeper", "line": "The ferry's charging double since the storm, mind."}},
         {"name": "07_toll", "action": "press", "target": "Continue", "expect": {"speaker": "", "line": "Two coins, and the boat will cross."}},
         {"name": "08_leaves", "action": "press", "target": "Continue", "expect": {"speaker": "narrator", "line": "The boat leaves the dock."}},
-        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"continue_enabled": false, "contains": ["stage gossip", "status active", "waiting on_empty", "The dock is empty, so the crossing waits.", "alive ferry_master = false", "slot ferry \u2014 ferry master \u2014 none \u2014 empty"]}}
+        {"name": "09_end", "action": "press", "target": "Continue", "expect": {"speaker": "innkeeper", "line": "A room's two coins a night, and the stew is free.", "continue_enabled": true, "contains": ["stage gossip", "status active", "waiting scene:toll.offer_room", "The dock is empty, so the crossing waits.", "alive ferry_master = false", "player.coins = 2", "harbor.room_taken = true", "slot ferry \u2014 ferry master \u2014 none \u2014 empty"], "lacks": ["waiting on_empty", "stage pay_toll"]}}
       ],
       "final": {
-        "contains": ["quest The Ferry Toll", "stage gossip", "status active", "waiting on_empty", "alive ferry_master = false", "world.season = absent", "slot ferry \u2014 ferry master \u2014 none \u2014 empty", "The dock is empty, so the crossing waits."],
-        "lacks": ["outcome crossing = done", "stage pay_toll"],
+        "contains": ["quest The Ferry Toll", "stage gossip", "status active", "waiting scene:toll.offer_room", "alive ferry_master = false", "world.season = absent", "player.coins = 2", "harbor.room_taken = true", "slot ferry \u2014 ferry master \u2014 none \u2014 empty", "The dock is empty, so the crossing waits."],
+        "lacks": ["outcome crossing = done", "stage pay_toll", "waiting on_empty"],
         "seen": ["The dock is empty.", "The dock is empty, so the crossing waits."],
         "unseen": ["{?", "Bram, the ferry master, is on the dock.", "Bram, the ferry master, at the dock wants", "Nia, the ferry master"]
       }
