@@ -78,6 +78,38 @@ func test_advance_leaves_a_waiting_stage() -> void:
 	assert_eq(runtime.quests.offered_scene("offered"), "")
 
 
+func test_on_empty_wait_uses_only_the_stage_slots() -> void:
+	var opened := _boot_host(_STAGE_SLOTS)
+	var runtime: WyrdRuntime = opened["runtime"]
+	var host: WyrdFakeHost = opened["host"]
+	host.world.add_entity(&"ada", &"person", "Ada", PackedStringArray(), true)
+	runtime.roles.assign(&"role_filled", &"ada")
+	runtime.quests.start("unused")
+	assert_eq(runtime.quests.variant_of("unused"), "alpha.default")
+	assert_eq(runtime.quests.status("unused"), &"completed")
+	assert_eq(runtime.quests.waiting_reason("unused"), "")
+	runtime.quests.start("bare")
+	assert_eq(runtime.quests.stage("bare"), "s10")
+	assert_eq(runtime.quests.waiting_reason("bare"), "on_empty")
+	assert_eq(runtime.quests.offered_scene("bare"), "")
+	runtime.quests.start("condq")
+	assert_eq(runtime.quests.waiting_reason("condq"), "on_empty")
+	runtime.quests.start("stepq")
+	assert_eq(runtime.quests.waiting_reason("stepq"), "on_empty")
+	assert_eq(runtime.quests.journal("stepq").size(), 0)
+	runtime.quests.start("covered")
+	assert_eq(runtime.quests.variant_of("covered"), "alpha.empty")
+	assert_eq(runtime.quests.status("covered"), &"completed")
+	assert_eq(runtime.quests.waiting_reason("covered"), "")
+	runtime.quests.start("quiet")
+	assert_eq(runtime.quests.status("quiet"), &"completed")
+	assert_eq(runtime.quests.waiting_reason("quiet"), "")
+	runtime.quests.start("regionq")
+	assert_eq(runtime.quests.stage("regionq"), "s10")
+	assert_eq(runtime.quests.waiting_reason("regionq"), "on_empty")
+	assert_eq(runtime.quests.offered_scene("regionq"), "")
+
+
 func test_advance_refuses_a_host_step_or_open_scene() -> void:
 	var runtime := _boot(_GATES)
 	runtime.quests.start("hostq")
@@ -331,6 +363,66 @@ quest blocked "Blocked"
 """
 
 
+const _STAGE_SLOTS := """
+language 1
+quest unused "Unused"
+  start when false
+  slot alpha = role_filled mode: live
+  slot beta = role_spare mode: live
+  on_empty: wait
+  stage s10
+    variant alpha.default:
+      ~ outcome gate = done
+quest bare "Bare"
+  start when false
+  slot alpha = role_bare mode: live
+  slot beta = role_spare mode: live
+  on_empty: wait
+  stage s10
+    scene room with alpha
+    waits_until false
+quest condq "Cond"
+  start when false
+  slot alpha = role_cond mode: live
+  on_empty: wait
+  stage s10
+    waits_until filled(alpha)
+quest stepq "Step"
+  start when false
+  slot alpha = role_step mode: live
+  on_empty: wait
+  stage s10
+    journal: {holder(alpha).name} waits. #line:j_step
+    ~ outcome gate = done
+quest covered "Covered"
+  start when false
+  slot alpha = role_cover mode: live
+  slot beta = role_spare mode: live
+  on_empty: wait
+  stage s10
+    variant alpha.empty:
+      ~ outcome gate = done
+quest quiet "Quiet"
+  start when false
+  slot spare = role_spare mode: live
+  on_empty: wait
+  stage only
+    ~ outcome gate = done
+quest regionq "Region"
+  start when false
+  slot alpha = role_region mode: live
+  on_empty: wait
+  stage s10
+    region wing
+      stage inner
+        scene room with alpha
+    waits_until false
+scene room
+  alpha: The chair is empty. #line:room
+  -> end
+"""
+
+
 const _WAITING := """
 language 1
 quest waitq "Wait"
@@ -344,6 +436,7 @@ quest held "Held"
   slot lookout = watcher mode: live
   on_empty: wait
   stage held
+    journal: {holder(lookout).name} waits. #line:j_held
   stage next
     waits_until false
 quest offered "Offered"

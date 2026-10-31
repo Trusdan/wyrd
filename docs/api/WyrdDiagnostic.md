@@ -999,6 +999,16 @@ const E_SAVE_POLICY = &"E_SAVE_POLICY"
 const E_SAVE_VERSION = &"E_SAVE_VERSION"
 ```
 
+### `E_CONTENT_MISSING`
+
+**Experimental**
+
+```gdscript
+const E_CONTENT_MISSING = &"E_CONTENT_MISSING"
+```
+
+A save lists content packs and no content is loaded. The message names the pack ids.
+
 ### `W_SAVE_MANIFEST`
 
 **Experimental**

@@ -126,3 +126,15 @@ var regions: Array = []
 ```
 
 [WyrdRegionDef] records. Untyped so a stage and a region can name each other.
+
+## Methods
+
+### `mark_coverage`
+
+**Experimental**
+
+```gdscript
+static func mark_coverage(stage: WyrdStageDef, used: Dictionary, empty_covered: Dictionary, gone_covered: Dictionary) -> void
+```
+
+Slots this stage references, and which of them an `empty` or `locked_gone` variant covers. `used`, `empty_covered`, and `gone_covered` map a name to true. A reference is a scene `with` name, a variant slot, or a `holder`, `filled`, or `slot_state` call in a step or condition. Variant bodies and region stages count. [WyrdLinker] and [WyrdQuestRunner] share this walk. `contested` does not cover empty.

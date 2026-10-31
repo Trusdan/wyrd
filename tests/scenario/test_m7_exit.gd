@@ -11,7 +11,7 @@ const _EXPECT := {
 	"tavern_owner|gossip": "stage=gossip variant= waiting=scene:toll.offer_room holder= status=empty abolished=false slot=empty reason=no_holder slot_holder= journal= crossing= petition= levy=",
 	"ferry_master|gossip": "stage=gossip variant= waiting=scene:toll.offer_room holder= status=empty abolished=false slot=empty reason=no_holder slot_holder= journal= crossing= petition= levy=",
 	"storm_watcher|gossip": "stage=gossip variant= waiting=scene:toll.offer_room holder= status=empty abolished=false slot=default reason=holder slot_holder=dock_apprentice journal= crossing= petition= levy=",
-	"tavern_owner|pay_toll": "stage=pay_toll variant= waiting=on_empty holder= status=empty abolished=false slot=empty reason=no_holder slot_holder= journal=j_ft_01 crossing= petition= levy=",
+	"tavern_owner|pay_toll": "stage=pay_toll variant= waiting=waits_until: player.coins >= 2 and ferry.toll_coins >= 0 holder= status=empty abolished=false slot=empty reason=no_holder slot_holder= journal=j_ft_01 crossing= petition= levy=",
 	"ferry_master|pay_toll": "stage=pay_toll variant=ferry.locked_gone waiting=waits_until: false holder= status=empty abolished=false slot=locked_gone reason=frozen_vacated slot_holder=ferry_master journal=j_ft_01 j_ft_gone crossing= petition= levy=",
 	"storm_watcher|pay_toll": "stage=pay_toll variant= waiting=waits_until: player.coins >= 2 and ferry.toll_coins >= 0 holder= status=empty abolished=false slot=default reason=holder slot_holder=dock_apprentice journal=j_ft_01 crossing= petition= levy=",
 	"tavern_owner|cross": "stage=cross variant= waiting=scene:toll.depart holder= status=empty abolished=false slot=empty reason=no_holder slot_holder= journal=j_ft_01 crossing=done petition= levy=",
@@ -19,7 +19,7 @@ const _EXPECT := {
 	"storm_watcher|cross": "stage=cross variant= waiting=scene:toll.depart holder= status=empty abolished=false slot=default reason=holder slot_holder=dock_apprentice journal=j_ft_01 crossing=done petition= levy=",
 	"harbor_factor|petition": "stage=petition variant=factor.empty waiting=waits_until: false holder= status=empty abolished=true slot=empty reason=no_holder slot_holder= journal=j_guild_levy j_guild_empty crossing= petition=done levy=",
 	"harbor_reeve|petition": "stage=petition variant=factor.barred waiting=waits_until: false holder= status=contested abolished=false slot=contested reason=contested slot_holder= journal=j_guild_levy j_guild_barred crossing= petition=route_closed levy=",
-	"harbor_factor|signed": "stage=signed variant= waiting=on_empty holder= status=empty abolished=true slot=empty reason=no_holder slot_holder= journal=j_guild_levy j_guild_signed crossing= petition=done levy=done",
+	"harbor_factor|signed": "stage=signed variant= waiting=waits_until: harbor.levy_posted holder= status=empty abolished=true slot=empty reason=no_holder slot_holder= journal=j_guild_levy j_guild_signed crossing= petition=done levy=done",
 	"harbor_reeve|signed": "stage=signed variant=reeve.contested waiting=waits_until: false holder= status=contested abolished=false slot=contested reason=contested slot_holder= journal=j_guild_levy j_guild_signed j_guild_vote crossing= petition=done levy=done",
 }
 

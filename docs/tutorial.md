@@ -23,7 +23,7 @@ quest ferry_toll "The Ferry Toll"
   start when deed_count(player, verb: arrived, place: gullhaven) > 0
 ```
 
-`live` follows whoever holds the role now. `locked_at(pay_toll)` freezes the ferry holder when the quest reaches that stage. `cast(world.storm_heard)` picks the lookout once, from entities that pass, when the rumour is set. `on_empty: wait` holds the quest when a slot has nobody. `requires` names the pack. `start when` is the deed count that opens the quest. New game records `arrived` at Gullhaven, so the quest starts on the first tick.
+`live` follows whoever holds the role now. `locked_at(pay_toll)` freezes the ferry holder when the quest reaches that stage. `cast(world.storm_heard)` picks the lookout once, from entities that pass, when the rumour is set. `on_empty: wait` holds a stage when a slot that stage uses has nobody and no variant matched. `requires` names the pack. `start when` is the deed count that opens the quest. New game records `arrived` at Gullhaven, so the quest starts on the first tick.
 
 ## 3. The first stage
 

@@ -227,6 +227,7 @@ quest gate "Gate"
   on_empty: wait
   slot keeper = dock_keeper mode: live
   stage arrive
+    journal: {holder(keeper).name} waits. #line:j_hold
     waits_until false
 """
 

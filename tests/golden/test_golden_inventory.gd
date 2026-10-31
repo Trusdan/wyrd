@@ -18,6 +18,8 @@ const _ALLOWLIST: PackedStringArray = [
 	# Runtime and save only.
 	"E_SAVE_VERSION",
 	# Runtime and save only.
+	"E_CONTENT_MISSING",
+	# Runtime and save only.
 	"W_SAVE_MANIFEST",
 	# Runtime and save only.
 	"W_SAVE_TEMPLATE",

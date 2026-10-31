@@ -15,7 +15,7 @@ role ferry_master
   vacancy: hold
 ```
 
-A quest slot binds a role, and `on_empty: wait` holds the stage when a slot is empty or contested and no variant matched.
+A quest slot binds a role, and `on_empty: wait` holds the stage when a slot that stage uses is empty or contested and no variant matched.
 
 From `example/content/gullhaven/ferry_toll.wyrd`:
 ```wyrd
@@ -40,7 +40,7 @@ From `example/content/gullhaven/ferry_toll.wyrd`:
       -> gossip
 ```
 
-The field rules are in [Role](../language.md#role) and [Quest](../language.md#quest). `on_empty` other than `wait` is stored and does not hold the stage. Only `wait` does, and only when no variant matched.
+The field rules are in [Role](../language.md#role) and [Quest](../language.md#quest). `on_empty` other than `wait` is stored and does not hold the stage. Only `wait` does, and only when no variant matched and a slot that stage references is empty or contested. An empty slot the stage never uses does not hold it.
 
 ## Host side
 
