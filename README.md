@@ -40,7 +40,7 @@ tools/perf_bench.sh --profile smoke --head . --mode warn --out /tmp/wyrd-perf-sm
 
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
-Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `1.0.0` (`addons/wyrd/VERSION`).
+Godot **4.7.2** stable and GUT **9.7.1** (git tag `v9.7.1`, branch `godot_4_7`) are pinned in `tools/pins.env`. The addon version is `1.0.1` (`addons/wyrd/VERSION`).
 
 Support for 1.x is in [docs/stability.md](docs/stability.md#support).
 

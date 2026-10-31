@@ -201,6 +201,7 @@ quest gate "Gate"
   slot lookout = watcher mode: cast(player.coins >= 0)
   on_empty: wait
   stage arrive
+    waits_until false
     -> pay
   stage pay
     -> done

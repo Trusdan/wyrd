@@ -343,6 +343,8 @@ A top-level stage may add `was: <old>[, <old>…]` after its id. Old ids are pla
 
 `on_missing_stage: <stage id>` is one plain identifier, the same shape as `on_empty:`, and may appear once. A second one is `duplicate statement "on_missing_stage"`. The stage must be a top-level stage of that quest. A region stage, a `was:` old id, and an unknown id are `E_MISSING_STAGE_TARGET` (`on_missing_stage stage "<id>" is unknown`). Load uses it when a save names a stage this quest no longer has.
 
+`on_empty: wait` holds the current stage when a slot that stage references is empty or contested and no variant matched. A reference is a scene `with` name, a `holder`, `filled`, or `slot_state` call in a step or condition, or a variant's slot, including variant bodies and region stages. An empty slot the stage does not reference does not hold it. Any other `on_empty` value is stored and does not hold the stage. The linker uses the same references for `W_EMPTY_UNCOVERED`.
+
 A role id is a symbol (`ferry_master`). A role and a slot have no title or display field. `{holder(slot).name}` is the holder's personal name. A readable job title in example text is ordinary prose.
 
 `start when`, `waits_until`, `cast`, `-> ... when`, and the conditions on `unwilling` and `barred` use `wait_trigger_or_eligibility`. `unwilling(<cond>)` and `barred(<cond>)` use that context because they gate a slot state.
@@ -795,7 +797,7 @@ Codes use the `path:line:col: error[CODE]: message` format, and the same shape f
 | `E_COMMANDS_FILE` | `wyrd_commands.json` is present and is not a command list |
 | `I_COMMANDS_SKIPPED` | A `do` exists and no command file was loaded |
 | `W_SLOT_UNUSED` | A passed slot is not a speaker in the scene. A template param uses the noun `param` |
-| `W_EMPTY_UNCOVERED` | A slot used by a reachable stage has neither `variant <slot>.empty` nor quest `on_empty`. A `contested` variant does not cover it |
+| `W_EMPTY_UNCOVERED` | A slot a reachable stage references has neither `variant <slot>.empty` nor quest `on_empty`. A reference is a scene `with` name, a variant slot, or a `holder`, `filled`, or `slot_state` call in a step or condition, including variant bodies and region stages. A `contested` variant does not cover it |
 | `W_LOCKED_GONE_UNCOVERED` | A `locked_at` slot has no `locked_gone` variant on a reachable stage, or an object or item slot has no `locked_gone` variant |
 | `W_SLOT_COND_ALWAYS` | An `unwilling` or `barred` condition is always true |
 | `W_SLOT_COND_NEVER` | An `unwilling` or `barred` condition is never true |

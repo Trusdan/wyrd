@@ -204,13 +204,37 @@ func test_wrong_typed_field_refuses_before_import() -> void:
 	assert_engine_error_count(0)
 
 
-func test_content_missing_refuses_before_import() -> void:
+func test_no_packs_and_no_content_stays_save_version() -> void:
 	var runtime := WyrdRuntime.new()
 	var before := _text(runtime)
 	var hits := _watch(runtime)
 	var report := runtime.load_state({"schema_version": 4, "seed": "0000000000000001"})
 	assert_false(report.ok)
 	_assert_refused(report, "content", "E_SAVE_VERSION")
+	assert_eq(String(report.diagnostics.items[0].message), "load content before loading a save")
+	assert_eq(_text(runtime), before)
+	assert_eq(hits[0], 1)
+	assert_false(runtime.save_state().is_empty())
+
+
+func test_listed_packs_with_no_content_are_content_missing() -> void:
+	var runtime := WyrdRuntime.new()
+	var before := _text(runtime)
+	var hits := _watch(runtime)
+	var report := runtime.load_state({
+		"content": {
+			"packs": [
+				{"hash": "0000000000000001", "id": "roads"},
+				{"hash": "0000000000000002", "id": "harbor"},
+				{"hash": "0000000000000003", "id": ""},
+			],
+		},
+		"schema_version": 5,
+		"seed": "0000000000000001",
+	})
+	assert_false(report.ok)
+	_assert_refused(report, "content", "E_CONTENT_MISSING")
+	assert_eq(String(report.diagnostics.items[0].message), "content not loaded; missing packs \"harbor\", \"roads\"")
 	assert_eq(_text(runtime), before)
 	assert_eq(hits[0], 1)
 	assert_false(runtime.save_state().is_empty())

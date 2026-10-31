@@ -161,7 +161,7 @@ func _expect(case: Dictionary) -> Dictionary:
 			row["reason"] = "no_holder"
 			row["status"] = "empty"
 			if stage == "pay_toll":
-				row["waiting"] = "on_empty"
+				row["waiting"] = "waits_until: player.coins >= 2 and ferry.toll_coins >= 0"
 		return row
 	if role == "ferry_master":
 		if locked and action == "replace":
@@ -209,7 +209,7 @@ func _expect(case: Dictionary) -> Dictionary:
 				row["variant"] = "factor.empty"
 				row["journal"] = "j_guild_empty"
 			else:
-				row["waiting"] = "on_empty"
+				row["waiting"] = "waits_until: harbor.levy_posted"
 			return row
 		if action == "replace":
 			row["state"] = "default"

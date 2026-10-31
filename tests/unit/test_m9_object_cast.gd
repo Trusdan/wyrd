@@ -281,6 +281,7 @@ quest gate "Gate"
   on_empty: wait
   slot post kind: object mode: cast(has_tag(candidate, bollard))
   stage hold
+    journal: {holder(post).name} waits. #line:j_hold
     waits_until false
 """
 

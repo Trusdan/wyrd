@@ -64,7 +64,7 @@ The status line says "Press New game." You will see:
 
 Leave the toggles as they are for the first walk. Ferry master alive, Lodging available, and Notice succeeds start on. The others start off.
 
-New game sets `world.storm_heard` before the quest starts. The lookout is `cast(world.storm_heard)`. With that rumour set, the cast picks once from the entities the play host registered. At seed 1 the pick is the dock apprentice, so the speaker label is **Nia**. The storm watcher role stays with the watcher. If the rumour is still false, nobody passes, the slot is empty, and `on_empty: wait` holds the quest at `gossip`.
+New game sets `world.storm_heard` before the quest starts. The lookout is `cast(world.storm_heard)`. With that rumour set, the cast picks once from the entities the play host registered. At seed 1 the pick is the dock apprentice, so the speaker label is **Nia**. The storm watcher role stays with the watcher. If the rumour is still false, nobody passes, the lookout slot is empty, and `on_empty: wait` holds `gossip` because that stage uses the lookout.
 
 The pack also contains The Harbor Guild. It stays dormant on this walk. It starts after a deed `asked_guild` at Gullhaven. That quest is the guild-assigned factor, the elected reeve, the barred visitor, and the unwilling factor. The ferry lock has a `locked_gone` variant for the master who held it.
 
