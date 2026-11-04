@@ -380,6 +380,9 @@ func test_experimental_flags_match_the_stable_list_and_the_doc() -> void:
 			for row in rows:
 				var member_name := str(row.get("name", ""))
 				seen[member_name] = true
+				# Engine property accessors are not stable methods.
+				if member_name.begins_with("@"):
+					continue
 				var want := not stable.has(member_name)
 				assert_eq(bool(row.get("experimental", false)), want, "%s.%s" % [reported, member_name])
 			for member_name in stable.keys():

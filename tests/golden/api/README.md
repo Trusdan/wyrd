@@ -6,7 +6,7 @@ Snapshot of the calls, signals, properties, and value types this tree exposes fo
 
 `tests/golden/api/expected/stable_api.json` is written by `WyrdApiGolden.write_expected()`, which `tools/update_goldens.sh` calls. CI compares `WyrdApiGolden.build()` to that file and never writes it. An intended change to a name, argument name, argument type, default, or return type regenerates the snapshot in the same PR.
 
-`WyrdApiGolden.STABLE_CLASSES` is the covered set. At this commit that is 34 scripts, 408 methods, 38 signals, and 173 properties.
+`WyrdApiGolden.STABLE_CLASSES` is the covered set. At this commit that is 34 scripts, 432 methods, 38 signals, and 173 properties.
 
 - Facade: `res://addons/wyrd/runtime/wyrd.gd`, reported as `Wyrd`. The script has no `class_name`.
 - Member objects, taken from the facade's typed properties: `facts` (`WyrdFactStore`), `events` (`WyrdEvents`), `deeds` (`WyrdDeedLog`), `social` (`WyrdSocial`), `rumors` (`WyrdRumor`), `publish` (`WyrdPublish`), `roles` (`WyrdRoles`), `topics` (`WyrdTopics`), `documents` (`WyrdDocuments`), `quests` (`WyrdQuestRunner`), `dialogue` (`WyrdSceneRunner`), `storylets` (`WyrdStoryletDeck`), `sequences` (`WyrdSequences`), `director` (`WyrdDirector`), `generator` (`WyrdGenerator`), and `ai` (`WyrdAI`).
@@ -32,7 +32,9 @@ Reflection uses `get_script_method_list()`, `get_script_signal_list()`, and `get
 
 Defaults are `var_to_str()` of the reflected default list, aligned to the trailing arguments. A `StringName` default stays text such as `&"world"`. An empty `PackedStringArray()` or `{}` default is reflected as null, so the snapshot text is `null`. A rename of that default to a real null, or to the other empty container, does not change the snapshot. The difference list below quotes the source, not that reflected null.
 
-`WyrdSocial.members_of` has an inline setter. Reflection reports it as a method named `@members_of_setter`. The source is the `set(value)` at `addons/wyrd/runtime/social/wyrd_social.gd:31`. Its reflected return is `Variant` (the nil-is-variant flag); the source declares no return.
+`WyrdSocial.members_of` has an inline setter. Reflection reports it as a method named `@members_of_setter`. The source is the `set(value)` at `addons/wyrd/runtime/social/wyrd_social.gd:37`. Its reflected return is `Variant` (the nil-is-variant flag); the source declares no return.
+
+`runtime` on a sub-object the runtime already owns stores an instance id. Reflection reports `@runtime_getter` and `@runtime_setter`, or `@_runtime_getter` and `@_runtime_setter` when the property is private. The property type stays `WyrdRuntime`.
 
 `_init` starts with `_` and is skipped. Constructor parameters on `WyrdCommand`, `WyrdEntityFilter`, and `WyrdLoadReport` are not in the snapshot. Their properties are.
 
