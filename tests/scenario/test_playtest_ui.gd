@@ -218,6 +218,30 @@ func _fact_lines(ui: Node) -> PackedStringArray:
 	return lines
 
 
+func test_empty_ferry_slot_waits_and_disables_continue() -> void:
+	var ui := _spawn()
+	_set_toggle(ui, "ferry_alive", false)
+	_press(ui, "New game")
+	var opening := _read_lines(ui)
+	assert_eq(_line_named(opening, "The dock is empty."), "Nia")
+	_press_choice(ui, "Take the room")
+	var rest := _read_lines(ui)
+	assert_gt(rest.size(), 0)
+	assert_eq(String(rest[rest.size() - 1]["text"]), "The boat leaves the dock.")
+	assert_false(_has_text(rest, "A room's two coins a night, and the stew is free."))
+	var cont := _button_with_text(ui, "Continue")
+	assert_not_null(cont)
+	assert_true(cont.disabled)
+	var lines := _summary_lines(ui)
+	assert_true(lines.has("stage gossip"), "\n".join(lines))
+	assert_true(lines.has("status active"), "\n".join(lines))
+	assert_true(lines.has("waiting on_empty"), "\n".join(lines))
+	var journal := ui.find_child("JournalList", true, false) as ItemList
+	assert_not_null(journal)
+	assert_eq(journal.get_item_text(1), "day 1, 00:00  The dock is empty, so the crossing waits.")
+	await wait_process_frames(1)
+
+
 func test_holder_lines_name_bram_nia_or_the_empty_dock() -> void:
 	var bram := _spawn()
 	_press(bram, "New game")
