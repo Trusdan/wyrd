@@ -40,7 +40,7 @@ var trace_of: Callable = Callable()
 **Experimental**
 
 ```gdscript
-var runtime: WyrdRuntime = null
+var runtime: WyrdRuntime
 ```
 
 ### `candidate_traces`

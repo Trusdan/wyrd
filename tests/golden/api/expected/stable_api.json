@@ -812,6 +812,32 @@
 			"experimental": false,
 			"methods": [
 				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@_runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@_runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
 					"args": [
 						{
 							"class": "WyrdRuntime",
@@ -2089,6 +2115,32 @@
 			"experimental": false,
 			"methods": [
 				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
 					"args": [
 						{
 							"class": "",
@@ -3013,6 +3065,32 @@
 			"experimental": true,
 			"methods": [
 				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@_runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@_runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
 					"args": [
 						{
 							"class": "WyrdRuntime",
@@ -3283,6 +3361,32 @@
 		"WyrdDocuments": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [],
 					"defaults": [],
@@ -3672,6 +3776,32 @@
 		"WyrdFactStore": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [
 						{
@@ -4151,6 +4281,32 @@
 		"WyrdGenerator": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [
 						{
@@ -4818,6 +4974,32 @@
 		"WyrdQuestRunner": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [
 						{
@@ -5634,6 +5816,32 @@
 		"WyrdRoles": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [
 						{
@@ -6944,6 +7152,32 @@
 			"experimental": false,
 			"methods": [
 				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
 					"args": [
 						{
 							"class": "",
@@ -7301,6 +7535,32 @@
 			"experimental": true,
 			"methods": [
 				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
 					"args": [
 						{
 							"class": "WyrdRuntime",
@@ -7513,6 +7773,32 @@
 					"defaults": [],
 					"experimental": false,
 					"name": "@members_of_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
 					"return": {
 						"class": "",
 						"type": "Variant"
@@ -8563,6 +8849,32 @@
 		"WyrdTopics": {
 			"experimental": false,
 			"methods": [
+				{
+					"args": [],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_getter",
+					"return": {
+						"class": "WyrdRuntime",
+						"type": "Object"
+					}
+				},
+				{
+					"args": [
+						{
+							"class": "WyrdRuntime",
+							"name": "value",
+							"type": "Object"
+						}
+					],
+					"defaults": [],
+					"experimental": false,
+					"name": "@runtime_setter",
+					"return": {
+						"class": "",
+						"type": "Variant"
+					}
+				},
 				{
 					"args": [],
 					"defaults": [],

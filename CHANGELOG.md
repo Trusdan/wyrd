@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Fixed:** Freeing the facade releases the runtime. Sub-objects stored a strong reference back to the runtime, so the graph stayed alive after the facade was freed. Those back-references now store an instance id. `tools/leak_check.sh` creates a facade, frees it, quits headless, and fails when Godot still reports instances or resources at exit.
+
 ## 1.0.1 - 2026-10-31
 
 Bugfix release. `addons/wyrd/VERSION` and `plugin.cfg` are `1.0.1`. Save schema stays 4. The stable surface is unchanged. `E_CONTENT_MISSING` is on `WyrdDiagnostic`, which is `@experimental`, so this is a patch and not 1.1.0. The tag `v1.0.1` is cut only on request.

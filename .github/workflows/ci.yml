@@ -39,6 +39,9 @@ jobs:
       - name: Import and test
         run: tools/run_tests.sh
 
+      - name: Facade leak check
+        run: tools/leak_check.sh
+
       - name: API reference is current
         run: |
           set -euo pipefail

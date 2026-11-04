@@ -58,8 +58,14 @@ const _HOP_LIMIT := 24
 ## Returned while a region step list defers a top-level advance. Not a stage id.
 const _LIFT := "\u0001"
 
+## Non-owning. The runtime already references this object.
+var _runtime_id: int = 0
 ## @experimental
-var runtime: WyrdRuntime
+var runtime: WyrdRuntime:
+	get:
+		return WyrdRuntime._host_from(_runtime_id)
+	set(value):
+		_runtime_id = WyrdRuntime._host_id(value)
 var _states: Dictionary = {}
 var _declared: Dictionary = {}
 var _fired: Dictionary = {}
