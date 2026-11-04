@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Fixed:** Gullhaven's empty ferry route waits on `gossip` again. `on_empty` holds only a stage that names the empty slot, and `gossip` did not name `ferry`, so the empty variant's return opened the room scene and left Continue enabled. The transition names `ferry` without binding it on the scene, so a death during the offer still plays out, and the return waits with Continue disabled. The Gullhaven manifest hash is now `7c7297652215ce40`. The later pack names the slot the same way.
 - **Fixed:** Freeing the facade releases the runtime. Sub-objects stored a strong reference back to the runtime, so the graph stayed alive after the facade was freed. Those back-references now store an instance id. `tools/leak_check.sh` creates a facade, frees it, quits headless, and fails when Godot still reports instances or resources at exit.
 
 ## 1.0.1 - 2026-10-31

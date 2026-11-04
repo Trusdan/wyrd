@@ -51,7 +51,7 @@ func test_manifest_row_names_both_hashes() -> void:
 	assert_eq(String(row["kind"]), "manifest")
 	assert_eq(String(row["code"]), "W_SAVE_MANIFEST")
 	assert_eq(String(row["from"]), "8bf113c14f107242")
-	assert_eq(String(row["to"]), "918b2aad2be7d4fa")
+	assert_eq(String(row["to"]), "7c7297652215ce40")
 	assert_eq(int(row["count"]), 0)
 	assert_eq(String(row["id"]), "")
 	assert_eq(hits[0], 1)

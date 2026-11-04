@@ -166,9 +166,12 @@ func test_route_ferry_empty_waits() -> void:
 	assert_true(stages.has("pay_toll"))
 	assert_eq(runtime.quests.variant_of("ferry_toll"), "")
 	assert_eq(runtime.quests.stage("ferry_toll"), "gossip")
-	assert_eq(runtime.quests.waiting_reason("ferry_toll"), "scene:toll.offer_room")
+	# The empty variant returns to gossip. That stage names ferry, so the
+	# return waits and does not offer the room again. Continue stays disabled
+	# when the playtest has no scene to open.
+	assert_eq(runtime.quests.waiting_reason("ferry_toll"), "on_empty")
 	assert_eq(runtime.quests.status("ferry_toll"), &"active")
-	assert_eq(runtime.quests.offered_scene("ferry_toll"), "toll.offer_room")
+	assert_eq(runtime.quests.offered_scene("ferry_toll"), "")
 	var found := false
 	for entry in runtime.quests.journal("ferry_toll"):
 		if String(entry["id"]) == "j_ft_empty":

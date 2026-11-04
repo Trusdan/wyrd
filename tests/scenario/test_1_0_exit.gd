@@ -163,8 +163,8 @@ func test_exit_F3_gullhaven_is_strict_clean_and_on_the_live_hash() -> void:
 			if text.contains("warning["):
 				assert_true(text.contains("warning[W_CLAIM]"), "%s %s" % [path, text])
 	var runtime := _open(true)
-	assert_eq(WyrdRng.format_u64(runtime.content().manifest_hash), "918b2aad2be7d4fa")
-	assert_eq(_M11._LIVE_HASH, "918b2aad2be7d4fa")
+	assert_eq(WyrdRng.format_u64(runtime.content().manifest_hash), "7c7297652215ce40")
+	assert_eq(_M11._LIVE_HASH, "7c7297652215ce40")
 
 
 func test_exit_X1_version_is_semver_1x() -> void:

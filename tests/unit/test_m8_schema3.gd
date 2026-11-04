@@ -91,7 +91,7 @@ func test_schema_3_fixture_loads_and_round_trips() -> void:
 	var live_hash := WyrdRng.format_u64(runtime.content().manifest_hash)
 	assert_eq(fixture_hash, "f003b6b54c91ad8e")
 	assert_eq(_Load.pack_hash(saved), live_hash)
-	assert_eq(live_hash, "918b2aad2be7d4fa")
+	assert_eq(live_hash, "7c7297652215ce40")
 	var expected := text.replace("\"schema_version\": 3,", "\"schema_version\": 4,")
 	expected = expected.replace("\"hash\": \"%s\"" % fixture_hash, "\"hash\": \"%s\"" % live_hash)
 	assert_eq(JSON.stringify(saved, "\t", true), expected)

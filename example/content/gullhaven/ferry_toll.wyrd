@@ -11,7 +11,7 @@ quest ferry_toll "The Ferry Toll"
 
   stage gossip
     scene toll.offer_room with tavern, lookout
-    -> pay_toll
+    -> pay_toll when filled(ferry) or not filled(ferry) // names ferry so on_empty holds a return
 
   stage pay_toll
     waits_until player.coins >= 2 and ferry.toll_coins >= 0
