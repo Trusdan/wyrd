@@ -2,13 +2,12 @@
 
 ## Unreleased
 
-- **Fixed:** Gullhaven's empty ferry route waits on `gossip` again. `on_empty` holds only a stage that names the empty slot, and `gossip` did not name `ferry`, so the empty variant's return opened the room scene and left Continue enabled. The transition names `ferry` without binding it on the scene, so a death during the offer still plays out, and the return waits with Continue disabled. The Gullhaven manifest hash is now `7c7297652215ce40`. The later pack names the slot the same way.
-- **Fixed:** Freeing the facade releases the runtime. Sub-objects stored a strong reference back to the runtime, so the graph stayed alive after the facade was freed. Those back-references now store an instance id. `tools/leak_check.sh` creates a facade, frees it, quits headless, and fails when Godot still reports instances or resources at exit.
-
-## 1.0.1 - 2026-10-31
+## 1.0.1 - 2026-11-04
 
 Bugfix release. `addons/wyrd/VERSION` and `plugin.cfg` are `1.0.1`. Save schema stays 4. The stable surface is unchanged. `E_CONTENT_MISSING` is on `WyrdDiagnostic`, which is `@experimental`, so this is a patch and not 1.1.0. The tag `v1.0.1` is cut only on request.
 
+- **Fixed:** An empty save slot waits again, and Continue stays disabled for that wait.
+- **Fixed:** A freed runtime stayed alive through reference cycles. Sub-objects stored a strong reference back to the runtime, so the graph stayed alive after the facade was freed. Those back-references now store an instance id.
 - **Fixed:** `on_empty: wait` holds a stage only when a slot that stage references is empty or contested and no variant matched. A reference is a scene `with` name, a variant slot, or a `holder`, `filled`, or `slot_state` call in a step or condition, including variant bodies and region stages. `WyrdStageDef.mark_coverage` is the walk `W_EMPTY_UNCOVERED` and the quest runner share. A quest that used to wait because some other slot was empty now continues.
 - **Added:** `E_CONTENT_MISSING` when a save lists content packs and no content is loaded. The message names those pack ids. A schema mismatch with content loaded stays `E_SAVE_VERSION`. A save with no packs and no content loaded stays `E_SAVE_VERSION`.
 - **Behaviour change:** A stage that references no slot now proceeds under `on_empty: wait` even when the quest has empty slots. Use `waits_until` to keep such a stage waiting. The linker's `W_EMPTY_UNCOVERED` now also counts `holder`, `filled`, and `slot_state` references in steps and conditions, so `check` may report new warnings on existing content.
