@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Fixed:** A condition that compares a bool with another type returns false, with no script error.
+
 ## 1.0.1 - 2026-11-04
 
 Bugfix release. `addons/wyrd/VERSION` and `plugin.cfg` are `1.0.1`. Save schema stays 4. The stable surface is unchanged. `E_CONTENT_MISSING` is on `WyrdDiagnostic`, which is `@experimental`, so this is a patch and not 1.1.0. The tag `v1.0.1` is cut only on request.
