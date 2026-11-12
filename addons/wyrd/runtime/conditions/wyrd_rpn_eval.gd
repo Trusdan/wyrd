@@ -340,7 +340,10 @@ func _same(left: Variant, right: Variant) -> bool:
 		if left is float or right is float:
 			return is_equal_approx(float(left), float(right))
 		return left == right
-	if left is bool or right is bool:
+	# Mixed types are not equal. Comparing them with == is a script error.
+	if typeof(left) != typeof(right):
+		return false
+	if left is bool and right is bool:
 		return left == right
 	return str(left) == str(right)
 
