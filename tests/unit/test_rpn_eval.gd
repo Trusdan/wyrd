@@ -75,8 +75,8 @@ func test_missing_bound_fact_stays_false() -> void:
 	assert_eq(eval.eval(compiled, {"hour": 9}), false)
 
 
-func test_mixed_types_compare_unequal_without_a_script_error() -> void:
-	var pairs: Array = [
+func test_a_bool_mixed_with_another_type_compares_unequal_without_a_script_error() -> void:
+	var bool_pairs: Array = [
 		[true, 1],
 		[1, true],
 		[false, 0],
@@ -93,25 +93,39 @@ func test_mixed_types_compare_unequal_without_a_script_error() -> void:
 		[true, []],
 		[[], false],
 		[false, {"on": true}],
+	]
+	for pair in bool_pairs:
+		var left: Variant = pair[0]
+		var right: Variant = pair[1]
+		assert_eq(_eval_op(left, right, WyrdOpcodes.EQ), false, "%s == %s" % [left, right])
+		assert_eq(_eval_op(left, right, WyrdOpcodes.NE), true, "%s != %s" % [left, right])
+	var text_equal: Array = [
 		[1, "1"],
 		["1", 1],
 		[1, &"1"],
 		[&"ready", "ready"],
 		["ready", &"ready"],
+		[PackedInt32Array([1]), [1]],
+	]
+	for pair in text_equal:
+		var left: Variant = pair[0]
+		var right: Variant = pair[1]
+		assert_eq(_eval_op(left, right, WyrdOpcodes.EQ), true, "%s == %s" % [left, right])
+		assert_eq(_eval_op(left, right, WyrdOpcodes.NE), false, "%s != %s" % [left, right])
+	var text_differ: Array = [
 		[1, Vector2(1, 0)],
 		[[1], {"a": 1}],
-		[PackedInt32Array([1]), [1]],
 		[Color(1, 0, 0), Vector2(1, 0)],
 		[Vector2i(1, 0), 1],
 		[&"ready", 1],
 	]
-	for pair in pairs:
+	for pair in text_differ:
 		var left: Variant = pair[0]
 		var right: Variant = pair[1]
 		assert_eq(_eval_op(left, right, WyrdOpcodes.EQ), false, "%s == %s" % [left, right])
 		assert_eq(_eval_op(left, right, WyrdOpcodes.NE), true, "%s != %s" % [left, right])
 	assert_eq(_eval_in_set(true, [1, "true", &"true"]), false)
-	assert_eq(_eval_in_set("ready", [&"ready"]), false)
+	assert_eq(_eval_in_set("ready", [&"ready"]), true)
 	assert_engine_error_count(0)
 
 
@@ -150,7 +164,7 @@ func test_same_type_comparisons_stay() -> void:
 	assert_engine_error_count(0)
 
 
-func test_fact_values_of_another_type_compare_unequal() -> void:
+func test_fact_values_follow_bool_and_text_equality() -> void:
 	var eq_flag := _compile("flag == true")
 	var ne_flag := _compile("flag != true")
 	var eq_count := _compile("count == 1")
@@ -170,8 +184,8 @@ func test_fact_values_of_another_type_compare_unequal() -> void:
 	assert_eq(eval.eval(ne_flag, {"flag": false}), true)
 	assert_eq(eval.eval(eq_flag, {}), false)
 	assert_eq(eval.eval(ne_flag, {}), false)
-	assert_eq(eval.eval(eq_count, {"count": "1"}), false)
-	assert_eq(eval.eval(ne_count, {"count": "1"}), true)
+	assert_eq(eval.eval(eq_count, {"count": "1"}), true)
+	assert_eq(eval.eval(ne_count, {"count": "1"}), false)
 	assert_eq(eval.eval(eq_count, {"count": true}), false)
 	assert_eq(eval.eval(ne_count, {"count": true}), true)
 	assert_eq(eval.eval(eq_count, {"count": 1}), true)
@@ -183,20 +197,20 @@ func test_fact_values_of_another_type_compare_unequal() -> void:
 	assert_eq(eval.eval(ne_label, {"label": &"ready"}), false)
 	assert_eq(eval.eval(eq_label, {"label": &"idle"}), false)
 	assert_eq(eval.eval(ne_label, {"label": &"idle"}), true)
-	assert_eq(eval.eval(eq_label, {"label": "ready"}), false)
-	assert_eq(eval.eval(ne_label, {"label": "ready"}), true)
+	assert_eq(eval.eval(eq_label, {"label": "ready"}), true)
+	assert_eq(eval.eval(ne_label, {"label": "ready"}), false)
 	assert_eq(eval.eval(eq_label, {"label": true}), false)
 	assert_eq(eval.eval(ne_label, {"label": 1}), true)
 	assert_eq(eval.eval(eq_hours, {"count": true, "hour": 1}), false)
 	assert_eq(eval.eval(ne_hours, {"count": true, "hour": 1}), true)
-	assert_eq(eval.eval(eq_hours, {"count": 1, "hour": "1"}), false)
-	assert_eq(eval.eval(ne_hours, {"count": "1", "hour": 1}), true)
+	assert_eq(eval.eval(eq_hours, {"count": 1, "hour": "1"}), true)
+	assert_eq(eval.eval(ne_hours, {"count": "1", "hour": 1}), false)
 	assert_eq(eval.eval(eq_hours, {"count": 2, "hour": 2}), true)
 	assert_eq(eval.eval(ne_hours, {"count": 2, "hour": 2}), false)
 	assert_eq(eval.eval(member, {"label": &"ready"}), true)
 	assert_eq(eval.eval(member, {"label": &"gone"}), false)
 	assert_eq(eval.eval(member, {"label": true}), false)
-	assert_eq(eval.eval(member, {"label": "ready"}), false)
+	assert_eq(eval.eval(member, {"label": "ready"}), true)
 	var bound := WyrdRpnEval.new()
 	bound.bind_facts(PackedStringArray(["flag"]))
 	bound.prepare(eq_flag)
